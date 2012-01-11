@@ -1,3 +1,5 @@
+# Author: Mathieu Blondel
+# License: BSD
 import os
 
 try:
