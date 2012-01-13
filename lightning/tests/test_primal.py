@@ -3,7 +3,7 @@ import scipy.sparse as sp
 
 from numpy.testing import assert_array_equal, assert_array_almost_equal, \
                           assert_almost_equal
-from nose.tools import assert_raises, assert_true
+from nose.tools import assert_raises, assert_true, assert_equal
 
 from sklearn.svm import LinearSVC
 from sklearn.svm.sparse import LinearSVC as SparseLinearSVC
@@ -27,13 +27,24 @@ mult_sparse = sp.csr_matrix(mult_dense)
 def test_primal_fit_binary():
     for X in (bin_dense, bin_sparse):
         # Caution: use a dense LinearSVC even on sparse data!
-        clf = PrimalClassifier(LinearSVC())
+        clf = PrimalClassifier(LinearSVC(), trim_dictionary=False)
         y_pred = clf.fit(X, bin_target).predict(X)
         assert_true(np.mean(y_pred == bin_target) >= 0.98)
+        assert_equal(clf.dictionary_.shape[0], X.shape[0])
 
 
 def test_primal_fit_multiclass():
     for X in (mult_dense, mult_sparse):
-        clf = PrimalClassifier(LinearSVC())
+        clf = PrimalClassifier(LinearSVC(), trim_dictionary=False)
         y_pred = clf.fit(X, mult_target).predict(X)
         assert_true(np.mean(y_pred == mult_target) >= 0.8)
+
+
+def test_primal_fit_binary_l1():
+    for X in (bin_dense, bin_sparse):
+        # Caution: use a dense LinearSVC even on sparse data!
+        clf = PrimalClassifier(LinearSVC(penalty="l1", dual=False),
+                               trim_dictionary=True)
+        y_pred = clf.fit(X, bin_target).predict(X)
+        assert_true(np.mean(y_pred == bin_target) >= 0.98)
+        assert_true(clf.dictionary_.shape[0] < X.shape[0])
