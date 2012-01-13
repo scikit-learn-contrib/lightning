@@ -1,4 +1,4 @@
 
-__all__ = ["datasets"]
+__all__ = ["datasets", "primal"]
 
 __version__ = "0.1-git"
