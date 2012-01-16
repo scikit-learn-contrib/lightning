@@ -46,8 +46,7 @@ def predict_primal(estimator, dictionary, metric, X):
 class PrimalClassifier(BaseEstimator, ClassifierMixin):
 
     def __init__(self, estimator, metric="linear", dictionary_size=None,
-                 trim_dictionary=True,
-                 random_state=None):
+                 trim_dictionary=True, random_state=None):
         self.estimator_ = estimator
         self.metric = metric
         self.dictionary_size = dictionary_size
@@ -58,16 +57,15 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
     def fit(self, X, y):
         random_state = check_random_state(self.random_state)
 
-        self.dictionary_, self.estimator_ = \
-                fit_primal(self.estimator_,
-                           self.metric,
-                           self.dictionary_size,
-                           X, y,
-                           self.random_state)
+        self.dictionary_, self.estimator_ = fit_primal(self.estimator_,
+                                                       self.metric,
+                                                       self.dictionary_size,
+                                                       X, y,
+                                                       self.random_state)
 
         if self.trim_dictionary:
-            self.dictionary_ = \
-                    _trim_dictionary(self.estimator_, self.dictionary_)
+            self.dictionary_ = _trim_dictionary(self.estimator_,
+                                                self.dictionary_)
 
         return self
 
