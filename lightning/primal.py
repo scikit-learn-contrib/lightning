@@ -9,6 +9,7 @@ from sklearn.utils import check_random_state, safe_mask
 
 
 def _dictionary(X, dictionary_size, random_state):
+    # FIXME: support number of SVs proportional to n_samples in each class
     n_samples = X.shape[0]
 
     if not dictionary_size:
@@ -77,7 +78,7 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
                                                        self.metric,
                                                        self.dictionary_size,
                                                        X, y,
-                                                       self.random_state,
+                                                       random_state,
                                                        self._params())
 
         if self.trim_dictionary:

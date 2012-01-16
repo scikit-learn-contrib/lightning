@@ -44,6 +44,12 @@ def test_primal_fit_multiclass():
             assert_true(np.mean(y_pred == mult_target) >= 0.8)
 
 
+def test_primal_fit_proportion():
+    clf = PrimalClassifier(LinearSVC(), dictionary_size=0.3)
+    clf.fit(bin_dense, bin_target)
+    assert_true(clf.coef_.shape, (1, bin_dense.shape[0] / 3))
+
+
 def test_primal_fit_binary_trim():
     for X in (bin_dense, bin_sparse):
         # Caution: use a dense LinearSVC even on sparse data!
