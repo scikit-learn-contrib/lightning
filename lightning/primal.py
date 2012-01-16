@@ -32,27 +32,39 @@ def _trim_dictionary(estimator, dictionary):
     estimator.coef_ = estimator.coef_[:, used_basis]
     return dictionary[used_basis]
 
-def fit_primal(estimator, metric, dictionary_size, X, y, random_state):
+def fit_primal(estimator, metric, dictionary_size, X, y, random_state,
+               metric_params={}):
     dictionary = _dictionary(X, dictionary_size, random_state)
     estimator = clone(estimator)
-    K = pairwise_kernels(X, dictionary, metric=metric)
+    K = pairwise_kernels(X, dictionary, metric=metric,
+                         filter_params=True, **metric_params)
     estimator.fit(K, y)
     return dictionary, estimator
 
-def predict_primal(estimator, dictionary, metric, X):
-    K = pairwise_kernels(X, dictionary, metric=metric)
+def predict_primal(estimator, dictionary, metric, X, metric_params={}):
+    K = pairwise_kernels(X, dictionary, metric=metric,
+                         filter_params=True, **metric_params)
     return estimator.predict(K)
 
 class PrimalClassifier(BaseEstimator, ClassifierMixin):
 
     def __init__(self, estimator, metric="linear", dictionary_size=None,
-                 trim_dictionary=True, random_state=None):
+                 trim_dictionary=True, random_state=None,
+                 gamma=0.1, coef0=1, degree=4):
         self.estimator_ = estimator
         self.metric = metric
         self.dictionary_size = dictionary_size
         self.trim_dictionary = trim_dictionary
         self.random_state = random_state
         self.estimators_ = []
+        self.gamma = gamma
+        self.coef0 = coef0
+        self.degree = degree
+
+    def _params(self):
+        return {"gamma" : self.gamma,
+                "degree" : self.degree,
+                "coef0" : self.coef0}
 
     def fit(self, X, y):
         random_state = check_random_state(self.random_state)
@@ -61,7 +73,8 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
                                                        self.metric,
                                                        self.dictionary_size,
                                                        X, y,
-                                                       self.random_state)
+                                                       self.random_state,
+                                                       self._params())
 
         if self.trim_dictionary:
             self.dictionary_ = _trim_dictionary(self.estimator_,
@@ -73,5 +86,6 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
         return predict_primal(self.estimator_,
                               self.dictionary_,
                               self.metric,
-                              X)
+                              X,
+                              self._params())
 

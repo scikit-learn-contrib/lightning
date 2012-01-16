@@ -25,22 +25,26 @@ mult_sparse = sp.csr_matrix(mult_dense)
 
 
 def test_primal_fit_binary():
-    for X in (bin_dense, bin_sparse):
-        # Caution: use a dense LinearSVC even on sparse data!
-        clf = PrimalClassifier(LinearSVC(), trim_dictionary=False)
-        y_pred = clf.fit(X, bin_target).predict(X)
-        assert_true(np.mean(y_pred == bin_target) >= 0.98)
-        assert_equal(clf.dictionary_.shape[0], X.shape[0])
+    for metric in ("rbf", "linear", "poly"):
+        for X in (bin_dense, bin_sparse):
+            # Caution: use a dense LinearSVC even on sparse data!
+            clf = PrimalClassifier(LinearSVC(), metric=metric,
+                                   trim_dictionary=False)
+            y_pred = clf.fit(X, bin_target).predict(X)
+            assert_true(np.mean(y_pred == bin_target) >= 0.98)
+            assert_equal(clf.dictionary_.shape[0], X.shape[0])
 
 
 def test_primal_fit_multiclass():
-    for X in (mult_dense, mult_sparse):
-        clf = PrimalClassifier(LinearSVC(), trim_dictionary=False)
-        y_pred = clf.fit(X, mult_target).predict(X)
-        assert_true(np.mean(y_pred == mult_target) >= 0.8)
+    for metric in ("rbf", "linear", "poly"):
+        for X in (mult_dense, mult_sparse):
+            clf = PrimalClassifier(LinearSVC(), metric=metric,
+                                   trim_dictionary=False)
+            y_pred = clf.fit(X, mult_target).predict(X)
+            assert_true(np.mean(y_pred == mult_target) >= 0.8)
 
 
-def test_primal_fit_binary_l1():
+def test_primal_fit_binary_trim():
     for X in (bin_dense, bin_sparse):
         # Caution: use a dense LinearSVC even on sparse data!
         clf = PrimalClassifier(LinearSVC(penalty="l1", dual=False),
