@@ -52,3 +52,11 @@ def test_primal_fit_binary_trim():
         y_pred = clf.fit(X, bin_target).predict(X)
         assert_true(np.mean(y_pred == bin_target) >= 0.98)
         assert_true(clf.dictionary_.shape[0] < X.shape[0])
+
+
+def test_primal_coef_():
+    n_samples = mult_dense.shape[0]
+    n_classes = np.unique(mult_target).shape[0]
+    clf = PrimalClassifier(LinearSVC())
+    clf.fit(mult_dense, mult_target)
+    assert_equal(clf.coef_.shape, (n_classes, n_samples))

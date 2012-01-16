@@ -7,6 +7,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin, clone
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.utils import check_random_state, safe_mask
 
+
 def _dictionary(X, dictionary_size, random_state):
     n_samples = X.shape[0]
 
@@ -24,6 +25,7 @@ def _dictionary(X, dictionary_size, random_state):
 
     return X[indices[:dictionary_size]]
 
+
 def _trim_dictionary(estimator, dictionary):
     if not hasattr(estimator, "coef_"):
         raise AttributeError("Base estimator doesn't have a coef_ attribute.")
@@ -31,6 +33,7 @@ def _trim_dictionary(estimator, dictionary):
     used_basis = safe_mask(dictionary, used_basis)
     estimator.coef_ = estimator.coef_[:, used_basis]
     return dictionary[used_basis]
+
 
 def fit_primal(estimator, metric, dictionary_size, X, y, random_state,
                metric_params={}):
@@ -41,10 +44,12 @@ def fit_primal(estimator, metric, dictionary_size, X, y, random_state,
     estimator.fit(K, y)
     return dictionary, estimator
 
+
 def predict_primal(estimator, dictionary, metric, X, metric_params={}):
     K = pairwise_kernels(X, dictionary, metric=metric,
                          filter_params=True, **metric_params)
     return estimator.predict(K)
+
 
 class PrimalClassifier(BaseEstimator, ClassifierMixin):
 
@@ -56,7 +61,6 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
         self.dictionary_size = dictionary_size
         self.trim_dictionary = trim_dictionary
         self.random_state = random_state
-        self.estimators_ = []
         self.gamma = gamma
         self.coef0 = coef0
         self.degree = degree
@@ -89,3 +93,6 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
                               X,
                               self._params())
 
+    @property
+    def coef_(self):
+        return self.estimator_.coef_
