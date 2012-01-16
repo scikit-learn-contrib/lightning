@@ -104,7 +104,7 @@ def fit_sgd_kernel(X_train, y_train, alpha, kernel, gamma=0.1,
     clf = DenseSGDClassifier(alpha=alpha, penalty="l1")
     clf = PrimalClassifier(clf, metric=kernel, dictionary_size=0.3,
                            gamma=gamma, degree=degree, coef0=coef0,
-                           verbose=1)
+                           verbose=1, debiasing=True)
     clf.fit(X_train, y_train)
     return clf, time.time() - start
 
