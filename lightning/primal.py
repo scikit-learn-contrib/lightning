@@ -37,12 +37,18 @@ def _trim_dictionary(estimator, dictionary):
 
 
 def fit_primal(estimator, metric, dictionary_size, X, y, random_state,
-               metric_params={}):
+               verbose=0, metric_params={}):
+    if verbose: print "Creating dictionary..."
     dictionary = _dictionary(X, dictionary_size, random_state)
-    estimator = clone(estimator)
+
+    if verbose: print "Computing kernel..."
     K = pairwise_kernels(X, dictionary, metric=metric,
                          filter_params=True, **metric_params)
+
+    if verbose: print "Computing model..."
+    estimator = clone(estimator)
     estimator.fit(K, y)
+
     return dictionary, estimator
 
 
@@ -55,7 +61,7 @@ def predict_primal(estimator, dictionary, metric, X, metric_params={}):
 class PrimalClassifier(BaseEstimator, ClassifierMixin):
 
     def __init__(self, estimator, metric="linear", dictionary_size=None,
-                 trim_dictionary=True, random_state=None,
+                 trim_dictionary=True, random_state=None, verbose=0,
                  gamma=0.1, coef0=1, degree=4):
         self.estimator_ = estimator
         self.metric = metric
@@ -65,6 +71,7 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
         self.gamma = gamma
         self.coef0 = coef0
         self.degree = degree
+        self.verbose = verbose
 
     def _params(self):
         return {"gamma" : self.gamma,
@@ -79,6 +86,7 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
                                                        self.dictionary_size,
                                                        X, y,
                                                        random_state,
+                                                       self.verbose,
                                                        self._params())
 
         if self.trim_dictionary:
