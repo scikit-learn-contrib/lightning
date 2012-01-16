@@ -43,21 +43,27 @@ import numpy as np
 import pylab as pl
 
 from sklearn.svm.sparse import LinearSVC, SVC, NuSVC
+from sklearn.svm import LinearSVC as DenseLinearSVC
 from sklearn.linear_model.sparse import SGDClassifier, Lasso
+from sklearn.linear_model import SGDClassifier as DenseSGDClassifier
 from sklearn.multiclass import OneVsRestClassifier
 
 from lightning.datasets import get_loader
+from lightning.primal import PrimalClassifier
 
 from sklearn.externals.joblib import Memory
 from lightning.datasets import get_data_home
 
 memory = Memory(cachedir=get_data_home(), verbose=0, compress=6)
 
+
 def l1_norm(coef):
     return np.sum(np.abs(coef))
 
+
 def l0_norm(coef):
     return np.sum(coef != 0)
+
 
 @memory.cache
 def fit_linearsvc(X_train, y_train, C):
@@ -66,19 +72,22 @@ def fit_linearsvc(X_train, y_train, C):
     clf.fit(X_train, y_train)
     return clf, time.time() - start
 
+
 @memory.cache
 def fit_svc(X_train, y_train, C, kernel, gamma=0.1, degree=4, coef0=1):
     start = time.time()
-    clf = SVC(C=C, kernel=kernel, degree=4, coef0=1.0)
+    clf = SVC(C=C, kernel=kernel, degree=degree, coef0=coef0)
     clf.fit(X_train, y_train)
     return clf, time.time() - start
+
 
 @memory.cache
 def fit_nusvc(X_train, y_train, nu, kernel, gamma=0.1, degree=4, coef0=1):
     start = time.time()
-    clf = NuSVC(nu=nu, kernel=kernel, degree=4, coef0=1.0)
+    clf = NuSVC(nu=nu, kernel=kernel, degree=degree, coef0=coef0)
     clf.fit(X_train, y_train)
     return clf, time.time() - start
+
 
 @memory.cache
 def fit_sgd(X_train, y_train, alpha):
@@ -86,6 +95,19 @@ def fit_sgd(X_train, y_train, alpha):
     clf = SGDClassifier(alpha=alpha, penalty="l1")
     clf.fit(X_train, y_train)
     return clf, time.time() - start
+
+
+@memory.cache
+def fit_sgd_kernel(X_train, y_train, alpha, kernel, gamma=0.1,
+                          degree=4, coef0=1):
+    start = time.time()
+    clf = DenseSGDClassifier(alpha=alpha, penalty="l1")
+    clf = PrimalClassifier(clf, metric=kernel, dictionary_size=0.3,
+                           gamma=gamma, degree=degree, coef0=coef0,
+                           verbose=1)
+    clf.fit(X_train, y_train)
+    return clf, time.time() - start
+
 
 @memory.cache
 def fit_lasso(X_train, y_train, alpha):
@@ -95,11 +117,13 @@ def fit_lasso(X_train, y_train, alpha):
     clf.fit(X_train, y_train)
     return clf, time.time() - start
 
+
 @memory.cache
 def predict(clf, X_test, y_test):
     start = time.time()
     y_pred = clf.predict(X_test)
     return np.mean(y_test == y_pred), time.time() - start
+
 
 try:
     algorithm = sys.argv[1]
@@ -139,6 +163,12 @@ elif algorithm.startswith("svc_"):
 elif algorithm == "sgd":
     Cs = np.linspace(0.00001, 0.0001, 10)
     res = [fit_sgd(X_train, y_train, alpha=C) for C in Cs]
+    param = "alpha"
+elif algorithm.startswith("sgd_"):
+    kernel = algorithm.replace("sgd_", "")
+    Cs = np.linspace(0.00001, 0.0001, 10)
+    res = [fit_sgd_kernel(X_train, y_train, alpha=C, kernel=kernel)
+           for C in Cs]
     param = "alpha"
 elif algorithm == "lasso":
     Cs = np.linspace(0.1, 1.0, 10)
