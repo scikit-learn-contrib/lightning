@@ -46,7 +46,7 @@ from sklearn.svm.sparse import LinearSVC, SVC, NuSVC
 from sklearn.linear_model.sparse import SGDClassifier, Lasso
 from sklearn.multiclass import OneVsRestClassifier
 
-from lightning.datasets import load_news20, load_usps, load_mnist
+from lightning.datasets import get_loader
 
 from sklearn.externals.joblib import Memory
 from lightning.datasets import get_data_home
@@ -111,11 +111,8 @@ try:
 except:
     dataset = "news20"
 
-loaders = { "news20" : load_news20,
-            "usps": load_usps,
-            "mnist": load_mnist }
 try:
-    X_train, y_train, X_test, y_test = loaders[dataset]()
+    X_train, y_train, X_test, y_test = get_loader(dataset)()
 except KeyError:
     raise ValueError("Wrong dataset name!")
 
@@ -155,7 +152,7 @@ clfs, train_times = zip(*res)
 res = [predict(clf, X_test, y_test) for clf in clfs]
 accuracies, test_times = zip(*res)
 
-if "svc" in algorithm:
+if "svc" in algorithm and not "linear" in algorithm:
     n_samples = X_train.shape[0]
     pl.figure()
     pl.plot(Cs, [np.mean(1.0 * clf.n_support_ / n_samples) for clf in clfs])

@@ -36,3 +36,10 @@ def load_mnist():
     train_file = os.path.join(data_home, "mnist.scale")
     test_file = os.path.join(data_home, "mnist.scale.t")
     return _load(train_file, test_file, "mnist")
+
+LOADERS = { "news20" : load_news20,
+            "usps": load_usps,
+            "mnist": load_mnist }
+
+def get_loader(dataset):
+    return LOADERS[dataset]

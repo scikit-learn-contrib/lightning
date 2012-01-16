@@ -1,1 +1,5 @@
-from .loaders import get_data_home, load_news20, load_usps, load_mnist
+from .loaders import get_data_home
+from .loaders import load_news20
+from .loaders import load_usps
+from .loaders import load_mnist
+from .loaders import get_loader
