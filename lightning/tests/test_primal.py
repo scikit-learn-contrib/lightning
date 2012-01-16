@@ -10,6 +10,7 @@ from sklearn.svm.sparse import LinearSVC as SparseLinearSVC
 from sklearn.datasets import load_iris
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.utils import check_random_state
+from sklearn.utils.extmath import density
 
 from lightning.primal import PrimalClassifier
 
@@ -58,6 +59,14 @@ def test_primal_fit_binary_trim():
         y_pred = clf.fit(X, bin_target).predict(X)
         assert_true(np.mean(y_pred == bin_target) >= 0.98)
         assert_true(clf.dictionary_.shape[0] < X.shape[0])
+
+
+def test_primal_debiasing():
+    clf = PrimalClassifier(LinearSVC(penalty="l1", dual=False), debiasing=True)
+    clf.fit(bin_dense, bin_target)
+    assert_true(density(clf.coef_), 1.0)
+    y_pred = clf.predict(bin_dense)
+    assert_true(np.mean(y_pred == bin_target) >= 0.98)
 
 
 def test_primal_coef_():
