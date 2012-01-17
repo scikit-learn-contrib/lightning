@@ -34,6 +34,7 @@ def test_primal_fit_binary():
             y_pred = clf.fit(X, bin_target).predict(X)
             assert_true(np.mean(y_pred == bin_target) >= 0.98)
             assert_equal(clf.dictionary_.shape[0], X.shape[0])
+            assert_equal(clf.n_support_.shape[0], 1)
 
 
 def test_primal_fit_multiclass():
@@ -43,6 +44,7 @@ def test_primal_fit_multiclass():
                                    trim_dictionary=False)
             y_pred = clf.fit(X, mult_target).predict(X)
             assert_true(np.mean(y_pred == mult_target) >= 0.8)
+            assert_equal(clf.n_support_.shape[0], 3)
 
 
 def test_primal_fit_proportion():

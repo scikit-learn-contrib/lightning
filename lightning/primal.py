@@ -40,19 +40,26 @@ def _trim_dictionary(estimator, dictionary, K=None):
 
 class PrimalClassifier(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, estimator, metric="linear", dictionary_size=None,
-                 trim_dictionary=True, debiasing=False,
-                 random_state=None, verbose=0,
-                 gamma=0.1, coef0=1, degree=4):
+    def __init__(self,
+                 # base_estimator
+                 estimator,
+                 # dictionary
+                 dictionary_size=None, trim_dictionary=True,
+                 # learning
+                 debiasing=False,
+                 # metric
+                 metric="linear", gamma=0.1, coef0=1, degree=4,
+                 # misc
+                 random_state=None, verbose=0):
         self.estimator_ = clone(estimator)
-        self.metric = metric
         self.dictionary_size = dictionary_size
         self.trim_dictionary = trim_dictionary
         self.debiasing = debiasing
-        self.random_state = random_state
+        self.metric = metric
         self.gamma = gamma
         self.coef0 = coef0
         self.degree = degree
+        self.random_state = random_state
         self.verbose = verbose
 
     def _params(self):
@@ -60,7 +67,7 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
                 "degree" : self.degree,
                 "coef0" : self.coef0}
 
-    def fit(self, X, y):
+    def _fit(self, X, y):
         random_state = check_random_state(self.random_state)
 
         if self.verbose: print "Creating dictionary..."
@@ -72,6 +79,11 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
 
         if self.verbose: print "Computing model..."
         self.estimator_.fit(K, y)
+
+        return K
+
+    def fit(self, X, y):
+        K = self._fit(X, y)
 
         if not self.debiasing:
             K = None
@@ -97,3 +109,7 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
     @property
     def coef_(self):
         return self.estimator_.coef_
+
+    @property
+    def n_support_(self):
+        return np.sum(self.coef_ != 0, axis=1)
