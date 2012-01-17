@@ -6,13 +6,13 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal, \
 from nose.tools import assert_raises, assert_true, assert_equal
 
 from sklearn.svm import LinearSVC
-from sklearn.svm.sparse import LinearSVC as SparseLinearSVC
 from sklearn.datasets import load_iris
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import density
 
 from lightning.primal import PrimalClassifier
+from lightning.primal import PrimalClassifierCV
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
@@ -77,3 +77,10 @@ def test_primal_coef_():
     clf = PrimalClassifier(LinearSVC())
     clf.fit(mult_dense, mult_target)
     assert_equal(clf.coef_.shape, (n_classes, n_samples))
+
+def test_primal_cv():
+    clf = PrimalClassifierCV(LinearSVC(penalty="l1", dual=False),
+                             params=[0.01, 0.1, 1.0],
+                             metric="poly",
+                             trim_dictionary=False)
+    y_pred = clf.fit(mult_dense, mult_target).predict(mult_dense)
