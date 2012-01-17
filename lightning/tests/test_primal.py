@@ -6,6 +6,7 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal, \
 from nose.tools import assert_raises, assert_true, assert_equal
 
 from sklearn.linear_model import SGDClassifier
+from sklearn.svm import LinearSVC
 from sklearn.datasets import load_iris
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.utils import check_random_state
@@ -78,10 +79,21 @@ def test_primal_coef_():
     clf.fit(mult_dense, mult_target)
     assert_equal(clf.coef_.shape, (n_classes, n_samples))
 
-def test_primal_cv():
-    clf = PrimalClassifierCV(SGDClassifier(penalty="l1", seed=0, alpha=0.01),
-                             params=[0.01, 0.1, 1.0],
-                             metric="poly",
-                             trim_dictionary=False,
+def test_primal_cv_binary():
+    clf = LinearSVC(penalty="l1", dual=False)
+    clf = PrimalClassifierCV(clf,
+                             params=np.linspace(0.01, 10.0, 5),
+                             upper_bound=50,
+                             metric="linear",
+                             random_state=0)
+    y_pred = clf.fit(bin_dense, bin_target).predict(bin_dense)
+    assert_equal(clf.n_support_[0], 52)
+
+def test_primal_cv_multiclass():
+    clf = PrimalClassifierCV(SGDClassifier(penalty="l1", seed=0),
+                             params=np.linspace(0.01, 10.0, 10),
+                             upper_bound=50,
+                             metric="linear",
                              random_state=0)
     y_pred = clf.fit(mult_dense, mult_target).predict(mult_dense)
+    assert_equal(int(np.mean(clf.n_support_)), 50)

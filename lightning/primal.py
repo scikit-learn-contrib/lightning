@@ -143,9 +143,6 @@ class PrimalClassifierCV(PrimalClassifier):
                  # misc
                  random_state=None, verbose=0):
 
-        if params is None:
-            raise AttributeError("`params` must be a list of parameters.")
-
         self.estimator_ = estimator
         self.cv = cv
         self.params = params
@@ -159,6 +156,17 @@ class PrimalClassifierCV(PrimalClassifier):
         self.degree = degree
         self.random_state = random_state
         self.verbose = verbose
+
+        self._check_params()
+
+    def _check_params(self):
+        if self.params is None:
+            raise AttributeError("`params` must be a list of parameters.")
+
+        param_name, _ = self._get_regularization_param()
+
+        if param_name == "alpha" and self.params[0] < self.params[-1]:
+            self.params = self.params[::-1]
 
     def _fit_path(self, X_train, y_train, X_val, y_val):
         random_state = check_random_state(self.random_state)
@@ -185,7 +193,7 @@ class PrimalClassifierCV(PrimalClassifier):
             estimator.fit(K_train, y_train)
 
             score = estimator.score(K_val, y_val)
-            nsv = np.mean(np.sum(estimator.coef_ != 0, axis=0))
+            nsv = np.mean(np.sum(estimator.coef_ != 0, axis=1))
             # FIXME: we could stop here if nsv > upper_bound
             scores.append(score)
             estimators.append(estimator)
@@ -196,8 +204,14 @@ class PrimalClassifierCV(PrimalClassifier):
         if upper_bound is None:
             upper_bound = dictionary.shape[0]
 
+        # Need to scale down upper_bound to account for the fact
+        # that we are working on a smaller part of the dataset.
+        n_train = X_train.shape[0]
+        n_val = X_val.shape[0]
+        train_prop = n_train / float(n_train + n_val)
+
         scores = np.array(scores)
-        n_svs = np.array(n_svs) / float(upper_bound)
+        n_svs = np.array(n_svs) / upper_bound * train_prop
 
         return estimators, scores, n_svs
 
@@ -226,7 +240,6 @@ class PrimalClassifierCV(PrimalClassifier):
             elif scores[i] > best_score:
                 best_score = scores[i]
                 best_param = self.params[i]
-
 
         if best_param is None:
             raise ValueError("Could not find a parameters that below "
