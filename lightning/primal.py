@@ -41,8 +41,8 @@ def _trim_dictionary(estimator, dictionary, K=None):
 
 
 def _get_regularization_param(estimator):
-    params = estimator.get_params(deep=False)
-    for param in ("C", "alpha"):
+    params = estimator.get_params(deep=True)
+    for param in ("C", "alpha", "estimator__C", "estimator__alpha"):
         if param in params:
             return (param, params[param])
     raise ValueError("Estimator should have a parameter C or alpha.")
@@ -165,14 +165,19 @@ class PrimalClassifierCV(BasePrimal, ClassifierMixin):
         if self.param_grid is None:
             raise AttributeError("Missing param_grid.")
 
-        if "C" in self.param_grid:
-            self.regul_name = "C"
-            self.regul_values = np.sort(self.param_grid["C"])
-        elif "alpha" in self.param_grid:
-            self.regul_name = "alpha"
-            self.regul_values = np.sort(self.param_grid["alpha"])[::-1]
-        else:
+        self.regul_name = None
+        for param in ("C", "estimator__C", "alpha", "estimator__alpha"):
+            if param in self.param_grid:
+                self.regul_name = param
+                break
+
+        if self.regul_name is None:
             raise AttributeError("Missing regularization parameter.")
+
+        self.regul_values = np.sort(self.param_grid[self.regul_name])
+
+        if "alpha" in self.regul_name:
+            self.regul_values = self.regul_values[::-1]
 
         del self.param_grid[self.regul_name]
 
@@ -192,12 +197,11 @@ class PrimalClassifierCV(BasePrimal, ClassifierMixin):
         scores = []
         estimators = []
         n_svs = []
-        param_name, _ = _get_regularization_param(self.estimator_)
         estimator = clone(self.estimator_)
 
         for param in self.regul_values:
             if self.verbose: print "Computing model for %s..." % str(param)
-            estimator.set_params(**{param_name: param})
+            estimator.set_params(**{self.regul_name: param})
             estimator.fit(K_train, y_train)
 
             nsv = np.mean(np.sum(estimator.coef_ != 0, axis=1))
@@ -241,10 +245,13 @@ class PrimalClassifierCV(BasePrimal, ClassifierMixin):
         best_params = None
 
         for kernel_params in grid:
+            if self.verbose: print "Training: ", kernel_params
             scores = None
             n_svs = None
 
+            i = 1
             for train, val in cv:
+                if self.verbose: print "Fold %d/%d" % (i, n_folds)
                 ret = self._fit_path(X[train], y[train],
                                      X[val], y[val],
                                      kernel_params)
@@ -253,6 +260,8 @@ class PrimalClassifierCV(BasePrimal, ClassifierMixin):
                 else:
                     scores += ret[0]
                     n_svs += ret[1]
+
+                i += 1
 
             scores /= n_folds
             n_svs /= n_folds

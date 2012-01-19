@@ -5,8 +5,9 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal, \
                           assert_almost_equal
 from nose.tools import assert_raises, assert_true, assert_equal
 
-from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import SGDClassifier, Lasso
 from sklearn.svm import LinearSVC
+from sklearn.multiclass import OneVsRestClassifier
 from sklearn.datasets import load_iris
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.utils import check_random_state
@@ -110,3 +111,15 @@ def test_primal_cv_multiclass():
                              random_state=0)
     y_pred = clf.fit(mult_dense, mult_target).predict(mult_dense)
     assert_equal(int(np.mean(clf.n_support_)), 50)
+
+def test_primal_cv_ovr():
+    clf = OneVsRestClassifier(Lasso())
+    alphas = np.linspace(0.01, 1.0, 20.0)
+    clf = PrimalClassifierCV(clf,
+                             param_grid={"estimator__alpha": alphas},
+                             upper_bound=50,
+                             trim_dictionary=False,
+                             metric="linear",
+                             random_state=0)
+    y_pred = clf.fit(mult_dense, mult_target).predict(mult_dense)
+    assert_true(clf.estimator_.estimators_[0].alpha != 1.0)
