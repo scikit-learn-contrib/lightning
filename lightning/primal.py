@@ -5,6 +5,7 @@ import numpy as np
 
 from sklearn.base import BaseEstimator, ClassifierMixin, clone, is_classifier
 from sklearn.cross_validation import check_cv
+from sklearn.grid_search import IterGrid
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.utils import check_random_state, safe_mask
 
@@ -39,43 +40,17 @@ def _trim_dictionary(estimator, dictionary, K=None):
     return dictionary[used_basis], K
 
 
-class PrimalClassifier(BaseEstimator, ClassifierMixin):
+def _get_regularization_param(estimator):
+    params = estimator.get_params(deep=False)
+    for param in ("C", "alpha"):
+        if param in params:
+            return (param, params[param])
+    raise ValueError("Estimator should have a parameter C or alpha.")
 
-    def __init__(self,
-                 # base_estimator
-                 estimator,
-                 # dictionary
-                 dictionary_size=None, trim_dictionary=True,
-                 # learning
-                 debiasing=False,
-                 # metric
-                 metric="linear", gamma=0.1, coef0=1, degree=4,
-                 # misc
-                 random_state=None, verbose=0):
-        self.estimator_ = estimator
-        self.dictionary_size = dictionary_size
-        self.trim_dictionary = trim_dictionary
-        self.debiasing = debiasing
-        self.metric = metric
-        self.gamma = gamma
-        self.coef0 = coef0
-        self.degree = degree
-        self.random_state = random_state
-        self.verbose = verbose
 
-    def _params(self):
-        return {"gamma" : self.gamma,
-                "degree" : self.degree,
-                "coef0" : self.coef0}
+class BasePrimal(BaseEstimator):
 
-    def _get_regularization_param(self):
-        params = self.estimator_.get_params(deep=False)
-        for param in ("C", "alpha"):
-            if param in params:
-                return (param, params[param])
-        raise ValueError("Base estimator should have a parameter C or alpha.")
-
-    def _fit_one(self, X, y, param):
+    def _fit_one(self, X, y, regul_value, kernel_params):
         random_state = check_random_state(self.random_state)
 
         if self.verbose: print "Creating dictionary..."
@@ -84,11 +59,11 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
 
         if self.verbose: print "Computing kernel..."
         K = pairwise_kernels(X, dictionary, metric=self.metric,
-                             filter_params=True, **self._params())
+                             filter_params=True, **kernel_params)
 
         estimator = clone(self.estimator_)
-        param_name, _ = self._get_regularization_param()
-        estimator.set_params(**{param_name: param})
+        param_name, _ = _get_regularization_param(self.estimator_)
+        estimator.set_params(**{param_name: regul_value})
         estimator.fit(K, y)
 
         if self.trim_dictionary:
@@ -99,22 +74,13 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
 
         if self.debiasing:
             if self.verbose: print "Debiasing..."
-            estimator.set_params(**{"penalty": "l2"})
+            estimator.set_params(penalty="l2")
             estimator.fit(K, y)
 
         self.dictionary_ = dictionary
         self.estimator_ = estimator
 
         return self
-
-    def fit(self, X, y):
-        param_name, param_value = self._get_regularization_param()
-        return self._fit_one(X, y, param_value)
-
-    def predict(self, X):
-        K = pairwise_kernels(X, self.dictionary_, metric=self.metric,
-                             filter_params=True, **self._params())
-        return self.estimator_.predict(K)
 
     @property
     def coef_(self):
@@ -125,15 +91,11 @@ class PrimalClassifier(BaseEstimator, ClassifierMixin):
         return np.sum(self.coef_ != 0, axis=1)
 
 
-class PrimalClassifierCV(PrimalClassifier):
+class PrimalClassifier(BasePrimal, ClassifierMixin):
 
     def __init__(self,
                  # base_estimator
                  estimator,
-                 # cv
-                 cv=3,
-                 params=None,
-                 upper_bound=None,
                  # dictionary
                  dictionary_size=None, trim_dictionary=True,
                  # learning
@@ -142,11 +104,7 @@ class PrimalClassifierCV(PrimalClassifier):
                  metric="linear", gamma=0.1, coef0=1, degree=4,
                  # misc
                  random_state=None, verbose=0):
-
         self.estimator_ = estimator
-        self.cv = cv
-        self.params = params
-        self.upper_bound = upper_bound
         self.dictionary_size = dictionary_size
         self.trim_dictionary = trim_dictionary
         self.debiasing = debiasing
@@ -157,18 +115,68 @@ class PrimalClassifierCV(PrimalClassifier):
         self.random_state = random_state
         self.verbose = verbose
 
-        self._check_params()
+    def _kernel_params(self):
+        return {"gamma" : self.gamma,
+                "degree" : self.degree,
+                "coef0" : self.coef0}
 
-    def _check_params(self):
-        if self.params is None:
-            raise AttributeError("`params` must be a list of parameters.")
+    def fit(self, X, y):
+        param_name, param_value = _get_regularization_param(self.estimator_)
+        return self._fit_one(X, y, param_value, self._kernel_params())
 
-        param_name, _ = self._get_regularization_param()
+    def predict(self, X):
+        K = pairwise_kernels(X, self.dictionary_, metric=self.metric,
+                             filter_params=True, **self._kernel_params())
+        return self.estimator_.predict(K)
 
-        if param_name == "alpha" and self.params[0] < self.params[-1]:
-            self.params = self.params[::-1]
 
-    def _fit_path(self, X_train, y_train, X_val, y_val):
+class PrimalClassifierCV(BasePrimal, ClassifierMixin):
+
+    def __init__(self,
+                 # base_estimator
+                 estimator,
+                 # cv
+                 param_grid=None,
+                 cv=3,
+                 upper_bound=None,
+                 # dictionary
+                 dictionary_size=None, trim_dictionary=True,
+                 # learning
+                 debiasing=False,
+                 # metric
+                 metric="linear",
+                 # misc
+                 random_state=None, verbose=0):
+
+        self.estimator_ = estimator
+        self.cv = cv
+        self.param_grid = param_grid
+        self.upper_bound = upper_bound
+        self.dictionary_size = dictionary_size
+        self.trim_dictionary = trim_dictionary
+        self.debiasing = debiasing
+        self.metric = metric
+        self.random_state = random_state
+        self.verbose = verbose
+
+        self._set_params()
+
+    def _set_params(self):
+        if self.param_grid is None:
+            raise AttributeError("Missing param_grid.")
+
+        if "C" in self.param_grid:
+            self.regul_name = "C"
+            self.regul_values = np.sort(self.param_grid["C"])
+        elif "alpha" in self.param_grid:
+            self.regul_name = "alpha"
+            self.regul_values = np.sort(self.param_grid["alpha"])[::-1]
+        else:
+            raise AttributeError("Missing regularization parameter.")
+
+        del self.param_grid[self.regul_name]
+
+    def _fit_path(self, X_train, y_train, X_val, y_val, kernel_params):
         random_state = check_random_state(self.random_state)
 
         if self.verbose: print "Creating dictionary..."
@@ -176,24 +184,27 @@ class PrimalClassifierCV(PrimalClassifier):
 
         if self.verbose: print "Computing kernel..."
         K_train = pairwise_kernels(X_train, dictionary, metric=self.metric,
-                                   filter_params=True, **self._params())
+                                   filter_params=True, **kernel_params)
 
         K_val = pairwise_kernels(X_val, dictionary, metric=self.metric,
-                                 filter_params=True, **self._params())
+                                 filter_params=True, **kernel_params)
 
         scores = []
         estimators = []
         n_svs = []
-        param_name, _ = self._get_regularization_param()
+        param_name, _ = _get_regularization_param(self.estimator_)
         estimator = clone(self.estimator_)
 
-        for param in self.params:
+        for param in self.regul_values:
             if self.verbose: print "Computing model for %s..." % str(param)
             estimator.set_params(**{param_name: param})
             estimator.fit(K_train, y_train)
 
-            score = estimator.score(K_val, y_val)
             nsv = np.mean(np.sum(estimator.coef_ != 0, axis=1))
+            if nsv == 0:
+                score = 0
+            else:
+                score = estimator.score(K_val, y_val)
             # FIXME: we could stop here if nsv > upper_bound
             scores.append(score)
             estimators.append(estimator)
@@ -213,38 +224,60 @@ class PrimalClassifierCV(PrimalClassifier):
         scores = np.array(scores)
         n_svs = np.array(n_svs) / upper_bound * train_prop
 
-        return estimators, scores, n_svs
+        return scores, n_svs
 
     def fit(self, X, y):
-        cv = check_cv(self.cv, X, y, is_classifier(self.estimator_))
+        cv = list(check_cv(self.cv, X, y, is_classifier(self.estimator_)))
+        n_folds = len(cv)
 
-        n_params = len(self.params)
-        n_folds = 0
-        scores = np.zeros(n_params, dtype=np.float64)
-        n_svs = np.zeros(n_params, dtype=np.float64)
-        for train, val in cv:
-            ret = self._fit_path(X[train], y[train], X[val], y[val])
-            scores += ret[1]
-            n_svs += ret[2]
-            n_folds += 1
+        if len(self.param_grid) == 0:
+            grid = ({},)
+        else:
+            grid = list(IterGrid(self.param_grid))
 
-        scores /= n_folds
-        n_svs /= n_folds
-
+        scores = []
+        n_svs = []
         best_score = -np.inf
-        best_param = None
+        best_params = None
 
-        for i in range(n_params):
-            if n_svs[i] > 1.0:
-                break
-            elif scores[i] > best_score:
-                best_score = scores[i]
-                best_param = self.params[i]
+        for kernel_params in grid:
+            scores = None
+            n_svs = None
 
-        if best_param is None:
-            raise ValueError("Could not find a parameters that below "
-                             "upper bound")
+            for train, val in cv:
+                ret = self._fit_path(X[train], y[train],
+                                     X[val], y[val],
+                                     kernel_params)
+                if scores is None:
+                    scores, n_svs = ret
+                else:
+                    scores += ret[0]
+                    n_svs += ret[1]
 
-        self._fit_one(X, y, best_param)
+            scores /= n_folds
+            n_svs /= n_folds
+
+            scores[n_svs > 1.0] = -np.inf
+            best = scores.argmax()
+            if scores[best] > best_score:
+                best_score = scores[best]
+                best_params = (self.regul_values[best], kernel_params)
+
+        if best_params is None:
+            raise ValueError("Could not find a parameters below upper bound")
+
+        self.regul_value_, self.kernel_params_ = best_params
+        # FIXME: don't retrain if there was only one fold
+        self._fit_one(X, y, self.regul_value_, self.kernel_params_)
+
+        nsv = np.mean(np.sum(self.estimator_.coef_ != 0, axis=1))
+
+        if nsv == 0:
+            raise ValueError("Training failed...")
 
         return self
+
+    def predict(self, X):
+        K = pairwise_kernels(X, self.dictionary_, metric=self.metric,
+                             filter_params=True, **self.kernel_params_)
+        return self.estimator_.predict(K)

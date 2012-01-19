@@ -29,7 +29,8 @@ mult_sparse = sp.csr_matrix(mult_dense)
 def test_primal_fit_binary():
     for metric in ("rbf", "linear", "poly"):
         for X in (bin_dense, bin_sparse):
-            clf = PrimalClassifier(SGDClassifier(seed=0), metric=metric,
+            #clf = PrimalClassifier(SGDClassifier(seed=0), metric=metric,
+            clf = PrimalClassifier(LinearSVC(), metric=metric,
                                    trim_dictionary=False, random_state=0)
             y_pred = clf.fit(X, bin_target).predict(X)
             assert_true(np.mean(y_pred == bin_target) >= 0.95)
@@ -82,16 +83,28 @@ def test_primal_coef_():
 def test_primal_cv_binary():
     clf = LinearSVC(penalty="l1", dual=False)
     clf = PrimalClassifierCV(clf,
-                             params=np.linspace(0.01, 10.0, 5),
+                             param_grid={"C":np.linspace(0.01, 10.0, 5)},
                              upper_bound=50,
                              metric="linear",
                              random_state=0)
     y_pred = clf.fit(bin_dense, bin_target).predict(bin_dense)
     assert_equal(clf.n_support_[0], 52)
 
+def test_primal_cv_binary_rbf():
+    clf = LinearSVC(penalty="l1", dual=False)
+    clf = PrimalClassifierCV(clf,
+                             param_grid={"C":np.linspace(0.01, 0.1, 10),
+                                         "degree":np.array([3, 4])},
+                             cv=3,
+                             upper_bound=50,
+                             metric="poly",
+                             random_state=0)
+    y_pred = clf.fit(bin_dense, bin_target).predict(bin_dense)
+    assert_equal(clf.n_support_[0], 69)
+
 def test_primal_cv_multiclass():
     clf = PrimalClassifierCV(SGDClassifier(penalty="l1", seed=0),
-                             params=np.linspace(0.01, 10.0, 10),
+                             param_grid={"alpha": np.linspace(0.01, 10.0, 10)},
                              upper_bound=50,
                              metric="linear",
                              random_state=0)
