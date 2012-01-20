@@ -20,6 +20,7 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
                  # back-fitting
                  check_duplicates=False,
                  refit=None,
+                 n_refit=1,
                  alpha=0,
                  # metric
                  metric="linear", gamma=0.1, coef0=1, degree=4,
@@ -32,6 +33,7 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         self.dictionary_size = dictionary_size
         self.check_duplicates = check_duplicates
         self.refit = refit
+        self.n_refit = n_refit
         self.alpha = alpha
         self.metric = metric
         self.gamma = gamma
@@ -39,7 +41,6 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         self.degree = degree
         self.random_state = random_state
         self.verbose = verbose
-
 
     def _kernel_params(self):
         return {"gamma" : self.gamma,
@@ -63,16 +64,16 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
             best = np.argmax(dots)
             selected[best] = True
 
-            if self.refit is None:
-                before = coef[best]
-                coef[best] += dots[best] / norms[best]
-                diff = coef[best] - before
-                residuals -= diff * K[:, best]
-            elif self.refit == "backfitting":
+            if self.refit == "backfitting" and i % self.n_refit == 0:
                 K_subset = K[:, selected]
                 lm.fit(K_subset, y)
                 coef[selected] = lm.coef_.ravel()
                 residuals = y - lm.predict(K_subset)
+            else:
+                before = coef[best]
+                coef[best] += dots[best] / norms[best]
+                diff = coef[best] - before
+                residuals -= diff * K[:, best]
 
         return coef
 

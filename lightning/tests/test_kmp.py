@@ -73,6 +73,7 @@ def test_kmp_fit_multiclass():
         kmp = KernelMatchingPursuit(n_nonzero_coefs=0.4,
                                     dictionary_size=0.5,
                                     refit="backfitting",
+                                    n_refit=10,
                                     metric=metric,
                                     random_state=0)
         kmp.fit(mult_dense, mult_target)
@@ -83,10 +84,11 @@ def test_kmp_fit_multiclass():
 def test_kmp_fit_multiclass_check_duplicates():
     for metric, acc in (("rbf", 0.80),
                         ("linear", 0.803),
-                        ("poly", 0.823)):
+                        ("poly", 0.816)):
         kmp = KernelMatchingPursuit(n_nonzero_coefs=0.4,
                                     dictionary_size=0.5,
                                     refit="backfitting",
+                                    n_refit=10,
                                     check_duplicates=True,
                                     metric=metric,
                                     random_state=0)
