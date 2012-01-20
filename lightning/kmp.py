@@ -45,12 +45,13 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
                 "coef0" : self.coef0}
 
     def _fit_binary(self, K, y, n_nonzero_coefs, norms):
-        coef = np.zeros(n_nonzero_coefs, dtype=np.float64)
+        dictionary_size = K.shape[1]
+        coef = np.zeros(dictionary_size, dtype=np.float64)
         residuals = y.copy()
 
         lm = LinearRegression() if self.alpha == 0 else Ridge(alpha=self.alpha)
 
-        selected = np.zeros(K.shape[1], dtype=bool)
+        selected = np.zeros(dictionary_size, dtype=bool)
 
         for i in range(n_nonzero_coefs):
             dots = np.dot(K.T, residuals)
@@ -98,6 +99,7 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         norms = np.sqrt(np.sum(K ** 2, axis=0))
 
         self.coef_ = self._fit_binary(K, Y[:, 0], n_nonzero_coefs, norms)
+        # FIXME: trim the dictionary if n_nonzero_coefs < dictionary_size
         self.dictionary_ = dictionary
 
         return self

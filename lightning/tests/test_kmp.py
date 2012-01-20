@@ -24,7 +24,7 @@ def test_kmp_fit_binary():
     for metric, acc in (("rbf", 0.725),
                         ("linear", 0.825),
                         ("poly", 0.73)):
-        kmp = KernelMatchingPursuit(n_nonzero_coefs=0.5,
+        kmp = KernelMatchingPursuit(n_nonzero_coefs=0.4,
                                     dictionary_size=0.5,
                                     metric=metric,
                                     random_state=0)
