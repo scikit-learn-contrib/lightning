@@ -21,7 +21,9 @@ mult_sparse = sp.csr_matrix(mult_dense)
 
 
 def test_kmp_fit_binary():
-    for metric in ("rbf", "linear", "poly"):
+    for metric, acc in (("rbf", 0.725),
+                        ("linear", 0.825),
+                        ("poly", 0.73)):
         kmp = KernelMatchingPursuit(n_nonzero_coefs=0.5,
                                     dictionary_size=0.5,
                                     metric=metric,
@@ -29,4 +31,34 @@ def test_kmp_fit_binary():
         kmp.fit(bin_dense, bin_target)
         assert_equal(kmp.dictionary_.shape[1], bin_dense.shape[0] / 2)
         y_pred = kmp.predict(bin_dense)
-        print np.mean(bin_target == y_pred)
+        assert_almost_equal(np.mean(bin_target == y_pred), acc)
+
+def test_kmp_fit_binary_backfitting():
+    for metric, acc in (("rbf", 0.725),
+                        ("linear", 0.755),
+                        ("poly", 0.725)):
+        kmp = KernelMatchingPursuit(n_nonzero_coefs=0.5,
+                                    dictionary_size=0.5,
+                                    refit="backfitting",
+                                    alpha=0,
+                                    metric=metric,
+                                    random_state=0)
+        kmp.fit(bin_dense, bin_target)
+        assert_equal(kmp.dictionary_.shape[1], bin_dense.shape[0] / 2)
+        y_pred = kmp.predict(bin_dense)
+        assert_almost_equal(np.mean(bin_target == y_pred), acc)
+
+def test_kmp_fit_binary_backfitting():
+    for metric, acc in (("rbf", 0.5),
+                        ("linear", 0.755),
+                        ("poly", 0.725)):
+        kmp = KernelMatchingPursuit(n_nonzero_coefs=0.5,
+                                    dictionary_size=0.5,
+                                    refit="backfitting",
+                                    alpha=1.0,
+                                    metric=metric,
+                                    random_state=0)
+        kmp.fit(bin_dense, bin_target)
+        assert_equal(kmp.dictionary_.shape[1], bin_dense.shape[0] / 2)
+        y_pred = kmp.predict(bin_dense)
+        assert_almost_equal(np.mean(bin_target == y_pred), acc)

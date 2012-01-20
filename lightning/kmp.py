@@ -4,6 +4,7 @@
 import numpy as np
 
 from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.linear_model import Ridge, LinearRegression
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
@@ -17,7 +18,8 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
                  # dictionary
                  dictionary_size=None,
                  # back-fitting
-
+                 refit=None,
+                 alpha = 0,
                  # metric
                  metric="linear", gamma=0.1, coef0=1, degree=4,
                  # misc
@@ -27,6 +29,8 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
 
         self.n_nonzero_coefs = n_nonzero_coefs
         self.dictionary_size = dictionary_size
+        self.refit = refit
+        self.alpha = alpha
         self.metric = metric
         self.gamma = gamma
         self.coef0 = coef0
@@ -54,7 +58,7 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         if self.verbose: print "Creating dictionary..."
         dictionary = _dictionary(X, self.dictionary_size, random_state)
 
-        if n_nonzero_coefs > dictionary.shape[1]:
+        if n_nonzero_coefs > dictionary.shape[0]:
             raise AttributeError("n_nonzero_coefs cannot be bigger than "
                                  "dictionary_size.")
 
@@ -69,12 +73,21 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         indices = np.zeros(n_nonzero_coefs, dtype=np.int)
         residuals = y.copy()
 
+        lm = LinearRegression() if self.alpha == 0 else Ridge(alpha=self.alpha)
+
         for i in range(n_nonzero_coefs):
             dots = np.dot(K.T, residuals)
             dots /= norms
             indices[i] = np.argmax(dots)
-            coef[i]= dots[indices[i]] / norms[indices[i]]
-            residuals -= coef[i] * K[:, indices[i]]
+
+            if self.refit is None:
+                coef[i]= dots[indices[i]] / norms[indices[i]]
+                residuals -= coef[i] * K[:, indices[i]]
+            elif self.refit == "backfitting":
+                K_subset = K[:, indices[:i+1]]
+                lm.fit(K_subset, y)
+                coef[:i+1] = lm.coef_.ravel()
+                residuals = y - lm.predict(K_subset)
 
         self.coef_ = coef
         self.dictionary_ = dictionary[indices]
@@ -85,5 +98,5 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         K = pairwise_kernels(X, self.dictionary_, metric=self.metric,
                              filter_params=True, **self._kernel_params())
         pred = np.dot(K, self.coef_)
-        return self.lb_.inverse_transform(pred)
+        return self.lb_.inverse_transform(pred, threshold=0.5)
 
