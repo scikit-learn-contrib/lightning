@@ -18,6 +18,7 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
                  # dictionary
                  dictionary_size=None,
                  # back-fitting
+                 check_duplicates=False,
                  refit=None,
                  alpha=0,
                  # metric
@@ -29,6 +30,7 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
 
         self.n_nonzero_coefs = n_nonzero_coefs
         self.dictionary_size = dictionary_size
+        self.check_duplicates = check_duplicates
         self.refit = refit
         self.alpha = alpha
         self.metric = metric
@@ -56,7 +58,8 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         for i in range(n_nonzero_coefs):
             dots = np.dot(K.T, residuals)
             dots /= norms
-            #dots[selected] = -np.inf
+            if self.check_duplicates:
+                dots[selected] = -np.inf
             best = np.argmax(dots)
             selected[best] = True
 

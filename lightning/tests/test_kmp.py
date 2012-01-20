@@ -68,10 +68,26 @@ def test_kmp_fit_binary_backfitting():
 
 def test_kmp_fit_multiclass():
     for metric, acc in (("rbf", 0.79),
-                        ("linear", 0.786),
+                        ("linear", 0.803),
                         ("poly", 0.833)):
         kmp = KernelMatchingPursuit(n_nonzero_coefs=0.4,
                                     dictionary_size=0.5,
+                                    refit="backfitting",
+                                    metric=metric,
+                                    random_state=0)
+        kmp.fit(mult_dense, mult_target)
+        y_pred = kmp.predict(mult_dense)
+        assert_almost_equal(np.mean(mult_target == y_pred), acc, decimal=2)
+
+
+def test_kmp_fit_multiclass_check_duplicates():
+    for metric, acc in (("rbf", 0.80),
+                        ("linear", 0.803),
+                        ("poly", 0.823)):
+        kmp = KernelMatchingPursuit(n_nonzero_coefs=0.4,
+                                    dictionary_size=0.5,
+                                    refit="backfitting",
+                                    check_duplicates=True,
                                     metric=metric,
                                     random_state=0)
         kmp.fit(mult_dense, mult_target)
