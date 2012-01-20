@@ -3,8 +3,8 @@
 
 import numpy as np
 
-from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.linear_model import Ridge, LinearRegression
+from sklearn.base import BaseEstimator, ClassifierMixin, clone
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
@@ -17,11 +17,11 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
                  n_nonzero_coefs,
                  # dictionary
                  dictionary_size=None,
-                 # back-fitting
                  check_duplicates=False,
+                 # back-fitting
                  refit=None,
                  n_refit=1,
-                 alpha=0,
+                 estimator=None,
                  # metric
                  metric="linear", gamma=0.1, coef0=1, degree=4,
                  # misc
@@ -34,7 +34,7 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         self.check_duplicates = check_duplicates
         self.refit = refit
         self.n_refit = n_refit
-        self.alpha = alpha
+        self.estimator = estimator
         self.metric = metric
         self.gamma = gamma
         self.coef0 = coef0
@@ -52,7 +52,10 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         coef = np.zeros(dictionary_size, dtype=np.float64)
         residuals = y.copy()
 
-        lm = LinearRegression() if self.alpha == 0 else Ridge(alpha=self.alpha)
+        if self.estimator is None:
+            estimator = LinearRegression()
+        else:
+            estimator = clone(self.estimator)
 
         selected = np.zeros(dictionary_size, dtype=bool)
 
@@ -64,11 +67,12 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
             best = np.argmax(dots)
             selected[best] = True
 
-            if self.refit == "backfitting" and i % self.n_refit == 0:
+            if self.refit == "backfitting" and \
+               i % self.n_refit == 0 and self.n_refit != 0:
                 K_subset = K[:, selected]
-                lm.fit(K_subset, y)
-                coef[selected] = lm.coef_.ravel()
-                residuals = y - lm.predict(K_subset)
+                estimator.fit(K_subset, y)
+                coef[selected] = estimator.coef_.ravel()
+                residuals = y - estimator.predict(K_subset)
             else:
                 before = coef[best]
                 coef[best] += dots[best] / norms[best]

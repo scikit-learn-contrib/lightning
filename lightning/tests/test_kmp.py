@@ -6,6 +6,7 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal, \
 from nose.tools import assert_raises, assert_true, assert_equal
 
 from sklearn.datasets.samples_generator import make_classification
+from sklearn.linear_model import Ridge
 
 from lightning.kmp import KernelMatchingPursuit
 
@@ -41,7 +42,6 @@ def test_kmp_fit_binary_backfitting():
         kmp = KernelMatchingPursuit(n_nonzero_coefs=0.5,
                                     dictionary_size=0.5,
                                     refit="backfitting",
-                                    alpha=0,
                                     metric=metric,
                                     random_state=0)
         kmp.fit(bin_dense, bin_target)
@@ -57,7 +57,7 @@ def test_kmp_fit_binary_backfitting():
         kmp = KernelMatchingPursuit(n_nonzero_coefs=0.5,
                                     dictionary_size=0.5,
                                     refit="backfitting",
-                                    alpha=1.0,
+                                    estimator=Ridge(alpha=1.0),
                                     metric=metric,
                                     random_state=0)
         kmp.fit(bin_dense, bin_target)
