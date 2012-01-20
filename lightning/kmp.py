@@ -78,7 +78,6 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
 
         self.lb_ = LabelBinarizer()
         Y = self.lb_.fit_transform(y)
-        y = Y[:, 0]
 
         n_nonzero_coefs = self.n_nonzero_coefs
         if 0 < n_nonzero_coefs and n_nonzero_coefs <= 1:
@@ -98,7 +97,11 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         # FIXME: this allocates a lot of intermediary memory
         norms = np.sqrt(np.sum(K ** 2, axis=0))
 
-        self.coef_ = self._fit_binary(K, Y[:, 0], n_nonzero_coefs, norms)
+        n = self.lb_.classes_.shape[0]
+        n = 1 if n == 2 else n
+        coef = [self._fit_binary(K, Y[:, i], n_nonzero_coefs, norms) \
+                      for i in xrange(n)]
+        self.coef_ = np.array(coef)
         # FIXME: trim the dictionary if n_nonzero_coefs < dictionary_size
         self.dictionary_ = dictionary
 
@@ -107,6 +110,6 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
     def predict(self, X):
         K = pairwise_kernels(X, self.dictionary_, metric=self.metric,
                              filter_params=True, **self._kernel_params())
-        pred = np.dot(K, self.coef_)
+        pred = np.dot(K, self.coef_.T)
         return self.lb_.inverse_transform(pred, threshold=0.5)
 

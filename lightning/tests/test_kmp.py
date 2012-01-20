@@ -33,6 +33,7 @@ def test_kmp_fit_binary():
         y_pred = kmp.predict(bin_dense)
         assert_almost_equal(np.mean(bin_target == y_pred), acc)
 
+
 def test_kmp_fit_binary_backfitting():
     for metric, acc in (("rbf", 0.725),
                         ("linear", 0.755),
@@ -48,6 +49,7 @@ def test_kmp_fit_binary_backfitting():
         y_pred = kmp.predict(bin_dense)
         assert_almost_equal(np.mean(bin_target == y_pred), acc)
 
+
 def test_kmp_fit_binary_backfitting():
     for metric, acc in (("rbf", 0.5),
                         ("linear", 0.755),
@@ -62,3 +64,16 @@ def test_kmp_fit_binary_backfitting():
         assert_equal(kmp.dictionary_.shape[1], bin_dense.shape[0] / 2)
         y_pred = kmp.predict(bin_dense)
         assert_almost_equal(np.mean(bin_target == y_pred), acc)
+
+
+def test_kmp_fit_multiclass():
+    for metric, acc in (("rbf", 0.79),
+                        ("linear", 0.786),
+                        ("poly", 0.833)):
+        kmp = KernelMatchingPursuit(n_nonzero_coefs=0.4,
+                                    dictionary_size=0.5,
+                                    metric=metric,
+                                    random_state=0)
+        kmp.fit(mult_dense, mult_target)
+        y_pred = kmp.predict(mult_dense)
+        assert_almost_equal(np.mean(mult_target == y_pred), acc, decimal=2)
