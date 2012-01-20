@@ -20,7 +20,7 @@ def _dictionary(X, dictionary_size, random_state):
     if dictionary_size < 0:
         raise ValueError("dictionary_size must be a positive value.")
 
-    if 0 < dictionary_size and dictionary_size < 1:
+    if 0 < dictionary_size and dictionary_size <= 1:
         dictionary_size = int(dictionary_size * n_samples)
 
     indices = np.arange(n_samples)
