@@ -19,7 +19,7 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
                  dictionary_size=None,
                  # back-fitting
                  refit=None,
-                 alpha = 0,
+                 alpha=0,
                  # metric
                  metric="linear", gamma=0.1, coef0=1, degree=4,
                  # misc
@@ -43,6 +43,34 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         return {"gamma" : self.gamma,
                 "degree" : self.degree,
                 "coef0" : self.coef0}
+
+    def _fit_binary(self, K, y, n_nonzero_coefs, norms):
+        coef = np.zeros(n_nonzero_coefs, dtype=np.float64)
+        residuals = y.copy()
+
+        lm = LinearRegression() if self.alpha == 0 else Ridge(alpha=self.alpha)
+
+        selected = np.zeros(K.shape[1], dtype=bool)
+
+        for i in range(n_nonzero_coefs):
+            dots = np.dot(K.T, residuals)
+            dots /= norms
+            #dots[selected] = -np.inf
+            best = np.argmax(dots)
+            selected[best] = True
+
+            if self.refit is None:
+                before = coef[best]
+                coef[best] += dots[best] / norms[best]
+                diff = coef[best] - before
+                residuals -= diff * K[:, best]
+            elif self.refit == "backfitting":
+                K_subset = K[:, selected]
+                lm.fit(K_subset, y)
+                coef[selected] = lm.coef_.ravel()
+                residuals = y - lm.predict(K_subset)
+
+        return coef
 
     def fit(self, X, y):
         random_state = check_random_state(self.random_state)
@@ -69,28 +97,8 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         # FIXME: this allocates a lot of intermediary memory
         norms = np.sqrt(np.sum(K ** 2, axis=0))
 
-        coef = np.zeros(n_nonzero_coefs, dtype=np.float64)
-        indices = np.zeros(n_nonzero_coefs, dtype=np.int)
-        residuals = y.copy()
-
-        lm = LinearRegression() if self.alpha == 0 else Ridge(alpha=self.alpha)
-
-        for i in range(n_nonzero_coefs):
-            dots = np.dot(K.T, residuals)
-            dots /= norms
-            indices[i] = np.argmax(dots)
-
-            if self.refit is None:
-                coef[i]= dots[indices[i]] / norms[indices[i]]
-                residuals -= coef[i] * K[:, indices[i]]
-            elif self.refit == "backfitting":
-                K_subset = K[:, indices[:i+1]]
-                lm.fit(K_subset, y)
-                coef[:i+1] = lm.coef_.ravel()
-                residuals = y - lm.predict(K_subset)
-
-        self.coef_ = coef
-        self.dictionary_ = dictionary[indices]
+        self.coef_ = self._fit_binary(K, Y[:, 0], n_nonzero_coefs, norms)
+        self.dictionary_ = dictionary
 
         return self
 
