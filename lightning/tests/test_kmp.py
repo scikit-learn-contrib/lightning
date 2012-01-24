@@ -27,7 +27,7 @@ def test_kmp_fit_binary():
                         ("linear", 0.90),
                         ("poly", 0.724)):
         kmp = KMPClassifier(n_nonzero_coefs=0.4,
-                            dictionary_size=0.5,
+                            n_components=0.5,
                             n_refit=0,
                             metric=metric,
                             random_state=0)
@@ -42,7 +42,7 @@ def test_kmp_fit_binary_backfitting():
                         ("linear", 0.77),
                         ("poly", 0.515)):
         kmp = KMPClassifier(n_nonzero_coefs=0.5,
-                            dictionary_size=0.5,
+                            n_components=0.5,
                             n_refit=1,
                             metric=metric,
                             random_state=0)
@@ -57,7 +57,7 @@ def test_kmp_fit_multiclass():
                         ("linear", 0.803),
                         ("poly", 0.846)):
         kmp = KMPClassifier(n_nonzero_coefs=0.4,
-                            dictionary_size=0.5,
+                            n_components=0.5,
                             n_refit=10,
                             metric=metric,
                             random_state=0)
@@ -71,7 +71,7 @@ def test_kmp_fit_multiclass_check_duplicates():
                         ("linear", 0.803),
                         ("poly", 0.846)):
         kmp = KMPClassifier(n_nonzero_coefs=0.4,
-                            dictionary_size=0.5,
+                            n_components=0.5,
                             n_refit=10,
                             check_duplicates=True,
                             metric=metric,
@@ -83,7 +83,7 @@ def test_kmp_fit_multiclass_check_duplicates():
 
 def test_kmp_squared_loss():
         kmp = KMPClassifier(n_nonzero_coefs=0.5,
-                            dictionary_size=0.5,
+                            n_components=0.5,
                             n_refit=5,
                             estimator=Ridge(alpha=1.0),
                             metric="linear",

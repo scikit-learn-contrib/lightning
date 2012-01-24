@@ -28,9 +28,9 @@ class SquaredLoss(object):
 def _fit_one(estimator, loss, K, y, n_nonzero_coefs, norms,
              n_refit, check_duplicates):
     n_samples = K.shape[0]
-    dictionary_size = K.shape[1]
-    coef = np.zeros(dictionary_size, dtype=np.float64)
-    selected = np.zeros(dictionary_size, dtype=bool)
+    n_components = K.shape[1]
+    coef = np.zeros(n_components, dtype=np.float64)
+    selected = np.zeros(n_components, dtype=bool)
     y_pred = np.zeros(n_samples, dtype=np.float64)
 
     if loss is None:
@@ -87,8 +87,8 @@ class KMPBase(BaseEstimator):
     def __init__(self,
                  n_nonzero_coefs=0.3,
                  loss=None,
-                 # dictionary
-                 dictionary_size=None,
+                 # components (basis functions)
+                 n_components=None,
                  check_duplicates=False,
                  # back-fitting
                  n_refit=5,
@@ -102,7 +102,7 @@ class KMPBase(BaseEstimator):
 
         self.n_nonzero_coefs = n_nonzero_coefs
         self.loss = loss
-        self.dictionary_size = dictionary_size
+        self.n_components = n_components
         self.check_duplicates = check_duplicates
         self.n_refit = n_refit
         self.estimator = estimator
@@ -140,11 +140,11 @@ class KMPBase(BaseEstimator):
             n_nonzero_coefs = int(n_nonzero_coefs * X.shape[0])
 
         if self.verbose: print "Creating components..."
-        components = _components(X, self.dictionary_size, random_state)
+        components = _components(X, self.n_components, random_state)
 
         if n_nonzero_coefs > components.shape[0]:
             raise AttributeError("n_nonzero_coefs cannot be bigger than "
-                                 "dictionary_size.")
+                                 "n_components.")
 
         if self.verbose: print "Computing dictionary..."
         K = pairwise_kernels(X, components, metric=self.metric,

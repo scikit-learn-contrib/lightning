@@ -112,7 +112,7 @@ X_train, y_train = split_train(X1, y1, X2, y2)
 X_test, y_test = split_test(X1, y1, X2, y2)
 
 clf = KMPClassifier(n_nonzero_coefs=0.3,
-                    dictionary_size=1.0,
+                    n_components=1.0,
                     metric="rbf",
                     gamma=1.0,
                     n_refit=1,
