@@ -10,6 +10,7 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
 from sklearn.externals.joblib import Parallel, delayed
 
+
 from .primal import _dictionary
 
 
@@ -152,7 +153,9 @@ class KMPBase(BaseEstimator):
         # FIXME: this allocates a lot of intermediary memory
         norms = np.sqrt(np.sum(K ** 2, axis=0))
 
-        return n_nonzero_coefs, dictionary, K, norms
+        self.dictionary_ = dictionary
+
+        return n_nonzero_coefs, K, norms
 
     def _post_fit(self):
         used_basis = np.sum(self.coef_ != 0, axis=0, dtype=bool)
@@ -168,7 +171,7 @@ class KMPBase(BaseEstimator):
 class KMPClassifier(KMPBase, ClassifierMixin):
 
     def fit(self, X, y):
-        n_nonzero_coefs, dictionary, K, norms = self._pref_fit(X, y)
+        n_nonzero_coefs, K, norms = self._pref_fit(X, y)
 
         self.lb_ = LabelBinarizer()
         Y = self.lb_.fit_transform(y)
@@ -181,7 +184,6 @@ class KMPClassifier(KMPBase, ClassifierMixin):
                 for i in xrange(n))
 
         self.coef_ = np.array(coef)
-        self.dictionary_ = dictionary
 
         self._post_fit()
 
@@ -195,7 +197,7 @@ class KMPClassifier(KMPBase, ClassifierMixin):
 class KMPRegressor(KMPBase, RegressorMixin):
 
     def fit(self, X, y):
-        n_nonzero_coefs, dictionary, K, norms = self._pref_fit(X, y)
+        n_nonzero_coefs, K, norms = self._pref_fit(X, y)
 
         Y = y.reshape(-1, 1) if len(y.shape) == 1 else y
 
@@ -206,7 +208,6 @@ class KMPRegressor(KMPBase, RegressorMixin):
             for i in xrange(Y.shape[1]))
 
         self.coef_ = np.array(coef)
-        self.dictionary_ = dictionary
 
         self._post_fit()
 
