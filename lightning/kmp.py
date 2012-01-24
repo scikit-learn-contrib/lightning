@@ -85,13 +85,13 @@ def _fit_one(estimator, loss, K, y, n_nonzero_coefs, norms,
 class KMPBase(BaseEstimator):
 
     def __init__(self,
-                 n_nonzero_coefs,
+                 n_nonzero_coefs=0.3,
                  loss=None,
                  # dictionary
                  dictionary_size=None,
                  check_duplicates=False,
                  # back-fitting
-                 n_refit=0,
+                 n_refit=5,
                  estimator=None,
                  # metric
                  metric="linear", gamma=0.1, coef0=1, degree=4,
