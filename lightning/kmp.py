@@ -8,6 +8,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
+from sklearn.externals.joblib import Parallel, delayed
 
 from .primal import _dictionary
 
@@ -21,6 +22,59 @@ class SquaredLoss(object):
         squared_norm = np.sum(column ** 2)
         residuals = y - y_pred
         return np.dot(column, residuals) / squared_norm
+
+
+def _fit_one(estimator, loss, K, y, n_nonzero_coefs, norms,
+             refit, n_refit, check_duplicates):
+    n_samples = K.shape[0]
+    dictionary_size = K.shape[1]
+    coef = np.zeros(dictionary_size, dtype=np.float64)
+    selected = np.zeros(dictionary_size, dtype=bool)
+    y_pred = np.zeros(n_samples, dtype=np.float64)
+
+    if loss is None:
+        residuals = y.copy()
+
+    for i in range(n_nonzero_coefs):
+        # compute pseudo-residuals if needed
+        if loss is not None:
+            residuals = loss.negative_gradient(y, y_pred)
+
+        # select best basis
+        dots = np.dot(K.T, residuals)
+        dots /= norms
+        if check_duplicates:
+            dots[selected] = -np.inf
+        best = np.argmax(dots)
+        selected[best] = True
+
+        if refit == "backfitting" and i % n_refit == 0 and n_refit != 0:
+            # fit the selected coefficient and the previous ones too
+            K_subset = K[:, selected]
+            estimator.fit(K_subset, y)
+            coef[selected] = estimator.coef_.ravel()
+
+            if loss is None:
+                residuals = y - estimator.predict(K_subset)
+            else:
+                y_pred = estimator.predict(K_subset)
+        else:
+            # find coefficient for the selected basis only
+            if loss is None:
+                alpha =  dots[best] / norms[best]
+            else:
+                alpha = loss.line_search(y, y_pred, K[:, best])
+
+            before = coef[best]
+            coef[best] += alpha
+            diff = coef[best] - before
+
+            if loss is None:
+                residuals -= diff * K[:, best]
+            else:
+                y_pred += diff * K[:, best]
+
+    return coef
 
 
 class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
@@ -38,7 +92,7 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
                  # metric
                  metric="linear", gamma=0.1, coef0=1, degree=4,
                  # misc
-                 random_state=None, verbose=0):
+                 random_state=None, verbose=0, n_jobs=1):
         if n_nonzero_coefs < 0:
             raise AttributeError("n_nonzero_coefs should be > 0.")
 
@@ -55,6 +109,7 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         self.degree = degree
         self.random_state = random_state
         self.verbose = verbose
+        self.n_jobs = n_jobs
 
     def _kernel_params(self):
         return {"gamma" : self.gamma,
@@ -73,60 +128,6 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
             return SquaredLoss()
         else:
             return None
-
-    def _fit_binary(self, K, y, n_nonzero_coefs, norms):
-        n_samples = K.shape[0]
-        dictionary_size = K.shape[1]
-        coef = np.zeros(dictionary_size, dtype=np.float64)
-        selected = np.zeros(dictionary_size, dtype=bool)
-        y_pred = np.zeros(n_samples, dtype=np.float64)
-        estimator = self._get_estimator()
-        loss = self._get_loss()
-
-        if loss is None:
-            residuals = y.copy()
-
-        for i in range(n_nonzero_coefs):
-            # compute pseudo-residuals if needed
-            if loss is not None:
-                residuals = loss.negative_gradient(y, y_pred)
-
-            # select best basis
-            dots = np.dot(K.T, residuals)
-            dots /= norms
-            if self.check_duplicates:
-                dots[selected] = -np.inf
-            best = np.argmax(dots)
-            selected[best] = True
-
-            if self.refit == "backfitting" and \
-               i % self.n_refit == 0 and self.n_refit != 0:
-                # fit the selected coefficient and the previous ones too
-                K_subset = K[:, selected]
-                estimator.fit(K_subset, y)
-                coef[selected] = estimator.coef_.ravel()
-
-                if loss is None:
-                    residuals = y - estimator.predict(K_subset)
-                else:
-                    y_pred = estimator.predict(K_subset)
-            else:
-                # find coefficient for the selected basis only
-                if loss is None:
-                    alpha =  dots[best] / norms[best]
-                else:
-                    alpha = loss.line_search(y, y_pred, K[:, best])
-
-                before = coef[best]
-                coef[best] += alpha
-                diff = coef[best] - before
-
-                if loss is None:
-                    residuals -= diff * K[:, best]
-                else:
-                    y_pred += diff * K[:, best]
-
-        return coef
 
     def fit(self, X, y):
         random_state = check_random_state(self.random_state)
@@ -154,8 +155,13 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
 
         n = self.lb_.classes_.shape[0]
         n = 1 if n == 2 else n
-        coef = [self._fit_binary(K, Y[:, i], n_nonzero_coefs, norms) \
-                      for i in xrange(n)]
+        coef = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+                delayed(_fit_one)(self._get_estimator(), self._get_loss(),
+                                 K, Y[:, i], n_nonzero_coefs, norms,
+                                 self.refit, self.n_refit,
+                                 self.check_duplicates)
+                for i in xrange(n))
+
         self.coef_ = np.array(coef)
 
         # trim unused basis functions
