@@ -11,10 +11,22 @@ from sklearn.utils import check_random_state
 
 from .primal import _dictionary
 
+
+class SquaredLoss(object):
+
+    def negative_gradient(self, y_true, y_pred):
+        return y_true - y_pred
+
+    def line_search(self, y, y_pred, column):
+        squared_norm = np.sum(column ** 2)
+        residuals = y - y_pred
+        return np.dot(column, residuals) / squared_norm
+
 class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
 
     def __init__(self,
                  n_nonzero_coefs,
+                 loss=None,
                  # dictionary
                  dictionary_size=None,
                  check_duplicates=False,
@@ -30,6 +42,7 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
             raise AttributeError("n_nonzero_coefs should be > 0.")
 
         self.n_nonzero_coefs = n_nonzero_coefs
+        self.loss = loss
         self.dictionary_size = dictionary_size
         self.check_duplicates = check_duplicates
         self.refit = refit
@@ -47,19 +60,37 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
                 "degree" : self.degree,
                 "coef0" : self.coef0}
 
-    def _fit_binary(self, K, y, n_nonzero_coefs, norms):
-        dictionary_size = K.shape[1]
-        coef = np.zeros(dictionary_size, dtype=np.float64)
-        residuals = y.copy()
-
+    def _get_estimator(self):
         if self.estimator is None:
             estimator = LinearRegression()
         else:
             estimator = clone(self.estimator)
+        return estimator
 
+    def _get_loss(self):
+        if self.loss == "squared":
+            return SquaredLoss()
+        else:
+            return None
+
+    def _fit_binary(self, K, y, n_nonzero_coefs, norms):
+        n_samples = K.shape[0]
+        dictionary_size = K.shape[1]
+        coef = np.zeros(dictionary_size, dtype=np.float64)
         selected = np.zeros(dictionary_size, dtype=bool)
+        y_pred = np.zeros(n_samples, dtype=np.float64)
+        estimator = self._get_estimator()
+        loss = self._get_loss()
+
+        if loss is None:
+            residuals = y.copy()
 
         for i in range(n_nonzero_coefs):
+            # compute pseudo-residuals if needed
+            if loss is not None:
+                residuals = loss.negative_gradient(y, y_pred)
+
+            # select best basis
             dots = np.dot(K.T, residuals)
             dots /= norms
             if self.check_duplicates:
@@ -69,15 +100,30 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
 
             if self.refit == "backfitting" and \
                i % self.n_refit == 0 and self.n_refit != 0:
+                # fit the selected coefficient and the previous ones too
                 K_subset = K[:, selected]
                 estimator.fit(K_subset, y)
                 coef[selected] = estimator.coef_.ravel()
-                residuals = y - estimator.predict(K_subset)
+
+                if loss is None:
+                    residuals = y - estimator.predict(K_subset)
+                else:
+                    y_pred = estimator.predict(K_subset)
             else:
+                # find coefficient for the selected basis only
+                if loss is None:
+                    alpha =  dots[best] / norms[best]
+                else:
+                    alpha = loss.line_search(y, y_pred, K[:, best])
+
                 before = coef[best]
-                coef[best] += dots[best] / norms[best]
+                coef[best] += alpha
                 diff = coef[best] - before
-                residuals -= diff * K[:, best]
+
+                if loss is None:
+                    residuals -= diff * K[:, best]
+                else:
+                    y_pred += diff * K[:, best]
 
         return coef
 
@@ -115,9 +161,12 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def predict(self, X):
+    def decision_function(self, X):
         K = pairwise_kernels(X, self.dictionary_, metric=self.metric,
                              filter_params=True, **self._kernel_params())
-        pred = np.dot(K, self.coef_.T)
+        return np.dot(K, self.coef_.T)
+
+    def predict(self, X):
+        pred = self.decision_function(X)
         return self.lb_.inverse_transform(pred, threshold=0.5)
 

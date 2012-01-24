@@ -95,3 +95,21 @@ def test_kmp_fit_multiclass_check_duplicates():
         kmp.fit(mult_dense, mult_target)
         y_pred = kmp.predict(mult_dense)
         assert_almost_equal(np.mean(mult_target == y_pred), acc, decimal=2)
+
+def test_kmp_squared_loss():
+        kmp = KernelMatchingPursuit(n_nonzero_coefs=0.5,
+                                    dictionary_size=0.5,
+                                    refit="backfitting",
+                                    n_refit=5,
+                                    estimator=Ridge(alpha=1.0),
+                                    metric="linear",
+                                    random_state=0)
+        kmp.fit(bin_dense, bin_target)
+        y_pred = kmp.decision_function(bin_dense)
+
+        kmp.loss = "squared"
+        kmp.fit(bin_dense, bin_target)
+        y_pred2 = kmp.decision_function(bin_dense)
+
+        assert_array_almost_equal(y_pred, y_pred2)
+
