@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from sklearn.base import BaseEstimator, ClassifierMixin, clone
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin, clone
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer
@@ -43,9 +43,10 @@ def _fit_one(estimator, loss, K, y, n_nonzero_coefs, norms,
         # select best basis
         dots = np.dot(K.T, residuals)
         dots /= norms
+        abs_dots = np.abs(dots)
         if check_duplicates:
-            dots[selected] = -np.inf
-        best = np.argmax(dots)
+            abs_dots[selected] = -np.inf
+        best = np.argmax(abs_dots)
         selected[best] = True
 
         if refit == "backfitting" and i % n_refit == 0 and n_refit != 0:
@@ -55,9 +56,9 @@ def _fit_one(estimator, loss, K, y, n_nonzero_coefs, norms,
             coef[selected] = estimator.coef_.ravel()
 
             if loss is None:
-                residuals = y - estimator.predict(K_subset)
+                residuals = y - estimator.decision_function(K_subset)
             else:
-                y_pred = estimator.predict(K_subset)
+                y_pred = estimator.decision_function(K_subset)
         else:
             # find coefficient for the selected basis only
             if loss is None:
@@ -74,10 +75,15 @@ def _fit_one(estimator, loss, K, y, n_nonzero_coefs, norms,
             else:
                 y_pred += diff * K[:, best]
 
+    # fit one last time
+    #K_subset = K[:, selected]
+    #estimator.fit(K_subset, y)
+    #coef[selected] = estimator.coef_.ravel()
+
     return coef
 
 
-class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
+class KMPBase(BaseEstimator):
 
     def __init__(self,
                  n_nonzero_coefs,
@@ -129,11 +135,8 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         else:
             return None
 
-    def fit(self, X, y):
+    def _pref_fit(self, X, y):
         random_state = check_random_state(self.random_state)
-
-        self.lb_ = LabelBinarizer()
-        Y = self.lb_.fit_transform(y)
 
         n_nonzero_coefs = self.n_nonzero_coefs
         if 0 < n_nonzero_coefs and n_nonzero_coefs <= 1:
@@ -153,6 +156,26 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         # FIXME: this allocates a lot of intermediary memory
         norms = np.sqrt(np.sum(K ** 2, axis=0))
 
+        return n_nonzero_coefs, dictionary, K, norms
+
+    def _post_fit(self):
+        used_basis = np.sum(self.coef_ != 0, axis=0, dtype=bool)
+        self.coef_ = self.coef_[:, used_basis]
+        self.dictionary_ = self.dictionary_[used_basis]
+
+    def decision_function(self, X):
+        K = pairwise_kernels(X, self.dictionary_, metric=self.metric,
+                             filter_params=True, **self._kernel_params())
+        return np.dot(K, self.coef_.T)
+
+
+class KMPClassifier(KMPBase, ClassifierMixin):
+
+    def fit(self, X, y):
+        n_nonzero_coefs, dictionary, K, norms = self._pref_fit(X, y)
+
+        self.lb_ = LabelBinarizer()
+        Y = self.lb_.fit_transform(y)
         n = self.lb_.classes_.shape[0]
         n = 1 if n == 2 else n
         coef = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
@@ -163,20 +186,38 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
                 for i in xrange(n))
 
         self.coef_ = np.array(coef)
+        self.dictionary_ = dictionary
 
-        # trim unused basis functions
-        used_basis = np.sum(self.coef_ != 0, axis=0, dtype=bool)
-        self.coef_ = self.coef_[:, used_basis]
-        self.dictionary_ = dictionary[used_basis]
+        self._post_fit()
 
         return self
-
-    def decision_function(self, X):
-        K = pairwise_kernels(X, self.dictionary_, metric=self.metric,
-                             filter_params=True, **self._kernel_params())
-        return np.dot(K, self.coef_.T)
 
     def predict(self, X):
         pred = self.decision_function(X)
         return self.lb_.inverse_transform(pred, threshold=0.5)
+
+
+class KMPRegressor(KMPBase, RegressorMixin):
+
+    def fit(self, X, y):
+        n_nonzero_coefs, dictionary, K, norms = self._pref_fit(X, y)
+
+        Y = y.reshape(-1, 1) if len(y.shape) == 1 else y
+
+        coef = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+                delayed(_fit_one)(self._get_estimator(), self._get_loss(),
+                                 K, Y[:, i], n_nonzero_coefs, norms,
+                                 self.refit, self.n_refit,
+                                 self.check_duplicates)
+            for i in xrange(Y.shape[1]))
+
+        self.coef_ = np.array(coef)
+        self.dictionary_ = dictionary
+
+        self._post_fit()
+
+        return self
+
+    def predict(self, X):
+        return self.decision_function(X)
 
