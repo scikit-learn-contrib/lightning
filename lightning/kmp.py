@@ -11,7 +11,7 @@ from sklearn.utils import check_random_state
 from sklearn.externals.joblib import Parallel, delayed
 
 
-from .primal import _dictionary
+from .primal import _dictionary as _components
 
 
 class SquaredLoss(object):
@@ -139,31 +139,31 @@ class KMPBase(BaseEstimator):
         if 0 < n_nonzero_coefs and n_nonzero_coefs <= 1:
             n_nonzero_coefs = int(n_nonzero_coefs * X.shape[0])
 
-        if self.verbose: print "Creating dictionary..."
-        dictionary = _dictionary(X, self.dictionary_size, random_state)
+        if self.verbose: print "Creating components..."
+        components = _components(X, self.dictionary_size, random_state)
 
-        if n_nonzero_coefs > dictionary.shape[0]:
+        if n_nonzero_coefs > components.shape[0]:
             raise AttributeError("n_nonzero_coefs cannot be bigger than "
                                  "dictionary_size.")
 
-        if self.verbose: print "Computing kernel..."
-        K = pairwise_kernels(X, dictionary, metric=self.metric,
+        if self.verbose: print "Computing dictionary..."
+        K = pairwise_kernels(X, components, metric=self.metric,
                              filter_params=True, **self._kernel_params())
 
         # FIXME: this allocates a lot of intermediary memory
         norms = np.sqrt(np.sum(K ** 2, axis=0))
 
-        self.dictionary_ = dictionary
+        self.components_ = components
 
         return n_nonzero_coefs, K, norms
 
     def _post_fit(self):
         used_basis = np.sum(self.coef_ != 0, axis=0, dtype=bool)
         self.coef_ = self.coef_[:, used_basis]
-        self.dictionary_ = self.dictionary_[used_basis]
+        self.components_ = self.components_[used_basis]
 
     def decision_function(self, X):
-        K = pairwise_kernels(X, self.dictionary_, metric=self.metric,
+        K = pairwise_kernels(X, self.components_, metric=self.metric,
                              filter_params=True, **self._kernel_params())
         return np.dot(K, self.coef_.T)
 
@@ -179,8 +179,8 @@ class KMPClassifier(KMPBase, ClassifierMixin):
         n = 1 if n == 2 else n
         coef = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(_fit_one)(self._get_estimator(), self._get_loss(),
-                                 K, Y[:, i], n_nonzero_coefs, norms,
-                                 self.n_refit, self.check_duplicates)
+                                  K, Y[:, i], n_nonzero_coefs, norms,
+                                  self.n_refit, self.check_duplicates)
                 for i in xrange(n))
 
         self.coef_ = np.array(coef)

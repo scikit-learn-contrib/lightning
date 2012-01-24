@@ -32,7 +32,7 @@ def test_kmp_fit_binary():
                             metric=metric,
                             random_state=0)
         kmp.fit(bin_dense, bin_target)
-        assert_equal(kmp.dictionary_.shape[1], bin_dense.shape[0] / 2)
+        assert_equal(kmp.components_.shape[1], bin_dense.shape[0] / 2)
         y_pred = kmp.predict(bin_dense)
         assert_almost_equal(np.mean(bin_target == y_pred), acc, decimal=2)
 
@@ -47,7 +47,7 @@ def test_kmp_fit_binary_backfitting():
                             metric=metric,
                             random_state=0)
         kmp.fit(bin_dense, bin_target)
-        assert_equal(kmp.dictionary_.shape[1], bin_dense.shape[0] / 2)
+        assert_equal(kmp.components_.shape[1], bin_dense.shape[0] / 2)
         y_pred = kmp.predict(bin_dense)
         assert_almost_equal(np.mean(bin_target == y_pred), acc)
 

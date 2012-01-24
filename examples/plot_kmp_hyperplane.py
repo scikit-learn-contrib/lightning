@@ -69,7 +69,7 @@ def plot_contour(X_train, clf, color=True, surface=True):
 
     pl.plot(X_train[y_train == 1, 0], X_train[y_train == 1, 1], pos_color)
     pl.plot(X_train[y_train == -1, 0], X_train[y_train == -1, 1], neg_color)
-    pl.scatter(clf.dictionary_[:,0], clf.dictionary_[:,1],
+    pl.scatter(clf.components_[:,0], clf.components_[:,1],
                s=80, edgecolors="k", facecolors="none")
 
     X1, X2 = np.meshgrid(np.linspace(-8,8,100), np.linspace(-8,8,100))
