@@ -8,7 +8,6 @@ from nose.tools import assert_raises, assert_true, assert_equal
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.datasets import load_diabetes
 from sklearn.linear_model import Ridge
-from sklearn.svm import SVR
 
 from lightning.kmp import KMPClassifier, KMPRegressor
 
@@ -43,7 +42,7 @@ def test_kmp_fit_binary_backfitting():
                         ("poly", 0.515)):
         kmp = KMPClassifier(n_nonzero_coefs=0.5,
                                     dictionary_size=0.5,
-                                    refit="backfitting",
+                                    n_refit=1,
                                     metric=metric,
                                     random_state=0)
         kmp.fit(bin_dense, bin_target)
@@ -58,7 +57,6 @@ def test_kmp_fit_multiclass():
                         ("poly", 0.846)):
         kmp = KMPClassifier(n_nonzero_coefs=0.4,
                                     dictionary_size=0.5,
-                                    refit="backfitting",
                                     n_refit=10,
                                     metric=metric,
                                     random_state=0)
@@ -73,7 +71,6 @@ def test_kmp_fit_multiclass_check_duplicates():
                         ("poly", 0.846)):
         kmp = KMPClassifier(n_nonzero_coefs=0.4,
                                     dictionary_size=0.5,
-                                    refit="backfitting",
                                     n_refit=10,
                                     check_duplicates=True,
                                     metric=metric,
@@ -86,7 +83,6 @@ def test_kmp_fit_multiclass_check_duplicates():
 def test_kmp_squared_loss():
         kmp = KMPClassifier(n_nonzero_coefs=0.5,
                                     dictionary_size=0.5,
-                                    refit="backfitting",
                                     n_refit=5,
                                     estimator=Ridge(alpha=1.0),
                                     metric="linear",
@@ -112,7 +108,6 @@ def test_kmp_regressor():
     reg = KMPRegressor(n_nonzero_coefs=1.0,
                        metric="rbf",
                        gamma=0.1,
-                       refit="backfitting",
                        n_refit=10,
                        estimator=Ridge(alpha=1.0),
                        random_state=0)

@@ -25,7 +25,7 @@ class SquaredLoss(object):
 
 
 def _fit_one(estimator, loss, K, y, n_nonzero_coefs, norms,
-             refit, n_refit, check_duplicates):
+             n_refit, check_duplicates):
     n_samples = K.shape[0]
     dictionary_size = K.shape[1]
     coef = np.zeros(dictionary_size, dtype=np.float64)
@@ -49,7 +49,7 @@ def _fit_one(estimator, loss, K, y, n_nonzero_coefs, norms,
         best = np.argmax(abs_dots)
         selected[best] = True
 
-        if refit == "backfitting" and i % n_refit == 0 and n_refit != 0:
+        if n_refit != 0 and i % n_refit == 0:
             # fit the selected coefficient and the previous ones too
             K_subset = K[:, selected]
             estimator.fit(K_subset, y)
@@ -90,8 +90,7 @@ class KMPBase(BaseEstimator):
                  dictionary_size=None,
                  check_duplicates=False,
                  # back-fitting
-                 refit=None,
-                 n_refit=1,
+                 n_refit=0,
                  estimator=None,
                  # metric
                  metric="linear", gamma=0.1, coef0=1, degree=4,
@@ -104,7 +103,6 @@ class KMPBase(BaseEstimator):
         self.loss = loss
         self.dictionary_size = dictionary_size
         self.check_duplicates = check_duplicates
-        self.refit = refit
         self.n_refit = n_refit
         self.estimator = estimator
         self.metric = metric
@@ -179,8 +177,7 @@ class KMPClassifier(KMPBase, ClassifierMixin):
         coef = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(_fit_one)(self._get_estimator(), self._get_loss(),
                                  K, Y[:, i], n_nonzero_coefs, norms,
-                                 self.refit, self.n_refit,
-                                 self.check_duplicates)
+                                 self.n_refit, self.check_duplicates)
                 for i in xrange(n))
 
         self.coef_ = np.array(coef)
@@ -205,8 +202,7 @@ class KMPRegressor(KMPBase, RegressorMixin):
         coef = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(_fit_one)(self._get_estimator(), self._get_loss(),
                                  K, Y[:, i], n_nonzero_coefs, norms,
-                                 self.refit, self.n_refit,
-                                 self.check_duplicates)
+                                 self.n_refit, self.check_duplicates)
             for i in xrange(Y.shape[1]))
 
         self.coef_ = np.array(coef)
