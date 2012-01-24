@@ -66,14 +66,12 @@ def _fit_one(estimator, loss, K, y, n_nonzero_coefs, norms,
             else:
                 alpha = loss.line_search(y, y_pred, K[:, best])
 
-            before = coef[best]
             coef[best] += alpha
-            diff = coef[best] - before
 
             if loss is None:
-                residuals -= diff * K[:, best]
+                residuals -= alpha * K[:, best]
             else:
-                y_pred += diff * K[:, best]
+                y_pred += alpha * K[:, best]
 
     # fit one last time
     #K_subset = K[:, selected]
