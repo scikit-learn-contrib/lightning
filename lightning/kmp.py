@@ -25,8 +25,8 @@ class SquaredLoss(object):
         return np.dot(column, residuals) / squared_norm
 
 
-def _fit_one(estimator, loss, K, y, n_nonzero_coefs, norms,
-             n_refit, check_duplicates):
+def _fit_generator(estimator, loss, K, y, n_nonzero_coefs, norms,
+                   n_refit, check_duplicates):
     n_samples = K.shape[0]
     n_components = K.shape[1]
     coef = np.zeros(n_components, dtype=np.float64)
@@ -56,10 +56,12 @@ def _fit_one(estimator, loss, K, y, n_nonzero_coefs, norms,
             estimator.fit(K_subset, y)
             coef[selected] = estimator.coef_.ravel()
 
+            y_pred = estimator.decision_function(K_subset)
+
             if loss is None:
-                residuals = y - estimator.decision_function(K_subset)
-            else:
-                y_pred = estimator.decision_function(K_subset)
+                residuals = y - y_pred
+
+            refitted = True
         else:
             # find coefficient for the selected basis only
             if loss is None:
@@ -68,16 +70,31 @@ def _fit_one(estimator, loss, K, y, n_nonzero_coefs, norms,
                 alpha = loss.line_search(y, y_pred, K[:, best])
 
             coef[best] += alpha
+            weighted_basis = alpha * K[:, best]
 
             if loss is None:
-                residuals -= alpha * K[:, best]
+                residuals -= weighted_basis
             else:
-                y_pred += alpha * K[:, best]
+                y_pred += weighted_basis
+
+            refitted = False
+
+        yield coef
 
     # fit one last time
     #K_subset = K[:, selected]
     #estimator.fit(K_subset, y)
     #coef[selected] = estimator.coef_.ravel()
+    #yield coef
+
+
+def _fit_last(estimator, loss, K, y, n_nonzero_coefs, norms,
+              n_refit, check_duplicates):
+
+    for coef in _fit_generator(estimator, loss, K, y,
+                               n_nonzero_coefs, norms,
+                               n_refit, check_duplicates):
+        pass
 
     return coef
 
@@ -95,6 +112,8 @@ class KMPBase(BaseEstimator):
                  estimator=None,
                  # metric
                  metric="linear", gamma=0.1, coef0=1, degree=4,
+                 # validation data
+                 X_val=None, y_val=None,
                  # misc
                  random_state=None, verbose=0, n_jobs=1):
         if n_nonzero_coefs < 0:
@@ -110,6 +129,8 @@ class KMPBase(BaseEstimator):
         self.gamma = gamma
         self.coef0 = coef0
         self.degree = degree
+        self.X_val = X_val
+        self.y_val = y_val
         self.random_state = random_state
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -157,6 +178,54 @@ class KMPBase(BaseEstimator):
 
         return n_nonzero_coefs, K, norms
 
+    def _fit_multi(self, K, Y, n_nonzero_coefs, norms):
+        coef = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+                delayed(_fit_last)(self._get_estimator(), self._get_loss(),
+                                   K, Y[:, i], n_nonzero_coefs, norms,
+                                   self.n_refit, self.check_duplicates)
+                for i in xrange(Y.shape[1]))
+        self.coef_ = np.array(coef)
+
+    def _fit_multi_with_validation(self, K, Y, n_nonzero_coefs, norms):
+        iterators = [_fit_generator(self._get_estimator(), self._get_loss(),
+                                    K, Y[:, i], n_nonzero_coefs, norms,
+                                    self.n_refit, self.check_duplicates)
+                     for i in xrange(Y.shape[1])]
+
+        K_val = pairwise_kernels(self.X_val, self.components_,
+                                 metric=self.metric,
+                                 filter_params=True, **self._kernel_params())
+
+        best_score = -np.inf
+        scores = []
+        try:
+            while True:
+                coef = np.array([it.next() for it in iterators])
+                y_pred = np.dot(K_val, coef.T)
+
+                if hasattr(self, "lb_"):
+                    y_pred = self.lb_.inverse_transform(y_pred, threshold=0.5)
+                    score = np.mean(y_pred == self.y_val)
+                else:
+                    score = -np.mean((y_pred - self.y_val) ** 2)
+
+                if score > best_score:
+                    self.coef_ = coef.copy()
+                    best_score = score
+
+                scores.append(score)
+        except StopIteration:
+            pass
+
+        self.scores_ = np.array(scores)
+
+    def _fit(self, K, Y, n_nonzero_coefs, norms):
+        if self.X_val is not None and self.y_val is not None:
+            meth = self._fit_multi_with_validation
+        else:
+            meth = self._fit_multi
+        meth(K, Y, n_nonzero_coefs, norms)
+
     def _post_fit(self):
         used_basis = np.sum(self.coef_ != 0, axis=0, dtype=bool)
         self.coef_ = self.coef_[:, used_basis]
@@ -175,15 +244,7 @@ class KMPClassifier(KMPBase, ClassifierMixin):
 
         self.lb_ = LabelBinarizer()
         Y = self.lb_.fit_transform(y)
-        n = self.lb_.classes_.shape[0]
-        n = 1 if n == 2 else n
-        coef = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-                delayed(_fit_one)(self._get_estimator(), self._get_loss(),
-                                  K, Y[:, i], n_nonzero_coefs, norms,
-                                  self.n_refit, self.check_duplicates)
-                for i in xrange(n))
-
-        self.coef_ = np.array(coef)
+        self._fit(K, Y, n_nonzero_coefs, norms)
 
         self._post_fit()
 
@@ -200,14 +261,7 @@ class KMPRegressor(KMPBase, RegressorMixin):
         n_nonzero_coefs, K, norms = self._pref_fit(X, y)
 
         Y = y.reshape(-1, 1) if len(y.shape) == 1 else y
-
-        coef = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-                delayed(_fit_one)(self._get_estimator(), self._get_loss(),
-                                 K, Y[:, i], n_nonzero_coefs, norms,
-                                 self.n_refit, self.check_duplicates)
-            for i in xrange(Y.shape[1]))
-
-        self.coef_ = np.array(coef)
+        self._fit(K, Y, n_nonzero_coefs, norms)
 
         self._post_fit()
 

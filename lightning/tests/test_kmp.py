@@ -8,6 +8,7 @@ from nose.tools import assert_raises, assert_true, assert_equal
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.datasets import load_diabetes
 from sklearn.linear_model import Ridge
+from sklearn.utils import check_random_state
 
 from lightning.kmp import KMPClassifier, KMPRegressor
 
@@ -82,20 +83,20 @@ def test_kmp_fit_multiclass_check_duplicates():
 
 
 def test_kmp_squared_loss():
-        kmp = KMPClassifier(n_nonzero_coefs=0.5,
-                            n_components=0.5,
-                            n_refit=5,
-                            estimator=Ridge(alpha=1.0),
-                            metric="linear",
-                            random_state=0)
-        kmp.fit(bin_dense, bin_target)
-        y_pred = kmp.decision_function(bin_dense)
+    kmp = KMPClassifier(n_nonzero_coefs=0.5,
+                        n_components=0.5,
+                        n_refit=5,
+                        estimator=Ridge(alpha=1.0),
+                        metric="linear",
+                        random_state=0)
+    kmp.fit(bin_dense, bin_target)
+    y_pred = kmp.decision_function(bin_dense)
 
-        kmp.loss = "squared"
-        kmp.fit(bin_dense, bin_target)
-        y_pred2 = kmp.decision_function(bin_dense)
+    kmp.loss = "squared"
+    kmp.fit(bin_dense, bin_target)
+    y_pred2 = kmp.decision_function(bin_dense)
 
-        assert_array_almost_equal(y_pred, y_pred2)
+    assert_array_almost_equal(y_pred, y_pred2)
 
 
 def test_kmp_regressor():
@@ -116,3 +117,31 @@ def test_kmp_regressor():
     y_pred = reg.predict(X)
     acc = np.sum((y - y_pred) ** 2) / X.shape[0]
     assert_almost_equal(acc, 0.074, decimal=2)
+
+def test_kmp_validation():
+    random_state = check_random_state(0)
+    perm = random_state.permutation(200)
+    X = bin_dense[perm]
+    y = bin_target[perm]
+    X_train = X[:100]
+    y_train = y[:100]
+    X_test = X[100:150]
+    y_test = y[100:150]
+    X_val = X[150:]
+    y_val = y[150:]
+
+    kmp = KMPClassifier(n_nonzero_coefs=0.5,
+                        n_components=0.5,
+                        n_refit=5,
+                        estimator=Ridge(alpha=1.0),
+                        metric="linear",
+                        random_state=0)
+    kmp.fit(X_train, y_train)
+    score = kmp.score(X_test, y_test)
+
+    kmp.X_val = X_val
+    kmp.y_val = y_val
+    kmp.fit(X_train, y_train)
+    score2 = kmp.score(X_test, y_test)
+
+    assert_true(score2 > score)
