@@ -22,6 +22,7 @@ class SquaredLoss(object):
         residuals = y - y_pred
         return np.dot(column, residuals) / squared_norm
 
+
 class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
 
     def __init__(self,
@@ -156,8 +157,11 @@ class KernelMatchingPursuit(BaseEstimator, ClassifierMixin):
         coef = [self._fit_binary(K, Y[:, i], n_nonzero_coefs, norms) \
                       for i in xrange(n)]
         self.coef_ = np.array(coef)
-        # FIXME: trim the dictionary if n_nonzero_coefs < dictionary_size
-        self.dictionary_ = dictionary
+
+        # trim unused basis functions
+        used_basis = np.sum(self.coef_ != 0, axis=0, dtype=bool)
+        self.coef_ = self.coef_[:, used_basis]
+        self.dictionary_ = dictionary[used_basis]
 
         return self
 
