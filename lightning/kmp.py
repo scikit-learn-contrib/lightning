@@ -1,6 +1,8 @@
 # Author: Mathieu Blondel
 # License: BSD
 
+import time
+
 import numpy as np
 
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin, clone
@@ -172,8 +174,10 @@ class KMPBase(BaseEstimator):
                                  "n_components.")
 
         if self.verbose: print "Computing dictionary..."
+        start = time.time()
         K = pairwise_kernels(X, components, metric=self.metric,
-                             filter_params=True, **self._kernel_params())
+                             filter_params=True, n_jobs=-1, **self._kernel_params())
+        if self.verbose: print "Done in", time.time() - start, "seconds"
 
         # FIXME: this allocates a lot of intermediary memory
         norms = np.sqrt(np.sum(K ** 2, axis=0))
