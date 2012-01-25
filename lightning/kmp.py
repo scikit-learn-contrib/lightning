@@ -176,7 +176,8 @@ class KMPBase(BaseEstimator):
         if self.verbose: print "Computing dictionary..."
         start = time.time()
         K = pairwise_kernels(X, components, metric=self.metric,
-                             filter_params=True, n_jobs=-1, **self._kernel_params())
+                             filter_params=True, n_jobs=self.n_jobs,
+                             **self._kernel_params())
         if self.verbose: print "Done in", time.time() - start, "seconds"
 
         # FIXME: this allocates a lot of intermediary memory
@@ -203,7 +204,9 @@ class KMPBase(BaseEstimator):
 
         K_val = pairwise_kernels(self.X_val, self.components_,
                                  metric=self.metric,
-                                 filter_params=True, **self._kernel_params())
+                                 filter_params=True,
+                                 n_jobs=self.n_jobs,
+                                 **self._kernel_params())
 
         best_score = -np.inf
         scores = []
@@ -251,7 +254,8 @@ class KMPBase(BaseEstimator):
 
     def decision_function(self, X):
         K = pairwise_kernels(X, self.components_, metric=self.metric,
-                             filter_params=True, **self._kernel_params())
+                             filter_params=True, n_jobs=self.n_jobs,
+                             **self._kernel_params())
         return np.dot(K, self.coef_.T)
 
 
