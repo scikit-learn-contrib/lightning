@@ -32,6 +32,7 @@ def fit_kmp(X_train, y_train, X_test, y_test):
                         n_components=0.5,
                         n_refit=0,
                         X_val=X_test, y_val=y_test,
+                        metric="rbf", gamma=0.1,
                         n_validate=5,
                         verbose=1)
     clf.fit(X_train, y_train)
