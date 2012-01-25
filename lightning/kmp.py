@@ -38,8 +38,8 @@ def _fit_generator(estimator, loss, K, y, n_nonzero_coefs, norms,
     if loss is None:
         residuals = y.copy()
 
-    for i in range(n_nonzero_coefs):
-        if verbose: print "Iteration %d/%d..." % (i + 1, n_nonzero_coefs)
+    for i in range(1, n_nonzero_coefs + 1):
+        if verbose: print "Iteration %d/%d..." % (i, n_nonzero_coefs)
 
         # compute pseudo-residuals if needed
         if loss is not None:
