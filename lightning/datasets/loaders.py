@@ -19,6 +19,12 @@ def _load(train_file, test_file, name):
 
     return load_svmlight_files((train_file, test_file))
 
+def _todense(data):
+    X_train, y_train, X_test, y_test = data
+    X_train = X_train.toarray()
+    X_test = X_test.toarray()
+    return X_train, y_train, X_test, y_test
+
 def load_news20():
     data_home = get_data_home()
     train_file = os.path.join(data_home, "news20.scale")
@@ -29,7 +35,7 @@ def load_usps():
     data_home = get_data_home()
     train_file = os.path.join(data_home, "usps")
     test_file = os.path.join(data_home, "usps.t")
-    return _load(train_file, test_file, "usps")
+    return _todense(_load(train_file, test_file, "usps"))
 
 def load_mnist():
     data_home = get_data_home()
