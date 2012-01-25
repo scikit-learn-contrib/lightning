@@ -39,7 +39,8 @@ def _fit_generator(estimator, loss, K, y, n_nonzero_coefs, norms,
         residuals = y.copy()
 
     for i in range(1, n_nonzero_coefs + 1):
-        if verbose: print "Iteration %d/%d..." % (i, n_nonzero_coefs)
+
+        if verbose: print "Learning %d/%d..." % (i, n_nonzero_coefs)
 
         # compute pseudo-residuals if needed
         if loss is not None:
@@ -229,9 +230,10 @@ class KMPBase(BaseEstimator):
         try:
             n_iter = 1
             while True:
+                coef = np.array([it.next() for it in iterators])
                 if n_iter % self.n_validate == 0:
-                    coef = np.array([it.next() for it in iterators])
-                    if self.verbose: print "Validating..."
+                    if self.verbose:
+                        print "Validating %d/%d..." % (n_iter, n_nonzero_coefs)
                     y_pred = np.dot(K_val, coef.T)
 
                     if hasattr(self, "lb_"):
@@ -247,7 +249,6 @@ class KMPBase(BaseEstimator):
 
                     scores.append(score)
                     iterations.append(n_iter)
-
                 n_iter += 1
         except StopIteration:
             pass
