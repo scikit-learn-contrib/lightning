@@ -26,7 +26,7 @@ class SquaredLoss(object):
 
 
 def _fit_generator(estimator, loss, K, y, n_nonzero_coefs, norms,
-                   n_refit, check_duplicates):
+                   n_refit, check_duplicates, verbose=0):
     n_samples = K.shape[0]
     n_components = K.shape[1]
     coef = np.zeros(n_components, dtype=np.float64)
@@ -37,6 +37,8 @@ def _fit_generator(estimator, loss, K, y, n_nonzero_coefs, norms,
         residuals = y.copy()
 
     for i in range(n_nonzero_coefs):
+        if verbose: print "Iteration %d/%d..." % (i + 1, n_nonzero_coefs)
+
         # compute pseudo-residuals if needed
         if loss is not None:
             residuals = loss.negative_gradient(y, y_pred)
@@ -112,8 +114,9 @@ class KMPBase(BaseEstimator):
                  estimator=None,
                  # metric
                  metric="linear", gamma=0.1, coef0=1, degree=4,
-                 # validation data
+                 # validation
                  X_val=None, y_val=None,
+                 n_validate=1,
                  # misc
                  random_state=None, verbose=0, n_jobs=1):
         if n_nonzero_coefs < 0:
@@ -131,6 +134,7 @@ class KMPBase(BaseEstimator):
         self.degree = degree
         self.X_val = X_val
         self.y_val = y_val
+        self.n_validate = n_validate
         self.random_state = random_state
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -189,7 +193,8 @@ class KMPBase(BaseEstimator):
     def _fit_multi_with_validation(self, K, Y, n_nonzero_coefs, norms):
         iterators = [_fit_generator(self._get_estimator(), self._get_loss(),
                                     K, Y[:, i], n_nonzero_coefs, norms,
-                                    self.n_refit, self.check_duplicates)
+                                    self.n_refit, self.check_duplicates,
+                                    self.verbose)
                      for i in xrange(Y.shape[1])]
 
         K_val = pairwise_kernels(self.X_val, self.components_,
@@ -198,26 +203,35 @@ class KMPBase(BaseEstimator):
 
         best_score = -np.inf
         scores = []
+        iterations = []
         try:
+            n_iter = 1
             while True:
-                coef = np.array([it.next() for it in iterators])
-                y_pred = np.dot(K_val, coef.T)
+                if n_iter % self.n_validate == 0:
+                    coef = np.array([it.next() for it in iterators])
+                    if self.verbose: print "Validating..."
+                    y_pred = np.dot(K_val, coef.T)
 
-                if hasattr(self, "lb_"):
-                    y_pred = self.lb_.inverse_transform(y_pred, threshold=0.5)
-                    score = np.mean(y_pred == self.y_val)
-                else:
-                    score = -np.mean((y_pred - self.y_val) ** 2)
+                    if hasattr(self, "lb_"):
+                        y_pred = self.lb_.inverse_transform(y_pred,
+                                                            threshold=0.5)
+                        score = np.mean(y_pred == self.y_val)
+                    else:
+                        score = -np.mean((y_pred - self.y_val) ** 2)
 
-                if score > best_score:
-                    self.coef_ = coef.copy()
-                    best_score = score
+                    if score > best_score:
+                        self.coef_ = coef.copy()
+                        best_score = score
 
-                scores.append(score)
+                    scores.append(score)
+                    iterations.append(n_iter)
+
+                n_iter += 1
         except StopIteration:
             pass
 
         self.scores_ = np.array(scores)
+        self.iterations_ = np.array(iterations)
 
     def _fit(self, K, Y, n_nonzero_coefs, norms):
         if self.X_val is not None and self.y_val is not None:
