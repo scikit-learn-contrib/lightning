@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin, clone
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics.pairwise import pairwise_kernels
-from sklearn.preprocessing import LabelBinarizer
+from sklearn.preprocessing import LabelBinarizer, Scaler
 from sklearn.utils import check_random_state
 from sklearn.externals.joblib import Parallel, delayed
 
@@ -111,6 +111,7 @@ class KMPBase(BaseEstimator):
                  # components (basis functions)
                  n_components=None,
                  check_duplicates=False,
+                 scale=False,
                  # back-fitting
                  n_refit=5,
                  estimator=None,
@@ -128,6 +129,7 @@ class KMPBase(BaseEstimator):
         self.loss = loss
         self.n_components = n_components
         self.check_duplicates = check_duplicates
+        self.scale = scale
         self.n_refit = n_refit
         self.estimator = estimator
         self.metric = metric
@@ -180,6 +182,14 @@ class KMPBase(BaseEstimator):
                              **self._kernel_params())
         if self.verbose: print "Done in", time.time() - start, "seconds"
 
+        if self.scale:
+            if self.verbose: print "Scaling dictionary"
+            start = time.time()
+            self.scaler_ = Scaler(copy=False)
+            K = self.scaler_.fit_transform(K)
+            if self.verbose: print "Done in", time.time() - start, "seconds"
+
+
         # FIXME: this allocates a lot of intermediary memory
         norms = np.sqrt(np.sum(K ** 2, axis=0))
 
@@ -202,11 +212,16 @@ class KMPBase(BaseEstimator):
                                     self.verbose)
                      for i in xrange(Y.shape[1])]
 
+        if self.verbose: print "Computing validation dictionary..."
+        start = time.time()
         K_val = pairwise_kernels(self.X_val, self.components_,
                                  metric=self.metric,
                                  filter_params=True,
                                  n_jobs=self.n_jobs,
                                  **self._kernel_params())
+        if self.verbose: print "Done in", time.time() - start, "seconds"
+        if self.scale:
+            K_val = self.scaler_.transform(K_val)
 
         best_score = -np.inf
         scores = []
@@ -256,6 +271,8 @@ class KMPBase(BaseEstimator):
         K = pairwise_kernels(X, self.components_, metric=self.metric,
                              filter_params=True, n_jobs=self.n_jobs,
                              **self._kernel_params())
+        if self.scale:
+            K = self.scaler_.transform(K)
         return np.dot(K, self.coef_.T)
 
 

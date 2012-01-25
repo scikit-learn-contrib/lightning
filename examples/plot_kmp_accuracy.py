@@ -30,11 +30,14 @@ def fit_kmp(X_train, y_train, X_test, y_test):
     start = time.time()
     clf = KMPClassifier(n_nonzero_coefs=30,
                         n_components=0.5,
-                        n_refit=0,
+                        n_refit=1,
+                        estimator=Ridge(alpha=0.1),
                         X_val=X_test, y_val=y_test,
                         metric="rbf", gamma=0.1,
+                        scale=False,
                         n_validate=5,
                         verbose=1,
+                        random_state=0,
                         n_jobs=-1)
     clf.fit(X_train, y_train)
     return clf, time.time() - start
