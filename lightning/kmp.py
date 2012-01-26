@@ -40,7 +40,7 @@ def _fit_generator(estimator, loss, K, y, n_nonzero_coefs, norms,
 
     for i in range(1, n_nonzero_coefs + 1):
 
-        if verbose: print "Learning %d/%d..." % (i, n_nonzero_coefs)
+        if verbose >= 2: print "Learning %d/%d..." % (i, n_nonzero_coefs)
 
         # compute pseudo-residuals if needed
         if loss is not None:
@@ -199,12 +199,15 @@ class KMPBase(BaseEstimator):
         return n_nonzero_coefs, K, norms
 
     def _fit_multi(self, K, y, Y, n_nonzero_coefs, norms):
+        if self.verbose: print "Starting training..."
+        start = time.time()
         coef = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(_fit_last)(self._get_estimator(), self._get_loss(),
                                    K, Y[:, i], n_nonzero_coefs, norms,
                                    self.n_refit, self.check_duplicates)
                 for i in xrange(Y.shape[1]))
         self.coef_ = np.array(coef)
+        if self.verbose: print "Done in", time.time() - start, "seconds"
 
     def _fit_multi_with_validation(self, K, y, Y, n_nonzero_coefs, norms):
         iterators = [_fit_generator(self._get_estimator(), self._get_loss(),
@@ -224,6 +227,9 @@ class KMPBase(BaseEstimator):
         if self.scale:
             K_val = self.scaler_.transform(K_val)
 
+
+        if self.verbose: print "Starting training..."
+        start = time.time()
         best_score = -np.inf
         validation_scores = []
         training_scores = []
@@ -237,7 +243,7 @@ class KMPBase(BaseEstimator):
                 y_train = np.array(y_train).T
 
                 if n_iter % self.n_validate == 0:
-                    if self.verbose:
+                    if self.verbose >= 2:
                         print "Validating %d/%d..." % (n_iter, n_nonzero_coefs)
                     y_val = np.dot(K_val, coef.T)
 
@@ -266,6 +272,8 @@ class KMPBase(BaseEstimator):
         self.validation_scores_ = np.array(validation_scores)
         self.training_scores_ = np.array(training_scores)
         self.iterations_ = np.array(iterations)
+
+        if self.verbose: print "Done in", time.time() - start, "seconds"
 
     def _fit(self, K, y, Y, n_nonzero_coefs, norms):
         if self.X_val is not None and self.y_val is not None:
@@ -312,7 +320,7 @@ class KMPRegressor(KMPBase, RegressorMixin):
         n_nonzero_coefs, K, norms = self._pref_fit(X, y)
 
         Y = y.reshape(-1, 1) if len(y.shape) == 1 else y
-        self._fit(K, Y, n_nonzero_coefs, norms)
+        self._fit(K, y, Y, n_nonzero_coefs, norms)
 
         self._post_fit()
 
