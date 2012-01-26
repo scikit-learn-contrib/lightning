@@ -239,6 +239,7 @@ class KMPBase(BaseEstimator):
         try:
             n_iter = 1
             while True:
+                # FIXME: this can be parallelized by using stateful iterators
                 res = [it.next() for it in iterators]
                 coef, y_train = zip(*res)
                 coef = np.array(coef)
