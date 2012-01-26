@@ -27,7 +27,7 @@ def test_kmp_fit_binary():
     for metric, acc in (("rbf", 0.722),
                         ("linear", 0.90),
                         ("poly", 0.724)):
-        kmp = KMPClassifier(n_nonzero_coefs=0.4,
+        kmp = KMPClassifier(n_nonzero_coefs=4.0/5,
                             n_components=0.5,
                             n_refit=0,
                             metric=metric,
@@ -42,7 +42,7 @@ def test_kmp_fit_binary_backfitting():
     for metric, acc in (("rbf", 0.5),
                         ("linear", 0.77),
                         ("poly", 0.515)):
-        kmp = KMPClassifier(n_nonzero_coefs=0.5,
+        kmp = KMPClassifier(n_nonzero_coefs=1.0,
                             n_components=0.5,
                             n_refit=1,
                             metric=metric,
@@ -57,7 +57,7 @@ def test_kmp_fit_multiclass():
     for metric, acc in (("rbf", 0.796),
                         ("linear", 0.803),
                         ("poly", 0.836)):
-        kmp = KMPClassifier(n_nonzero_coefs=0.4,
+        kmp = KMPClassifier(n_nonzero_coefs=4.0/5,
                             n_components=0.5,
                             n_refit=10,
                             metric=metric,
@@ -71,7 +71,7 @@ def test_kmp_fit_multiclass_check_duplicates():
     for metric, acc in (("rbf", 0.793),
                         ("linear", 0.803),
                         ("poly", 0.836)):
-        kmp = KMPClassifier(n_nonzero_coefs=0.4,
+        kmp = KMPClassifier(n_nonzero_coefs=4.0/5,
                             n_components=0.5,
                             n_refit=10,
                             check_duplicates=True,
@@ -83,7 +83,7 @@ def test_kmp_fit_multiclass_check_duplicates():
 
 
 def test_kmp_squared_loss():
-    kmp = KMPClassifier(n_nonzero_coefs=0.5,
+    kmp = KMPClassifier(n_nonzero_coefs=4.0/5,
                         n_components=0.5,
                         n_refit=5,
                         estimator=Ridge(alpha=1.0),
@@ -118,6 +118,7 @@ def test_kmp_regressor():
     acc = np.sum((y - y_pred) ** 2) / X.shape[0]
     assert_almost_equal(acc, 0.074, decimal=2)
 
+
 def test_kmp_validation():
     random_state = check_random_state(0)
     perm = random_state.permutation(200)
@@ -130,7 +131,7 @@ def test_kmp_validation():
     X_val = X[150:]
     y_val = y[150:]
 
-    kmp = KMPClassifier(n_nonzero_coefs=0.5,
+    kmp = KMPClassifier(n_nonzero_coefs=1.0,
                         n_components=0.5,
                         n_refit=5,
                         estimator=Ridge(alpha=1.0),
@@ -142,6 +143,21 @@ def test_kmp_validation():
     assert_almost_equal(kmp.validation_scores_[-1], 0.52, decimal=2)
     n_scores = len(kmp.validation_scores_)
 
+    # early stopping
     kmp.epsilon = 0.001
     kmp.fit(X_train, y_train)
     assert_true(kmp.validation_scores_.shape[0] < n_scores)
+
+
+def test_kmp_init_components():
+    random_state = check_random_state(0)
+    perm = random_state.permutation(200)
+    components = bin_dense[perm[:20]]
+
+    kmp = KMPClassifier(init_components=components,
+                        n_components=0.5,
+                        n_refit=0,
+                        metric="linear",
+                        random_state=0)
+    kmp.fit(bin_dense, bin_target)
+    assert_true(kmp.components_.shape[0] < components.shape[0])

@@ -110,6 +110,7 @@ class KMPBase(BaseEstimator):
                  n_nonzero_coefs=0.3,
                  loss=None,
                  # components (basis functions)
+                 init_components=None,
                  n_components=None,
                  check_duplicates=False,
                  scale=False,
@@ -129,6 +130,7 @@ class KMPBase(BaseEstimator):
 
         self.n_nonzero_coefs = n_nonzero_coefs
         self.loss = loss
+        self.init_components = init_components
         self.n_components = n_components
         self.check_duplicates = check_duplicates
         self.scale = scale
@@ -164,23 +166,26 @@ class KMPBase(BaseEstimator):
         else:
             return None
 
-    def _pref_fit(self, X, y):
+    def _pre_fit(self, X, y):
         random_state = check_random_state(self.random_state)
+
+        if self.init_components is None:
+            if self.verbose: print "Selecting components..."
+            self.components_ = _components(X, self.n_components, random_state)
+        else:
+            self.components_ = self.init_components
 
         n_nonzero_coefs = self.n_nonzero_coefs
         if 0 < n_nonzero_coefs and n_nonzero_coefs <= 1:
-            n_nonzero_coefs = int(n_nonzero_coefs * X.shape[0])
+            n_nonzero_coefs = int(n_nonzero_coefs * self.components_.shape[0])
 
-        if self.verbose: print "Creating components..."
-        components = _components(X, self.n_components, random_state)
-
-        if n_nonzero_coefs > components.shape[0]:
+        if n_nonzero_coefs > self.components_.shape[0]:
             raise AttributeError("n_nonzero_coefs cannot be bigger than "
                                  "n_components.")
 
         if self.verbose: print "Computing dictionary..."
         start = time.time()
-        K = pairwise_kernels(X, components, metric=self.metric,
+        K = pairwise_kernels(X, self.components_, metric=self.metric,
                              filter_params=True, n_jobs=self.n_jobs,
                              **self._kernel_params())
         if self.verbose: print "Done in", time.time() - start, "seconds"
@@ -192,11 +197,8 @@ class KMPBase(BaseEstimator):
             K = self.scaler_.fit_transform(K)
             if self.verbose: print "Done in", time.time() - start, "seconds"
 
-
         # FIXME: this allocates a lot of intermediary memory
         norms = np.sqrt(np.sum(K ** 2, axis=0))
-
-        self.components_ = components
 
         return n_nonzero_coefs, K, norms
 
@@ -311,7 +313,7 @@ class KMPBase(BaseEstimator):
 class KMPClassifier(KMPBase, ClassifierMixin):
 
     def fit(self, X, y):
-        n_nonzero_coefs, K, norms = self._pref_fit(X, y)
+        n_nonzero_coefs, K, norms = self._pre_fit(X, y)
 
         self.lb_ = LabelBinarizer()
         Y = self.lb_.fit_transform(y)
@@ -329,7 +331,7 @@ class KMPClassifier(KMPBase, ClassifierMixin):
 class KMPRegressor(KMPBase, RegressorMixin):
 
     def fit(self, X, y):
-        n_nonzero_coefs, K, norms = self._pref_fit(X, y)
+        n_nonzero_coefs, K, norms = self._pre_fit(X, y)
 
         Y = y.reshape(-1, 1) if len(y.shape) == 1 else y
         self._fit(K, y, Y, n_nonzero_coefs, norms)
