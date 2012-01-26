@@ -135,10 +135,13 @@ def test_kmp_validation():
                         n_refit=5,
                         estimator=Ridge(alpha=1.0),
                         metric="linear",
+                        X_val=X_val, y_val=y_val,
                         random_state=0)
-
-    kmp.X_val = X_val
-    kmp.y_val = y_val
     kmp.fit(X_train, y_train)
 
     assert_almost_equal(kmp.validation_scores_[-1], 0.52, decimal=2)
+    n_scores = len(kmp.validation_scores_)
+
+    kmp.epsilon = 0.001
+    kmp.fit(X_train, y_train)
+    assert_true(kmp.validation_scores_.shape[0] < n_scores)
