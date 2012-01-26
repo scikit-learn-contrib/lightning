@@ -34,6 +34,7 @@ def fit_kmp(X_train, y_train, X_test, y_test):
                         metric="rbf", gamma=0.1,
                         scale=False,
                         n_validate=5,
+                        epsilon=0.001,
                         verbose=2,
                         random_state=0,
                         n_jobs=-1)

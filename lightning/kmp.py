@@ -121,6 +121,7 @@ class KMPBase(BaseEstimator):
                  # validation
                  X_val=None, y_val=None,
                  n_validate=1,
+                 epsilon=0,
                  # misc
                  random_state=None, verbose=0, n_jobs=1):
         if n_nonzero_coefs < 0:
@@ -140,6 +141,7 @@ class KMPBase(BaseEstimator):
         self.X_val = X_val
         self.y_val = y_val
         self.n_validate = n_validate
+        self.epsilon = epsilon
         self.random_state = random_state
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -265,6 +267,15 @@ class KMPBase(BaseEstimator):
                     validation_scores.append(validation_score)
                     training_scores.append(training_score)
                     iterations.append(n_iter)
+
+                    if len(iterations) > 2 and self.epsilon > 0:
+                        diff = (validation_scores[-1] - validation_scores[-2])
+                        diff /= validation_scores[0]
+                        if abs(diff) < self.epsilon:
+                            if self.verbose:
+                                print "Converged at iteration", n_iter
+                            break
+
                 n_iter += 1
         except StopIteration:
             pass
