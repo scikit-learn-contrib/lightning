@@ -77,14 +77,14 @@ def _fit_generator(estimator, loss, K, y, n_nonzero_coefs, norms,
             coef[best] += alpha
             weighted_basis = alpha * K[:, best]
 
+            y_pred += weighted_basis
+
             if loss is None:
                 residuals -= weighted_basis
-            else:
-                y_pred += weighted_basis
 
             refitted = False
 
-        yield coef
+        yield coef, y_pred
 
     # fit one last time
     #K_subset = K[:, selected]
@@ -96,9 +96,9 @@ def _fit_generator(estimator, loss, K, y, n_nonzero_coefs, norms,
 def _fit_last(estimator, loss, K, y, n_nonzero_coefs, norms,
               n_refit, check_duplicates):
 
-    for coef in _fit_generator(estimator, loss, K, y,
-                               n_nonzero_coefs, norms,
-                               n_refit, check_duplicates):
+    for coef, y_pred in _fit_generator(estimator, loss, K, y,
+                                       n_nonzero_coefs, norms,
+                                       n_refit, check_duplicates):
         pass
 
     return coef
@@ -198,7 +198,7 @@ class KMPBase(BaseEstimator):
 
         return n_nonzero_coefs, K, norms
 
-    def _fit_multi(self, K, Y, n_nonzero_coefs, norms):
+    def _fit_multi(self, K, y, Y, n_nonzero_coefs, norms):
         coef = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(_fit_last)(self._get_estimator(), self._get_loss(),
                                    K, Y[:, i], n_nonzero_coefs, norms,
@@ -206,7 +206,7 @@ class KMPBase(BaseEstimator):
                 for i in xrange(Y.shape[1]))
         self.coef_ = np.array(coef)
 
-    def _fit_multi_with_validation(self, K, Y, n_nonzero_coefs, norms):
+    def _fit_multi_with_validation(self, K, y, Y, n_nonzero_coefs, norms):
         iterators = [_fit_generator(self._get_estimator(), self._get_loss(),
                                     K, Y[:, i], n_nonzero_coefs, norms,
                                     self.n_refit, self.check_duplicates,
@@ -225,43 +225,54 @@ class KMPBase(BaseEstimator):
             K_val = self.scaler_.transform(K_val)
 
         best_score = -np.inf
-        scores = []
+        validation_scores = []
+        training_scores = []
         iterations = []
         try:
             n_iter = 1
             while True:
-                coef = np.array([it.next() for it in iterators])
+                res = [it.next() for it in iterators]
+                coef, y_train = zip(*res)
+                coef = np.array(coef)
+                y_train = np.array(y_train).T
+
                 if n_iter % self.n_validate == 0:
                     if self.verbose:
                         print "Validating %d/%d..." % (n_iter, n_nonzero_coefs)
-                    y_pred = np.dot(K_val, coef.T)
+                    y_val = np.dot(K_val, coef.T)
 
                     if hasattr(self, "lb_"):
-                        y_pred = self.lb_.inverse_transform(y_pred,
-                                                            threshold=0.5)
-                        score = np.mean(y_pred == self.y_val)
+                        y_val = self.lb_.inverse_transform(y_val,
+                                                           threshold=0.5)
+                        validation_score = np.mean(y_val == self.y_val)
+                        y_train = self.lb_.inverse_transform(y_train,
+                                                             threshold=0.5)
+                        training_score = np.mean(y_train == y)
                     else:
-                        score = -np.mean((y_pred - self.y_val) ** 2)
+                        validation_score = -np.mean((y_val - self.y_val) ** 2)
+                        training_score = -np.mean((y_train - Y) ** 2)
 
-                    if score > best_score:
+                    if validation_score > best_score:
                         self.coef_ = coef.copy()
-                        best_score = score
+                        best_score = validation_score
 
-                    scores.append(score)
+                    validation_scores.append(validation_score)
+                    training_scores.append(training_score)
                     iterations.append(n_iter)
                 n_iter += 1
         except StopIteration:
             pass
 
-        self.scores_ = np.array(scores)
+        self.validation_scores_ = np.array(validation_scores)
+        self.training_scores_ = np.array(training_scores)
         self.iterations_ = np.array(iterations)
 
-    def _fit(self, K, Y, n_nonzero_coefs, norms):
+    def _fit(self, K, y, Y, n_nonzero_coefs, norms):
         if self.X_val is not None and self.y_val is not None:
             meth = self._fit_multi_with_validation
         else:
             meth = self._fit_multi
-        meth(K, Y, n_nonzero_coefs, norms)
+        meth(K, y, Y, n_nonzero_coefs, norms)
 
     def _post_fit(self):
         used_basis = np.sum(self.coef_ != 0, axis=0, dtype=bool)
@@ -284,7 +295,7 @@ class KMPClassifier(KMPBase, ClassifierMixin):
 
         self.lb_ = LabelBinarizer()
         Y = self.lb_.fit_transform(y)
-        self._fit(K, Y, n_nonzero_coefs, norms)
+        self._fit(K, y, Y, n_nonzero_coefs, norms)
 
         self._post_fit()
 
