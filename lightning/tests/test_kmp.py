@@ -136,12 +136,9 @@ def test_kmp_validation():
                         estimator=Ridge(alpha=1.0),
                         metric="linear",
                         random_state=0)
-    kmp.fit(X_train, y_train)
-    score = kmp.score(X_test, y_test)
 
     kmp.X_val = X_val
     kmp.y_val = y_val
     kmp.fit(X_train, y_train)
-    score2 = kmp.score(X_test, y_test)
 
-    #assert_true(score2 > score)
+    assert_almost_equal(kmp.validation_scores_[-1], 0.52, decimal=2)
