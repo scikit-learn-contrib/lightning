@@ -14,7 +14,7 @@ from sklearn.utils import check_random_state
 from sklearn.externals.joblib import Parallel, delayed
 
 
-def create_components(X, y, n_components=None, class_distrib="random",
+def select_components(X, y, n_components=None, class_distrib="random",
                       random_state=None):
     random_state = check_random_state(random_state)
 
@@ -226,7 +226,7 @@ class KMPBase(BaseEstimator):
 
         if self.init_components is None:
             if self.verbose: print "Selecting components..."
-            self.components_ = create_components(X, y,
+            self.components_ = select_components(X, y,
                                                  self.n_components,
                                                  random_state=random_state)
         else:

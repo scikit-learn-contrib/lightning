@@ -10,7 +10,7 @@ from sklearn.datasets import load_diabetes
 from sklearn.linear_model import Ridge
 from sklearn.utils import check_random_state
 
-from lightning.kmp import KMPClassifier, KMPRegressor, create_components
+from lightning.kmp import KMPClassifier, KMPRegressor, select_components
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
@@ -163,18 +163,18 @@ def test_kmp_init_components():
     assert_true(kmp.components_.shape[0] < components.shape[0])
 
 
-def test_kmp_create_components_balanced():
+def test_kmp_select_components_balanced():
     random_state = check_random_state(0)
-    components = create_components(mult_dense, mult_target,
+    components = select_components(mult_dense, mult_target,
                                    n_components=0.5,
                                    class_distrib="balanced",
                                    random_state=random_state)
     assert_equal(components.shape[0], 150)
 
 
-def test_kmp_create_components_stratified():
+def test_kmp_select_components_stratified():
     random_state = check_random_state(0)
-    components = create_components(mult_dense, mult_target,
+    components = select_components(mult_dense, mult_target,
                                    n_components=0.5,
                                    class_distrib="stratified",
                                    random_state=random_state)
