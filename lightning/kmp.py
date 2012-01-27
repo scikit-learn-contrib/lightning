@@ -13,17 +13,6 @@ from sklearn.utils import check_random_state
 from sklearn.externals.joblib import Parallel, delayed
 
 
-def _class_support(y):
-    classes = np.unique(y)
-
-    support = np.zeros(n_classes)
-
-    for i, c in enumerate(classes):
-        support[i] = np.sum(y == c)
-
-    return classes, support
-
-
 def create_components(X, y, n_components=None, class_distrib="random",
                       random_state=None):
     random_state = check_random_state(random_state)
@@ -186,6 +175,7 @@ class KMPBase(BaseEstimator):
                  X_val=None, y_val=None,
                  n_validate=1,
                  epsilon=0,
+                 score_func=None,
                  # misc
                  random_state=None, verbose=0, n_jobs=1):
         if n_nonzero_coefs < 0:
@@ -207,6 +197,7 @@ class KMPBase(BaseEstimator):
         self.y_val = y_val
         self.n_validate = n_validate
         self.epsilon = epsilon
+        self.score_func = score_func
         self.random_state = random_state
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -278,6 +269,16 @@ class KMPBase(BaseEstimator):
         self.coef_ = np.array(coef)
         if self.verbose: print "Done in", time.time() - start, "seconds"
 
+    def _score(self, y_true, y_pred):
+        if hasattr(self, "lb_"):
+            y_pred = self.lb_.inverse_transform(y_pred, threshold=0.5)
+            if self.score_func is None:
+                return np.mean(y_true == y_pred)
+            else:
+                return self.score_func(y_true, y_pred)
+        else:
+            return -np.mean((y_true - y_pred) ** 2)
+
     def _fit_multi_with_validation(self, K, y, Y, n_nonzero_coefs, norms):
         iterators = [_fit_generator(self._get_estimator(), self._get_loss(),
                                     K, Y[:, i], n_nonzero_coefs, norms,
@@ -317,16 +318,8 @@ class KMPBase(BaseEstimator):
                         print "Validating %d/%d..." % (n_iter, n_nonzero_coefs)
                     y_val = np.dot(K_val, coef.T)
 
-                    if hasattr(self, "lb_"):
-                        y_val = self.lb_.inverse_transform(y_val,
-                                                           threshold=0.5)
-                        validation_score = np.mean(y_val == self.y_val)
-                        y_train = self.lb_.inverse_transform(y_train,
-                                                             threshold=0.5)
-                        training_score = np.mean(y_train == y)
-                    else:
-                        validation_score = -np.mean((y_val - self.y_val) ** 2)
-                        training_score = -np.mean((y_train - Y) ** 2)
+                    validation_score = self._score(self.y_val, y_val)
+                    training_score = self._score(y, y_train)
 
                     if validation_score > best_score:
                         self.coef_ = coef.copy()
