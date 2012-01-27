@@ -10,7 +10,8 @@ from sklearn.datasets import load_diabetes
 from sklearn.linear_model import Ridge
 from sklearn.utils import check_random_state
 
-from lightning.kmp import KMPClassifier, KMPRegressor, select_components
+from lightning.kmp import KMPClassifier, KMPRegressor
+from lightning.kmp import select_components, create_components
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
@@ -164,19 +165,42 @@ def test_kmp_init_components():
 
 
 def test_kmp_select_components_balanced():
-    random_state = check_random_state(0)
     components = select_components(mult_dense, mult_target,
                                    n_components=0.5,
                                    class_distrib="balanced",
-                                   random_state=random_state)
-    assert_equal(components.shape[0], 150)
+                                   random_state=0)
+    assert_equal(components.shape[0], mult_dense.shape[0]/2)
 
 
 def test_kmp_select_components_stratified():
-    random_state = check_random_state(0)
     components = select_components(mult_dense, mult_target,
                                    n_components=0.5,
                                    class_distrib="stratified",
-                                   random_state=random_state)
-    assert_equal(components.shape[0], 149)
+                                   random_state=0)
+    assert_equal(components.shape[0], mult_dense.shape[0]/2-1)
+
+
+def test_kmp_create_components_kmeans_global():
+    components = create_components(mult_dense, mult_target,
+                                   n_components=0.25,
+                                   random_state=0)
+    assert_equal(components.shape[0], mult_dense.shape[0]/4)
+
+
+def test_kmp_create_components_kmeans_balanced():
+    components = create_components(mult_dense, mult_target,
+                                   n_components=0.25,
+                                   class_distrib="balanced",
+                                   random_state=0)
+    assert_equal(components.shape,
+                 (mult_dense.shape[0]/4, mult_dense.shape[1]))
+
+
+def test_kmp_create_components_kmeans_stratified():
+    components = create_components(mult_dense, mult_target,
+                                   n_components=0.25,
+                                   class_distrib="stratified",
+                                   random_state=0)
+    assert_equal(components.shape,
+                 (mult_dense.shape[0]/4 - 1, mult_dense.shape[1]))
 

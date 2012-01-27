@@ -7,11 +7,71 @@ import numpy as np
 
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin, clone
 from sklearn.linear_model import LinearRegression
+from sklearn.cluster import KMeans
 from sklearn.metrics import auc
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer, Scaler
-from sklearn.utils import check_random_state
+from sklearn.utils import check_random_state, safe_mask
 from sklearn.externals.joblib import Parallel, delayed
+
+
+def create_components(X, y=None, n_components=None,
+                      class_distrib="global", verbose=0, random_state=None):
+
+    random_state = check_random_state(random_state)
+
+    if n_components is None or n_components < 0:
+        raise ValueError("n_components must be a positive number.")
+
+    n_samples, n_features = X.shape
+
+    if 0 < n_components and n_components <= 1:
+        n_components = int(n_components * n_samples)
+
+    if verbose: print "Creating components with K-means..."
+    start = time.time()
+
+    if class_distrib == "global":
+        kmeans = KMeans(k=n_components, n_init=1, random_state=random_state)
+        kmeans.fit(X)
+        components = kmeans.cluster_centers_
+
+    elif class_distrib == "balanced":
+        classes = np.unique(y)
+        n_classes = classes.shape[0]
+        k = n_components / n_classes
+        components = []
+
+        for c in classes:
+            mask = safe_mask(X, y == c)
+            kmeans = KMeans(k=k, n_init=1, random_state=random_state)
+            kmeans.fit(X[mask])
+            components.append(kmeans.cluster_centers_)
+
+        components = np.vstack(components)
+
+    elif class_distrib == "stratified":
+        classes = np.unique(y)
+        components = []
+
+        for c in classes:
+            mask = y == c
+            n_c = np.sum(mask)
+            k = n_components * n_c / n_samples
+            mask = safe_mask(X, mask)
+            kmeans = KMeans(k=k, n_init=1, random_state=random_state)
+            kmeans.fit(X[mask])
+            components.append(kmeans.cluster_centers_)
+
+        components = np.vstack(components)
+
+    else:
+        raise ValueError("No supported class_distrib value.")
+
+    if verbose:
+        print "Done in", time.time() - start, "seconds"
+
+    return components
 
 
 def select_components(X, y, n_components=None, class_distrib="random",
@@ -38,6 +98,7 @@ def select_components(X, y, n_components=None, class_distrib="random",
 
     if class_distrib == "random":
         selected_indices = indices[:n_components]
+
     elif class_distrib == "balanced":
         classes = np.unique(y)
         n_classes = classes.shape[0]
@@ -65,6 +126,9 @@ def select_components(X, y, n_components=None, class_distrib="random",
             selected_indices.append(sel)
 
         selected_indices = np.concatenate(selected_indices)
+
+    else:
+        raise ValueError("No supported class_distrib value.")
 
     return X[selected_indices]
 
