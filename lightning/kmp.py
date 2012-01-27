@@ -7,6 +7,7 @@ import numpy as np
 
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin, clone
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import auc
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer, Scaler
 from sklearn.utils import check_random_state
@@ -270,6 +271,8 @@ class KMPBase(BaseEstimator):
         if self.verbose: print "Done in", time.time() - start, "seconds"
 
     def _score(self, y_true, y_pred):
+        if self.score_func == "auc":
+            return auc(y_true, y_pred)
         if hasattr(self, "lb_"):
             y_pred = self.lb_.inverse_transform(y_pred, threshold=0.5)
             if self.score_func is None:
