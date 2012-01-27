@@ -13,7 +13,70 @@ from sklearn.utils import check_random_state
 from sklearn.externals.joblib import Parallel, delayed
 
 
-from .primal import _dictionary as _components
+def _class_support(y):
+    classes = np.unique(y)
+
+    support = np.zeros(n_classes)
+
+    for i, c in enumerate(classes):
+        support[i] = np.sum(y == c)
+
+    return classes, support
+
+
+def create_components(X, y, n_components=None, class_distrib="random",
+                      random_state=None):
+    random_state = check_random_state(random_state)
+
+    n_samples = X.shape[0]
+
+    if not n_components:
+        return X
+
+    if n_components < 0:
+        raise ValueError("n_components must be a positive value.")
+
+    if 0 < n_components and n_components <= 1:
+        n_components = int(n_components * n_samples)
+
+    if n_components == n_samples:
+        return X
+
+    indices = np.arange(n_samples)
+    random_state.shuffle(indices)
+    y = y[indices]
+
+    if class_distrib == "random":
+        selected_indices = indices[:n_components]
+    elif class_distrib == "balanced":
+        classes = np.unique(y)
+        n_classes = classes.shape[0]
+        n = n_components / n_classes
+
+        selected_indices = []
+
+        for c in classes:
+            mask = y == c
+            sel = indices[mask][:n]
+            selected_indices.append(sel)
+
+        selected_indices = np.concatenate(selected_indices)
+
+    elif class_distrib == "stratified":
+        classes = np.unique(y)
+
+        selected_indices = []
+
+        for c in classes:
+            mask = y == c
+            n_c = np.sum(mask)
+            n = n_components * n_c / n_samples
+            sel = indices[mask][:n]
+            selected_indices.append(sel)
+
+        selected_indices = np.concatenate(selected_indices)
+
+    return X[selected_indices]
 
 
 class SquaredLoss(object):
@@ -171,7 +234,9 @@ class KMPBase(BaseEstimator):
 
         if self.init_components is None:
             if self.verbose: print "Selecting components..."
-            self.components_ = _components(X, self.n_components, random_state)
+            self.components_ = create_components(X, y,
+                                                 self.n_components,
+                                                 random_state=random_state)
         else:
             self.components_ = self.init_components
 
