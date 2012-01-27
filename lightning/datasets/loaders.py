@@ -9,8 +9,10 @@ except ImportError:
 
 from sklearn.datasets.base import get_data_home as _get_data_home
 
+
 def get_data_home():
     return _get_data_home().replace("scikit_learn", "lightning")
+
 
 def _load(train_file, test_file, name):
     if not os.path.exists(train_file) or not os.path.exists(test_file):
@@ -19,11 +21,13 @@ def _load(train_file, test_file, name):
 
     return load_svmlight_files((train_file, test_file))
 
+
 def _todense(data):
     X_train, y_train, X_test, y_test = data
     X_train = X_train.toarray()
     X_test = X_test.toarray()
     return X_train, y_train, X_test, y_test
+
 
 def load_news20():
     data_home = get_data_home()
@@ -31,11 +35,24 @@ def load_news20():
     test_file = os.path.join(data_home, "news20.t.scale")
     return _load(train_file, test_file, "news20")
 
+
 def load_usps():
     data_home = get_data_home()
     train_file = os.path.join(data_home, "usps")
     test_file = os.path.join(data_home, "usps.t")
     return _todense(_load(train_file, test_file, "usps"))
+
+
+def load_usps0():
+    X_train, y_train, X_test, y_test = load_usps()
+    selected = y_train == 10
+    y_train[selected] = 1
+    y_train[~selected] = 0
+    selected = y_test == 10
+    y_test[selected] = 1
+    y_test[~selected] = 0
+    return X_train, y_train, X_test, y_test
+
 
 def load_mnist():
     data_home = get_data_home()
@@ -43,9 +60,12 @@ def load_mnist():
     test_file = os.path.join(data_home, "mnist.scale.t")
     return _load(train_file, test_file, "mnist")
 
+
 LOADERS = { "news20" : load_news20,
             "usps": load_usps,
+            "usps0": load_usps0,
             "mnist": load_mnist }
+
 
 def get_loader(dataset):
     return LOADERS[dataset]
