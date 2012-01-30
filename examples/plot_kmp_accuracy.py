@@ -15,7 +15,7 @@ import pylab as pl
 
 from sklearn.linear_model import Ridge
 
-from lightning.datasets import get_loader
+from lightning.datasets import load_dataset
 from lightning.kmp import KMPClassifier
 
 from sklearn.externals.joblib import Memory
@@ -48,7 +48,9 @@ except:
     dataset = "usps"
 
 try:
-    X_train, y_train, X_test, y_test = get_loader(dataset)()
+    X_train, y_train, X_test, y_test = load_dataset(dataset,
+                                                    proportion_train=0.75,
+                                                    random_state=0)
 except KeyError:
     raise ValueError("Wrong dataset name!")
 
