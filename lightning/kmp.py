@@ -144,81 +144,111 @@ class SquaredLoss(object):
         return np.dot(column, residuals) / squared_norm
 
 
-def _fit_generator(estimator, loss, K, y, n_nonzero_coefs, norms,
-                   n_refit, check_duplicates, verbose=0):
-    n_samples = K.shape[0]
-    n_components = K.shape[1]
-    coef = np.zeros(n_components, dtype=np.float64)
-    selected = np.zeros(n_components, dtype=bool)
-    y_pred = np.zeros(n_samples, dtype=np.float64)
+class FitIterator:
 
-    if loss is None:
-        residuals = y.copy()
+    def __init__(self, estimator, loss, K, y, n_nonzero_coefs, norms, n_refit,
+                 check_duplicates, verbose=0):
 
-    for i in range(1, n_nonzero_coefs + 1):
+        # read-only
+        self.loss = loss
+        self.K = K
+        self.y = y
+        self.n_nonzero_coefs = n_nonzero_coefs
+        self.norms = norms
+        self.n_refit = n_refit
+        self.check_duplicates = check_duplicates
+        self.verbose = verbose
 
-        if verbose >= 2: print "Learning %d/%d..." % (i, n_nonzero_coefs)
+        # will be changed
+        self.estimator_ = estimator
+
+        n_samples = self.K.shape[0]
+        n_components = self.K.shape[1]
+        self.coef_ = np.zeros(n_components, dtype=np.float64)
+        self.selected_ = np.zeros(n_components, dtype=bool)
+        self.y_train_ = np.zeros(n_samples, dtype=np.float64)
+        self.residuals_ = None
+        self.i_ = 1
+
+    def run(self):
+        for state in self:
+            pass
+        return state.coef_
+
+    def __iter__(self):
+        for i in range(1, self.n_nonzero_coefs + 1):
+            yield self.next()
+
+        # fit one last time
+        #K_subset = K[:, selected]
+        #estimator.fit(K_subset, y)
+        #coef[selected] = estimator.coef_.ravel()
+        #yield coef
+
+    def next(self):
+        n_samples = self.K.shape[0]
+        n_components = self.K.shape[1]
+
+        if self.loss is None and self.residuals_ is None:
+            self.residuals_ = self.y.copy()
+
+        if self.verbose >= 2:
+            print "Learning %d/%d..." % (self.i_, self.n_nonzero_coefs)
 
         # compute pseudo-residuals if needed
-        if loss is not None:
-            residuals = loss.negative_gradient(y, y_pred)
+        if self.loss is not None:
+            self.residuals_ = self.loss.negative_gradient(self.y,
+                                                          self.y_train_)
 
         # select best basis
-        dots = np.dot(K.T, residuals)
-        dots /= norms
+        dots = np.dot(self.K.T, self.residuals_)
+        dots /= self.norms
         abs_dots = np.abs(dots)
-        if check_duplicates:
-            abs_dots[selected] = -np.inf
+        if self.check_duplicates:
+            abs_dots[self.selected_] = -np.inf
         best = np.argmax(abs_dots)
-        selected[best] = True
+        self.selected_[best] = True
 
-        if n_refit != 0 and i % n_refit == 0:
+        if self.n_refit != 0 and self.i_ % self.n_refit == 0:
             # fit the selected coefficient and the previous ones too
-            K_subset = K[:, selected]
-            estimator.fit(K_subset, y)
-            coef[selected] = estimator.coef_.ravel()
+            K_subset = self.K[:, self.selected_]
+            self.estimator_.fit(K_subset, self.y)
+            self.coef_[self.selected_] = self.estimator_.coef_.ravel()
 
-            y_pred = estimator.decision_function(K_subset)
+            self.y_train_ = self.estimator_.decision_function(K_subset)
 
-            if loss is None:
-                residuals = y - y_pred
+            if self.loss is None:
+                self.residuals_ = self.y - self.y_train_
 
-            refitted = True
+            self.refitted_ = True
         else:
             # find coefficient for the selected basis only
-            if loss is None:
-                alpha =  dots[best] / norms[best]
+            if self.loss is None:
+                alpha =  dots[best] / self.norms[best]
             else:
-                alpha = loss.line_search(y, y_pred, K[:, best])
+                alpha = self.loss.line_search(self.y,
+                                              self.y_train_,
+                                              self.K[:, best])
 
-            coef[best] += alpha
-            weighted_basis = alpha * K[:, best]
+            self.coef_[best] += alpha
+            weighted_basis = alpha * self.K[:, best]
 
-            y_pred += weighted_basis
+            self.y_train_ += weighted_basis
 
-            if loss is None:
-                residuals -= weighted_basis
+            if self.loss is None:
+                self.residuals_ -= weighted_basis
 
-            refitted = False
+            self.refitted_ = False
 
-        yield coef, y_pred
+        self.i_ += 1
 
-    # fit one last time
-    #K_subset = K[:, selected]
-    #estimator.fit(K_subset, y)
-    #coef[selected] = estimator.coef_.ravel()
-    #yield coef
+        return self
 
 
-def _fit_last(estimator, loss, K, y, n_nonzero_coefs, norms,
-              n_refit, check_duplicates):
-
-    for coef, y_pred in _fit_generator(estimator, loss, K, y,
-                                       n_nonzero_coefs, norms,
-                                       n_refit, check_duplicates):
-        pass
-
-    return coef
+def _run_iterator(estimator, loss, K, y, n_nonzero_coefs, norms, n_refit,
+                  check_duplicates, verbose=0):
+    return FitIterator(estimator, loss, K, y, n_nonzero_coefs, norms, n_refit,
+                       check_duplicates, verbose).run()
 
 
 class KMPBase(BaseEstimator):
@@ -327,9 +357,10 @@ class KMPBase(BaseEstimator):
         if self.verbose: print "Starting training..."
         start = time.time()
         coef = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-                delayed(_fit_last)(self._get_estimator(), self._get_loss(),
-                                   K, Y[:, i], n_nonzero_coefs, norms,
-                                   self.n_refit, self.check_duplicates)
+                delayed(_run_iterator)(self._get_estimator(),
+                                       self._get_loss(),
+                                       K, Y[:, i], n_nonzero_coefs, norms,
+                                       self.n_refit, self.check_duplicates)
                 for i in xrange(Y.shape[1]))
         self.coef_ = np.array(coef)
         if self.verbose: print "Done in", time.time() - start, "seconds"
@@ -347,10 +378,10 @@ class KMPBase(BaseEstimator):
             return -np.mean((y_true - y_pred) ** 2)
 
     def _fit_multi_with_validation(self, K, y, Y, n_nonzero_coefs, norms):
-        iterators = [_fit_generator(self._get_estimator(), self._get_loss(),
-                                    K, Y[:, i], n_nonzero_coefs, norms,
-                                    self.n_refit, self.check_duplicates,
-                                    self.verbose)
+        iterators = [FitIterator(self._get_estimator(), self._get_loss(),
+                                 K, Y[:, i], n_nonzero_coefs, norms,
+                                 self.n_refit, self.check_duplicates,
+                                 self.verbose)
                      for i in xrange(Y.shape[1])]
 
         if self.verbose: print "Computing validation dictionary..."
@@ -371,42 +402,37 @@ class KMPBase(BaseEstimator):
         validation_scores = []
         training_scores = []
         iterations = []
-        try:
-            n_iter = 1
-            while True:
-                # FIXME: this can be parallelized by using stateful iterators
-                res = [it.next() for it in iterators]
-                coef, y_train = zip(*res)
-                coef = np.array(coef)
-                y_train = np.array(y_train).T
 
-                if n_iter % self.n_validate == 0:
-                    if self.verbose >= 2:
-                        print "Validating %d/%d..." % (n_iter, n_nonzero_coefs)
-                    y_val = np.dot(K_val, coef.T)
+        for n_iter in xrange(1, n_nonzero_coefs + 1):
+            iterators = [it.next() for it in iterators]
+            #iterators = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+                    #delayed(_run_iterator)(it) for it in iterators)
+            coef = np.array([it.coef_ for it in iterators])
+            y_train = np.array([it.y_train_ for it in iterators]).T
 
-                    validation_score = self._score(self.y_val, y_val)
-                    training_score = self._score(y, y_train)
+            if n_iter % self.n_validate == 0:
+                if self.verbose >= 2:
+                    print "Validating %d/%d..." % (n_iter, n_nonzero_coefs)
+                y_val = np.dot(K_val, coef.T)
 
-                    if validation_score > best_score:
-                        self.coef_ = coef.copy()
-                        best_score = validation_score
+                validation_score = self._score(self.y_val, y_val)
+                training_score = self._score(y, y_train)
 
-                    validation_scores.append(validation_score)
-                    training_scores.append(training_score)
-                    iterations.append(n_iter)
+                if validation_score > best_score:
+                    self.coef_ = coef.copy()
+                    best_score = validation_score
 
-                    if len(iterations) > 2 and self.epsilon > 0:
-                        diff = (validation_scores[-1] - validation_scores[-2])
-                        diff /= validation_scores[0]
-                        if abs(diff) < self.epsilon:
-                            if self.verbose:
-                                print "Converged at iteration", n_iter
-                            break
+                validation_scores.append(validation_score)
+                training_scores.append(training_score)
+                iterations.append(n_iter)
 
-                n_iter += 1
-        except StopIteration:
-            pass
+                if len(iterations) > 2 and self.epsilon > 0:
+                    diff = (validation_scores[-1] - validation_scores[-2])
+                    diff /= validation_scores[0]
+                    if abs(diff) < self.epsilon:
+                        if self.verbose:
+                            print "Converged at iteration", n_iter
+                        break
 
         self.validation_scores_ = np.array(validation_scores)
         self.training_scores_ = np.array(training_scores)
