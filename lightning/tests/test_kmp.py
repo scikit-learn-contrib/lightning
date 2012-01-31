@@ -9,6 +9,8 @@ from sklearn.datasets.samples_generator import make_classification
 from sklearn.datasets import load_diabetes
 from sklearn.linear_model import Ridge
 from sklearn.utils import check_random_state
+from sklearn.metrics import pairwise_kernels
+from sklearn.cross_validation import ShuffleSplit
 
 from lightning.kmp import KMPClassifier, KMPRegressor
 from lightning.kmp import select_components, create_components
@@ -204,3 +206,30 @@ def test_kmp_create_components_kmeans_stratified():
     assert_equal(components.shape,
                  (mult_dense.shape[0]/4 - 1, mult_dense.shape[1]))
 
+
+def test_kmp_precomputed_dictionary():
+    n_samples = mult_dense.shape[0]
+    cv = ShuffleSplit(n_samples,
+                      n_iterations=1,
+                      test_fraction=0.2,
+                      random_state=0)
+    train, test = list(cv)[0]
+    X_train, y_train = mult_dense[train], mult_target[train]
+    X_test, y_test = mult_dense[test], mult_target[test]
+
+    components = select_components(X_train, y_train,
+                                   n_components=0.3,
+                                   random_state=0)
+    K_train = pairwise_kernels(X_train, components)
+
+    kmp = KMPClassifier(metric="precomputed")
+    kmp.fit(K_train, y_train)
+    y_pred = kmp.predict(K_train)
+    acc = np.mean(y_pred == y_train)
+    assert_true(acc >= 0.75)
+
+    K_test = pairwise_kernels(X_test, components)
+    y_pred = kmp.predict(K_test)
+
+    acc = np.mean(y_pred == y_test)
+    assert_true(acc >= 0.65)

@@ -318,19 +318,26 @@ class KMPBase(BaseEstimator):
     def _pre_fit(self, X, y):
         random_state = check_random_state(self.random_state)
 
-        if self.init_components is None:
-            if self.verbose: print "Selecting components..."
-            self.components_ = select_components(X, y,
-                                                 self.n_components,
-                                                 random_state=random_state)
+        if self.metric == "precomputed":
+            self.components_ = None
+            n_components = X.shape[1]
         else:
-            self.components_ = self.init_components
+            if self.init_components is None:
+                if self.verbose: print "Selecting components..."
+                self.components_ = select_components(X, y,
+                                                     self.n_components,
+                                                     random_state=random_state)
+            else:
+                self.components_ = self.init_components
+
+            n_components = self.components_.shape[0]
+
 
         n_nonzero_coefs = self.n_nonzero_coefs
         if 0 < n_nonzero_coefs and n_nonzero_coefs <= 1:
-            n_nonzero_coefs = int(n_nonzero_coefs * self.components_.shape[0])
+            n_nonzero_coefs = int(n_nonzero_coefs * n_components)
 
-        if n_nonzero_coefs > self.components_.shape[0]:
+        if n_nonzero_coefs > n_components:
             raise AttributeError("n_nonzero_coefs cannot be bigger than "
                                  "n_components.")
 
@@ -344,7 +351,8 @@ class KMPBase(BaseEstimator):
         if self.scale:
             if self.verbose: print "Scaling dictionary"
             start = time.time()
-            self.scaler_ = Scaler(copy=False)
+            copy = True if self.metric == "precomputed" else False
+            self.scaler_ = Scaler(copy=copy)
             K = self.scaler_.fit_transform(K)
             if self.verbose: print "Done in", time.time() - start, "seconds"
 
@@ -448,9 +456,10 @@ class KMPBase(BaseEstimator):
         meth(K, y, Y, n_nonzero_coefs, norms)
 
     def _post_fit(self):
-        used_basis = np.sum(self.coef_ != 0, axis=0, dtype=bool)
-        self.coef_ = self.coef_[:, used_basis]
-        self.components_ = self.components_[used_basis]
+        if self.metric != "precomputed":
+            used_basis = np.sum(self.coef_ != 0, axis=0, dtype=bool)
+            self.coef_ = self.coef_[:, used_basis]
+            self.components_ = self.components_[used_basis]
 
     def decision_function(self, X):
         K = pairwise_kernels(X, self.components_, metric=self.metric,
