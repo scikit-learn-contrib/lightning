@@ -36,6 +36,7 @@ def fit_kmp(X_train, y_train, X_test, y_test, opts, random_state):
                         degree=opts.degree,
                         coef0=opts.coef0,
                         scale=opts.scale,
+                        check_duplicates=opts.check_duplicates,
                         n_validate=opts.n_validate,
                         epsilon=opts.epsilon,
                         verbose=2,
@@ -44,7 +45,7 @@ def fit_kmp(X_train, y_train, X_test, y_test, opts, random_state):
     clf.fit(X_train, y_train)
     return clf
 
-dataset, opts, random_state = parse_kmp()
+dataset, opts, random_state = parse_kmp(epsilon=0.001)
 
 try:
     X_train, y_train, X_test, y_test = load_dataset(dataset,
