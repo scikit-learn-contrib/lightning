@@ -307,6 +307,7 @@ class KMPBase(BaseEstimator):
             estimator = LinearRegression()
         else:
             estimator = clone(self.estimator)
+        estimator.fit_intercept = False
         return estimator
 
     def _get_loss(self):

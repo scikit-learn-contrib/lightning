@@ -42,9 +42,9 @@ def test_kmp_fit_binary():
 
 
 def test_kmp_fit_binary_backfitting():
-    for metric, acc in (("rbf", 0.5),
-                        ("linear", 0.77),
-                        ("poly", 0.515)):
+    for metric, acc in (("rbf", 0.723),
+                        ("linear", 0.954),
+                        ("poly", 0.724)):
         kmp = KMPClassifier(n_nonzero_coefs=1.0,
                             n_components=0.5,
                             n_refit=1,
@@ -53,7 +53,7 @@ def test_kmp_fit_binary_backfitting():
         kmp.fit(bin_dense, bin_target)
         assert_equal(kmp.components_.shape[1], bin_dense.shape[0] / 2)
         y_pred = kmp.predict(bin_dense)
-        assert_almost_equal(np.mean(bin_target == y_pred), acc)
+        assert_almost_equal(np.mean(bin_target == y_pred), acc, decimal=2)
 
 
 def test_kmp_fit_multiclass():
@@ -143,7 +143,7 @@ def test_kmp_validation():
                         random_state=0)
     kmp.fit(X_train, y_train)
 
-    assert_almost_equal(kmp.validation_scores_[-1], 0.52, decimal=2)
+    assert_almost_equal(kmp.validation_scores_[-1], 0.56, decimal=2)
     n_scores = len(kmp.validation_scores_)
 
     # early stopping
@@ -232,4 +232,4 @@ def test_kmp_precomputed_dictionary():
     y_pred = kmp.predict(K_test)
 
     acc = np.mean(y_pred == y_test)
-    assert_true(acc >= 0.65)
+    assert_true(acc >= 0.63)
