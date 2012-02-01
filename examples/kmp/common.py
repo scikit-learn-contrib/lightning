@@ -7,6 +7,7 @@ import numpy as np
 
 from sklearn.utils import check_random_state
 
+
 def parse_kmp(n_nonzero_coefs=200,
               n_components=0.5,
               metric="rbf",
@@ -18,6 +19,7 @@ def parse_kmp(n_nonzero_coefs=200,
               n_refit=5,
               alpha=0.1,
               scale=False,
+              scale_y=False,
               check_duplicates=False):
     op = OptionParser()
     op.add_option("--seed", action="store", dest="random_state", type="int")
@@ -42,8 +44,12 @@ def parse_kmp(n_nonzero_coefs=200,
     op.add_option("--alpha", action="store", default=alpha, dest="alpha",
                   type="float")
     op.add_option("--scale", action="store_true", default=scale, dest="scale")
+    op.add_option("--scale_y", action="store_true", default=scale_y,
+                  dest="scale_y")
     op.add_option("--check_duplicates", action="store_true",
                   default=check_duplicates, dest="check_duplicates")
+    op.add_option("--regression", action="store_true", default=scale,
+                  dest="regression")
 
 
     (opts, args) = op.parse_args()
