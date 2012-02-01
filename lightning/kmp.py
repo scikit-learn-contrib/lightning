@@ -391,7 +391,8 @@ class KMPBase(BaseEstimator):
             else:
                 return self.score_func(y_true, y_pred)
         else:
-            return -np.mean((y_true - y_pred) ** 2)
+            # FIXME: no need to ravel y_pred if y_true is 2d!
+            return -np.mean((y_true - y_pred.ravel()) ** 2)
 
     def _fit_multi_with_validation(self, K, y, Y, n_nonzero_coefs, norms):
         iterators = [FitIterator(self._get_estimator(), self._get_loss(),
@@ -441,10 +442,10 @@ class KMPBase(BaseEstimator):
 
                 if validation_score > best_score:
                     self.coef_ = coef.copy()
-                    best_score = validation_score
+                    best_score = np.abs(validation_score)
 
-                validation_scores.append(validation_score)
-                training_scores.append(training_score)
+                validation_scores.append(np.abs(validation_score))
+                training_scores.append(np.abs(training_score))
                 iterations.append(n_iter)
 
                 if len(iterations) > 2 and self.epsilon > 0:
