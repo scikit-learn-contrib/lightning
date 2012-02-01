@@ -261,6 +261,7 @@ class KMPBase(BaseEstimator):
                  n_components=None,
                  check_duplicates=False,
                  scale=False,
+                 scale_y=False,
                  # back-fitting
                  n_refit=5,
                  estimator=None,
@@ -282,6 +283,7 @@ class KMPBase(BaseEstimator):
         self.n_components = n_components
         self.check_duplicates = check_duplicates
         self.scale = scale
+        self.scale_y = scale_y
         self.n_refit = n_refit
         self.estimator = estimator
         self.metric = metric
@@ -318,6 +320,10 @@ class KMPBase(BaseEstimator):
 
     def _pre_fit(self, X, y):
         random_state = check_random_state(self.random_state)
+
+        if self.scale_y:
+            self.y_scaler_ = Scaler(copy=True).fit(y)
+            y = self.y_scaler_.transform(y)
 
         if self.metric == "precomputed":
             self.components_ = None
@@ -360,7 +366,7 @@ class KMPBase(BaseEstimator):
         # FIXME: this allocates a lot of intermediary memory
         norms = np.sqrt(np.sum(K ** 2, axis=0))
 
-        return n_nonzero_coefs, K, norms
+        return n_nonzero_coefs, K, y, norms
 
     def _fit_multi(self, K, y, Y, n_nonzero_coefs, norms):
         if self.verbose: print "Starting training..."
@@ -404,6 +410,10 @@ class KMPBase(BaseEstimator):
         if self.scale:
             K_val = self.scaler_.transform(K_val)
 
+        y_val = self.y_val
+        if self.scale_y:
+            y_val = self.y_scaler_.transform(y_val)
+
 
         if self.verbose: print "Starting training..."
         start = time.time()
@@ -417,15 +427,16 @@ class KMPBase(BaseEstimator):
             #iterators = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                     #delayed(_run_iterator)(it) for it in iterators)
             coef = np.array([it.coef_ for it in iterators])
-            y_train = np.array([it.y_train_ for it in iterators]).T
+            y_train_pred = np.array([it.y_train_ for it in iterators]).T
 
             if n_iter % self.n_validate == 0:
                 if self.verbose >= 2:
                     print "Validating %d/%d..." % (n_iter, n_nonzero_coefs)
-                y_val = np.dot(K_val, coef.T)
 
-                validation_score = self._score(self.y_val, y_val)
-                training_score = self._score(y, y_train)
+                y_val_pred = np.dot(K_val, coef.T)
+
+                validation_score = self._score(y_val, y_val_pred)
+                training_score = self._score(y, y_train_pred)
 
                 if validation_score > best_score:
                     self.coef_ = coef.copy()
@@ -468,13 +479,19 @@ class KMPBase(BaseEstimator):
                              **self._kernel_params())
         if self.scale:
             K = self.scaler_.transform(K)
-        return np.dot(K, self.coef_.T)
+
+        pred = np.dot(K, self.coef_.T)
+
+        if self.scale_y:
+            pred = self.y_scaler_.inverse_transform(pred)
+
+        return pred
 
 
 class KMPClassifier(KMPBase, ClassifierMixin):
 
     def fit(self, X, y):
-        n_nonzero_coefs, K, norms = self._pre_fit(X, y)
+        n_nonzero_coefs, K, y, norms = self._pre_fit(X, y)
 
         self.lb_ = LabelBinarizer()
         Y = self.lb_.fit_transform(y)
@@ -492,7 +509,7 @@ class KMPClassifier(KMPBase, ClassifierMixin):
 class KMPRegressor(KMPBase, RegressorMixin):
 
     def fit(self, X, y):
-        n_nonzero_coefs, K, norms = self._pre_fit(X, y)
+        n_nonzero_coefs, K, y, norms = self._pre_fit(X, y)
 
         Y = y.reshape(-1, 1) if len(y.shape) == 1 else y
         self._fit(K, y, Y, n_nonzero_coefs, norms)
