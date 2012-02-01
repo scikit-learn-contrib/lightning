@@ -62,6 +62,6 @@ pl.plot(clf.iterations_, clf.training_scores_, label="Training set")
 pl.xlabel('Iteration')
 pl.ylabel('Accuracy')
 pl.title('Accuracy plot')
-pl.legend()
+pl.legend(loc='lower right')
 
 pl.show()
