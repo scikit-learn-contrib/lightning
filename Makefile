@@ -56,3 +56,27 @@ download-covtype:
 	./download.sh http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/covtype.libsvm.binary.scale.bz2
 	bunzip2 covtype.libsvm.binary.scale.bz2
 	mv covtype.libsvm.binary.scale $(DATADIR)
+
+download-abalone:
+	./download.sh http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/regression/abalone_scale
+	mv abalone_scale $(DATADIR)
+
+download-cpusmall:
+	./download.sh http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/regression/cpusmall_scale
+	mv cpusmall_scale $(DATADIR)
+
+download-cadata:
+	./download.sh http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/regression/cadata
+	mv cadata $(DATADIR)
+
+download-space_ga:
+	./download.sh http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/regression/space_ga_scale
+	mv space_ga_scale $(DATADIR)
+
+download-YearPredictionMSD:
+	./download.sh http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/regression/YearPredictionMSD.bz2
+	bunzip2 YearPredictionMSD.bz2
+	mv YearPredictionMSD $(DATADIR)
+	./download.sh http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/regression/YearPredictionMSD.t.bz2
+	bunzip2 YearPredictionMSD.t.bz2
+	mv YearPredictionMSD.t $(DATADIR)
