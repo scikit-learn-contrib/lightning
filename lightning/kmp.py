@@ -343,6 +343,7 @@ class KMPBase(BaseEstimator):
         n_nonzero_coefs = self.n_nonzero_coefs
         if 0 < n_nonzero_coefs and n_nonzero_coefs <= 1:
             n_nonzero_coefs = int(n_nonzero_coefs * n_components)
+        n_nonzero_coefs = int(n_nonzero_coefs)
 
         if n_nonzero_coefs > n_components:
             raise AttributeError("n_nonzero_coefs cannot be bigger than "
