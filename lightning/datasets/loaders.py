@@ -139,6 +139,37 @@ def load_banana():
     return _todense(_load(train_file, None, "banana"))
 
 
+def load_abalone():
+    data_home = get_data_home()
+    train_file = os.path.join(data_home, "abalone_scale")
+    return _todense(_load(train_file, None, "abalone"))
+
+
+def load_cpusmall():
+    data_home = get_data_home()
+    train_file = os.path.join(data_home, "cpusmall_scale")
+    return _todense(_load(train_file, None, "cpusmall"))
+
+
+def load_cadata():
+    data_home = get_data_home()
+    train_file = os.path.join(data_home, "cadata")
+    return _todense(_load(train_file, None, "cadata"))
+
+
+def load_space_ga():
+    data_home = get_data_home()
+    train_file = os.path.join(data_home, "space_ga_scale")
+    return _todense(_load(train_file, None, "space_ga"))
+
+
+def load_YearPredictionMSD():
+    data_home = get_data_home()
+    train_file = os.path.join(data_home, "YearPredictionMSD")
+    test_file = os.path.join(data_home, "YearPredictionMSD.t")
+    return _todense(_load(train_file, test_file, "YearPredictionMSD"))
+
+
 LOADERS = { "news20" : load_news20,
             "usps": load_usps,
             "usps_noisy": load_usps_noisy,
@@ -150,7 +181,12 @@ LOADERS = { "news20" : load_news20,
             "adult": load_adult,
             "reuters": load_reuters,
             "waveform": load_waveform,
-            "banana": load_banana }
+            "banana": load_banana,
+            "abalone": load_abalone,
+            "cpusmall": load_cpusmall,
+            "cadata": load_cadata,
+            "space_ga": load_space_ga,
+            "YearPredictionMSD": load_YearPredictionMSD }
 
 
 def get_loader(dataset):
