@@ -2,6 +2,8 @@
 # License: BSD
 import os
 
+import numpy as np
+
 try:
     from svmlight_loader import load_svmlight_files
 except ImportError:
@@ -9,6 +11,7 @@ except ImportError:
 
 from sklearn.datasets.base import get_data_home as _get_data_home
 from sklearn.cross_validation import ShuffleSplit
+from sklearn.utils import check_random_state
 
 
 def get_data_home():
@@ -50,6 +53,19 @@ def load_usps():
     return _todense(_load(train_file, test_file, "usps"))
 
 
+def load_usps_noisy():
+    X_train, y_train, X_test, y_test = load_usps()
+    n_samples = X_train.shape[0]
+    n = n_samples / 10
+    random_state = check_random_state(0)
+    indices = np.arange(n_samples)
+    random_state.shuffle(indices)
+    indices2 = np.arange(n_samples)
+    random_state.shuffle(indices2)
+    y_train[indices[:n]] = y_train[indices2[:n]]
+    return X_train, y_train, X_test, y_test
+
+
 def load_usps0():
     X_train, y_train, X_test, y_test = load_usps()
     selected = y_train == 10
@@ -58,6 +74,18 @@ def load_usps0():
     selected = y_test == 10
     y_test[selected] = 1
     y_test[~selected] = 0
+    return X_train, y_train, X_test, y_test
+
+
+def load_usps0_noisy():
+    X_train, y_train, X_test, y_test = load_usps0()
+    n_samples = X_train.shape[0]
+    indices = np.arange(n_samples)
+    random_state = check_random_state(0)
+    random_state.shuffle(indices)
+    n = n_samples / 10
+    indices = indices[:n]
+    y_train[indices] = np.logical_not(y_train[indices]).astype(int)
     return X_train, y_train, X_test, y_test
 
 
@@ -113,7 +141,9 @@ def load_banana():
 
 LOADERS = { "news20" : load_news20,
             "usps": load_usps,
+            "usps_noisy": load_usps_noisy,
             "usps0": load_usps0,
+            "usps0_noisy": load_usps0_noisy,
             "mnist": load_mnist,
             "mnist8": load_mnist8,
             "covtype": load_covtype,
