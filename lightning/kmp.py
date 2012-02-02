@@ -44,9 +44,13 @@ def create_components(X, y=None, n_components=None,
 
         for c in classes:
             mask = safe_mask(X, y == c)
-            kmeans = KMeans(k=k, n_init=1, random_state=random_state)
-            kmeans.fit(X[mask])
-            components.append(kmeans.cluster_centers_)
+            X_mask = X[mask]
+            if k >= X_mask.shape[0]:
+                components.append(X_mask)
+            else:
+                kmeans = KMeans(k=k, n_init=1, random_state=random_state)
+                kmeans.fit(X_mask)
+                components.append(kmeans.cluster_centers_)
 
         components = np.vstack(components)
 
