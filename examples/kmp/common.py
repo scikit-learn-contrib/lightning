@@ -66,6 +66,6 @@ def parse_kmp(n_nonzero_coefs=200,
         print "X_train", X_train.shape
         if X_test is not None: print "X_test", X_test.shape
 
-        return X_train, y_train, X_test, y_test, opts
+        return X_train, y_train, X_test, y_test, opts, args
     except KeyError:
         raise ValueError("Wrong dataset name!")

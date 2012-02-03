@@ -23,7 +23,6 @@ from common import parse_kmp
 
 memory = Memory(cachedir=get_data_home(), verbose=0, compress=6)
 
-
 @memory.cache
 def fit_kmp(X_train, y_train, X_test, y_test, opts, random_state):
     klass = KMPRegressor if opts.regression else KMPClassifier
@@ -47,10 +46,9 @@ def fit_kmp(X_train, y_train, X_test, y_test, opts, random_state):
     clf.fit(X_train, y_train)
     return clf
 
-X_train, y_train, X_test, y_test, opts = parse_kmp()
+X_train, y_train, X_test, y_test, opts, args = parse_kmp()
 
-validation_scores = 0.0
-training_scores = 0.0
+clfs = []
 
 for i in range(opts.n_times):
     if X_test is None:
@@ -59,15 +57,21 @@ for i in range(opts.n_times):
                                                       random_state=i)
 
     clf = fit_kmp(X_train, y_train, X_test, y_test, opts, random_state=i)
-    validation_scores += clf.validation_scores_
-    training_scores += clf.training_scores_
+    clfs.append(clf)
 
-validation_scores /= opts.n_times
-training_scores /= opts.n_times
+vs = np.vstack([clf.validation_scores_ for clf in clfs])
+ts = np.vstack([clf.training_scores_ for clf in clfs])
 
 pl.figure()
-pl.plot(clf.iterations_, validation_scores, label="Test set")
-pl.plot(clf.iterations_, training_scores, label="Training set")
+if len(args) == 2:
+    pl.errorbar(clf.iterations_, vs.mean(axis=0), yerr=vs.std(axis=0),
+                label="Test set")
+    pl.errorbar(clf.iterations_, ts.mean(axis=0), yerr=ts.std(axis=0),
+                label="Train set")
+else:
+    pl.plot(clf.iterations_, vs.mean(axis=0), label="Test set")
+    pl.plot(clf.iterations_, ts.mean(axis=0), label="Training set")
+
 pl.xlabel('Iteration')
 
 if opts.regression:
