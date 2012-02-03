@@ -69,3 +69,9 @@ def parse_kmp(n_nonzero_coefs=200,
         return X_train, y_train, X_test, y_test, opts, args
     except KeyError:
         raise ValueError("Wrong dataset name!")
+
+def plot(pl, x, y, yerr, label, error_bar):
+    if error_bar:
+        pl.errorbar(x, y, yerr=yerr, label=label)
+    else:
+        pl.plot(x, y, label=label)

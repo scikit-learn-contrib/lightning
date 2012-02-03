@@ -19,7 +19,7 @@ from lightning.kmp import KMPClassifier, KMPRegressor
 from sklearn.externals.joblib import Memory
 from lightning.datasets import get_data_home
 
-from common import parse_kmp
+from common import parse_kmp, plot
 
 memory = Memory(cachedir=get_data_home(), verbose=0, compress=6)
 
@@ -47,30 +47,33 @@ def fit_kmp(X_train, y_train, X_test, y_test, opts, random_state):
     return clf
 
 X_train, y_train, X_test, y_test, opts, args = parse_kmp()
+X_tr, y_tr, X_te, y_te = X_train, y_train, X_test, y_test
 
 clfs = []
 
 for i in range(opts.n_times):
     if X_test is None:
-        X_train, y_train, X_test, y_test = split_data(X_train, y_train,
-                                                      proportion_train=0.75,
-                                                      random_state=i)
+        X_tr, y_tr, X_te, y_te = split_data(X_train, y_train,
+                                            proportion_train=0.75,
+                                            random_state=i)
 
-    clf = fit_kmp(X_train, y_train, X_test, y_test, opts, random_state=i)
+    clf = fit_kmp(X_tr, y_tr, X_te, y_te, opts, random_state=i)
     clfs.append(clf)
 
 vs = np.vstack([clf.validation_scores_ for clf in clfs])
 ts = np.vstack([clf.training_scores_ for clf in clfs])
 
 pl.figure()
-if len(args) == 2:
-    pl.errorbar(clf.iterations_, vs.mean(axis=0), yerr=vs.std(axis=0),
-                label="Test set")
-    pl.errorbar(clf.iterations_, ts.mean(axis=0), yerr=ts.std(axis=0),
-                label="Train set")
-else:
-    pl.plot(clf.iterations_, vs.mean(axis=0), label="Test set")
-    pl.plot(clf.iterations_, ts.mean(axis=0), label="Training set")
+
+error_bar = len(args) == 2
+
+plot(pl, clf.iterations_,
+     vs.mean(axis=0), vs.std(axis=0),
+     "Test set", error_bar)
+
+plot(pl, clf.iterations_,
+     ts.mean(axis=0), ts.std(axis=0),
+     "Train set", error_bar)
 
 pl.xlabel('Iteration')
 

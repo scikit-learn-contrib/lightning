@@ -428,16 +428,16 @@ class KMPBase(BaseEstimator):
         training_scores = []
         iterations = []
 
-        for n_iter in xrange(1, n_nonzero_coefs + 1):
+        for i in xrange(1, n_nonzero_coefs + 1):
             iterators = [it.next() for it in iterators]
             #iterators = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                     #delayed(_run_iterator)(it) for it in iterators)
             coef = np.array([it.coef_ for it in iterators])
             y_train_pred = np.array([it.y_train_ for it in iterators]).T
 
-            if n_iter % self.n_validate == 0:
+            if i % self.n_validate == 0:
                 if self.verbose >= 2:
-                    print "Validating %d/%d..." % (n_iter, n_nonzero_coefs)
+                    print "Validating %d/%d..." % (i, n_nonzero_coefs)
 
                 y_val_pred = np.dot(K_val, coef.T)
 
@@ -450,19 +450,20 @@ class KMPBase(BaseEstimator):
 
                 validation_scores.append(np.abs(validation_score))
                 training_scores.append(np.abs(training_score))
-                iterations.append(n_iter)
+                iterations.append(i)
 
                 if len(iterations) > 2 and self.epsilon > 0:
                     diff = (validation_scores[-1] - validation_scores[-2])
                     diff /= validation_scores[0]
                     if abs(diff) < self.epsilon:
                         if self.verbose:
-                            print "Converged at iteration", n_iter
+                            print "Converged at iteration", i
                         break
 
         self.validation_scores_ = np.array(validation_scores)
         self.training_scores_ = np.array(training_scores)
         self.iterations_ = np.array(iterations)
+        self.best_score_ = best_score
 
         if self.verbose: print "Done in", time.time() - start, "seconds"
 
