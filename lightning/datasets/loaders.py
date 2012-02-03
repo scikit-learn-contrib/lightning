@@ -193,20 +193,18 @@ def get_loader(dataset):
     return LOADERS[dataset]
 
 
-def load_dataset(dataset, proportion_train=1.0, random_state=None):
-    X_train, y_train, X_test, y_test = get_loader(dataset)()
+def load_dataset(dataset):
+    return get_loader(dataset)()
 
-    if proportion_train < 1.0 and X_test is None:
-        cv = ShuffleSplit(X_train.shape[0],
-                          n_iterations=1,
-                          test_fraction=1.0 - proportion_train,
-                          random_state=random_state)
-        train, test = list(cv)[0]
-        X_tr = X_train[train]
-        y_tr = y_train[train]
-        X_te = X_train[test]
-        y_te = y_train[test]
-        X_train, y_train = X_tr, y_tr
-        X_test, y_test = X_te, y_te
 
-    return X_train, y_train, X_test, y_test
+def split_data(X_train, y_train, proportion_train, random_state):
+    cv = ShuffleSplit(X_train.shape[0],
+                      n_iterations=1,
+                      test_fraction=1.0 - proportion_train,
+                      random_state=random_state)
+    train, test = list(cv)[0]
+    X_tr = X_train[train]
+    y_tr = y_train[train]
+    X_te = X_train[test]
+    y_te = y_train[test]
+    return X_tr, y_tr, X_te, y_te

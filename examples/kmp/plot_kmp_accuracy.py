@@ -13,7 +13,7 @@ import pylab as pl
 
 from sklearn.linear_model import Ridge
 
-from lightning.datasets import load_dataset
+from lightning.datasets import load_dataset, split_data
 from lightning.kmp import KMPClassifier, KMPRegressor
 
 from sklearn.externals.joblib import Memory
@@ -47,20 +47,27 @@ def fit_kmp(X_train, y_train, X_test, y_test, opts, random_state):
     clf.fit(X_train, y_train)
     return clf
 
-dataset, opts, random_state = parse_kmp(epsilon=0.001)
+X_train, y_train, X_test, y_test, opts = parse_kmp()
 
-try:
-    X_train, y_train, X_test, y_test = load_dataset(dataset,
-                                                    proportion_train=0.75,
-                                                    random_state=random_state)
-except KeyError:
-    raise ValueError("Wrong dataset name!")
+validation_scores = 0.0
+training_scores = 0.0
 
-clf = fit_kmp(X_train, y_train, X_test, y_test, opts, random_state)
+for i in range(opts.n_times):
+    if X_test is None:
+        X_train, y_train, X_test, y_test = split_data(X_train, y_train,
+                                                      proportion_train=0.75,
+                                                      random_state=i)
+
+    clf = fit_kmp(X_train, y_train, X_test, y_test, opts, random_state=i)
+    validation_scores += clf.validation_scores_
+    training_scores += clf.training_scores_
+
+validation_scores /= opts.n_times
+training_scores /= opts.n_times
 
 pl.figure()
-pl.plot(clf.iterations_, clf.validation_scores_, label="Test set")
-pl.plot(clf.iterations_, clf.training_scores_, label="Training set")
+pl.plot(clf.iterations_, validation_scores, label="Test set")
+pl.plot(clf.iterations_, training_scores, label="Training set")
 pl.xlabel('Iteration')
 
 if opts.regression:

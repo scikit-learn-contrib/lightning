@@ -7,6 +7,7 @@ import numpy as np
 
 from sklearn.utils import check_random_state
 
+from lightning.datasets import load_dataset
 
 def parse_kmp(n_nonzero_coefs=200,
               n_components=0.5,
@@ -22,7 +23,8 @@ def parse_kmp(n_nonzero_coefs=200,
               scale_y=False,
               check_duplicates=False):
     op = OptionParser()
-    op.add_option("--seed", action="store", dest="random_state", type="int")
+    op.add_option("--n_times", action="store", default=1,
+                  dest="n_times", type="int")
     op.add_option("-n", action="store", default=n_nonzero_coefs,
                   dest="n_nonzero_coefs", type="float")
     op.add_option("--n_components", action="store", default=n_components,
@@ -53,15 +55,17 @@ def parse_kmp(n_nonzero_coefs=200,
 
 
     (opts, args) = op.parse_args()
-    rs = check_random_state(opts.random_state)
-    if opts.random_state is None:
-        random_state = rs.randint(np.iinfo(np.int).max)
-    else:
-        random_state = opts.random_state
 
     try:
         dataset = args[0]
     except:
         dataset = "usps"
+    try:
+        X_train, y_train, X_test, y_test = load_dataset(dataset)
 
-    return dataset, opts, random_state
+        print "X_train", X_train.shape
+        if X_test is not None: print "X_test", X_test.shape
+
+        return X_train, y_train, X_test, y_test, opts
+    except KeyError:
+        raise ValueError("Wrong dataset name!")
