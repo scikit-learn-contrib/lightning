@@ -114,7 +114,7 @@ X_test, y_test = split_test(X1, y1, X2, y2)
 clf = KMPClassifier(n_nonzero_coefs=0.3,
                     n_components=1.0,
                     metric="rbf",
-                    gamma=1.0,
+                    gamma=0.1,
                     n_refit=1,
                     estimator=Ridge(alpha=0.01),
                     random_state=random_state)
