@@ -17,14 +17,14 @@ from sklearn.utils import check_random_state
 from sklearn.linear_model import Ridge
 from sklearn.metrics import f1_score, precision_score, recall_score
 
-from lightning.datasets import load_dataset, split_data
+from lightning.datasets import load_dataset
 from lightning.kmp import KMPClassifier, KMPRegressor
 from lightning.kmp import select_components, create_components
 
 from sklearn.externals.joblib import Memory
 from lightning.datasets import get_data_home
 
-from common import parse_kmp, plot
+from common import parse_kmp, plot, split_data
 
 memory = Memory(cachedir=get_data_home(), verbose=0, compress=6)
 
@@ -78,20 +78,19 @@ X_tr, y_tr, X_te, y_te = X_train, y_train, X_test, y_test
 if opts.n_nonzero_coefs < 1:
     raise ValueError("n_nonzero_coefs must be a positive integer")
 
+cv = list(split_data(X_train, y_train,
+                     X_test, y_test,
+                     opts.n_folds,
+                     not opts.regression))
 
 amounts = np.linspace(0.1, 1.0, 10)
 #amounts = (0.25, 0.5, 0.75, 1.0)
 #amounts = np.linspace(0.1, 0.5, 5)
-n = opts.n_nonzero_coefs / opts.n_validate
-acc_sup = np.zeros((len(amounts), opts.n_times), dtype=np.float64)
-acc_semi = np.zeros((len(amounts), opts.n_times), dtype=np.float64)
-n_times = 1
+acc_sup = np.zeros((len(amounts), len(cv)), dtype=np.float64)
+acc_semi = np.zeros((len(amounts), len(cv)), dtype=np.float64)
 
-for j in range(opts.n_times):
-    if X_test is None:
-        X_tr, y_tr, X_te, y_te = split_data(X_train, y_train,
-                                            proportion_train=0.75,
-                                            random_state=j)
+j = 0
+for X_tr, y_tr, X_te, y_te in cv:
 
     for i, perc_label in enumerate(amounts):
         print "Percentage of labeled data:", perc_label
@@ -99,18 +98,20 @@ for j in range(opts.n_times):
                                                y_tr,
                                                n_components=opts.n_components,
                                                perc_label=perc_label,
-                                               random_state=j)
+                                               random_state=0)
 
-        clf = fit_kmp(X_l, y_l, X_te, y_te, X_l, opts, j)
+        clf = fit_kmp(X_l, y_l, X_te, y_te, X_l, opts, 0)
         #acc_sup[i, j] = clf.validation_scores_[-1]
         acc_sup[i, j] = clf.best_score_
 
         if perc_label == 1.0:
             acc_semi[i, j] = acc_sup[i, j]
         else:
-            clf = fit_kmp(X_l, y_l, X_te, y_te, X_all, opts, j)
+            clf = fit_kmp(X_l, y_l, X_te, y_te, X_all, opts, 0)
             #acc_semi[i, j] = clf.validation_scores_[-1]
             acc_semi[i, j] = clf.best_score_
+
+    j += 1
 
 error_bar = len(args) == 2
 

@@ -16,7 +16,7 @@ import pylab as pl
 from sklearn.linear_model import Ridge
 from sklearn.metrics import f1_score, precision_score, recall_score
 
-from lightning.datasets import load_dataset, split_data
+from lightning.datasets import load_dataset
 from lightning.kmp import KMPClassifier, KMPRegressor
 from lightning.kmp import select_components, create_components
 
@@ -25,7 +25,7 @@ from lightning.datasets import get_data_home
 
 memory = Memory(cachedir=get_data_home(), verbose=0, compress=6)
 
-from common import parse_kmp, plot
+from common import parse_kmp, plot, split_data
 
 @memory.cache
 def create_kmeans_comp(X_train, y_train, class_distrib, n_components,
@@ -69,42 +69,41 @@ clf_kg = []
 clf_kb = []
 clf_ks = []
 
-for i in range(opts.n_times):
-    if X_test is None:
-        X_tr, y_tr, X_te, y_te = split_data(X_train, y_train,
-                                            proportion_train=0.75,
-                                            random_state=i)
+for X_tr, y_tr, X_te, y_te in split_data(X_train, y_train,
+                                         X_test, y_test,
+                                         opts.n_folds,
+                                         not opts.regression):
 
     # selected from datasets
     components = select_components(X_tr, y_tr, opts.n_components,
-                                   class_distrib=class_distrib, random_state=i)
+                                   class_distrib=class_distrib, random_state=0)
     clf_s.append(fit_kmp(X_tr, y_tr, X_te, y_te, components,
-                         random_state=i))
+                         random_state=0))
 
     # k-means global
     components = create_kmeans_comp(X_tr, y_tr,
                                     n_components=opts.n_components,
                                     class_distrib="global",
-                                    random_state=i)
+                                    random_state=0)
     clf_kg.append(fit_kmp(X_tr, y_tr, X_te, y_te, components,
-                          random_state=i))
+                          random_state=0))
 
     if not opts.regression:
         # k-means balanced
         components = create_kmeans_comp(X_tr, y_tr,
                                         n_components=opts.n_components,
                                         class_distrib="balanced",
-                                        random_state=i)
+                                        random_state=0)
         clf_kb.append(fit_kmp(X_tr, y_tr, X_te, y_te, components,
-                              random_state=i))
+                              random_state=0))
 
         # k-means stratified
         components = create_kmeans_comp(X_tr, y_tr,
                                         n_components=opts.n_components,
                                         class_distrib="stratified",
-                                        random_state=i)
+                                        random_state=0)
         clf_ks.append(fit_kmp(X_tr, y_tr, X_te, y_te, components,
-                              random_state=i))
+                              random_state=0))
 
 ss = np.vstack([clf.validation_scores_ for clf in clf_s])
 kgs = np.vstack([clf.validation_scores_ for clf in clf_kg])

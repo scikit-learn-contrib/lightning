@@ -4,8 +4,9 @@
 from optparse import OptionParser
 
 import numpy as np
+import scipy.sparse as sp
 
-from sklearn.utils import check_random_state
+from sklearn.cross_validation import KFold, StratifiedKFold
 
 from lightning.datasets import load_dataset
 
@@ -23,8 +24,8 @@ def parse_kmp(n_nonzero_coefs=200,
               scale_y=False,
               check_duplicates=False):
     op = OptionParser()
-    op.add_option("--n_times", action="store", default=1,
-                  dest="n_times", type="int")
+    op.add_option("--n_folds", action="store", default=5,
+                  dest="n_folds", type="int")
     op.add_option("-n", action="store", default=n_nonzero_coefs,
                   dest="n_nonzero_coefs", type="float")
     op.add_option("--n_components", action="store", default=n_components,
@@ -70,8 +71,24 @@ def parse_kmp(n_nonzero_coefs=200,
     except KeyError:
         raise ValueError("Wrong dataset name!")
 
+
 def plot(pl, x, y, yerr, label, error_bar):
     if error_bar:
         pl.errorbar(x, y, yerr=yerr, label=label)
     else:
         pl.plot(x, y, label=label)
+
+
+def split_data(X_train, y_train, X_test, y_test, n_folds, stratified):
+    sparse = sp.issparse(X_train)
+
+    if X_test is not None:
+        yield X_train, y_train, X_test, y_test
+    else:
+        if stratified:
+            cv = StratifiedKFold(y_train, n_folds, indices=sparse)
+        else:
+            cv = KFold(X_train.shape[0], n_folds, indices=sparse)
+
+        for train, test in cv:
+            yield X_train[train], y_train[train], X_train[test], y_train[test]

@@ -20,7 +20,7 @@ from lightning.kmp import KMPClassifier, select_components
 from sklearn.externals.joblib import Memory
 from lightning.datasets import get_data_home
 
-from common import parse_kmp, plot
+from common import parse_kmp, plot, split_data
 
 memory = Memory(cachedir=get_data_home(), verbose=0, compress=6)
 
@@ -59,18 +59,17 @@ clf_r = []
 clf_b = []
 clf_s = []
 
-for i in range(opts.n_times):
-    if X_test is None:
-        X_tr, y_tr, X_te, y_te = split_data(X_train, y_train,
-                                            proportion_train=0.75,
-                                            random_state=i)
+for X_tr, y_tr, X_te, y_te in split_data(X_train, y_train,
+                                         X_test, y_test,
+                                         opts.n_folds,
+                                         not opts.regression):
 
     clf_r.append(fit_kmp(X_tr, y_tr, X_te, y_te, "random", opts,
-                         random_state=i))
+                         random_state=0))
     clf_b.append(fit_kmp(X_tr, y_tr, X_te, y_te, "balanced", opts,
-                    random_state=i))
+                    random_state=0))
     clf_s.append(fit_kmp(X_tr, y_tr, X_te, y_te, "stratified", opts,
-                    random_state=i))
+                    random_state=0))
 
 rs = np.vstack([clf.validation_scores_ for clf in clf_r])
 bs = np.vstack([clf.validation_scores_ for clf in clf_b])

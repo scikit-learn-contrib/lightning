@@ -4,4 +4,3 @@ from .loaders import load_usps
 from .loaders import load_mnist
 from .loaders import get_loader
 from .loaders import load_dataset
-from .loaders import split_data

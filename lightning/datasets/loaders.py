@@ -197,14 +197,3 @@ def load_dataset(dataset):
     return get_loader(dataset)()
 
 
-def split_data(X_train, y_train, proportion_train, random_state):
-    cv = ShuffleSplit(X_train.shape[0],
-                      n_iterations=1,
-                      test_fraction=1.0 - proportion_train,
-                      random_state=random_state)
-    train, test = list(cv)[0]
-    X_tr = X_train[train]
-    y_tr = y_train[train]
-    X_te = X_train[test]
-    y_te = y_train[test]
-    return X_tr, y_tr, X_te, y_te

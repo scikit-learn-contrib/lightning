@@ -13,13 +13,13 @@ import pylab as pl
 
 from sklearn.linear_model import Ridge
 
-from lightning.datasets import load_dataset, split_data
+from lightning.datasets import load_dataset
 from lightning.kmp import KMPClassifier, KMPRegressor
 
 from sklearn.externals.joblib import Memory
 from lightning.datasets import get_data_home
 
-from common import parse_kmp, plot
+from common import parse_kmp, plot, split_data
 
 memory = Memory(cachedir=get_data_home(), verbose=0, compress=6)
 
@@ -47,17 +47,15 @@ def fit_kmp(X_train, y_train, X_test, y_test, opts, random_state):
     return clf
 
 X_train, y_train, X_test, y_test, opts, args = parse_kmp()
-X_tr, y_tr, X_te, y_te = X_train, y_train, X_test, y_test
 
 clfs = []
 
-for i in range(opts.n_times):
-    if X_test is None:
-        X_tr, y_tr, X_te, y_te = split_data(X_train, y_train,
-                                            proportion_train=0.75,
-                                            random_state=i)
+for X_tr, y_tr, X_te, y_te in split_data(X_train, y_train,
+                                         X_test, y_test,
+                                         opts.n_folds,
+                                         not opts.regression):
 
-    clf = fit_kmp(X_tr, y_tr, X_te, y_te, opts, random_state=i)
+    clf = fit_kmp(X_tr, y_tr, X_te, y_te, opts, random_state=0)
     clfs.append(clf)
 
 vs = np.vstack([clf.validation_scores_ for clf in clfs])
