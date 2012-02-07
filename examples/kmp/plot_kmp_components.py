@@ -59,10 +59,10 @@ def fit_kmp(X_train, y_train, X_test, y_test, components, random_state):
     clf.fit(X_train, y_train)
     return clf
 
-X_train, y_train, X_test, y_test, opts, args = parse_kmp()
+X_train, y_train, X_test, y_test, opts, args = parse_kmp(check_duplicates=True)
 X_tr, y_tr, X_te, y_te = X_train, y_train, X_test, y_test
 
-class_distrib = "random"
+class_distrib = "random" if opts.regression else "balanced"
 
 clf_s = []
 clf_kg = []
