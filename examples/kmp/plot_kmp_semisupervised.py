@@ -98,16 +98,16 @@ for X_tr, y_tr, X_te, y_te in cv:
                                                y_tr,
                                                n_components=opts.n_components,
                                                perc_label=perc_label,
-                                               random_state=0)
+                                               random_state=j)
 
-        clf = fit_kmp(X_l, y_l, X_te, y_te, X_l, opts, 0)
+        clf = fit_kmp(X_l, y_l, X_te, y_te, X_l, opts, j)
         #acc_sup[i, j] = clf.validation_scores_[-1]
         acc_sup[i, j] = clf.best_score_
 
         if perc_label == 1.0:
             acc_semi[i, j] = acc_sup[i, j]
         else:
-            clf = fit_kmp(X_l, y_l, X_te, y_te, X_all, opts, 0)
+            clf = fit_kmp(X_l, y_l, X_te, y_te, X_all, opts, j)
             #acc_semi[i, j] = clf.validation_scores_[-1]
             acc_semi[i, j] = clf.best_score_
 

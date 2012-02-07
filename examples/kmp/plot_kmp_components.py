@@ -62,13 +62,14 @@ def fit_kmp(X_train, y_train, X_test, y_test, components, random_state):
 X_train, y_train, X_test, y_test, opts, args = parse_kmp()
 X_tr, y_tr, X_te, y_te = X_train, y_train, X_test, y_test
 
-class_distrib = "random" if opts.regression else "balanced"
+class_distrib = "random"
 
 clf_s = []
 clf_kg = []
 clf_kb = []
 clf_ks = []
 
+j = 0
 for X_tr, y_tr, X_te, y_te in split_data(X_train, y_train,
                                          X_test, y_test,
                                          opts.n_folds,
@@ -76,34 +77,36 @@ for X_tr, y_tr, X_te, y_te in split_data(X_train, y_train,
 
     # selected from datasets
     components = select_components(X_tr, y_tr, opts.n_components,
-                                   class_distrib=class_distrib, random_state=0)
+                                   class_distrib=class_distrib, random_state=j)
     clf_s.append(fit_kmp(X_tr, y_tr, X_te, y_te, components,
-                         random_state=0))
+                         random_state=j))
 
     # k-means global
     components = create_kmeans_comp(X_tr, y_tr,
                                     n_components=opts.n_components,
                                     class_distrib="global",
-                                    random_state=0)
+                                    random_state=j)
     clf_kg.append(fit_kmp(X_tr, y_tr, X_te, y_te, components,
-                          random_state=0))
+                          random_state=j))
 
     if not opts.regression:
         # k-means balanced
         components = create_kmeans_comp(X_tr, y_tr,
                                         n_components=opts.n_components,
                                         class_distrib="balanced",
-                                        random_state=0)
+                                        random_state=j)
         clf_kb.append(fit_kmp(X_tr, y_tr, X_te, y_te, components,
-                              random_state=0))
+                              random_state=j))
 
         # k-means stratified
         components = create_kmeans_comp(X_tr, y_tr,
                                         n_components=opts.n_components,
                                         class_distrib="stratified",
-                                        random_state=0)
+                                        random_state=j)
         clf_ks.append(fit_kmp(X_tr, y_tr, X_te, y_te, components,
-                              random_state=0))
+                              random_state=j))
+
+    j += 1
 
 ss = np.vstack([clf.validation_scores_ for clf in clf_s])
 kgs = np.vstack([clf.validation_scores_ for clf in clf_kg])
