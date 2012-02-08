@@ -6,7 +6,7 @@ from optparse import OptionParser
 import numpy as np
 import scipy.sparse as sp
 
-from sklearn.cross_validation import KFold, StratifiedKFold
+from sklearn.cross_validation import KFold, StratifiedKFold, ShuffleSplit
 
 from lightning.datasets import load_dataset
 
@@ -19,10 +19,13 @@ def parse_kmp(n_nonzero_coefs=200,
               epsilon=0.0,
               n_validate=5,
               n_refit=5,
-              alpha=0.1,
               scale=False,
               scale_y=False,
-              check_duplicates=False):
+              check_duplicates=False,
+              force_cv=False,
+              cvtype="random",
+              bars=False,
+              savefig=""):
     op = OptionParser()
     op.add_option("--n_folds", action="store", default=5,
                   dest="n_folds", type="int")
@@ -44,8 +47,6 @@ def parse_kmp(n_nonzero_coefs=200,
                   dest="n_validate", type="int")
     op.add_option("--n_refit", action="store", default=n_refit, dest="n_refit",
                   type="int")
-    op.add_option("--alpha", action="store", default=alpha, dest="alpha",
-                  type="float")
     op.add_option("--scale", action="store_true", default=scale, dest="scale")
     op.add_option("--scale_y", action="store_true", default=scale_y,
                   dest="scale_y")
@@ -53,7 +54,14 @@ def parse_kmp(n_nonzero_coefs=200,
                   default=check_duplicates, dest="check_duplicates")
     op.add_option("--regression", action="store_true", default=scale,
                   dest="regression")
-
+    op.add_option("--force_cv", action="store_true", default=force_cv,
+                  dest="force_cv")
+    op.add_option("--cvtype", action="store", default=cvtype, dest="cvtype",
+                  type="str")
+    op.add_option("--bars", action="store_true", default=bars,
+                  dest="bars")
+    op.add_option("--savefig", action="store", default=savefig, dest="savefig",
+                  type="str")
 
     (opts, args) = op.parse_args()
 
@@ -79,16 +87,26 @@ def plot(pl, x, y, yerr, label, error_bar):
         pl.plot(x, y, label=label)
 
 
-def split_data(X_train, y_train, X_test, y_test, n_folds, stratified):
+def split_data(X_train, y_train, X_test, y_test, n_folds, cvtype="random",
+               force_cv=False):
     sparse = sp.issparse(X_train)
 
-    if X_test is not None:
+    if X_test is not None and not force_cv:
         yield X_train, y_train, X_test, y_test
     else:
-        if stratified:
+        if X_test is not None:
+            X_train = np.vstack((X_train, X_test))
+            y_train = np.concatenate((y_train, y_test))
+
+        if cvtype == "stratified":
             cv = StratifiedKFold(y_train, n_folds, indices=sparse)
-        else:
+        elif cvtype == "kfold":
             cv = KFold(X_train.shape[0], n_folds, indices=sparse)
+        elif cvtype == "random":
+            cv = ShuffleSplit(X_train.shape[0], n_iterations=n_folds,
+                              test_fraction=0.3, random_state=0)
+        else:
+            raise ValueError("Unknown cvtype")
 
         for train, test in cv:
             yield X_train[train], y_train[train], X_train[test], y_train[test]

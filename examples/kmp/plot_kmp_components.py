@@ -27,6 +27,16 @@ memory = Memory(cachedir=get_data_home(), verbose=0, compress=6)
 
 from common import parse_kmp, plot, split_data
 
+options = ("n_nonzero_coefs", "metric",
+           "gamma", "degree", "coef0", "scale", "scale_y",
+           "check_duplicates", "n_validate", "epsilon")
+
+def options_to_dict(opts):
+    d = {}
+    for opt in options:
+        d[opt] = getattr(opts, opt)
+    return d
+
 @memory.cache
 def create_kmeans_comp(X_train, y_train, class_distrib, n_components,
                        random_state):
@@ -37,30 +47,21 @@ def create_kmeans_comp(X_train, y_train, class_distrib, n_components,
 
 
 @memory.cache
-def fit_kmp(X_train, y_train, X_test, y_test, components, random_state):
-    klass = KMPRegressor if opts.regression else KMPClassifier
-    clf = klass(n_nonzero_coefs=opts.n_nonzero_coefs,
-                init_components=components,
-                n_refit=opts.n_refit,
-                estimator=Ridge(alpha=opts.alpha),
+def fit_kmp(X_train, y_train, X_test, y_test, components, opt_dict, regression,
+            random_state):
+    klass = KMPRegressor if regression else KMPClassifier
+    clf = klass(init_components=components,
+                estimator=Ridge(alpha=0.1),
                 X_val=X_test, y_val=y_test,
-                metric=opts.metric,
-                gamma=opts.gamma,
-                degree=opts.degree,
-                coef0=opts.coef0,
-                scale=opts.scale,
-                scale_y=opts.scale_y,
-                check_duplicates=opts.check_duplicates,
-                n_validate=opts.n_validate,
-                epsilon=opts.epsilon,
                 verbose=1,
                 random_state=random_state,
-                n_jobs=-1)
+                n_jobs=-1,
+                **opt_dict)
     clf.fit(X_train, y_train)
     return clf
 
 X_train, y_train, X_test, y_test, opts, args = parse_kmp(check_duplicates=True)
-X_tr, y_tr, X_te, y_te = X_train, y_train, X_test, y_test
+opt_dict = options_to_dict(opts)
 
 class_distrib = "random" if opts.regression else "balanced"
 
@@ -73,38 +74,44 @@ j = 0
 for X_tr, y_tr, X_te, y_te in split_data(X_train, y_train,
                                          X_test, y_test,
                                          opts.n_folds,
-                                         not opts.regression):
+                                         opts.cvtype,
+                                         opts.force_cv):
+    print "Fold", j
 
     # selected from datasets
+    print "Selected components"
     components = select_components(X_tr, y_tr, opts.n_components,
                                    class_distrib=class_distrib, random_state=j)
-    clf_s.append(fit_kmp(X_tr, y_tr, X_te, y_te, components,
-                         random_state=j))
+    clf_s.append(fit_kmp(X_tr, y_tr, X_te, y_te, components, opt_dict,
+                         opts.regression, random_state=j))
 
     # k-means global
+    print "Global k-means"
     components = create_kmeans_comp(X_tr, y_tr,
                                     n_components=opts.n_components,
                                     class_distrib="global",
                                     random_state=j)
-    clf_kg.append(fit_kmp(X_tr, y_tr, X_te, y_te, components,
-                          random_state=j))
+    clf_kg.append(fit_kmp(X_tr, y_tr, X_te, y_te, components, opt_dict,
+                          opts.regression, random_state=j))
 
     if not opts.regression:
         # k-means balanced
+        print "Balanced k-means"
         components = create_kmeans_comp(X_tr, y_tr,
                                         n_components=opts.n_components,
                                         class_distrib="balanced",
                                         random_state=j)
-        clf_kb.append(fit_kmp(X_tr, y_tr, X_te, y_te, components,
-                              random_state=j))
+        clf_kb.append(fit_kmp(X_tr, y_tr, X_te, y_te, components, opt_dict,
+                              opts.regression, random_state=j))
 
         # k-means stratified
+        print "Stratified k-means"
         components = create_kmeans_comp(X_tr, y_tr,
                                         n_components=opts.n_components,
                                         class_distrib="stratified",
                                         random_state=j)
-        clf_ks.append(fit_kmp(X_tr, y_tr, X_te, y_te, components,
-                              random_state=j))
+        clf_ks.append(fit_kmp(X_tr, y_tr, X_te, y_te, components, opt_dict,
+                              opts.regression, random_state=j))
 
     j += 1
 
@@ -115,24 +122,22 @@ if not opts.regression:
     kbs = np.vstack([clf.validation_scores_ for clf in clf_kb])
     kss = np.vstack([clf.validation_scores_ for clf in clf_ks])
 
-error_bar = len(args) == 2
-
 pl.figure()
 
 plot(pl, clf_s[0].iterations_,
      ss.mean(axis=0), ss.std(axis=0),
-     "Selected", error_bar)
+     "Selected", opts.bars)
 plot(pl, clf_kg[0].iterations_,
      kgs.mean(axis=0), kgs.std(axis=0),
-     "K-means global", error_bar)
+     "K-means global", opts.bars)
 
 if not opts.regression:
     plot(pl, clf_kb[0].iterations_,
          kbs.mean(axis=0), kbs.std(axis=0),
-         "K-means balanced", error_bar)
+         "K-means balanced", opts.bars)
     plot(pl, clf_ks[0].iterations_,
          kss.mean(axis=0), kss.std(axis=0),
-         "K-means stratified", error_bar)
+         "K-means stratified", opts.bars)
 
 pl.xlabel('Iteration')
 
@@ -143,4 +148,7 @@ else:
     pl.ylabel('Accuracy')
     pl.legend(loc='lower right')
 
-pl.show()
+if len(opts.savefig) > 0:
+    pl.savefig(opts.savefig)
+else:
+    pl.show()
