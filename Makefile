@@ -1,6 +1,32 @@
-
+PYTHON ?= python
+CYTHON ?= cython
+NOSETESTS ?= nosetests
 DATADIR=$(HOME)/lightning_data
 
+# Compilation...
+
+CYTHONSRC= $(wildcard lightning/*.pyx)
+CSRC= $(CYTHONSRC:.pyx=.c)
+
+inplace: $(CSRC)
+	$(PYTHON) setup.py build_ext -i
+
+%.c: %.pyx
+	$(CYTHON) $<
+
+# Tests...
+#
+test-code: in
+	$(NOSETESTS) -s lightning
+
+test-coverage:
+	$(NOSETESTS) -s --with-coverage --cover-html --cover-html-dir=coverage \
+	--cover-package=lightning lightning
+
+test: test-code test-doc
+
+# Datasets...
+#
 datadir:
 	mkdir -p $(DATADIR)
 

@@ -6,6 +6,7 @@
 .DS_Store
 build
 lightning/**/*.html
+lightning/*.c
 
 dist/
 doc/_build/
