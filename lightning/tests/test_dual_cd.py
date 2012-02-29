@@ -37,4 +37,4 @@ def test_fit_rbf_binary():
     clf = DualSVC(loss="l1", random_state=0)
     clf.fit(bin_dense, bin_target)
     y_pred = clf.predict(bin_dense)
-    print np.mean(y_pred == bin_target)
+    assert_equal(np.mean(y_pred == bin_target), 1.0)

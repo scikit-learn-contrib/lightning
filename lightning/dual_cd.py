@@ -12,11 +12,12 @@ from dual_cd_fast import _dual_cd
 
 class DualLinearSVC(BaseEstimator):
 
-    def __init__(self, C=1.0, loss="l1", max_iter=1000,
+    def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-4,
                  random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
         self.max_iter = max_iter
+        self.tol = tol
         self.random_state = random_state
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -26,7 +27,7 @@ class DualLinearSVC(BaseEstimator):
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = self.label_binarizer_.fit_transform(y)
         W = [_dual_cd(X, Y[:, i],
-                      self.C, self.loss, self.max_iter, rs,
+                      self.C, self.loss, self.max_iter, rs, self.tol,
                       precomputed_kernel=False, verbose=self.verbose) \
                 for i in range(Y.shape[1])]
         self.coef_ = np.array(W)
@@ -46,11 +47,12 @@ class DualSVC(BaseEstimator):
                  random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
+        self.max_iter = max_iter
+        self.tol = tol
         self.kernel = kernel
         self.gamma = gamma
         self.coef0 = coef0
         self.degree = degree
-        self.max_iter = max_iter
         self.random_state = random_state
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -68,7 +70,7 @@ class DualSVC(BaseEstimator):
                              filter_params=True, n_jobs=self.n_jobs,
                              **self._kernel_params())
         Alpha = [_dual_cd(K, Y[:, i],
-                          self.C, self.loss, self.max_iter, rs,
+                          self.C, self.loss, self.max_iter, rs, self.tol,
                           precomputed_kernel=True, verbose=self.verbose)
                     for i in range(Y.shape[1])]
         self.dual_coef_ = np.array(Alpha) * Y.T
