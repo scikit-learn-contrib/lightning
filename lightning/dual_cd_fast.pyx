@@ -53,18 +53,22 @@ def _dual_cd(X,
         U = DBL_MAX
         D_ii = 1.0 / (2 * C)
 
-    cdef np.ndarray[double, ndim=2, mode='c'] Q_bar
+    cdef np.ndarray[double, ndim=2, mode='c'] K
     cdef np.ndarray[double, ndim=1, mode='c'] Q_bar_diag
+    Q_bar_diag = np.zeros(n_samples, dtype=np.float64)
 
     cdef int j
 
     if precomputed_kernel:
-        Q_bar = X * np.outer(y, y)
-        Q_bar += np.eye(n_samples) * D_ii
-    else:
-        Q_bar_diag = np.zeros(n_samples, dtype=np.float64)
+        K = X
+
         for j in xrange(n_samples):
-            Q_bar_diag[j] = np.dot(X[j], X[j]) + D_ii
+            Q_bar_diag[j] = K[j, j]
+    else:
+        for j in xrange(n_samples):
+            Q_bar_diag[j] = np.dot(X[j], X[j])
+
+    Q_bar_diag += D_ii
 
     cdef double M
     cdef double m
@@ -76,7 +80,6 @@ def _dual_cd(X,
     cdef unsigned int it = 0
     cdef int s
     cdef double G, PG
-    cdef double Q_bar_ii
     cdef double step
 
     for it in xrange(max_iter):
@@ -95,7 +98,8 @@ def _dual_cd(X,
                 # G = np.dot(Q_bar, alpha)[i] - 1
                 G = -1
                 for j in xrange(n_samples):
-                    G += Q_bar[i, j] * alpha[j]
+                    G += K[i, j] * y[i] * y[j] * alpha[j]
+                G += D_ii * alpha[i]
             else:
                 # G = y_i * np.dot(w, X[i]) - 1 + D_ii * alpha_i
                 G = np.dot(w, X[i])
@@ -127,12 +131,7 @@ def _dual_cd(X,
             if fabs(PG) > 1e-12:
                alpha_old = alpha_i
 
-               if precomputed_kernel:
-                   Q_bar_ii = Q_bar[i, i]
-               else:
-                   Q_bar_ii = Q_bar_diag[i]
-
-               alpha[i] = min(max(alpha_i - G / Q_bar_ii, 0.0), U)
+               alpha[i] = min(max(alpha_i - G / Q_bar_diag[i], 0.0), U)
 
                if not precomputed_kernel:
                    step = (alpha[i] - alpha_old) * y_i
