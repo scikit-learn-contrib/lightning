@@ -6,11 +6,12 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
+from sklearn.metrics.pairwise import pairwise_kernels
 
 
-def _dual_cd(X, y, C, loss, max_iter, rs, tol=1e-4, precomputed=False,
-             verbose=False):
-    if precomputed:
+def _dual_cd(X, y, C, loss, max_iter, rs, tol=1e-4, precomputed_kernel=False,
+             verbose=0):
+    if precomputed_kernel:
         n_samples = X.shape[0]
     else:
         n_samples, n_features = X.shape
@@ -27,7 +28,7 @@ def _dual_cd(X, y, C, loss, max_iter, rs, tol=1e-4, precomputed=False,
         U = np.inf
         D_ii = 1.0 / (2 * C)
 
-    if precomputed:
+    if precomputed_kernel:
         Q_bar = X * np.outer(y, y)
         Q_bar += np.eye(n_samples) * D_ii
 
@@ -48,7 +49,7 @@ def _dual_cd(X, y, C, loss, max_iter, rs, tol=1e-4, precomputed=False,
             y_i = y[i]
             alpha_i = alpha[i]
 
-            if precomputed:
+            if precomputed_kernel:
                 # Need to be optimized in cython
                 #G = -1
                 #for j in xrange(n_samples):
@@ -84,7 +85,7 @@ def _dual_cd(X, y, C, loss, max_iter, rs, tol=1e-4, precomputed=False,
             if np.abs(PG) > 1e-12:
                alpha_old = alpha_i
 
-               if precomputed:
+               if precomputed_kernel:
                    Q_bar_ii = Q_bar[i, i]
                else:
                 # FIXME: can be pre-computed
@@ -92,7 +93,7 @@ def _dual_cd(X, y, C, loss, max_iter, rs, tol=1e-4, precomputed=False,
 
                alpha[i] = min(max(alpha_i - G / Q_bar_ii, 0.0), U)
 
-               if not precomputed:
+               if not precomputed_kernel:
                    w += (alpha[i] - alpha_old) * y_i * X[i]
 
         if M - m <= tol:
@@ -112,7 +113,7 @@ def _dual_cd(X, y, C, loss, max_iter, rs, tol=1e-4, precomputed=False,
         if M <= 0: M_bar = np.inf
         if m >= 0: m_bar = -np.inf
 
-    if precomputed:
+    if precomputed_kernel:
         return alpha
     else:
         return w
@@ -120,13 +121,14 @@ def _dual_cd(X, y, C, loss, max_iter, rs, tol=1e-4, precomputed=False,
 
 class DualLinearSVC(BaseEstimator):
 
-    def __init__(self, C=1.0, loss="l1", max_iter=1000, random_state=None,
-                 verbose=0):
+    def __init__(self, C=1.0, loss="l1", max_iter=1000,
+                 random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
         self.max_iter = max_iter
         self.random_state = random_state
         self.verbose = verbose
+        self.n_jobs = n_jobs
 
     def fit(self, X, y):
         rs = check_random_state(self.random_state)
@@ -134,7 +136,7 @@ class DualLinearSVC(BaseEstimator):
         Y = self.label_binarizer_.fit_transform(y)
         W = [_dual_cd(X, Y[:, i],
                       self.C, self.loss, self.max_iter, rs,
-                      precomputed=False, verbose=self.verbose) \
+                      precomputed_kernel=False, verbose=self.verbose) \
                 for i in range(Y.shape[1])]
         self.coef_ = np.array(W)
 
@@ -148,22 +150,35 @@ class DualLinearSVC(BaseEstimator):
 
 class DualSVC(BaseEstimator):
 
-    def __init__(self, C=1.0, loss="l1", max_iter=1000, random_state=None,
-                 verbose=0):
+    def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-4,
+                 kernel="linear", gamma=0.1, coef0=1, degree=4,
+                 random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
+        self.kernel = kernel
+        self.gamma = gamma
+        self.coef0 = coef0
+        self.degree = degree
         self.max_iter = max_iter
         self.random_state = random_state
         self.verbose = verbose
+        self.n_jobs = n_jobs
+
+    def _kernel_params(self):
+        return {"gamma" : self.gamma,
+                "degree" : self.degree,
+                "coef0" : self.coef0}
 
     def fit(self, X, y):
         rs = check_random_state(self.random_state)
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = self.label_binarizer_.fit_transform(y)
-        K = np.dot(X, X.T)
+        K = pairwise_kernels(X, X, metric=self.kernel,
+                             filter_params=True, n_jobs=self.n_jobs,
+                             **self._kernel_params())
         Alpha = [_dual_cd(K, Y[:, i],
                           self.C, self.loss, self.max_iter, rs,
-                          precomputed=True, verbose=self.verbose)
+                          precomputed_kernel=True, verbose=self.verbose)
                     for i in range(Y.shape[1])]
         self.dual_coef_ = np.array(Alpha) * Y.T
         # FIXME: can trim the model

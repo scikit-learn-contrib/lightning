@@ -32,3 +32,9 @@ def test_fit_linear_binary():
 
     assert_array_almost_equal(y_pred, y_pred2)
 
+
+def test_fit_rbf_binary():
+    clf = DualSVC(loss="l1", random_state=0)
+    clf.fit(bin_dense, bin_target)
+    y_pred = clf.predict(bin_dense)
+    print np.mean(y_pred == bin_target)
