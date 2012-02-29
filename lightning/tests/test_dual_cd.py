@@ -22,19 +22,21 @@ mult_sparse = sp.csr_matrix(mult_dense)
 
 
 def test_fit_linear_binary():
-    clf = DualLinearSVC(loss="l1", random_state=0)
-    clf.fit(bin_dense, bin_target)
-    y_pred = clf.decision_function(bin_dense)
+    for loss in ("l1", "l2"):
+        clf = DualLinearSVC(loss=loss, random_state=0)
+        clf.fit(bin_dense, bin_target)
+        y_pred = clf.decision_function(bin_dense)
 
-    clf2 = DualSVC(loss="l1", random_state=0)
-    clf2.fit(bin_dense, bin_target)
-    y_pred2 = clf2.decision_function(bin_dense)
+        clf2 = DualSVC(loss=loss, random_state=0)
+        clf2.fit(bin_dense, bin_target)
+        y_pred2 = clf2.decision_function(bin_dense)
 
-    assert_array_almost_equal(y_pred, y_pred2)
+        assert_array_almost_equal(y_pred, y_pred2)
 
 
 def test_fit_rbf_binary():
-    clf = DualSVC(loss="l1", random_state=0)
-    clf.fit(bin_dense, bin_target)
-    y_pred = clf.predict(bin_dense)
-    assert_equal(np.mean(y_pred == bin_target), 1.0)
+    for loss in ("l1", "l2"):
+        clf = DualSVC(loss=loss, random_state=0)
+        clf.fit(bin_dense, bin_target)
+        y_pred = clf.predict(bin_dense)
+        assert_equal(np.mean(y_pred == bin_target), 1.0)
