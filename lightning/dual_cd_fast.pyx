@@ -13,6 +13,9 @@ cimport numpy as np
 cdef extern from "math.h":
    double fabs(double)
 
+cdef extern from "float.h":
+   double DBL_MAX
+
 def _dual_cd(X,
              np.ndarray[double, ndim=1, mode='c']y,
              double C,
@@ -47,7 +50,7 @@ def _dual_cd(X,
         U = C
         D_ii = 0
     elif loss == "l2":
-        U = np.inf
+        U = DBL_MAX
         D_ii = 1.0 / (2 * C)
 
     cdef np.ndarray[double, ndim=2, mode='c'] Q_bar
@@ -68,18 +71,19 @@ def _dual_cd(X,
     cdef int i
     cdef double y_i
     cdef double alpha_i, alpha_old
-    cdef double M_bar = np.inf
-    cdef double m_bar = -np.inf
+    cdef double M_bar = DBL_MAX
+    cdef double m_bar = -DBL_MAX
     cdef unsigned int it = 0
     cdef int s
     cdef double G, PG
     cdef double Q_bar_ii
+    cdef double step
 
     for it in xrange(max_iter):
         rs.shuffle(A[:active_size])
 
-        M = -np.inf
-        m = np.inf
+        M = -DBL_MAX
+        m = DBL_MAX
 
         s = 0
         while s < active_size:
@@ -126,13 +130,13 @@ def _dual_cd(X,
                if precomputed_kernel:
                    Q_bar_ii = Q_bar[i, i]
                else:
-                # FIXME: can be pre-computed
                    Q_bar_ii = Q_bar_diag[i]
 
                alpha[i] = min(max(alpha_i - G / Q_bar_ii, 0.0), U)
 
                if not precomputed_kernel:
-                   w += (alpha[i] - alpha_old) * y_i * X[i]
+                   step = (alpha[i] - alpha_old) * y_i
+                   w += step * X[i]
 
             s += 1
 
@@ -145,15 +149,15 @@ def _dual_cd(X,
                 break
             else:
                 active_size = n_samples
-                M_bar = np.inf
-                m_bar = -np.inf
+                M_bar = DBL_MAX
+                m_bar = -DBL_MAX
                 continue
 
         M_bar = M
         m_bar = m
 
-        if M <= 0: M_bar = np.inf
-        if m >= 0: m_bar = -np.inf
+        if M <= 0: M_bar = DBL_MAX
+        if m >= 0: m_bar = -DBL_MAX
 
     # end for
 
