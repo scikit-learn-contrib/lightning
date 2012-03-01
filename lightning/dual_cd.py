@@ -23,14 +23,17 @@ class DualLinearSVC(BaseEstimator):
         self.n_jobs = n_jobs
 
     def fit(self, X, y):
+        n_features = X.shape[1]
         rs = check_random_state(self.random_state)
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = self.label_binarizer_.fit_transform(y)
-        W = [_dual_cd(X, Y[:, i],
-                      self.C, self.loss, self.max_iter, rs, self.tol,
-                      precomputed_kernel=False, verbose=self.verbose) \
-                for i in range(Y.shape[1])]
-        self.coef_ = np.array(W)
+        n_vectors = Y.shape[1]
+        self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
+
+        for i in xrange(n_vectors):
+            _dual_cd(self.coef_[i], X, Y[:, i],
+                     self.C, self.loss, self.max_iter, rs, self.tol,
+                     precomputed_kernel=False, verbose=self.verbose)
 
     def decision_function(self, X):
         return np.dot(X, self.coef_.T)
@@ -63,17 +66,20 @@ class DualSVC(BaseEstimator):
                 "coef0" : self.coef0}
 
     def fit(self, X, y):
+        n_samples = X.shape[0]
         rs = check_random_state(self.random_state)
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = self.label_binarizer_.fit_transform(y)
+        n_vectors = Y.shape[1]
         K = pairwise_kernels(X, X, metric=self.kernel,
                              filter_params=True, n_jobs=self.n_jobs,
                              **self._kernel_params())
-        Alpha = [_dual_cd(K, Y[:, i],
-                          self.C, self.loss, self.max_iter, rs, self.tol,
-                          precomputed_kernel=True, verbose=self.verbose)
-                    for i in range(Y.shape[1])]
-        self.dual_coef_ = np.array(Alpha) * Y.T
+        self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
+        for i in xrange(n_vectors):
+            _dual_cd(self.dual_coef_[i], K, Y[:, i],
+                     self.C, self.loss, self.max_iter, rs, self.tol,
+                     precomputed_kernel=True, verbose=self.verbose)
+        self.dual_coef_ *= Y.T
         # FIXME: can trim the model
         self.X_train_ = X
 
