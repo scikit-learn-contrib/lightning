@@ -87,6 +87,8 @@ def _dual_cd(weights,
     cdef double step
 
     for it in xrange(max_iter):
+        # FIXME: Could select instances greedily via randomized search instead
+        #        of randomly
         rs.shuffle(A[:active_size])
 
         M = -DBL_MAX
