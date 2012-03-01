@@ -3,14 +3,14 @@
 
 import numpy as np
 
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state, safe_mask
 from sklearn.metrics.pairwise import pairwise_kernels
 
 from dual_cd_fast import _dual_cd
 
-class DualLinearSVC(BaseEstimator):
+class DualLinearSVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-4,
                  random_state=None, verbose=0, n_jobs=1):
@@ -35,6 +35,8 @@ class DualLinearSVC(BaseEstimator):
                      self.C, self.loss, self.max_iter, rs, self.tol,
                      precomputed_kernel=False, verbose=self.verbose)
 
+        return self
+
     def decision_function(self, X):
         return np.dot(X, self.coef_.T)
 
@@ -43,7 +45,7 @@ class DualLinearSVC(BaseEstimator):
         return self.label_binarizer_.inverse_transform(pred, threshold=0)
 
 
-class DualSVC(BaseEstimator):
+class DualSVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-4,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
@@ -92,6 +94,8 @@ class DualSVC(BaseEstimator):
 
         if self.verbose >= 1:
             print "Number of support vectors:", np.sum(sv)
+
+        return self
 
     def decision_function(self, X):
         K = pairwise_kernels(X, self.support_vectors_, metric=self.kernel,
