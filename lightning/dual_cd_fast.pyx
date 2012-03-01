@@ -119,7 +119,7 @@ def _dual_cd(weights,
                     continue
                 elif G < 0:
                     PG = G
-            elif alpha_i == C: # the paper uses U but liblinear uses C
+            elif alpha_i == U:
                 if G < m_bar:
                     active_size -= 1
                     A[s], A[active_size] = A[active_size], A[s]
@@ -135,8 +135,7 @@ def _dual_cd(weights,
             if fabs(PG) > 1e-12:
                 alpha_old = alpha_i
 
-                # the paper uses U but liblinear uses C
-                alpha[i] = min(max(alpha_i - G / Q_bar_diag[i], 0.0), C)
+                alpha[i] = min(max(alpha_i - G / Q_bar_diag[i], 0), U)
 
                 if not precomputed_kernel:
                     step = (alpha[i] - alpha_old) * y_i
