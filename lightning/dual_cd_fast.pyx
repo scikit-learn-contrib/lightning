@@ -17,7 +17,7 @@ cdef extern from "float.h":
    double DBL_MAX
 
 def _dual_cd(X,
-             np.ndarray[double, ndim=1, mode='c']y,
+             np.ndarray[double, ndim=1]y,
              double C,
              loss,
              int max_iter,
@@ -115,7 +115,7 @@ def _dual_cd(X,
                     continue
                 elif G < 0:
                     PG = G
-            elif alpha_i == U:
+            elif alpha_i == C: # the paper uses U but liblinear uses C
                 if G < m_bar:
                     active_size -= 1
                     A[s], A[active_size] = A[active_size], A[s]
@@ -129,13 +129,14 @@ def _dual_cd(X,
             m = min(m, PG)
 
             if fabs(PG) > 1e-12:
-               alpha_old = alpha_i
+                alpha_old = alpha_i
 
-               alpha[i] = min(max(alpha_i - G / Q_bar_diag[i], 0.0), U)
+                # the paper uses U but liblinear uses C
+                alpha[i] = min(max(alpha_i - G / Q_bar_diag[i], 0.0), C)
 
-               if not precomputed_kernel:
-                   step = (alpha[i] - alpha_old) * y_i
-                   w += step * X[i]
+                if not precomputed_kernel:
+                    step = (alpha[i] - alpha_old) * y_i
+                    w += step * X[i]
 
             s += 1
 
