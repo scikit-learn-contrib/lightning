@@ -40,3 +40,16 @@ def test_fit_rbf_binary():
         clf.fit(bin_dense, bin_target)
         y_pred = clf.predict(bin_dense)
         assert_equal(np.mean(y_pred == bin_target), 1.0)
+
+def test_precomputed_kernel():
+    clf = DualSVC(loss="l1", kernel="linear", gamma=0.1, random_state=0)
+    clf.fit(bin_dense, bin_target)
+    y_pred = clf.decision_function(bin_dense)
+
+    clf = DualSVC(loss="l1", kernel="precomputed", random_state=0)
+    K = np.dot(bin_dense, bin_dense.T)
+    clf.fit(K, bin_target)
+    y_pred2 = clf.decision_function(K)
+
+    assert_array_almost_equal(y_pred, y_pred2)
+

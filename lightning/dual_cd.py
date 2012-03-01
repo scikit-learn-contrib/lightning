@@ -61,6 +61,7 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         self.random_state = random_state
         self.verbose = verbose
         self.n_jobs = n_jobs
+        self.support_vectors_ = None
 
     def _kernel_params(self):
         return {"gamma" : self.gamma,
@@ -87,10 +88,11 @@ class DualSVC(BaseEstimator, ClassifierMixin):
 
         self.dual_coef_ *= Y.T
 
-        sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)
-        self.dual_coef_ = self.dual_coef_[:, sv]
-        mask = safe_mask(X, sv)
-        self.support_vectors_ = X[mask]
+        if self.kernel != "precomputed":
+            sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)
+            self.dual_coef_ = self.dual_coef_[:, sv]
+            mask = safe_mask(X, sv)
+            self.support_vectors_ = X[mask]
 
         if self.verbose >= 1:
             print "Number of support vectors:", np.sum(sv)
