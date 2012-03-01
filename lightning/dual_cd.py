@@ -13,14 +13,16 @@ from dual_cd_fast import _dual_cd
 class DualLinearSVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-4,
-                 random_state=None, verbose=0, n_jobs=1):
+                 warm_start=False, random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
         self.max_iter = max_iter
         self.tol = tol
+        self.warm_start = warm_start
         self.random_state = random_state
         self.verbose = verbose
         self.n_jobs = n_jobs
+        self.coef_ = None
 
     def fit(self, X, y):
         n_features = X.shape[1]
@@ -28,7 +30,9 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = self.label_binarizer_.fit_transform(y)
         n_vectors = Y.shape[1]
-        self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
+
+        if not self.warm_start or self.coef_ is None:
+            self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
 
         for i in xrange(n_vectors):
             _dual_cd(self.coef_[i], X, Y[:, i],
@@ -49,7 +53,7 @@ class DualSVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-4,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
-                 random_state=None, verbose=0, n_jobs=1):
+                 warm_start=False, random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
         self.max_iter = max_iter
@@ -58,10 +62,12 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         self.gamma = gamma
         self.coef0 = coef0
         self.degree = degree
+        self.warm_start = warm_start
         self.random_state = random_state
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.support_vectors_ = None
+        self.dual_coef_ = None
 
     def _kernel_params(self):
         return {"gamma" : self.gamma,
@@ -79,7 +85,11 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         K = pairwise_kernels(X, X, metric=self.kernel,
                              filter_params=True, n_jobs=self.n_jobs,
                              **self._kernel_params())
-        self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
+
+        if not self.warm_start or self.dual_coef_ is None:
+            self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
+        else:
+            self.dual_coef_ *= Y.T
 
         for i in xrange(n_vectors):
             _dual_cd(self.dual_coef_[i], K, Y[:, i],
@@ -88,8 +98,9 @@ class DualSVC(BaseEstimator, ClassifierMixin):
 
         self.dual_coef_ *= Y.T
 
+        sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)
+
         if self.kernel != "precomputed":
-            sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)
             self.dual_coef_ = self.dual_coef_[:, sv]
             mask = safe_mask(X, sv)
             self.support_vectors_ = X[mask]
