@@ -54,8 +54,7 @@ def _primal_cd_l2_svm(weights,
     index = np.arange(n_features)
 
     cdef np.ndarray[double, ndim=1, mode='c'] b
-    # 1 - y * w^T x
-    b = np.ones(n_samples, dtype=np.float64)
+    b = 1 - y * np.dot(X, w)
 
     cdef np.ndarray[double, ndim=1, mode='c'] xj_sq
     xj_sq = np.zeros(n_features, dtype=np.float64)
