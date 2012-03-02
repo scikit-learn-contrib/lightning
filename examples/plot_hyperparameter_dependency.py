@@ -49,7 +49,6 @@ from sklearn.linear_model import SGDClassifier as DenseSGDClassifier
 from sklearn.multiclass import OneVsRestClassifier
 
 from lightning.datasets import get_loader
-from lightning.primal import PrimalClassifier
 
 from sklearn.externals.joblib import Memory
 from lightning.datasets import get_data_home
@@ -93,18 +92,6 @@ def fit_nusvc(X_train, y_train, nu, kernel, gamma=0.1, degree=4, coef0=1):
 def fit_sgd(X_train, y_train, alpha):
     start = time.time()
     clf = SGDClassifier(alpha=alpha, penalty="l1")
-    clf.fit(X_train, y_train)
-    return clf, time.time() - start
-
-
-@memory.cache
-def fit_sgd_kernel(X_train, y_train, alpha, kernel, gamma=0.1,
-                          degree=4, coef0=1):
-    start = time.time()
-    clf = DenseSGDClassifier(alpha=alpha, penalty="l1")
-    clf = PrimalClassifier(clf, metric=kernel, dictionary_size=0.3,
-                           gamma=gamma, degree=degree, coef0=coef0,
-                           verbose=1, debiasing=True)
     clf.fit(X_train, y_train)
     return clf, time.time() - start
 
@@ -163,12 +150,6 @@ elif algorithm.startswith("svc_"):
 elif algorithm == "sgd":
     Cs = np.linspace(0.00001, 0.0001, 10)
     res = [fit_sgd(X_train, y_train, alpha=C) for C in Cs]
-    param = "alpha"
-elif algorithm.startswith("sgd_"):
-    kernel = algorithm.replace("sgd_", "")
-    Cs = np.linspace(0.00001, 0.0001, 10)
-    res = [fit_sgd_kernel(X_train, y_train, alpha=C, kernel=kernel)
-           for C in Cs]
     param = "alpha"
 elif algorithm == "lasso":
     Cs = np.linspace(0.1, 1.0, 10)
