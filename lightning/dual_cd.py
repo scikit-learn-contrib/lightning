@@ -25,17 +25,21 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
         self.coef_ = None
 
     def fit(self, X, y):
-        n_features = X.shape[1]
+        n_samples, n_features = X.shape
         rs = check_random_state(self.random_state)
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = self.label_binarizer_.fit_transform(y)
         n_vectors = Y.shape[1]
 
         if not self.warm_start or self.coef_ is None:
-            self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
+            self.coef_ = np.zeros((n_vectors, n_features),
+                                  dtype=np.float64)
+            self.dual_coef_ = np.zeros((n_vectors, n_samples),
+                                       dtype=np.float64)
 
         for i in xrange(n_vectors):
-            _dual_cd(self.coef_[i], X, Y[:, i],
+            _dual_cd(self.coef_[i], self.dual_coef_[i],
+                     X, Y[:, i],
                      self.C, self.loss, self.max_iter, rs, self.tol,
                      precomputed_kernel=False, verbose=self.verbose)
 
@@ -91,8 +95,11 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         else:
             self.dual_coef_ *= Y.T
 
+        coef = np.empty(0, dtype=np.float64)
+
         for i in xrange(n_vectors):
-            _dual_cd(self.dual_coef_[i], K, Y[:, i],
+            _dual_cd(coef, self.dual_coef_[i],
+                     K, Y[:, i],
                      self.C, self.loss, self.max_iter, rs, self.tol,
                      precomputed_kernel=True, verbose=self.verbose)
 
@@ -101,9 +108,13 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)
 
         if self.kernel != "precomputed":
-            self.dual_coef_ = self.dual_coef_[:, sv]
-            mask = safe_mask(X, sv)
-            self.support_vectors_ = X[mask]
+            if not self.warm_start:
+                self.dual_coef_ = self.dual_coef_[:, sv]
+                mask = safe_mask(X, sv)
+                self.support_vectors_ = X[mask]
+            else:
+                # Cannot trim the non-zero weights if warm start is used...
+                self.support_vectors_ = X
 
         if self.verbose >= 1:
             print "Number of support vectors:", np.sum(sv)

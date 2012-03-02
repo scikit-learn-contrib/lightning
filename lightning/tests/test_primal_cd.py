@@ -35,3 +35,17 @@ def test_fit_linear_binary():
     n_nz2 = np.sum(clf.coef_ != 0)
 
     assert_true(n_nz > n_nz2)
+
+
+def test_warm_start():
+    clf = PrimalLinearSVC(warm_start=True, random_state=0)
+
+    clf.C = 0.1
+    clf.fit(bin_dense, bin_target)
+    n_nz = np.sum(clf.coef_ != 0)
+
+    clf.C = 0.2
+    clf.fit(bin_dense, bin_target)
+    n_nz2 = np.sum(clf.coef_ != 0)
+
+    assert_true(n_nz < n_nz2)

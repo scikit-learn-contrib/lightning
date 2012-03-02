@@ -16,7 +16,8 @@ cdef extern from "math.h":
 cdef extern from "float.h":
    double DBL_MAX
 
-def _dual_cd(weights,
+def _dual_cd(np.ndarray[double, ndim=1, mode='c']w,
+             np.ndarray[double, ndim=1, mode='c']alpha,
              X,
              np.ndarray[double, ndim=1]y,
              double C,
@@ -29,19 +30,10 @@ def _dual_cd(weights,
     cdef Py_ssize_t n_samples
     cdef Py_ssize_t n_features
 
-    cdef np.ndarray[double, ndim=1, mode='c'] alpha
-    cdef np.ndarray[double, ndim=1, mode='c'] w
-
     if precomputed_kernel:
         n_samples = X.shape[0]
-        # Need alpha only.
-        alpha = weights
     else:
         n_samples, n_features = X.shape
-        # Need both w and alpha.
-        alpha = np.zeros(n_samples, dtype=np.float64)
-        w = weights
-
 
     cdef np.ndarray[long, ndim=1, mode='c'] A
     A = np.arange(n_samples)
