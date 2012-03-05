@@ -16,14 +16,14 @@ cdef extern from "math.h":
 cdef extern from "float.h":
    double DBL_MAX
 
-def _primal_cd_l2_svm(weights,
-             X,
-             np.ndarray[double, ndim=1]y,
-             double C,
-             int max_iter,
-             rs,
-             double tol,
-             int verbose):
+def _primal_cd_l2svm_l1r(weights,
+                         X,
+                         np.ndarray[double, ndim=1]y,
+                         double C,
+                         int max_iter,
+                         rs,
+                         double tol,
+                         int verbose):
 
     cdef Py_ssize_t n_samples = X.shape[0]
     cdef Py_ssize_t n_features = X.shape[1]
@@ -211,3 +211,161 @@ def _primal_cd_l2_svm(weights,
             Xnp[i, j] *= y[i]
 
     return w
+
+
+cdef double _recompute(X,
+                       np.ndarray[double, ndim=1, mode='c'] w,
+                       double C,
+                       np.ndarray[double, ndim=1, mode='c'] b,
+                       int ind):
+    cdef Py_ssize_t n_samples = X.shape[0]
+    cdef Py_ssize_t n_features = X.shape[1]
+
+    cdef np.ndarray[double, ndim=2, mode='c'] Xnp
+    Xnp = X
+
+    b[:] = 1
+
+    cdef int i, j
+
+    for j in xrange(n_features):
+        for i in xrange(n_samples):
+            b[i] -= w[j] * Xnp[i, j]
+
+    cdef double loss = 0
+
+    # Can iterate over the non-zero samples only
+    for i in xrange(n_samples):
+        if b[i] > 0:
+            loss += b[i] * b[i] * C # Cp
+
+    return loss
+
+
+def _primal_cd_l2svm_l2r(weights,
+                         X,
+                         np.ndarray[double, ndim=1]y,
+                         double C,
+                         int max_iter,
+                         rs,
+                         double tol,
+                         int verbose):
+
+    cdef Py_ssize_t n_samples = X.shape[0]
+    cdef Py_ssize_t n_features = X.shape[1]
+
+    cdef np.ndarray[double, ndim=1, mode='c']w
+    w = weights
+
+    cdef int i, j, s, step, it
+    cdef double d, old_d, Dp, Dpmax, Dpp, loss, new_loss
+    cdef double sigma = 0.01
+    cdef double sum_, val, ddiff, tmp
+
+    cdef np.ndarray[double, ndim=2, mode='c'] Xnp
+    Xnp = X
+
+    cdef np.ndarray[double, ndim=1, mode='c'] bound
+    bound = np.zeros(n_features, dtype=np.float64)
+
+    cdef np.ndarray[long, ndim=1, mode='c'] index
+    index = np.arange(n_features)
+
+    cdef np.ndarray[double, ndim=1, mode='c'] b
+    b = 1 - y * np.dot(X, w)
+
+    for j in xrange(n_features):
+        for i in xrange(n_samples):
+            val = Xnp[i, j]
+            # not thread safe !
+            Xnp[i, j] *= y[i]
+
+    for j in xrange(n_features):
+        sum_ = 0
+        for i in xrange(n_samples):
+            val = Xnp[i, j]
+            sum_ += val * val
+        bound[j] = (2 * C * sum_ + 1) / 2.0 + sigma
+
+    for it in xrange(max_iter):
+        Dpmax = 0
+
+        rs.shuffle(index)
+
+        for s in xrange(n_features):
+            j = index[s]
+            Dp = 0
+            Dpp = 0
+            loss = 0
+
+            # Iterate over samples that have the feature
+            for i in xrange(n_samples):
+                val = Xnp[i, j]
+
+                if b[i] > 0:
+                    Dp -= b[i] * val * C
+                    Dpp += val * val * C
+                    if val != 0:
+                        loss += b[i] * b[i] * C
+
+            Dp = w[j] + 2 * Dp
+            Dpp = 1 + 2 * Dpp
+
+            if fabs(Dp) > Dpmax:
+                Dpmax = fabs(Dp)
+
+            if fabs(Dp/Dpp) <= 1e-12:
+                continue
+
+            d = -Dp / Dpp
+            old_d = 0
+            step = 0
+
+            while 1:
+                ddiff = old_d - d
+                step += 1
+
+                if Dp/d + bound[j] <= 0:
+                    for i in xrange(n_samples):
+                        b[i] += ddiff * Xnp[i, j]
+                    break
+
+                # Recompute if line search too many times
+                if step % 10 == 0:
+                    loss = _recompute(X, w, C, b, j)
+                    for i in xrange(n_samples):
+                        b[i] -= old_d * Xnp[i,j]
+
+                new_loss = 0
+
+                for i in xrange(n_samples):
+                    tmp = b[i] + ddiff * Xnp[i, j]
+                    b[i] = tmp
+                    if tmp > 0:
+                        new_loss += tmp * tmp * C
+
+                old_d = d
+
+                if w[j] * d + (0.5 + sigma) * d * d + new_loss - loss <= 0:
+                    break
+                else:
+                    d /= 2
+
+            # end while (line search)
+
+            w[j] += d
+
+        # end for (iterate over features)
+
+        if Dpmax < tol:
+            if verbose >= 1:
+                print "Converged at iteration", it
+            break
+
+    # Restore old values
+    for j in xrange(n_features):
+        for i in xrange(n_samples):
+            Xnp[i, j] *= y[i]
+
+    return w
+
