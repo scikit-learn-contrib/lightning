@@ -166,7 +166,7 @@ cdef void _reprocess(np.ndarray[double, ndim=2, mode='c']K,
     cdef int s, k = 0
     while support_set[k] != -1:
         s = support_set[k]
-        if alpha[s] < 1e-12:
+        if alpha[s] == 0:
             if (y[s] == -1 and g[s] >= g[i]) or (y[s] == 1 and g[s] <= g[j]):
                 _remove(support_set, k)
                 support_vectors[s] = 0
