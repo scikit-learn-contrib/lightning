@@ -143,6 +143,7 @@ cdef void _reprocess(np.ndarray[double, ndim=2, mode='c']K,
                      np.ndarray[double, ndim=1, mode='c']alpha,
                      np.ndarray[double, ndim=1, mode='c']g,
                      np.ndarray[double, ndim=1, mode='c']b,
+                     np.ndarray[double, ndim=1, mode='c']delta,
                      double C,
                      double tol):
     cdef i = _argmax(y, g, support_set, alpha, C)
@@ -172,6 +173,7 @@ cdef void _reprocess(np.ndarray[double, ndim=2, mode='c']K,
         k += 1
 
     b[0] = (g[i] + g[j]) / 2
+    delta[0] = g[i] - g[j]
 
 
 cdef _boostrap(index,
@@ -247,6 +249,9 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c']alpha,
     cdef np.ndarray[double, ndim=1, mode='c'] b
     b = np.zeros(1, dtype=np.float64)
 
+    cdef np.ndarray[double, ndim=1, mode='c'] delta
+    delta = np.zeros(1, dtype=np.float64)
+
     cdef np.ndarray[double, ndim=2, mode='c'] K
     if precomputed_kernel:
         K = X
@@ -262,10 +267,9 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c']alpha,
         for i in xrange(n_samples):
             s = A[i]
             _process(s, K, y, support_set, support_vectors, alpha, g, C, tol)
-            #print list(support_set)
-            #print list(support_vectors)
-            #if i == 10:
-                #exit()
-            _reprocess(K, y, support_set, support_vectors, alpha, g, b, C, tol)
+            _reprocess(K, y, support_set, support_vectors, alpha, g, b, delta, C, tol)
+
+    while delta[0] > tol:
+        _reprocess(K, y, support_set, support_vectors, alpha, g, b, delta, C, tol)
 
     return b[0]
