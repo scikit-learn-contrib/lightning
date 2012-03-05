@@ -32,3 +32,16 @@ def test_fit_rbf_binary():
         clf.fit(bin_dense, bin_target)
         acc = clf.score(bin_dense, bin_target)
         assert_almost_equal(acc, 1.0)
+
+
+def test_warm_start():
+        clf = LaSVM(random_state=0, max_iter=2, kernel="rbf", warm_start=True)
+        clf.C = 0.5
+        clf.fit(bin_dense, bin_target)
+        acc = clf.score(bin_dense, bin_target)
+        assert_almost_equal(acc, 0.995)
+
+        clf.C = 0.6
+        clf.fit(bin_dense, bin_target)
+        acc = clf.score(bin_dense, bin_target)
+        assert_almost_equal(acc, 1.0)

@@ -214,6 +214,25 @@ cdef _boostrap(index,
             break
 
 
+cdef _boostrap_warm_start(index,
+                          np.ndarray[double, ndim=2, mode='c']K,
+                          np.ndarray[double, ndim=1]y,
+                          np.ndarray[long, ndim=1, mode='c']support_set,
+                          np.ndarray[long, ndim=1, mode='c']support_vectors,
+                          np.ndarray[double, ndim=1, mode='c']alpha,
+                          np.ndarray[double, ndim=1, mode='c']g):
+    cdef np.ndarray[long, ndim=1, mode='c'] A = index
+    cdef int i, s, k = 0
+    cdef Py_ssize_t n_samples = index.shape[0]
+
+    for i in xrange(n_samples):
+        if alpha[i] != 0:
+            for j in xrange(n_samples):
+                g[j] -= alpha[i] * K[i, j]
+            support_set[k] = i
+            support_vectors[i] = 1
+            k += 1
+
 def _lasvm(np.ndarray[double, ndim=1, mode='c']alpha,
            X,
            np.ndarray[double, ndim=1]y,
@@ -259,7 +278,10 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c']alpha,
     cdef int it, i, j, s, k
     cdef int n_pos, n_neg
 
-    _boostrap(A, K, y, support_set, support_vectors, alpha, g, rs)
+    if warm_start:
+        _boostrap_warm_start(A, K, y, support_set, support_vectors, alpha, g)
+    else:
+        _boostrap(A, K, y, support_set, support_vectors, alpha, g, rs)
 
     for it in xrange(max_iter):
         rs.shuffle(A)

@@ -46,6 +46,10 @@ class LaSVM(BaseEstimator, ClassifierMixin):
                              filter_params=True, n_jobs=self.n_jobs,
                              **self._kernel_params())
 
+        warm_start = False
+        if self.warm_start and self.dual_coef_ is not None:
+            warm_start = True
+
         if not self.warm_start or self.dual_coef_ is None:
             self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
 
@@ -56,7 +60,7 @@ class LaSVM(BaseEstimator, ClassifierMixin):
                    K, Y[:, i],
                    self.C, self.max_iter, rs, self.tol,
                    precomputed_kernel=True, verbose=self.verbose,
-                   warm_start=False)
+                   warm_start=warm_start)
             self.intercept_[i] = b
 
         sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)
