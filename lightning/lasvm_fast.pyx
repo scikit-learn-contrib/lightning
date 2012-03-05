@@ -69,6 +69,7 @@ cdef void _update(np.ndarray[double, ndim=2, mode='c']K,
                   double Aj,
                   double Bi):
 
+    # Need only three elements.
     cdef double lambda_ = min((g[i] - g[j]) / (K[i,i] + K[j, j] - 2 * K[i, j]),
                               min(Bi - alpha[i], alpha[j] - Aj))
     alpha[i] += lambda_
@@ -77,6 +78,7 @@ cdef void _update(np.ndarray[double, ndim=2, mode='c']K,
     cdef int s, k = 0
     while support_set[k] != -1:
         s = support_set[k]
+        # Need only two elements per column.
         g[s] -= lambda_ * (K[i, s] - K[j, s])
         k += 1
 
@@ -101,7 +103,8 @@ cdef void _process(int k,
 
     while support_set[i] != -1:
         s = support_set[i]
-        pred += alpha[s] * K[k, s]
+        # Iterate over k-th row.
+        pred += alpha[s] * K[s, k]
         i += 1
 
     g[k] = y[k] - pred
@@ -203,6 +206,7 @@ cdef _boostrap(index,
             alpha[s] = y[s]
 
             for j in xrange(n_samples):
+                # All elements of the s-th column.
                 g[j] -= y[s] * K[j, s]
 
             if y[s] == -1:
@@ -228,7 +232,8 @@ cdef _boostrap_warm_start(index,
     for i in xrange(n_samples):
         if alpha[i] != 0:
             for j in xrange(n_samples):
-                g[j] -= alpha[i] * K[i, j]
+                # All elements of the i-th column.
+                g[j] -= alpha[i] * K[j, i]
             support_set[k] = i
             support_vectors[i] = 1
             k += 1
