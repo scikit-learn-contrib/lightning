@@ -25,6 +25,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c']w,
              int max_iter,
              rs,
              double tol,
+             int shrinking,
              int precomputed_kernel,
              int verbose):
     cdef Py_ssize_t n_samples
@@ -106,20 +107,20 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c']w,
             PG = 0
 
             if alpha_i == 0:
-                if G > M_bar:
+                if G < 0 or not shrinking:
+                    PG = G
+                elif G > M_bar:
                     active_size -= 1
                     A[s], A[active_size] = A[active_size], A[s]
                     # Jump w/o incrementing s so as to use the swapped sample.
                     continue
-                elif G < 0:
-                    PG = G
             elif alpha_i == U:
-                if G < m_bar:
+                if G > 0 or not shrinking:
+                    PG = G
+                elif G < m_bar:
                     active_size -= 1
                     A[s], A[active_size] = A[active_size], A[s]
                     continue
-                elif G > 0:
-                    PG = G
             else:
                 PG = G
 

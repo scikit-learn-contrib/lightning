@@ -35,11 +35,13 @@ def test_fit_linear_binary():
 
 
 def test_fit_rbf_binary():
-    for loss in ("l1", "l2"):
-        clf = DualSVC(loss=loss, kernel="rbf", gamma=0.1, random_state=0)
-        clf.fit(bin_dense, bin_target)
-        y_pred = clf.predict(bin_dense)
-        assert_equal(np.mean(y_pred == bin_target), 1.0)
+    for shrinking in (True, False):
+        for loss in ("l1", "l2"):
+            clf = DualSVC(loss=loss, kernel="rbf", gamma=0.1, random_state=0,
+                          shrinking=shrinking)
+            clf.fit(bin_dense, bin_target)
+            y_pred = clf.predict(bin_dense)
+            assert_equal(np.mean(y_pred == bin_target), 1.0)
 
 
 def test_precomputed_kernel():

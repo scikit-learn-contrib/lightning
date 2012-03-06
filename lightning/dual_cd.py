@@ -13,11 +13,13 @@ from dual_cd_fast import _dual_cd
 class DualLinearSVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-4,
-                 warm_start=False, random_state=None, verbose=0, n_jobs=1):
+                 shrinking=True, warm_start=False, random_state=None,
+                 verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
         self.max_iter = max_iter
         self.tol = tol
+        self.shrinking = shrinking
         self.warm_start = warm_start
         self.random_state = random_state
         self.verbose = verbose
@@ -41,6 +43,7 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
             _dual_cd(self.coef_[i], self.dual_coef_[i],
                      X, Y[:, i],
                      self.C, self.loss, self.max_iter, rs, self.tol,
+                     self.shrinking,
                      precomputed_kernel=False, verbose=self.verbose)
 
         return self
@@ -56,12 +59,13 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
 class DualSVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-4,
-                 kernel="linear", gamma=0.1, coef0=1, degree=4,
+                 shrinking=True, kernel="linear", gamma=0.1, coef0=1, degree=4,
                  warm_start=False, random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
         self.max_iter = max_iter
         self.tol = tol
+        self.shrinking = shrinking
         self.kernel = kernel
         self.gamma = gamma
         self.coef0 = coef0
@@ -101,6 +105,7 @@ class DualSVC(BaseEstimator, ClassifierMixin):
             _dual_cd(coef, self.dual_coef_[i],
                      K, Y[:, i],
                      self.C, self.loss, self.max_iter, rs, self.tol,
+                     self.shrinking,
                      precomputed_kernel=True, verbose=self.verbose)
 
         self.dual_coef_ *= Y.T
