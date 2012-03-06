@@ -8,7 +8,8 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state, safe_mask
 from sklearn.metrics.pairwise import pairwise_kernels
 
-from lasvm_fast import _lasvm
+from .kernel_fast import get_kernel
+from .lasvm_fast import _lasvm
 
 class LaSVM(BaseEstimator, ClassifierMixin):
 
@@ -34,6 +35,9 @@ class LaSVM(BaseEstimator, ClassifierMixin):
                 "degree" : self.degree,
                 "coef0" : self.coef0}
 
+    def _get_kernel(self):
+        return get_kernel(self.kernel, **self._kernel_params())
+
     def fit(self, X, y):
         n_samples = X.shape[0]
         rs = check_random_state(self.random_state)
@@ -41,10 +45,6 @@ class LaSVM(BaseEstimator, ClassifierMixin):
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = self.label_binarizer_.fit_transform(y)
         n_vectors = Y.shape[1]
-
-        K = pairwise_kernels(X, X, metric=self.kernel,
-                             filter_params=True, n_jobs=self.n_jobs,
-                             **self._kernel_params())
 
         warm_start = False
         if self.warm_start and self.dual_coef_ is not None:
@@ -54,13 +54,14 @@ class LaSVM(BaseEstimator, ClassifierMixin):
             self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
 
         self.intercept_ = np.zeros((n_vectors,), dtype=np.float64)
+        kernel = self._get_kernel()
 
         for i in xrange(n_vectors):
             b = _lasvm(self.dual_coef_[i],
-                   K, Y[:, i],
-                   self.C, self.max_iter, rs, self.tol,
-                   precomputed_kernel=True, verbose=self.verbose,
-                   warm_start=warm_start)
+                       X, Y[:, i], kernel,
+                       self.C, self.max_iter, rs, self.tol,
+                       verbose=self.verbose,
+                       warm_start=warm_start)
             self.intercept_[i] = b
 
         sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)

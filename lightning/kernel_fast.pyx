@@ -157,3 +157,16 @@ cdef class PrecomputedKernel(Kernel):
                          np.ndarray[double, ndim=2, mode='c'] Y,
                          int j):
         return X[i, j]
+
+
+def get_kernel(kernel, **kw):
+    if kernel == "linear":
+        return LinearKernel()
+    elif kernel == "rbf":
+        return RbfKernel(gamma=kw["gamma"])
+    elif kernel == "poly" or kernel == "polynomial":
+        return PolynomialKernel(degree=kw["degree"],
+                                coef0=kw["coef0"],
+                                gamma=kw["gamma"])
+    elif kernel == "precomputed":
+        return PrecomputedKernel()
