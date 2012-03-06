@@ -12,7 +12,6 @@ cimport numpy as np
 
 cdef extern from "math.h":
    double exp(double)
-   double pow(double,double)
 
 
 cdef double powi(double base, int times):
@@ -108,14 +107,9 @@ cdef class RbfKernel(Kernel):
 
 cdef class PrecomputedKernel(Kernel):
 
-    def __init__(self, np.ndarray[double, ndim=2, mode='c'] K):
-        self.K = <double*>K.data
-
     cpdef double compute(self,
                          np.ndarray[double, ndim=2, mode='c'] X,
                          int i,
                          np.ndarray[double, ndim=2, mode='c'] Y,
                          int j):
-        cdef Py_ssize_t n_samples = X.shape[0]
-        cdef int k = i * n_samples + j
-        return self.K[k]
+        return X[i, j]

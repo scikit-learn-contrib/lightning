@@ -43,7 +43,6 @@ cdef class RbfKernel(Kernel):
 
 
 cdef class PrecomputedKernel(Kernel):
-    cdef double* K
 
     cpdef double compute(self,
                          np.ndarray[double, ndim=2, mode='c'] X,
