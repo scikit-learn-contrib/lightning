@@ -111,9 +111,9 @@ cdef void _process(int k,
     cdef int s, j, i = 0
     cdef double pred = 0
 
+    # Iterate over k-th column (support vectors only)
     while support_set[i] != -1:
         s = support_set[i]
-        # Iterate over k-th column
         pred += alpha[s] * kernel.compute(X, s, X, k)
         i += 1
 
@@ -198,16 +198,13 @@ cdef _boostrap(index,
                np.ndarray[long, ndim=1, mode='c']support_vectors,
                np.ndarray[double, ndim=1, mode='c']alpha,
                np.ndarray[double, ndim=1, mode='c']g,
+               double *col_data,
                rs):
     cdef np.ndarray[long, ndim=1, mode='c'] A = index
     cdef int n_pos = 0
     cdef int n_neg = 0
     cdef int i, s, k = 0
     cdef Py_ssize_t n_samples = index.shape[0]
-    cdef double* col_data
-    cdef np.ndarray[double, ndim=1, mode='c'] col
-    col = np.zeros(n_samples, dtype=np.float64)
-    col_data = <double*>col.data
 
     rs.shuffle(A)
 
@@ -224,7 +221,7 @@ cdef _boostrap(index,
 
             for j in xrange(n_samples):
                 # All elements of the s-th column.
-                g[j] -= y[s] * col[j]
+                g[j] -= y[s] * col_data[j]
 
             if y[s] == -1:
                 n_neg += 1
@@ -242,14 +239,11 @@ cdef _boostrap_warm_start(index,
                           np.ndarray[long, ndim=1, mode='c']support_set,
                           np.ndarray[long, ndim=1, mode='c']support_vectors,
                           np.ndarray[double, ndim=1, mode='c']alpha,
-                          np.ndarray[double, ndim=1, mode='c']g):
+                          np.ndarray[double, ndim=1, mode='c']g,
+                          double* col_data):
     cdef np.ndarray[long, ndim=1, mode='c'] A = index
     cdef int i, s, k = 0
     cdef Py_ssize_t n_samples = index.shape[0]
-    cdef double* col_data
-    cdef np.ndarray[double, ndim=1, mode='c'] col
-    col = np.zeros(n_samples, dtype=np.float64)
-    col_data = <double*>col.data
 
 
     for i in xrange(n_samples):
@@ -258,16 +252,88 @@ cdef _boostrap_warm_start(index,
 
             for j in xrange(n_samples):
                 # All elements of the i-th column.
-                g[j] -= alpha[i] * col[j]
+                g[j] -= alpha[i] * col_data[j]
 
             support_set[k] = i
             support_vectors[i] = 1
             k += 1
 
+
+cdef int get_select_method(selection):
+    if selection == "permute":
+        return 0
+    elif selection == "random":
+        return 1
+    elif selection == "active":
+        return 2
+    elif selection == "loss":
+        return 3
+    else:
+        raise ValueError("Wrong selection method.")
+
+
+cdef int select(np.ndarray[long, ndim=1, mode='c'] A,
+                int start,
+                int search_size,
+                int max_size,
+                int select_method,
+                np.ndarray[double, ndim=1, mode='c']alpha,
+                double b,
+                np.ndarray[double, ndim=2, mode='c'] X,
+                np.ndarray[double, ndim=1]y,
+                Kernel kernel,
+                np.ndarray[long, ndim=1, mode='c']support_set,
+                np.ndarray[long, ndim=1, mode='c']support_vectors):
+
+    if select_method <= 1: # permute or random
+        return A[start]
+
+    cdef int i = start
+    cdef int n_visited = 0
+    cdef int s, k, j
+    cdef double score
+    cdef double min_score = DBL_MAX
+    cdef int selected = 0
+
+    while n_visited < search_size and i < max_size:
+        s = A[i]
+
+        # Only non support vectors are candidates.
+        if support_vectors[s]:
+            i += 1
+            continue
+
+        k = 0
+        score = 0
+
+        # Compute prediction.
+        while support_set[k] != -1:
+            j = support_set[k]
+            score += alpha[j] * kernel.compute(X, j, X, s)
+            k += 1
+
+        score += b
+
+        if select_method == 2: # active
+            score = fabs(score)
+        elif select_method == 3: # loss
+            score *= y[s]
+
+        if score < min_score:
+            min_score = score
+            selected = s
+
+        n_visited += 1
+        i += 1
+
+    return selected
+
 def _lasvm(np.ndarray[double, ndim=1, mode='c']alpha,
            np.ndarray[double, ndim=2, mode='c'] X,
            np.ndarray[double, ndim=1]y,
            Kernel kernel,
+           selection,
+           int search_size,
            double C,
            int max_iter,
            rs,
@@ -297,26 +363,52 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c']alpha,
     cdef np.ndarray[double, ndim=1, mode='c'] delta
     delta = np.zeros(1, dtype=np.float64)
 
-    cdef int it, i, j, s, k
+    cdef double* col_data
+    cdef np.ndarray[double, ndim=1, mode='c'] col
+    col = np.zeros(n_samples, dtype=np.float64)
+    col_data = <double*>col.data
+
+    cdef int it, i, j, s, k, start
     cdef int n_pos, n_neg
+
+    cdef int select_method = get_select_method(selection)
 
     if warm_start:
         _boostrap_warm_start(A, X, y, kernel,
-                             support_set, support_vectors, alpha, g)
+                             support_set, support_vectors, alpha, g, col_data)
     else:
         _boostrap(A, X, y, kernel,
-                  support_set, support_vectors, alpha, g, rs)
+                  support_set, support_vectors, alpha, g, col_data, rs)
 
     for it in xrange(max_iter):
+
+        start = 0
         rs.shuffle(A)
 
         for i in xrange(n_samples):
-            s = A[i]
+            # Select a support vector candidate.
+            s = select(A, start, search_size, n_samples, select_method,
+                       alpha, b[0], X, y, kernel, support_set, support_vectors)
+
+            # Attempt to add it.
             _process(s, X, y, kernel,
                      support_set, support_vectors, alpha, g, C, tol)
+
+            # Remove blatant non support vectors.
             _reprocess(X, y, kernel,
                        support_set, support_vectors, alpha,
                        g, b, delta, C, tol)
+
+            # Update position and reshuffle if needed.
+            if select_method: # others than permute
+                start += search_size
+
+                if start + search_size > n_samples - 1:
+                    rs.shuffle(A)
+                    start = 0
+            else:
+                start += 1
+
 
     while delta[0] > tol:
         _reprocess(X, y, kernel,

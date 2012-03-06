@@ -15,6 +15,7 @@ class LaSVM(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, max_iter=10, tol=1e-3,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
+                 selection="permute", search_size=60,
                  warm_start=False, random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.max_iter = max_iter
@@ -23,6 +24,8 @@ class LaSVM(BaseEstimator, ClassifierMixin):
         self.gamma = gamma
         self.coef0 = coef0
         self.degree = degree
+        self.selection = selection
+        self.search_size = search_size
         self.warm_start = warm_start
         self.random_state = random_state
         self.verbose = verbose
@@ -58,7 +61,7 @@ class LaSVM(BaseEstimator, ClassifierMixin):
 
         for i in xrange(n_vectors):
             b = _lasvm(self.dual_coef_[i],
-                       X, Y[:, i], kernel,
+                       X, Y[:, i], kernel, self.selection, self.search_size,
                        self.C, self.max_iter, rs, self.tol,
                        verbose=self.verbose,
                        warm_start=warm_start)
