@@ -20,10 +20,23 @@ X, _ = make_classification(n_samples=20, n_features=10,
 
 def _test_equal(K, kernel, X2):
     n_samples = K.shape[0]
+
+    # test compute()
     for i in xrange(n_samples):
         for j in xrange(n_samples):
             assert_almost_equal(K[i,j], kernel.compute(X2, i, X2, j))
 
+    # test compute_diag
+    diag = K.flat[::n_samples + 1]
+    diag2 = np.zeros(n_samples, dtype=np.float64)
+    kernel.compute_diag(X2, diag2)
+    assert_array_almost_equal(diag, diag2)
+
+    # test compute_column
+    col = np.zeros(n_samples, dtype=np.float64)
+    for i in xrange(n_samples):
+        kernel.compute_column(X2, X2, i, col)
+        assert_array_almost_equal(col, K[:, i])
 
 def test_linear_kernel():
     n_samples = X.shape[0]

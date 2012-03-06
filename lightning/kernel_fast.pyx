@@ -38,6 +38,45 @@ cdef class Kernel:
                          int j):
         raise NotImplementedError()
 
+    cpdef double compute_self(self,
+                              np.ndarray[double, ndim=2, mode='c'] X,
+                              int i):
+        return self.compute(X, i, X, i)
+
+    cpdef compute_diag(self,
+                       np.ndarray[double, ndim=2, mode='c'] X,
+                       np.ndarray[double, ndim=1, mode='c'] out):
+        self.compute_diag_ptr(X, <double*>out.data)
+
+    cdef void compute_diag_ptr(self,
+                               np.ndarray[double, ndim=2, mode='c'] X,
+                               double* out):
+
+        cdef Py_ssize_t n_samples = X.shape[0]
+        cdef int i
+
+        for i in xrange(n_samples):
+            out[i] = self.compute_self(X, i)
+
+    cpdef compute_column(self,
+                         np.ndarray[double, ndim=2, mode='c'] X,
+                         np.ndarray[double, ndim=2, mode='c'] Y,
+                         int j,
+                         np.ndarray[double, ndim=1, mode='c'] out):
+        self.compute_column_ptr(X, Y, j, <double*>out.data)
+
+    cdef void compute_column_ptr(self,
+                                 np.ndarray[double, ndim=2, mode='c'] X,
+                                 np.ndarray[double, ndim=2, mode='c'] Y,
+                                 int j,
+                                 double* out):
+
+        cdef Py_ssize_t n_samples = X.shape[0]
+        cdef int i
+
+        for i in xrange(n_samples):
+            out[i] = self.compute(X, i, Y, j)
+
 
 cdef class LinearKernel(Kernel):
 
@@ -103,6 +142,11 @@ cdef class RbfKernel(Kernel):
             value += diff * diff
 
         return exp(-self.gamma * value)
+
+    cpdef double compute_self(self,
+                              np.ndarray[double, ndim=2, mode='c'] X,
+                              int i):
+        return 1.0
 
 
 cdef class PrecomputedKernel(Kernel):
