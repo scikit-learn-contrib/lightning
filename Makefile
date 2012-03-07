@@ -11,6 +11,9 @@ CSRC= $(CYTHONSRC:.pyx=.c)
 inplace: $(CSRC)
 	$(PYTHON) setup.py build_ext -i
 
+clean:
+	rm -f lightning/*.c lightning/*.cpp lightning/*.so lightning/*.html lightning/*.pyc
+
 %.c: %.pyx
 	$(CYTHON) $<
 
