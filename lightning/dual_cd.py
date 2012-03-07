@@ -13,7 +13,7 @@ from .kernel_fast import get_kernel
 
 class DualLinearSVC(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-4,
+    def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-3,
                  shrinking=True, warm_start=False, random_state=None,
                  verbose=0, n_jobs=1):
         self.C = C
@@ -60,7 +60,7 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
 
 class DualSVC(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-4,
+    def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-3,
                  shrinking=True, kernel="linear", gamma=0.1, coef0=1, degree=4,
                  warm_start=False, random_state=None, verbose=0, n_jobs=1):
         self.C = C
