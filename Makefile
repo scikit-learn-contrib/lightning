@@ -6,7 +6,7 @@ DATADIR=$(HOME)/lightning_data
 # Compilation...
 
 CYTHONSRC= $(wildcard lightning/*.pyx)
-CSRC= $(CYTHONSRC:.pyx=.c)
+CSRC= $(CYTHONSRC:.pyx=.cpp)
 
 inplace: $(CSRC)
 	$(PYTHON) setup.py build_ext -i
@@ -14,8 +14,8 @@ inplace: $(CSRC)
 clean:
 	rm -f lightning/*.c lightning/*.cpp lightning/*.so lightning/*.html lightning/*.pyc
 
-%.c: %.pyx
-	$(CYTHON) $<
+%.cpp: %.pyx
+	$(CYTHON) --cplus $<
 
 # Tests...
 #

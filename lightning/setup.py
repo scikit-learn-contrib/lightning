@@ -6,22 +6,22 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('lightning', parent_package, top_path)
 
     config.add_extension('dual_cd_fast',
-         sources=['dual_cd_fast.c'],
+         sources=['dual_cd_fast.cpp'],
          include_dirs=[numpy.get_include()]
          )
 
     config.add_extension('kernel_fast',
-         sources=['kernel_fast.c'],
+         sources=['kernel_fast.cpp'],
          include_dirs=[numpy.get_include()]
          )
 
     config.add_extension('lasvm_fast',
-         sources=['lasvm_fast.c'],
+         sources=['lasvm_fast.cpp'],
          include_dirs=[numpy.get_include()]
          )
 
     config.add_extension('primal_cd_fast',
-         sources=['primal_cd_fast.c'],
+         sources=['primal_cd_fast.cpp'],
          include_dirs=[numpy.get_include()]
          )
 

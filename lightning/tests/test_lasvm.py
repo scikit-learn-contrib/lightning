@@ -8,7 +8,6 @@ from nose.tools import assert_raises, assert_true, assert_equal
 from sklearn.datasets.samples_generator import make_classification
 
 from lightning.lasvm import LaSVM
-from lightning.lasvm_fast import _remove
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
@@ -58,7 +57,7 @@ def test_warm_start():
 
 def test_sv_upper_bound():
     clf = LaSVM(random_state=0, max_iter=2, kernel="rbf", finish_step=True,
-                sv_upper_bound=30)
+                termination="n_sv", sv_upper_bound=30)
     clf.fit(bin_dense, bin_target)
     n_sv = np.sum(clf.dual_coef_ != 0)
-
+    assert_equal(n_sv, 30)
