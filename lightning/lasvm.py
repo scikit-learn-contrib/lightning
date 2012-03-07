@@ -13,19 +13,24 @@ from .lasvm_fast import _lasvm
 
 class LaSVM(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, C=1.0, max_iter=10, tol=1e-3,
+    def __init__(self, C=1.0, max_iter=10,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  selection="permute", search_size=60,
+                 termination="n_iter", sv_upper_bound=1000,
+                 tau=1e-3, finish_step=True,
                  warm_start=False, random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.max_iter = max_iter
-        self.tol = tol
         self.kernel = kernel
         self.gamma = gamma
         self.coef0 = coef0
         self.degree = degree
         self.selection = selection
         self.search_size = search_size
+        self.termination = termination
+        self.sv_upper_bound = sv_upper_bound
+        self.tau = tau
+        self.finish_step = finish_step
         self.warm_start = warm_start
         self.random_state = random_state
         self.verbose = verbose
@@ -62,9 +67,9 @@ class LaSVM(BaseEstimator, ClassifierMixin):
         for i in xrange(n_vectors):
             b = _lasvm(self.dual_coef_[i],
                        X, Y[:, i], kernel, self.selection, self.search_size,
-                       self.C, self.max_iter, rs, self.tol,
-                       verbose=self.verbose,
-                       warm_start=warm_start)
+                       self.termination, self.sv_upper_bound, self.tau,
+                       self.finish_step, self.C, self.max_iter, rs,
+                       verbose=self.verbose, warm_start=warm_start)
             self.intercept_[i] = b
 
         sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)

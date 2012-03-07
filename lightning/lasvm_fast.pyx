@@ -92,19 +92,19 @@ cdef void _update(np.ndarray[double, ndim=2, mode='c']X,
         k += 1
 
 
-cdef void _process(int k,
-                   np.ndarray[double, ndim=2, mode='c']X,
-                   np.ndarray[double, ndim=1]y,
-                   Kernel kernel,
-                   np.ndarray[long, ndim=1, mode='c']support_set,
-                   np.ndarray[long, ndim=1, mode='c']support_vectors,
-                   np.ndarray[double, ndim=1, mode='c']alpha,
-                   np.ndarray[double, ndim=1, mode='c']g,
-                   double C,
-                   double tol):
+cdef int _process(int k,
+                  np.ndarray[double, ndim=2, mode='c']X,
+                  np.ndarray[double, ndim=1]y,
+                  Kernel kernel,
+                  np.ndarray[long, ndim=1, mode='c']support_set,
+                  np.ndarray[long, ndim=1, mode='c']support_vectors,
+                  np.ndarray[double, ndim=1, mode='c']alpha,
+                  np.ndarray[double, ndim=1, mode='c']g,
+                  double C,
+                  double tau):
 
     if support_vectors[k]:
-        return
+        return 0
 
     alpha[k] = 0
 
@@ -133,33 +133,34 @@ cdef void _process(int k,
     cdef double Bi = max(0, C * y[i])
 
     cdef int violating_pair
-    violating_pair = alpha[i] < Bi and alpha[j] > Aj and g[i] - g[j] > tol
+    violating_pair = alpha[i] < Bi and alpha[j] > Aj and g[i] - g[j] > tau
 
     if not violating_pair:
-        return
+        return 0
 
     _update(X, y, kernel, g, support_set, alpha, i, j, Aj, Bi)
 
+    return 1
 
-cdef _remove(np.ndarray[long, ndim=1, mode='c']support_set,
-             int k):
+cpdef _remove(np.ndarray[long, ndim=1, mode='c']support_set,
+              int k):
     k += 1
     while(support_set[k] != -1):
         support_set[k-1] = support_set[k]
         k += 1
     support_set[k-1] = -1
 
-cdef void _reprocess(np.ndarray[double, ndim=2, mode='c']X,
-                     np.ndarray[double, ndim=1]y,
-                     Kernel kernel,
-                     np.ndarray[long, ndim=1, mode='c']support_set,
-                     np.ndarray[long, ndim=1, mode='c']support_vectors,
-                     np.ndarray[double, ndim=1, mode='c']alpha,
-                     np.ndarray[double, ndim=1, mode='c']g,
-                     np.ndarray[double, ndim=1, mode='c']b,
-                     np.ndarray[double, ndim=1, mode='c']delta,
-                     double C,
-                     double tol):
+cdef int _reprocess(np.ndarray[double, ndim=2, mode='c']X,
+                    np.ndarray[double, ndim=1]y,
+                    Kernel kernel,
+                    np.ndarray[long, ndim=1, mode='c']support_set,
+                    np.ndarray[long, ndim=1, mode='c']support_vectors,
+                    np.ndarray[double, ndim=1, mode='c']alpha,
+                    np.ndarray[double, ndim=1, mode='c']g,
+                    np.ndarray[double, ndim=1, mode='c']b,
+                    np.ndarray[double, ndim=1, mode='c']delta,
+                    double C,
+                    double tau):
     cdef i = _argmax(y, g, support_set, alpha, C)
     cdef j = _argmin(y, g, support_set, alpha, C)
 
@@ -167,10 +168,10 @@ cdef void _reprocess(np.ndarray[double, ndim=2, mode='c']X,
     cdef double Bi = max(0, C * y[i])
 
     cdef int violating_pair
-    violating_pair = alpha[i] < Bi and alpha[j] > Aj and g[i] - g[j] > tol
+    violating_pair = alpha[i] < Bi and alpha[j] > Aj and g[i] - g[j] > tau
 
     if not violating_pair:
-        return
+        return 0
 
     _update(X, y, kernel, g, support_set, alpha, i, j, Aj, Bi)
 
@@ -178,28 +179,35 @@ cdef void _reprocess(np.ndarray[double, ndim=2, mode='c']X,
     j = _argmin(y, g, support_set, alpha, C)
 
     cdef int s, k = 0
+    cdef int n_removed = 0
+
     while support_set[k] != -1:
         s = support_set[k]
+
         if alpha[s] == 0:
             if (y[s] == -1 and g[s] >= g[i]) or (y[s] == 1 and g[s] <= g[j]):
                 _remove(support_set, k)
                 support_vectors[s] = 0
+                n_removed += 1
+                k -= 1
+
         k += 1
 
     b[0] = (g[i] + g[j]) / 2
     delta[0] = g[i] - g[j]
 
+    return n_removed
 
-cdef _boostrap(index,
-               np.ndarray[double, ndim=2, mode='c']X,
-               np.ndarray[double, ndim=1]y,
-               Kernel kernel,
-               np.ndarray[long, ndim=1, mode='c']support_set,
-               np.ndarray[long, ndim=1, mode='c']support_vectors,
-               np.ndarray[double, ndim=1, mode='c']alpha,
-               np.ndarray[double, ndim=1, mode='c']g,
-               double *col_data,
-               rs):
+cdef int _boostrap(index,
+                   np.ndarray[double, ndim=2, mode='c']X,
+                   np.ndarray[double, ndim=1]y,
+                   Kernel kernel,
+                   np.ndarray[long, ndim=1, mode='c']support_set,
+                   np.ndarray[long, ndim=1, mode='c']support_vectors,
+                   np.ndarray[double, ndim=1, mode='c']alpha,
+                   np.ndarray[double, ndim=1, mode='c']g,
+                   double *col_data,
+                   rs):
     cdef np.ndarray[long, ndim=1, mode='c'] A = index
     cdef int n_pos = 0
     cdef int n_neg = 0
@@ -231,16 +239,18 @@ cdef _boostrap(index,
         if (n_neg == 5 and n_pos == 5):
             break
 
+    return n_pos + n_neg
 
-cdef _boostrap_warm_start(index,
-                          np.ndarray[double, ndim=2, mode='c']X,
-                          np.ndarray[double, ndim=1]y,
-                          Kernel kernel,
-                          np.ndarray[long, ndim=1, mode='c']support_set,
-                          np.ndarray[long, ndim=1, mode='c']support_vectors,
-                          np.ndarray[double, ndim=1, mode='c']alpha,
-                          np.ndarray[double, ndim=1, mode='c']g,
-                          double* col_data):
+
+cdef int _boostrap_warm_start(index,
+                              np.ndarray[double, ndim=2, mode='c']X,
+                              np.ndarray[double, ndim=1]y,
+                              Kernel kernel,
+                              np.ndarray[long, ndim=1, mode='c']support_set,
+                              np.ndarray[long, ndim=1, mode='c']support_vectors,
+                              np.ndarray[double, ndim=1, mode='c']alpha,
+                              np.ndarray[double, ndim=1, mode='c']g,
+                              double* col_data):
     cdef np.ndarray[long, ndim=1, mode='c'] A = index
     cdef int i, s, k = 0
     cdef Py_ssize_t n_samples = index.shape[0]
@@ -334,10 +344,13 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c']alpha,
            Kernel kernel,
            selection,
            int search_size,
+           termination,
+           int sv_upper_bound,
+           double tau,
+           int finish_step,
            double C,
            int max_iter,
            rs,
-           double tol,
            int verbose,
            int warm_start):
 
@@ -368,17 +381,22 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c']alpha,
     col = np.zeros(n_samples, dtype=np.float64)
     col_data = <double*>col.data
 
+    cdef int check_n_sv = termination == "n_sv"
+
     cdef int it, i, j, s, k, start
     cdef int n_pos, n_neg
+    cdef int n_sv
+    cdef int stop = 0
 
     cdef int select_method = get_select_method(selection)
 
     if warm_start:
-        _boostrap_warm_start(A, X, y, kernel,
-                             support_set, support_vectors, alpha, g, col_data)
+        n_sv = _boostrap_warm_start(A, X, y, kernel,
+                                    support_set, support_vectors, alpha, g,
+                                    col_data)
     else:
-        _boostrap(A, X, y, kernel,
-                  support_set, support_vectors, alpha, g, col_data, rs)
+        n_sv = _boostrap(A, X, y, kernel,
+                         support_set, support_vectors, alpha, g, col_data, rs)
 
     for it in xrange(max_iter):
 
@@ -391,13 +409,18 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c']alpha,
                        alpha, b[0], X, y, kernel, support_set, support_vectors)
 
             # Attempt to add it.
-            _process(s, X, y, kernel,
-                     support_set, support_vectors, alpha, g, C, tol)
+            n_sv += _process(s, X, y, kernel,
+                             support_set, support_vectors, alpha, g, C, tau)
 
             # Remove blatant non support vectors.
-            _reprocess(X, y, kernel,
-                       support_set, support_vectors, alpha,
-                       g, b, delta, C, tol)
+            n_sv -=_reprocess(X, y, kernel,
+                              support_set, support_vectors, alpha,
+                              g, b, delta, C, tau)
+
+            # Exit if necessary.
+            if n_sv == n_samples or (check_n_sv and n_sv > sv_upper_bound):
+                stop = 1
+                break
 
             # Update position and reshuffle if needed.
             if select_method: # others than permute
@@ -409,10 +432,16 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c']alpha,
             else:
                 start += 1
 
+        # end for
 
-    while delta[0] > tol:
-        _reprocess(X, y, kernel,
-                   support_set, support_vectors, alpha,
-                   g, b, delta, C, tol)
+        if stop:
+            break
 
+    if finish_step:
+        while delta[0] > tau:
+            _reprocess(X, y, kernel,
+                       support_set, support_vectors, alpha,
+                       g, b, delta, C, tau)
+
+    # Return intercept.
     return b[0]
