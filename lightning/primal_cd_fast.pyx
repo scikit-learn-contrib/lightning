@@ -45,7 +45,8 @@ def _primal_cd_l2svm_l1r(weights,
     cdef double appxcond, cond
     cdef double val, tmp
     cdef double Gp, Gn, violation
-    cdef double delta, b_new
+    cdef double delta, b_new, b_add
+    cdef double xj_sq
 
     cdef np.ndarray[double, ndim=2, mode='c'] Xnp
     Xnp = X
@@ -56,18 +57,10 @@ def _primal_cd_l2svm_l1r(weights,
     cdef np.ndarray[double, ndim=1, mode='c'] b
     b = 1 - y * np.dot(X, w)
 
-    cdef np.ndarray[double, ndim=1, mode='c'] xj_sq
-    xj_sq = np.zeros(n_features, dtype=np.float64)
-
-    cdef np.ndarray[double, ndim=1, mode='c'] x_value
-    x_value = np.zeros(n_features, dtype=np.float64)
-
-    for j in xrange(n_features):
-        for i in xrange(n_samples):
-            val = Xnp[i, j]
-            # not thread safe !
-            Xnp[i, j] *= y[i]
-            xj_sq[j] += C * val * val
+    cdef double* col_data
+    cdef np.ndarray[double, ndim=1, mode='c'] col
+    col = np.zeros(n_samples, dtype=np.float64)
+    col_data = <double*>col.data
 
     for it in xrange(max_iter):
         Gmax_new = 0
@@ -78,15 +71,19 @@ def _primal_cd_l2svm_l1r(weights,
             j = index[s]
             G_loss = 0
             H = 0
+            xj_sq = 0
 
             for ind in xrange(n_samples):
+                val = Xnp[ind, j] * y[ind]
+                col[ind] = val
                 if b[ind] > 0:
-                    val = Xnp[ind, j]
                     tmp = C * val
                     G_loss -= tmp * b[ind]
                     H += tmp * val
+                xj_sq += val * val
             # end for
 
+            xj_sq *= C
             G_loss *= 2
 
             G = G_loss
@@ -132,11 +129,11 @@ def _primal_cd_l2svm_l1r(weights,
                 d_diff = d_old - d
                 cond = fabs(w[j] + d) - fabs(w[j]) - sigma * delta
 
-                appxcond = xj_sq[j] * d * d + G_loss * d + cond
+                appxcond = xj_sq * d * d + G_loss * d + cond
 
                 if appxcond <= 0:
                     for ind in xrange(n_samples):
-                        b[ind] += d_diff * Xnp[ind, j]
+                        b[ind] += d_diff * col[ind]
                     break
 
                 if num_linesearch == 0:
@@ -146,7 +143,7 @@ def _primal_cd_l2svm_l1r(weights,
                     for ind in xrange(n_samples):
                         if b[ind] > 0:
                             loss_old += C * b[ind] * b[ind]
-                        b_new = b[ind] + d_diff * Xnp[ind, j]
+                        b_new = b[ind] + d_diff * col[ind]
                         b[ind] = b_new
 
                         if b_new > 0:
@@ -155,7 +152,7 @@ def _primal_cd_l2svm_l1r(weights,
                     loss_new = 0
 
                     for ind in xrange(n_samples):
-                        b_new = b[ind] + d_diff * Xnp[ind, j]
+                        b_new = b[ind] + d_diff * col[ind]
                         b[ind] = b_new
                         if b_new > 0:
                             loss_new += C * b_new * b_new
@@ -181,7 +178,7 @@ def _primal_cd_l2svm_l1r(weights,
                         continue
 
                     for ind in xrange(n_samples):
-                        b[ind] -= w[i] * Xnp[ind, j]
+                        b[ind] -= w[i] * col[ind]
                 # end for
 
 
@@ -204,11 +201,6 @@ def _primal_cd_l2svm_l1r(weights,
         Gmax_old = Gmax_new
 
     # end for while max_iter
-
-    # Restore old values
-    for j in xrange(n_features):
-        for i in xrange(n_samples):
-            Xnp[i, j] *= y[i]
 
     return w
 
