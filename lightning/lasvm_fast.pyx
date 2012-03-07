@@ -87,13 +87,14 @@ cdef void _update(np.ndarray[double, ndim=2, mode='c'] X,
     alpha[i] += lambda_
     alpha[j] -= lambda_
 
+
     cdef int s
     cdef linked_list[long].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
-        # Need only two elements per column.
-        Kis = kernel.compute(X, i, X, s)
-        Kjs = kernel.compute(X, j, X, s)
+        # Need the ith and jth column (support vectors only)
+        Kis = kernel.compute(X, s, X, i)
+        Kjs = kernel.compute(X, s, X, j)
         g[s] -= lambda_ * (Kis - Kjs)
         inc(it)
 
@@ -117,10 +118,10 @@ cdef void _process(int k,
     cdef int s, j, i
     cdef double pred = 0
 
-    # Iterate over k-th column (support vectors only)
     cdef linked_list[long].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
+        # Iterate over k-th column (support vectors only)
         pred += alpha[s] * kernel.compute(X, s, X, k)
         inc(it)
 
@@ -223,6 +224,7 @@ cdef void _boostrap(index,
             support_vectors[s] = 1
 
             alpha[s] = y[s]
+            # Entire sth column
             kernel.compute_column_ptr(X, X, s, col_data)
 
             for j in xrange(n_samples):
@@ -316,6 +318,7 @@ cdef int select(np.ndarray[long, ndim=1, mode='c'] A,
         it = support_set.begin()
         while it != support_set.end():
             j = deref(it)
+            # Iterate over sth column (support vectors only)
             score += alpha[j] * kernel.compute(X, j, X, s)
             inc(it)
 

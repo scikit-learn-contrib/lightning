@@ -93,6 +93,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
             else:
                 # G = np.dot(Q_bar, alpha)[i] - 1
                 G = -1
+                # FIXME: retrieve sv only and iterate over non-zero alpha[j]
                 kernel.compute_column_ptr(X, X, i, col_data)
                 for j in xrange(n_samples):
                     G += col_data[j] * y[i] * y[j] * alpha[j]
