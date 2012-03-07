@@ -9,6 +9,7 @@ from sklearn.utils import check_random_state, safe_mask
 from sklearn.metrics.pairwise import pairwise_kernels
 
 from dual_cd_fast import _dual_cd
+from .kernel_fast import get_kernel
 
 class DualLinearSVC(BaseEstimator, ClassifierMixin):
 
@@ -39,12 +40,13 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
             self.dual_coef_ = np.zeros((n_vectors, n_samples),
                                        dtype=np.float64)
 
+        kernel = get_kernel("linear")
+
         for i in xrange(n_vectors):
             _dual_cd(self.coef_[i], self.dual_coef_[i],
-                     X, Y[:, i],
+                     X, Y[:, i], kernel, True,
                      self.C, self.loss, self.max_iter, rs, self.tol,
-                     self.shrinking,
-                     precomputed_kernel=False, verbose=self.verbose)
+                     self.shrinking, verbose=self.verbose)
 
         return self
 
@@ -82,6 +84,9 @@ class DualSVC(BaseEstimator, ClassifierMixin):
                 "degree" : self.degree,
                 "coef0" : self.coef0}
 
+    def _get_kernel(self):
+        return get_kernel(self.kernel, **self._kernel_params())
+
     def fit(self, X, y):
         n_samples = X.shape[0]
         rs = check_random_state(self.random_state)
@@ -90,10 +95,6 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         Y = self.label_binarizer_.fit_transform(y)
         n_vectors = Y.shape[1]
 
-        K = pairwise_kernels(X, X, metric=self.kernel,
-                             filter_params=True, n_jobs=self.n_jobs,
-                             **self._kernel_params())
-
         if not self.warm_start or self.dual_coef_ is None:
             self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
         else:
@@ -101,12 +102,13 @@ class DualSVC(BaseEstimator, ClassifierMixin):
 
         coef = np.empty(0, dtype=np.float64)
 
+        kernel = self._get_kernel()
+
         for i in xrange(n_vectors):
             _dual_cd(coef, self.dual_coef_[i],
-                     K, Y[:, i],
+                     X, Y[:, i], kernel, False,
                      self.C, self.loss, self.max_iter, rs, self.tol,
-                     self.shrinking,
-                     precomputed_kernel=True, verbose=self.verbose)
+                     self.shrinking, verbose=self.verbose)
 
         self.dual_coef_ *= Y.T
 

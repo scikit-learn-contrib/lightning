@@ -7,8 +7,9 @@
 # License: BSD
 
 import numpy as np
-
 cimport numpy as np
+
+from lightning.kernel_fast cimport Kernel
 
 cdef extern from "math.h":
    double fabs(double)
@@ -16,25 +17,21 @@ cdef extern from "math.h":
 cdef extern from "float.h":
    double DBL_MAX
 
-def _dual_cd(np.ndarray[double, ndim=1, mode='c']w,
-             np.ndarray[double, ndim=1, mode='c']alpha,
-             X,
+def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
+             np.ndarray[double, ndim=1, mode='c'] alpha,
+             np.ndarray[double, ndim=2, mode='c'] X,
              np.ndarray[double, ndim=1]y,
+             Kernel kernel,
+             int linear_kernel,
              double C,
              loss,
              int max_iter,
              rs,
              double tol,
              int shrinking,
-             int precomputed_kernel,
              int verbose):
-    cdef Py_ssize_t n_samples
-    cdef Py_ssize_t n_features
-
-    if precomputed_kernel:
-        n_samples = X.shape[0]
-    else:
-        n_samples, n_features = X.shape
+    cdef Py_ssize_t n_samples = X.shape[0]
+    cdef Py_ssize_t n_features = X.shape[1]
 
     cdef np.ndarray[long, ndim=1, mode='c'] A
     A = np.arange(n_samples)
@@ -50,26 +47,20 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c']w,
         U = DBL_MAX
         D_ii = 1.0 / (2 * C)
 
-    cdef np.ndarray[double, ndim=2, mode='c'] K
+    cdef double* col_data
+    cdef np.ndarray[double, ndim=1, mode='c'] col
+    col = np.zeros(n_samples, dtype=np.float64)
+    col_data = <double*>col.data
+
     cdef np.ndarray[double, ndim=1, mode='c'] Q_bar_diag
     Q_bar_diag = np.zeros(n_samples, dtype=np.float64)
 
-    cdef int j
-
-    if precomputed_kernel:
-        K = X
-
-        for j in xrange(n_samples):
-            Q_bar_diag[j] = K[j, j]
-    else:
-        for j in xrange(n_samples):
-            Q_bar_diag[j] = np.dot(X[j], X[j])
-
+    kernel.compute_diag_ptr(X, <double*>Q_bar_diag.data)
     Q_bar_diag += D_ii
 
     cdef double M
     cdef double m
-    cdef int i
+    cdef int i, j
     cdef double y_i
     cdef double alpha_i, alpha_old
     cdef double M_bar = DBL_MAX
@@ -93,16 +84,19 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c']w,
             y_i = y[i]
             alpha_i = alpha[i]
 
-            if precomputed_kernel:
+            if linear_kernel:
+                # G = y_i * np.dot(w, X[i]) - 1 + D_ii * alpha_i
+                G = 0
+                for j in xrange(n_features):
+                    G += w[j] * X[i, j]
+                G = y_i * G - 1 + D_ii * alpha_i
+            else:
                 # G = np.dot(Q_bar, alpha)[i] - 1
                 G = -1
+                kernel.compute_column_ptr(X, X, i, col_data)
                 for j in xrange(n_samples):
-                    G += K[i, j] * y[i] * y[j] * alpha[j]
+                    G += col_data[j] * y[i] * y[j] * alpha[j]
                 G += D_ii * alpha[i]
-            else:
-                # G = y_i * np.dot(w, X[i]) - 1 + D_ii * alpha_i
-                G = np.dot(w, X[i])
-                G = y_i * G - 1 + D_ii * alpha_i
 
             PG = 0
 
@@ -132,7 +126,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c']w,
 
                 alpha[i] = min(max(alpha_i - G / Q_bar_diag[i], 0), U)
 
-                if not precomputed_kernel:
+                if linear_kernel:
                     step = (alpha[i] - alpha_old) * y_i
                     w += step * X[i]
 
@@ -159,7 +153,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c']w,
 
     # end for
 
-    if precomputed_kernel:
-        return alpha
-    else:
+    if linear_kernel:
         return w
+    else:
+        return alpha
