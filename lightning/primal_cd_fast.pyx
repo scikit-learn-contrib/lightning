@@ -43,7 +43,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
         b = np.ones(n_samples, dtype=np.float64)
         n_features = n_samples
 
-    cdef int j, s, it, ind = 0
+    cdef int j, s, it, i = 0
     cdef int active_size = n_features
     cdef int max_num_linesearch = 20
 
@@ -88,12 +88,12 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
                 kernel.compute_column_ptr(Xc, Xc, j, col_data)
                 col_ro = col_data
 
-            for ind in xrange(n_samples):
-                val = col_ro[ind] * y[ind]
-                col[ind] = val
+            for i in xrange(n_samples):
+                val = col_ro[i] * y[i]
+                col[i] = val
                 val_sq = val * val
-                if b[ind] > 0:
-                    Lp -= val * b[ind]
+                if b[i] > 0:
+                    Lp -= val * b[i]
                     Lpp += val_sq
                 xj_sq += val_sq
             # end for
@@ -150,8 +150,8 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
 
                 # Avoid line search if possible.
                 if appxcond <= 0:
-                    for ind in xrange(n_samples):
-                        b[ind] += d_diff * col[ind]
+                    for i in xrange(n_samples):
+                        b[i] += d_diff * col[i]
                     break
 
                 if num_linesearch == 0:
@@ -159,12 +159,12 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
                     Lj_z = 0
 
                     # L_j = \sum_{b_i > 0} b_i ^2
-                    for ind in xrange(n_samples):
-                        if b[ind] > 0:
-                            Lj_zero += b[ind] * b[ind]
+                    for i in xrange(n_samples):
+                        if b[i] > 0:
+                            Lj_zero += b[i] * b[i]
 
-                        b_new = b[ind] + d_diff * col[ind]
-                        b[ind] = b_new
+                        b_new = b[i] + d_diff * col[i]
+                        b[i] = b_new
 
                         if b_new > 0:
                             Lj_z += b_new * b_new
@@ -174,9 +174,9 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
                 else:
                     Lj_z = 0
 
-                    for ind in xrange(n_samples):
-                        b_new = b[ind] + d_diff * col[ind]
-                        b[ind] = b_new
+                    for i in xrange(n_samples):
+                        b_new = b[i] + d_diff * col[i]
+                        b[i] = b_new
                         if b_new > 0:
                             Lj_z += b_new * b_new
 
