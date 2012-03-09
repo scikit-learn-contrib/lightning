@@ -48,15 +48,15 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
     cdef int max_num_linesearch = 20
 
     cdef double sigma = 0.01
-    cdef double d, G_loss, G, H
+    cdef double d, Lp, Lpp
     cdef double Gmax_old = DBL_MAX
     cdef double Gmax_new
     cdef double Gmax_init
     cdef double d_old, d_diff
     cdef double loss_old, loss_new
     cdef double appxcond, cond
-    cdef double val, tmp
-    cdef double Gp, Gn, violation
+    cdef double val, val_sq
+    cdef double Lp_p, Lp_n, violation
     cdef double delta, b_new, b_add
     cdef double xj_sq
 
@@ -77,8 +77,8 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
         s = 0
         while s < active_size:
             j = index[s]
-            G_loss = 0
-            H = 0
+            Lp = 0
+            Lpp = 0
             xj_sq = 0
 
             if linear_kernel:
@@ -90,45 +90,44 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
             for ind in xrange(n_samples):
                 val = col_ro[ind] * y[ind]
                 col[ind] = val
+                val_sq = val * val
                 if b[ind] > 0:
-                    tmp = C * val
-                    G_loss -= tmp * b[ind]
-                    H += tmp * val
-                xj_sq += val * val
+                    Lp -= val * b[ind]
+                    Lpp += val_sq
+                xj_sq += val_sq
             # end for
 
             xj_sq *= C
-            G_loss *= 2
+            Lp *= 2 * C
 
-            G = G_loss
-            H *= 2
-            H = max(H, 1e-12)
+            Lpp *= 2 * C
+            Lpp = max(Lpp, 1e-12)
 
-            Gp = G + 1
-            Gn = G - 1
+            Lp_p = Lp + 1
+            Lp_n = Lp - 1
             violation = 0
 
             if w[j] == 0:
-                if Gp < 0:
-                    violation = -Gp
-                elif Gn > 0:
-                    violation = Gn
-                elif Gp > Gmax_old / n_samples and Gn < -Gmax_old / n_samples:
+                if Lp_p < 0:
+                    violation = -Lp_p
+                elif Lp_n > 0:
+                    violation = Lp_n
+                elif Lp_p > Gmax_old / n_samples and Lp_n < -Gmax_old / n_samples:
                     active_size -= 1
                     index[s], index[active_size] = index[active_size], index[s]
                     continue
             elif w[j] > 0:
-                violation = fabs(Gp)
+                violation = fabs(Lp_p)
             else:
-                violation = fabs(Gn)
+                violation = fabs(Lp_n)
 
             Gmax_new = max(Gmax_new, violation)
 
             # obtain Newton direction d
-            if Gp <= H * w[j]:
-                d = -Gp / H
-            elif Gn >= H * w[j]:
-                d = -Gn / H
+            if Lp_p <= Lpp * w[j]:
+                d = -Lp_p / Lpp
+            elif Lp_n >= Lpp * w[j]:
+                d = -Lp_n / Lpp
             else:
                 d = -w[j]
 
@@ -136,14 +135,14 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
                 s += 1
                 continue
 
-            delta = fabs(w[j] + d) - fabs(w[j]) + G * d
+            delta = fabs(w[j] + d) - fabs(w[j]) + Lp * d
             d_old = 0
 
             for num_linesearch in xrange(max_num_linesearch):
                 d_diff = d_old - d
                 cond = fabs(w[j] + d) - fabs(w[j]) - sigma * delta
 
-                appxcond = xj_sq * d * d + G_loss * d + cond
+                appxcond = xj_sq * d * d + Lp * d + cond
 
                 if appxcond <= 0:
                     for ind in xrange(n_samples):
