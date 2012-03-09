@@ -49,9 +49,9 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
 
     cdef double sigma = 0.01
     cdef double d, Lp, Lpp
-    cdef double Gmax_old = DBL_MAX
-    cdef double Gmax_new
-    cdef double Gmax_init
+    cdef double Lpmax_old = DBL_MAX
+    cdef double Lpmax_new
+    cdef double Lpmax_init
     cdef double d_old, d_diff
     cdef double loss_old, loss_new
     cdef double appxcond, cond
@@ -71,7 +71,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
 
 
     for it in xrange(max_iter):
-        Gmax_new = 0
+        Lpmax_new = 0
         rs.shuffle(index[:active_size])
 
         s = 0
@@ -112,7 +112,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
                     violation = -Lp_p
                 elif Lp_n > 0:
                     violation = Lp_n
-                elif Lp_p > Gmax_old / n_samples and Lp_n < -Gmax_old / n_samples:
+                elif Lp_p > Lpmax_old / n_samples and Lp_n < -Lpmax_old / n_samples:
                     active_size -= 1
                     index[s], index[active_size] = index[active_size], index[s]
                     continue
@@ -121,7 +121,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
             else:
                 violation = fabs(Lp_n)
 
-            Gmax_new = max(Gmax_new, violation)
+            Lpmax_new = max(Lpmax_new, violation)
 
             # obtain Newton direction d
             if Lp_p <= Lpp * w[j]:
@@ -199,19 +199,19 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
         # while active_size
 
         if it == 0:
-            Gmax_init = Gmax_new
+            Lpmax_init = Lpmax_new
 
-        if Gmax_new <= tol * Gmax_init:
+        if Lpmax_new <= tol * Lpmax_init:
             if active_size == n_features:
                 if verbose:
                     print "Converged at iteration", it
                 break
             else:
                 active_size = n_features
-                Gmax_old = DBL_MAX
+                Lpmax_old = DBL_MAX
                 continue
 
-        Gmax_old = Gmax_new
+        Lpmax_old = Lpmax_new
 
     # end for while max_iter
 
