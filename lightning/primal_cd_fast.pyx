@@ -48,7 +48,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
     cdef int max_num_linesearch = 20
 
     cdef double sigma = 0.01
-    cdef double d, Lp, Lpp
+    cdef double d, Lp, Lpp, Lpp_wj
     cdef double Lpmax_old = DBL_MAX
     cdef double Lpmax_new
     cdef double Lpmax_init
@@ -124,9 +124,10 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
             Lpmax_new = max(Lpmax_new, violation)
 
             # obtain Newton direction d
-            if Lp_p <= Lpp * w[j]:
+            Lpp_wj = Lpp * w[j]
+            if Lp_p <= Lpp_wj:
                 d = -Lp_p / Lpp
-            elif Lp_n >= Lpp * w[j]:
+            elif Lp_n >= Lpp_wj:
                 d = -Lp_n / Lpp
             else:
                 d = -w[j]
