@@ -48,6 +48,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
     cdef int max_num_linesearch = 20
 
     cdef double sigma = 0.01
+    cdef double beta = 0.5
     cdef double d, Lp, Lpp, Lpp_wj
     cdef double Lpmax_old = DBL_MAX
     cdef double Lpmax_new
@@ -143,7 +144,10 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
             z_old = 0
             z = d
 
+            # Check z = lambda*d for lambda = 1, beta, beta^2 such that
+            # sufficient decrease condition is met.
             for num_linesearch in xrange(max_num_linesearch):
+                # Reversed because of the minus in b[i] = 1 - y_i w^T x_i.
                 z_diff = z_old - z
                 cond = fabs(w[j] + z) - wj_abs - sigma * delta
 
@@ -152,6 +156,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
                 # Avoid line search if possible.
                 if appxcond <= 0:
                     for i in xrange(n_samples):
+                        # Need to remove the old z and had the new one.
                         b[i] += z_diff * col[i]
                     break
 
@@ -188,25 +193,12 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
                     break
                 else:
                     z_old = z
-                    z *= 0.5
-                    delta *= 0.5
+                    z *= beta
+                    delta *= beta
 
             # end for num_linesearch
 
             w[j] += z
-
-            # recompute b[] if line search takes too many steps
-            #if num_linesearch >= max_num_linesearch:
-                #b[:] = 1
-
-                #for i in xrange(n_features):
-                    #if w[i] == 0:
-                        #continue
-
-                    #for ind in xrange(n_samples):
-                        #b[ind] -= w[i] * X[ind, j]
-                ## end for
-
 
             s += 1
         # while active_size
