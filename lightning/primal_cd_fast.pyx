@@ -59,6 +59,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
     cdef double Lp_p, Lp_n, violation
     cdef double delta, b_new, b_add
     cdef double xj_sq
+    cdef double wj_abs
 
     cdef np.ndarray[long, ndim=1, mode='c'] index
     index = np.arange(n_features)
@@ -136,12 +137,13 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
                 s += 1
                 continue
 
-            delta = fabs(w[j] + d) - fabs(w[j]) + Lp * d
+            wj_abs = fabs(w[j])
+            delta = fabs(w[j] + d) - wj_abs + Lp * d
             d_old = 0
 
             for num_linesearch in xrange(max_num_linesearch):
                 d_diff = d_old - d
-                cond = fabs(w[j] + d) - fabs(w[j]) - sigma * delta
+                cond = fabs(w[j] + d) - wj_abs - sigma * delta
 
                 appxcond = xj_sq * d * d + Lp * d + cond
 
