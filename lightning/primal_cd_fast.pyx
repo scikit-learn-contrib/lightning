@@ -52,7 +52,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
     cdef double Lpmax_old = DBL_MAX
     cdef double Lpmax_new
     cdef double Lpmax_init
-    cdef double d_old, d_diff
+    cdef double z, z_old, z_diff
     cdef double Lj_zero, Lj_z
     cdef double appxcond, cond
     cdef double val, val_sq
@@ -140,18 +140,19 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
 
             wj_abs = fabs(w[j])
             delta = fabs(w[j] + d) - wj_abs + Lp * d
-            d_old = 0
+            z_old = 0
+            z = d
 
             for num_linesearch in xrange(max_num_linesearch):
-                d_diff = d_old - d
-                cond = fabs(w[j] + d) - wj_abs - sigma * delta
+                z_diff = z_old - z
+                cond = fabs(w[j] + z) - wj_abs - sigma * delta
 
-                appxcond = xj_sq * d * d + Lp * d + cond
+                appxcond = xj_sq * z * z + Lp * z + cond
 
                 # Avoid line search if possible.
                 if appxcond <= 0:
                     for i in xrange(n_samples):
-                        b[i] += d_diff * col[i]
+                        b[i] += z_diff * col[i]
                     break
 
                 if num_linesearch == 0:
@@ -163,7 +164,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
                         if b[i] > 0:
                             Lj_zero += b[i] * b[i]
 
-                        b_new = b[i] + d_diff * col[i]
+                        b_new = b[i] + z_diff * col[i]
                         b[i] = b_new
 
                         if b_new > 0:
@@ -175,7 +176,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
                     Lj_z = 0
 
                     for i in xrange(n_samples):
-                        b_new = b[i] + d_diff * col[i]
+                        b_new = b[i] + z_diff * col[i]
                         b[i] = b_new
                         if b_new > 0:
                             Lj_z += b_new * b_new
@@ -186,13 +187,13 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
                 if cond <= 0:
                     break
                 else:
-                    d_old = d
-                    d *= 0.5
+                    z_old = z
+                    z *= 0.5
                     delta *= 0.5
 
             # end for num_linesearch
 
-            w[j] += d
+            w[j] += z
 
             # recompute b[] if line search takes too many steps
             #if num_linesearch >= max_num_linesearch:
