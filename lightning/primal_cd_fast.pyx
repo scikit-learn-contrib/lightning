@@ -53,7 +53,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
     cdef double Lpmax_new
     cdef double Lpmax_init
     cdef double d_old, d_diff
-    cdef double loss_old, loss_new
+    cdef double Lj_zero, Lj_z
     cdef double appxcond, cond
     cdef double val, val_sq
     cdef double Lp_p, Lp_n, violation
@@ -108,6 +108,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
             Lp_n = Lp - 1
             violation = 0
 
+            # Shrinking.
             if w[j] == 0:
                 if Lp_p < 0:
                     violation = -Lp_p
@@ -124,7 +125,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
 
             Lpmax_new = max(Lpmax_new, violation)
 
-            # obtain Newton direction d
+            # Obtain Newton direction d.
             Lpp_wj = Lpp * w[j]
             if Lp_p <= Lpp_wj:
                 d = -Lp_p / Lpp
@@ -147,33 +148,41 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
 
                 appxcond = xj_sq * d * d + Lp * d + cond
 
+                # Avoid line search if possible.
                 if appxcond <= 0:
                     for ind in xrange(n_samples):
                         b[ind] += d_diff * col[ind]
                     break
 
                 if num_linesearch == 0:
-                    loss_old = 0
-                    loss_new = 0
+                    Lj_zero = 0
+                    Lj_z = 0
 
+                    # L_j = \sum_{b_i > 0} b_i ^2
                     for ind in xrange(n_samples):
                         if b[ind] > 0:
-                            loss_old += C * b[ind] * b[ind]
+                            Lj_zero += b[ind] * b[ind]
+
                         b_new = b[ind] + d_diff * col[ind]
                         b[ind] = b_new
 
                         if b_new > 0:
-                            loss_new += C * b_new * b_new
+                            Lj_z += b_new * b_new
+
+                    Lj_zero *= C
+                    Lj_z *= C
                 else:
-                    loss_new = 0
+                    Lj_z = 0
 
                     for ind in xrange(n_samples):
                         b_new = b[ind] + d_diff * col[ind]
                         b[ind] = b_new
                         if b_new > 0:
-                            loss_new += C * b_new * b_new
+                            Lj_z += b_new * b_new
 
-                cond = cond + loss_new - loss_old
+                    Lj_z *= C
+
+                cond = cond + Lj_z - Lj_zero
                 if cond <= 0:
                     break
                 else:
