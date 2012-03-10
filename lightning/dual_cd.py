@@ -14,12 +14,15 @@ from .kernel_fast import get_kernel
 class DualLinearSVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-3,
+                 termination="convergence", sv_upper_bound=1000,
                  shrinking=True, warm_start=False, random_state=None,
                  verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
         self.max_iter = max_iter
         self.tol = tol
+        self.termination = termination
+        self.sv_upper_bound = sv_upper_bound
         self.shrinking = shrinking
         self.warm_start = warm_start
         self.random_state = random_state
@@ -45,6 +48,7 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
         for i in xrange(n_vectors):
             _dual_cd(self.coef_[i], self.dual_coef_[i],
                      X, Y[:, i], kernel, True,
+                     "permute", 60, self.termination, self.sv_upper_bound,
                      self.C, self.loss, self.max_iter, rs, self.tol,
                      self.shrinking, verbose=self.verbose)
 
@@ -62,6 +66,8 @@ class DualSVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-3,
                  shrinking=True, kernel="linear", gamma=0.1, coef0=1, degree=4,
+                 selection="permute", search_size=60,
+                 termination="convergence", sv_upper_bound=1000,
                  warm_start=False, random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
@@ -72,6 +78,10 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         self.gamma = gamma
         self.coef0 = coef0
         self.degree = degree
+        self.selection = selection
+        self.search_size = search_size
+        self.termination = termination
+        self.sv_upper_bound = sv_upper_bound
         self.warm_start = warm_start
         self.random_state = random_state
         self.verbose = verbose
@@ -107,6 +117,8 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         for i in xrange(n_vectors):
             _dual_cd(coef, self.dual_coef_[i],
                      X, Y[:, i], kernel, False,
+                     self.selection, self.search_size,
+                     self.termination, self.sv_upper_bound,
                      self.C, self.loss, self.max_iter, rs, self.tol,
                      self.shrinking, verbose=self.verbose)
 

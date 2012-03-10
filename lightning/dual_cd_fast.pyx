@@ -17,6 +17,7 @@ import numpy as np
 cimport numpy as np
 
 from lightning.kernel_fast cimport Kernel
+from lightning.select_fast cimport get_select_method, select_sv
 
 cdef extern from "math.h":
    double fabs(double)
@@ -24,12 +25,17 @@ cdef extern from "math.h":
 cdef extern from "float.h":
    double DBL_MAX
 
+
 def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
              np.ndarray[double, ndim=1, mode='c'] alpha,
              np.ndarray[double, ndim=2, mode='c'] X,
              np.ndarray[double, ndim=1]y,
              Kernel kernel,
              int linear_kernel,
+             selection,
+             int search_size,
+             termination,
+             int sv_upper_bound,
              double C,
              loss,
              int max_iter,
@@ -73,9 +79,10 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
     cdef double M_bar = DBL_MAX
     cdef double m_bar = -DBL_MAX
     cdef unsigned int t = 0
-    cdef int s
+    cdef int s, start = 0
     cdef double G, PG
     cdef double step
+    cdef long r
 
     cdef list[long] support_set
     cdef list[long].iterator it
@@ -85,6 +92,11 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
 
     cdef np.ndarray[long, ndim=1, mode='c'] support_vectors
     support_vectors = np.zeros(n_samples, dtype=np.int64)
+
+    cdef int select_method = get_select_method(selection)
+    cdef int check_n_sv = termination == "n_sv"
+    cdef int check_convergence = termination == "convergence"
+    cdef int stop = 0
 
     # FIXME: would be better to store the support indices in the class
     for i in xrange(n_samples):
@@ -96,19 +108,22 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
             support_it[i] = it
 
     for t in xrange(max_iter):
-        # FIXME: Could select instances greedily via randomized search instead
-        #        of randomly
         rs.shuffle(A[:active_size])
 
         M = -DBL_MAX
         m = DBL_MAX
 
         s = 0
+        start = 0
         while s < active_size:
-            i = A[s]
+            i = select_sv(A, start, search_size, active_size, select_method,
+                          alpha, 0, X, y, kernel,
+                          support_set, support_vectors)
+
             y_i = y[i]
             alpha_i = alpha[i]
 
+            # Compute ith element of the gradient.
             if linear_kernel:
                 # G = y_i * np.dot(w, X[i]) - 1 + D_ii * alpha_i
                 G = 0
@@ -129,6 +144,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
 
             PG = 0
 
+            # Shrinking.
             if alpha_i == 0:
                 if G < 0 or not shrinking:
                     PG = G
@@ -153,8 +169,10 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
             if fabs(PG) > 1e-12:
                 alpha_old = alpha_i
 
+                # Closed-form solution of the one-variable subproblem.
                 alpha[i] = min(max(alpha_i - G / Q_bar_diag[i], 0), U)
 
+                # Update support set.
                 if alpha[i] != 0:
                     if support_vectors[i] == 0:
                         support_set.push_back(i)
@@ -168,16 +186,35 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
                         support_set.erase(it)
                         support_vectors[i] = 0
 
-
                 if linear_kernel:
                     step = (alpha[i] - alpha_old) * y_i
                     w += step * X[i]
+
+            # Exit if necessary.
+            if support_set.size() == n_samples or \
+               (check_n_sv and support_set.size() >= sv_upper_bound):
+                stop = 1
+                break
+
+            # Update position and reshuffle if needed.
+            if select_method: # others than permute
+                start += search_size
+
+                if start + search_size > n_samples - 1:
+                    rs.shuffle(A[:active_size])
+                    start = 0
+            else:
+                start += 1
 
             s += 1
 
         # end while
 
-        if M - m <= tol:
+        if stop:
+            break
+
+        # Convergence check.
+        if check_convergence and M - m <= tol:
             if active_size == n_samples:
                 if verbose >= 1:
                     print "Stopped at iteration", t
