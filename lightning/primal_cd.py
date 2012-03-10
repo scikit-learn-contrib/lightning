@@ -27,7 +27,7 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
         self.coef_ = None
 
     def fit(self, X, y):
-        n_features = X.shape[1]
+        n_samples, n_features = X.shape
         rs = check_random_state(self.random_state)
 
         X = np.asfortranarray(X, dtype=np.float64)
@@ -40,6 +40,7 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
 
         if not self.warm_start or self.coef_ is None:
             self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
+            self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
 
         if self.penalty == "l1":
             func = _primal_cd_l2svm_l1r
@@ -47,7 +48,7 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
             func = _primal_cd_l2svm_l2r
 
         for i in xrange(n_vectors):
-            func(self.coef_[i], X, Y[:, i], kernel, True,
+            func(self.coef_[i], self.errors_[i], X, Y[:, i], kernel, True,
                  self.C, self.max_iter, rs, self.tol,
                  verbose=self.verbose)
 
@@ -99,6 +100,7 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
 
         if not self.warm_start or self.coef_ is None:
             self.coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
+            self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
 
         kernel = self._get_kernel()
 
@@ -108,21 +110,20 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
             func = _primal_cd_l2svm_l2r
 
         for i in xrange(n_vectors):
-            func(self.coef_[i], X, Y[:, i], kernel, False,
+            func(self.coef_[i], self.errors_[i], X, Y[:, i], kernel, False,
                  self.C, self.max_iter, rs, self.tol,
                  verbose=self.verbose)
 
         sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
 
-        #if self.kernel != "precomputed":
-            #if not self.warm_start:
-                #self.coef_ = self.coef_[:, sv]
-                #mask = safe_mask(X, sv)
-                #self.support_vectors_ = X[mask]
-            #else:
-                ## Cannot trim the non-zero weights if warm start is used...
-                #self.support_vectors_ = X
-        self.support_vectors_ = X
+        if self.kernel != "precomputed":
+            if not self.warm_start:
+                self.coef_ = self.coef_[:, sv]
+                mask = safe_mask(X, sv)
+                self.support_vectors_ = X[mask]
+            else:
+                # Cannot trim the non-zero weights if warm start is used...
+                self.support_vectors_ = X
 
         return self
 

@@ -17,7 +17,8 @@ cdef extern from "math.h":
 cdef extern from "float.h":
    double DBL_MAX
 
-def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
+def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
+                         np.ndarray[double, ndim=1, mode='c'] b,
                          X,
                          np.ndarray[double, ndim=1] y,
                          Kernel kernel,
@@ -33,14 +34,11 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
 
     cdef np.ndarray[double, ndim=2, mode='fortran'] Xf
     cdef np.ndarray[double, ndim=2, mode='c'] Xc
-    cdef np.ndarray[double, ndim=1, mode='c'] b
 
     if linear_kernel:
         Xf = X
-        b = 1 - y * np.dot(X, w)
     else:
         Xc = X
-        b = np.ones(n_samples, dtype=np.float64)
         n_features = n_samples
 
     cdef int j, s, it, i = 0
@@ -223,7 +221,8 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c']w,
     return w
 
 
-def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1] w,
+def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
+                         np.ndarray[double, ndim=1, mode='c'] b,
                          X,
                          np.ndarray[double, ndim=1] y,
                          Kernel kernel,
@@ -239,14 +238,11 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1] w,
 
     cdef np.ndarray[double, ndim=2, mode='fortran'] Xf
     cdef np.ndarray[double, ndim=2, mode='c'] Xc
-    cdef np.ndarray[double, ndim=1, mode='c'] b
 
     if linear_kernel:
         Xf = X
-        b = 1 - y * np.dot(X, w)
     else:
         Xc = X
-        b = np.ones(n_samples, dtype=np.float64)
         n_features = n_samples
 
     cdef int i, j, s, step, it
@@ -289,14 +285,15 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1] w,
                 xj_sq += val * val
 
                 if b[i] > 0:
-                    Dp -= b[i] * val * C
-                    Dpp += val * val * C
-                    Dj_zero += b[i] * b[i] * C
+                    Dp -= b[i] * val
+                    Dpp += val * val
+                    Dj_zero += b[i] * b[i]
 
             bound = (2 * C * xj_sq + 1) / 2.0 + sigma
 
-            Dp = w[j] + 2 * Dp
-            Dpp = 1 + 2 * Dpp
+            Dp = w[j] + 2 * C * Dp
+            Dpp = 1 + 2 * C * Dpp
+            Dj_zero *= C
 
             if fabs(Dp) > Dpmax:
                 Dpmax = fabs(Dp)
@@ -322,7 +319,9 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1] w,
                     b_new = b[i] + z_diff * col[i]
                     b[i] = b_new
                     if b_new > 0:
-                        Dj_z += b_new * b_new * C
+                        Dj_z += b_new * b_new
+
+                Dj_z *= C
 
                 z_old = z
 
