@@ -7,7 +7,7 @@
 # License: BSD
 
 from cython.operator cimport dereference as deref, preincrement as inc
-from libcpp.list cimport list as linked_list
+from libcpp.list cimport list as list
 
 import numpy as np
 cimport numpy as np
@@ -23,7 +23,7 @@ cdef extern from "float.h":
 
 cdef int _argmax(np.ndarray[double, ndim=1] y,
                  np.ndarray[double, ndim=1, mode='c'] g,
-                 linked_list[long]& support_set,
+                 list[long]& support_set,
                  np.ndarray[double, ndim=1, mode='c'] alpha,
                  double C):
 
@@ -31,7 +31,7 @@ cdef int _argmax(np.ndarray[double, ndim=1] y,
     cdef double max_ = -DBL_MAX
     cdef double Bs
 
-    cdef linked_list[long].iterator it = support_set.begin()
+    cdef list[long].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
         Bs = max(0, C * y[s])
@@ -45,7 +45,7 @@ cdef int _argmax(np.ndarray[double, ndim=1] y,
 
 cdef int _argmin(np.ndarray[double, ndim=1] y,
                  np.ndarray[double, ndim=1, mode='c'] g,
-                 linked_list[long]& support_set,
+                 list[long]& support_set,
                  np.ndarray[double, ndim=1, mode='c'] alpha,
                  double C):
 
@@ -53,7 +53,7 @@ cdef int _argmin(np.ndarray[double, ndim=1] y,
     cdef double min_ = DBL_MAX
     cdef double As
 
-    cdef linked_list[long].iterator it = support_set.begin()
+    cdef list[long].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
         As = min(0, C * y[s])
@@ -69,7 +69,7 @@ cdef void _update(np.ndarray[double, ndim=2, mode='c'] X,
                   np.ndarray[double, ndim=1] y,
                   Kernel kernel,
                   np.ndarray[double, ndim=1, mode='c'] g,
-                  linked_list[long]& support_set,
+                  list[long]& support_set,
                   np.ndarray[double, ndim=1, mode='c'] alpha,
                   int i,
                   int j,
@@ -89,7 +89,7 @@ cdef void _update(np.ndarray[double, ndim=2, mode='c'] X,
 
 
     cdef int s
-    cdef linked_list[long].iterator it = support_set.begin()
+    cdef list[long].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
         # Need the ith and jth column (support vectors only)
@@ -103,7 +103,7 @@ cdef void _process(int k,
                    np.ndarray[double, ndim=2, mode='c'] X,
                    np.ndarray[double, ndim=1] y,
                    Kernel kernel,
-                   linked_list[long]& support_set,
+                   list[long]& support_set,
                    np.ndarray[long, ndim=1, mode='c'] support_vectors,
                    np.ndarray[double, ndim=1, mode='c'] alpha,
                    np.ndarray[double, ndim=1, mode='c'] g,
@@ -118,7 +118,7 @@ cdef void _process(int k,
     cdef int s, j, i
     cdef double pred = 0
 
-    cdef linked_list[long].iterator it = support_set.begin()
+    cdef list[long].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
         # Iterate over k-th column (support vectors only)
@@ -153,7 +153,7 @@ cdef void _process(int k,
 cdef void _reprocess(np.ndarray[double, ndim=2, mode='c'] X,
                      np.ndarray[double, ndim=1] y,
                      Kernel kernel,
-                     linked_list[long]& support_set,
+                     list[long]& support_set,
                      np.ndarray[long, ndim=1, mode='c'] support_vectors,
                      np.ndarray[double, ndim=1, mode='c'] alpha,
                      np.ndarray[double, ndim=1, mode='c'] g,
@@ -181,7 +181,7 @@ cdef void _reprocess(np.ndarray[double, ndim=2, mode='c'] X,
     cdef int s, k = 0
     cdef int n_removed = 0
 
-    cdef linked_list[long].iterator it = support_set.begin()
+    cdef list[long].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
 
@@ -202,7 +202,7 @@ cdef void _boostrap(index,
                     np.ndarray[double, ndim=2, mode='c'] X,
                     np.ndarray[double, ndim=1] y,
                     Kernel kernel,
-                    linked_list[long]& support_set,
+                    list[long]& support_set,
                     np.ndarray[long, ndim=1, mode='c'] support_vectors,
                     np.ndarray[double, ndim=1, mode='c'] alpha,
                     np.ndarray[double, ndim=1, mode='c'] g,
@@ -244,7 +244,7 @@ cdef void _boostrap_warm_start(index,
                                np.ndarray[double, ndim=2, mode='c']X,
                                np.ndarray[double, ndim=1]y,
                                Kernel kernel,
-                               linked_list[long]& support_set,
+                               list[long]& support_set,
                                np.ndarray[long, ndim=1, mode='c'] support_vectors,
                                np.ndarray[double, ndim=1, mode='c'] alpha,
                                np.ndarray[double, ndim=1, mode='c'] g,
@@ -289,7 +289,7 @@ cdef int select(np.ndarray[long, ndim=1, mode='c'] A,
                 np.ndarray[double, ndim=2, mode='c'] X,
                 np.ndarray[double, ndim=1] y,
                 Kernel kernel,
-                linked_list[long]& support_set,
+                list[long]& support_set,
                 np.ndarray[long, ndim=1, mode='c'] support_vectors):
 
     if select_method <= 1: # permute or random
@@ -301,7 +301,7 @@ cdef int select(np.ndarray[long, ndim=1, mode='c'] A,
     cdef double score
     cdef double min_score = DBL_MAX
     cdef int selected = 0
-    cdef linked_list[long].iterator it
+    cdef list[long].iterator it
 
     while n_visited < search_size and i < max_size:
         s = A[i]
@@ -360,7 +360,7 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
     cdef np.ndarray[long, ndim=1, mode='c'] A
     A = np.arange(n_samples)
 
-    cdef linked_list[long] support_set
+    cdef list[long] support_set
 
     cdef np.ndarray[long, ndim=1, mode='c'] support_vectors
     support_vectors = np.zeros(n_samples, dtype=np.int64)

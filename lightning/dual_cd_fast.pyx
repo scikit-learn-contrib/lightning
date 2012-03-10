@@ -10,7 +10,7 @@ from cython.operator cimport dereference as deref
 from cython.operator cimport preincrement as inc
 from cython.operator cimport predecrement as dec
 
-from libcpp.list cimport list as linked_list
+from libcpp.list cimport list as list
 from libcpp.vector cimport vector
 
 import numpy as np
@@ -77,10 +77,10 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
     cdef double G, PG
     cdef double step
 
-    cdef linked_list[long] support_set
-    cdef linked_list[long].iterator it
+    cdef list[long] support_set
+    cdef list[long].iterator it
 
-    cdef vector[linked_list[long].iterator] support_it
+    cdef vector[list[long].iterator] support_it
     support_it.resize(n_samples)
 
     cdef np.ndarray[long, ndim=1, mode='c'] support_vectors
