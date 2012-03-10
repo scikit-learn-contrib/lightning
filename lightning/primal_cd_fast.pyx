@@ -41,7 +41,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
         Xc = X
         n_features = n_samples
 
-    cdef int j, s, it, i = 0
+    cdef int j, s, t, i = 0
     cdef int active_size = n_features
     cdef int max_num_linesearch = 20
 
@@ -70,7 +70,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
     col_data = <double*>col.data
 
 
-    for it in xrange(max_iter):
+    for t in xrange(max_iter):
         Lpmax_new = 0
         rs.shuffle(index[:active_size])
 
@@ -201,13 +201,13 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
             s += 1
         # while active_size
 
-        if it == 0:
+        if t == 0:
             Lpmax_init = Lpmax_new
 
         if Lpmax_new <= tol * Lpmax_init:
             if active_size == n_features:
                 if verbose:
-                    print "Converged at iteration", it
+                    print "Converged at iteration", t
                 break
             else:
                 active_size = n_features
@@ -245,7 +245,7 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
         Xc = X
         n_features = n_samples
 
-    cdef int i, j, s, step, it
+    cdef int i, j, s, step, t
     cdef double z, z_old, z_diff,
     cdef double Dp, Dpmax, Dpp, Dj_zero, Dj_z
     cdef double sigma = 0.01
@@ -260,7 +260,7 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
     col = np.zeros(n_samples, dtype=np.float64)
     col_data = <double*>col.data
 
-    for it in xrange(max_iter):
+    for t in xrange(max_iter):
         Dpmax = 0
 
         rs.shuffle(index)
@@ -338,7 +338,7 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
 
         if Dpmax < tol:
             if verbose >= 1:
-                print "Converged at iteration", it
+                print "Converged at iteration", t
             break
 
     return w
