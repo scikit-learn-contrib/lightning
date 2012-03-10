@@ -13,7 +13,7 @@ import numpy as np
 cimport numpy as np
 
 from lightning.kernel_fast cimport Kernel
-from lightning.select_fast cimport get_select_method, select_sv
+from lightning.select_fast cimport get_select_method, select_sv, update_start
 
 cdef extern from "float.h":
    double DBL_MAX
@@ -344,15 +344,8 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
                 stop = 1
                 break
 
-            # Update position and reshuffle if needed.
-            if select_method: # others than permute
-                start += search_size
-
-                if start + search_size > n_samples - 1:
-                    rs.shuffle(A)
-                    start = 0
-            else:
-                start += 1
+            start = update_start(start, select_method, search_size,
+                                 n_samples, A, rs)
 
         # end for
 
