@@ -340,8 +340,7 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
                        support_set, support_vectors, alpha, g, b, delta, C, tau)
 
             # Exit if necessary.
-            if support_set.size() == n_samples or \
-               (check_n_sv and support_set.size() >= sv_upper_bound):
+            if check_n_sv and support_set.size() >= sv_upper_bound:
                 stop = 1
                 break
 
