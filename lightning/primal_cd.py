@@ -49,6 +49,7 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
             if self.penalty == "l1":
                 _primal_cd_l2svm_l1r(self.coef_[i], self.errors_[i],
                                      X, Y[:, i], kernel, True,
+                                     "permute", 60,
                                      self.termination, self.nz_coef_upper_bound,
                                      self.C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)
@@ -73,6 +74,7 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, penalty="l1", max_iter=1000, tol=1e-3,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
+                 selection="permute", search_size=60,
                  termination="convergence", sv_upper_bound=1000,
                  warm_start=False, random_state=None, verbose=0, n_jobs=1):
         self.C = C
@@ -83,6 +85,8 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
         self.gamma = gamma
         self.coef0 = coef0
         self.degree = degree
+        self.selection = selection
+        self.search_size = search_size
         self.termination = termination
         self.sv_upper_bound = sv_upper_bound
         self.warm_start = warm_start
@@ -118,6 +122,7 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
             if self.penalty == "l1":
                 _primal_cd_l2svm_l1r(self.coef_[i], self.errors_[i],
                                      X, Y[:, i], kernel, False,
+                                     self.selection, self.search_size,
                                      self.termination, self.sv_upper_bound,
                                      self.C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)

@@ -18,3 +18,10 @@ cdef int select_sv(np.ndarray[long, ndim=1, mode='c'] A,
                    Kernel kernel,
                    list[long]& support_set,
                    np.ndarray[long, ndim=1, mode='c'] support_vectors)
+
+cdef int update_start(int start,
+                      int select_method,
+                      int search_size,
+                      int active_size,
+                      np.ndarray[long, ndim=1, mode='c'] index,
+                      rs)

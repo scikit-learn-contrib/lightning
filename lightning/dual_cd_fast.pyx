@@ -199,7 +199,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
             if select_method: # others than permute
                 start += search_size
 
-                if start + search_size > n_samples - 1:
+                if start + search_size > active_size - 1:
                     rs.shuffle(A[:active_size])
                     start = 0
             else:

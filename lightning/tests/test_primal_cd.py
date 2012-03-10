@@ -55,6 +55,17 @@ def test_fit_rbf_binary_l1r():
     assert_equal(n_nz, 160)
 
 
+def test_fit_rbf_binary_l1r_selection():
+    for selection in ("loss", "active"):
+        clf = PrimalSVC(C=0.5, kernel="rbf", gamma=0.1, random_state=0,
+                        penalty="l1", selection=selection)
+        clf.fit(bin_dense, bin_target)
+        acc = clf.score(bin_dense, bin_target)
+        assert_true(acc >= 0.84)
+        n_nz = np.sum(clf.coef_ != 0)
+        assert_true(n_nz <= 70)
+
+
 def test_warm_start_l1r():
     clf = PrimalLinearSVC(warm_start=True, random_state=0, penalty="l1")
 

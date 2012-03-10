@@ -86,3 +86,23 @@ cdef int select_sv(np.ndarray[long, ndim=1, mode='c'] A,
         i += 1
 
     return selected
+
+
+cdef int update_start(int start,
+                      int select_method,
+                      int search_size,
+                      int active_size,
+                      np.ndarray[long, ndim=1, mode='c'] index,
+                      rs):
+
+    # Update position and reshuffle if needed.
+    if select_method: # others than permute
+        start += search_size
+
+        if start + search_size > active_size - 1:
+            rs.shuffle(index[:active_size])
+            start = 0
+    else:
+        start += 1
+
+    return start

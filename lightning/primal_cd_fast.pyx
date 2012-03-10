@@ -17,6 +17,7 @@ import numpy as np
 cimport numpy as np
 
 from lightning.kernel_fast cimport Kernel
+from lightning.select_fast cimport get_select_method, select_sv, update_start
 
 cdef extern from "math.h":
    double fabs(double)
@@ -24,12 +25,15 @@ cdef extern from "math.h":
 cdef extern from "float.h":
    double DBL_MAX
 
+
 def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
                          np.ndarray[double, ndim=1, mode='c'] b,
                          X,
                          np.ndarray[double, ndim=1] y,
                          Kernel kernel,
                          int linear_kernel,
+                         selection,
+                         int search_size,
                          termination,
                          int sv_upper_bound,
                          double C,
@@ -50,7 +54,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
         Xc = X
         n_features = n_samples
 
-    cdef int j, s, t, i = 0
+    cdef int j, s, t, start, i = 0
     cdef int active_size = n_features
     cdef int max_num_linesearch = 20
 
@@ -88,6 +92,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
     cdef int check_n_sv = termination in ("n_sv", "n_nz_coef")
     cdef int check_convergence = termination == "convergence"
     cdef int stop = 0
+    cdef int select_method = get_select_method(selection)
 
     support_it.resize(n_features)
     support_vectors = np.zeros(n_features, dtype=np.int64)
@@ -106,8 +111,16 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
         rs.shuffle(index[:active_size])
 
         s = 0
+        start = 0
+
         while s < active_size:
-            j = index[s]
+            if not linear_kernel:
+                j = select_sv(index, start, search_size, active_size,
+                              select_method, w, 0, Xc, y, kernel,
+                              support_set, support_vectors)
+            else:
+                j = index[s]
+
             Lp = 0
             Lpp = 0
             xj_sq = 0
@@ -165,6 +178,8 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
                 d = -w[j]
 
             if fabs(d) < 1.0e-12:
+                start = update_start(start, select_method, search_size,
+                                     active_size, index, rs)
                 s += 1
                 continue
 
@@ -247,6 +262,10 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
             if check_n_sv and support_set.size() >= sv_upper_bound:
                 stop = 1
                 break
+
+            start = update_start(start, select_method, search_size,
+                                 active_size, index, rs)
+
 
             s += 1
         # while active_size
