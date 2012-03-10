@@ -13,9 +13,7 @@ import numpy as np
 cimport numpy as np
 
 from lightning.kernel_fast cimport Kernel
-
-cdef extern from "math.h":
-   double fabs(double)
+from lightning.select_fast cimport get_select_method, select_sv
 
 cdef extern from "float.h":
    double DBL_MAX
@@ -266,78 +264,6 @@ cdef void _boostrap_warm_start(index,
             support_vectors[i] = 1
 
 
-cdef int get_select_method(selection):
-    if selection == "permute":
-        return 0
-    elif selection == "random":
-        return 1
-    elif selection == "active":
-        return 2
-    elif selection == "loss":
-        return 3
-    else:
-        raise ValueError("Wrong selection method.")
-
-
-cdef int select(np.ndarray[long, ndim=1, mode='c'] A,
-                int start,
-                int search_size,
-                int max_size,
-                int select_method,
-                np.ndarray[double, ndim=1, mode='c'] alpha,
-                double b,
-                np.ndarray[double, ndim=2, mode='c'] X,
-                np.ndarray[double, ndim=1] y,
-                Kernel kernel,
-                list[long]& support_set,
-                np.ndarray[long, ndim=1, mode='c'] support_vectors):
-
-    if select_method <= 1: # permute or random
-        return A[start]
-
-    cdef int i = start
-    cdef int n_visited = 0
-    cdef int s, k, j
-    cdef double score
-    cdef double min_score = DBL_MAX
-    cdef int selected = 0
-    cdef list[long].iterator it
-
-    while n_visited < search_size and i < max_size:
-        s = A[i]
-
-        # Only non support vectors are candidates.
-        if support_vectors[s]:
-            i += 1
-            continue
-
-        k = 0
-        score = 0
-
-        # Compute prediction.
-        it = support_set.begin()
-        while it != support_set.end():
-            j = deref(it)
-            # Iterate over sth column (support vectors only)
-            score += alpha[j] * kernel.compute(X, j, X, s)
-            inc(it)
-
-        score += b
-
-        if select_method == 2: # active
-            score = fabs(score)
-        elif select_method == 3: # loss
-            score *= y[s]
-
-        if score < min_score:
-            min_score = score
-            selected = s
-
-        n_visited += 1
-        i += 1
-
-    return selected
-
 def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
            np.ndarray[double, ndim=2, mode='c'] X,
            np.ndarray[double, ndim=1] y,
@@ -401,8 +327,9 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
 
         for i in xrange(n_samples):
             # Select a support vector candidate.
-            s = select(A, start, search_size, n_samples, select_method,
-                       alpha, b[0], X, y, kernel, support_set, support_vectors)
+            s = select_sv(A, start, search_size, n_samples, select_method,
+                          alpha, b[0], X, y, kernel,
+                          support_set, support_vectors)
 
             # Attempt to add it.
             _process(s, X, y, kernel,
