@@ -84,6 +84,17 @@ def test_warm_start_l1r_rbf():
     assert_true(n_nz < n_nz2)
 
 
+def test_early_stopping_l1r_rbf():
+    clf = PrimalSVC(kernel="rbf", gamma=0.1,
+                    termination="n_sv", sv_upper_bound=30,
+                    random_state=0, penalty="l1")
+
+    clf.fit(bin_dense, bin_target)
+    n_nz = np.sum(clf.coef_ != 0)
+
+    assert_equal(n_nz, 30)
+
+
 def test_fit_linear_binary_l2r():
     clf = PrimalLinearSVC(C=1.0, random_state=0, penalty="l2", verbose=1)
     clf.fit(bin_dense, bin_target)

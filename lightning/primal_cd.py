@@ -15,11 +15,14 @@ from .kernel_fast import get_kernel
 class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, penalty="l2", max_iter=1000, tol=1e-3,
+                 termination="convergence", nz_coef_upper_bound=1000,
                  warm_start=False, random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.penalty = penalty
         self.max_iter = max_iter
         self.tol = tol
+        self.termination = termination
+        self.nz_coef_upper_bound = nz_coef_upper_bound
         self.warm_start = warm_start
         self.random_state = random_state
         self.verbose = verbose
@@ -42,15 +45,19 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
             self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
             self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
 
-        if self.penalty == "l1":
-            func = _primal_cd_l2svm_l1r
-        else:
-            func = _primal_cd_l2svm_l2r
-
         for i in xrange(n_vectors):
-            func(self.coef_[i], self.errors_[i], X, Y[:, i], kernel, True,
-                 self.C, self.max_iter, rs, self.tol,
-                 verbose=self.verbose)
+            if self.penalty == "l1":
+                _primal_cd_l2svm_l1r(self.coef_[i], self.errors_[i],
+                                     X, Y[:, i], kernel, True,
+                                     self.termination, self.nz_coef_upper_bound,
+                                     self.C, self.max_iter, rs, self.tol,
+                                     verbose=self.verbose)
+            else:
+                _primal_cd_l2svm_l2r(self.coef_[i], self.errors_[i],
+                                     X, Y[:, i], kernel, True,
+                                     self.termination,
+                                     self.C, self.max_iter, rs, self.tol,
+                                     verbose=self.verbose)
 
         return self
 
@@ -66,6 +73,7 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, penalty="l1", max_iter=1000, tol=1e-3,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
+                 termination="convergence", sv_upper_bound=1000,
                  warm_start=False, random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.penalty = penalty
@@ -75,6 +83,8 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
         self.gamma = gamma
         self.coef0 = coef0
         self.degree = degree
+        self.termination = termination
+        self.sv_upper_bound = sv_upper_bound
         self.warm_start = warm_start
         self.random_state = random_state
         self.verbose = verbose
@@ -104,15 +114,19 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
 
         kernel = self._get_kernel()
 
-        if self.penalty == "l1":
-            func = _primal_cd_l2svm_l1r
-        else:
-            func = _primal_cd_l2svm_l2r
-
         for i in xrange(n_vectors):
-            func(self.coef_[i], self.errors_[i], X, Y[:, i], kernel, False,
-                 self.C, self.max_iter, rs, self.tol,
-                 verbose=self.verbose)
+            if self.penalty == "l1":
+                _primal_cd_l2svm_l1r(self.coef_[i], self.errors_[i],
+                                     X, Y[:, i], kernel, False,
+                                     self.termination, self.sv_upper_bound,
+                                     self.C, self.max_iter, rs, self.tol,
+                                     verbose=self.verbose)
+            else:
+                _primal_cd_l2svm_l2r(self.coef_[i], self.errors_[i],
+                                     X, Y[:, i], kernel, False,
+                                     self.termination,
+                                     self.C, self.max_iter, rs, self.tol,
+                                     verbose=self.verbose)
 
         sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
 

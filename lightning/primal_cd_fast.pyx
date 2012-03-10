@@ -6,6 +6,13 @@
 # Author: Mathieu Blondel
 # License: BSD
 
+from cython.operator cimport dereference as deref
+from cython.operator cimport preincrement as inc
+from cython.operator cimport predecrement as dec
+
+from libcpp.list cimport list as list
+from libcpp.vector cimport vector
+
 import numpy as np
 cimport numpy as np
 
@@ -23,6 +30,8 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
                          np.ndarray[double, ndim=1] y,
                          Kernel kernel,
                          int linear_kernel,
+                         termination,
+                         int sv_upper_bound,
                          double C,
                          int max_iter,
                          rs,
@@ -69,6 +78,28 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
     col = np.zeros(n_samples, dtype=np.float64)
     col_data = <double*>col.data
 
+    cdef list[long] support_set
+    cdef list[long].iterator it
+
+    cdef vector[list[long].iterator] support_it
+
+    cdef np.ndarray[long, ndim=1, mode='c'] support_vectors
+
+    cdef int check_n_sv = termination in ("n_sv", "n_nz_coef")
+    cdef int check_convergence = termination == "convergence"
+    cdef int stop = 0
+
+    support_it.resize(n_features)
+    support_vectors = np.zeros(n_features, dtype=np.int64)
+
+    # FIXME: would be better to store the support indices in the class.
+    for j in xrange(n_features):
+        if w[j] != 0:
+            support_set.push_back(j)
+            support_vectors[j] = 1
+            it = support_set.end()
+            dec(it)
+            support_it[j] = it
 
     for t in xrange(max_iter):
         Lpmax_new = 0
@@ -198,13 +229,35 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
 
             w[j] += z
 
+            # Update support set.
+            if w[j] != 0:
+                if support_vectors[j] == 0:
+                    support_set.push_back(j)
+                    it = support_set.end()
+                    dec(it)
+                    support_it[j] = it
+                    support_vectors[j] = 1
+            elif w[j] == 0:
+                if support_vectors[j] == 1:
+                    it = support_it[j]
+                    support_set.erase(it)
+                    support_vectors[j] = 0
+
+            # Exit if necessary.
+            if check_n_sv and support_set.size() >= sv_upper_bound:
+                stop = 1
+                break
+
             s += 1
         # while active_size
+
+        if stop:
+            break
 
         if t == 0:
             Lpmax_init = Lpmax_new
 
-        if Lpmax_new <= tol * Lpmax_init:
+        if check_convergence and Lpmax_new <= tol * Lpmax_init:
             if active_size == n_features:
                 if verbose:
                     print "Converged at iteration", t
@@ -227,6 +280,7 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
                          np.ndarray[double, ndim=1] y,
                          Kernel kernel,
                          int linear_kernel,
+                         termination,
                          double C,
                          int max_iter,
                          rs,
@@ -259,6 +313,8 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
     cdef np.ndarray[double, ndim=1, mode='c'] col
     col = np.zeros(n_samples, dtype=np.float64)
     col_data = <double*>col.data
+
+    cdef int check_convergence = termination == "convergence"
 
     for t in xrange(max_iter):
         Dpmax = 0
@@ -336,10 +392,12 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
 
         # end for (iterate over features)
 
-        if Dpmax < tol:
+        if check_convergence and Dpmax < tol:
             if verbose >= 1:
                 print "Converged at iteration", t
             break
+
+    # for iterations
 
     return w
 
