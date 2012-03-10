@@ -6,6 +6,13 @@
 # Author: Mathieu Blondel
 # License: BSD
 
+from cython.operator cimport dereference as deref
+from cython.operator cimport preincrement as inc
+from cython.operator cimport predecrement as dec
+
+from libcpp.list cimport list as linked_list
+from libcpp.vector cimport vector
+
 import numpy as np
 cimport numpy as np
 
@@ -65,12 +72,30 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
     cdef double alpha_i, alpha_old
     cdef double M_bar = DBL_MAX
     cdef double m_bar = -DBL_MAX
-    cdef unsigned int it = 0
+    cdef unsigned int t = 0
     cdef int s
     cdef double G, PG
     cdef double step
 
-    for it in xrange(max_iter):
+    cdef linked_list[long] support_set
+    cdef linked_list[long].iterator it
+
+    cdef vector[linked_list[long].iterator] support_it
+    support_it.resize(n_samples)
+
+    cdef np.ndarray[long, ndim=1, mode='c'] support_vectors
+    support_vectors = np.zeros(n_samples, dtype=np.int64)
+
+    # FIXME: would be better to store the support indices in the class
+    for i in xrange(n_samples):
+        if alpha[i] != 0:
+            support_set.push_back(i)
+            support_vectors[i] = 1
+            it = support_set.end()
+            dec(it)
+            support_it[i] = it
+
+    for t in xrange(max_iter):
         # FIXME: Could select instances greedily via randomized search instead
         #        of randomly
         rs.shuffle(A[:active_size])
@@ -95,8 +120,11 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
                 G = -1
                 # FIXME: retrieve sv only and iterate over non-zero alpha[j]
                 kernel.compute_column_ptr(X, X, i, col_data)
-                for j in xrange(n_samples):
+                it = support_set.begin()
+                while it != support_set.end():
+                    j = deref(it)
                     G += col_data[j] * y[i] * y[j] * alpha[j]
+                    inc(it)
                 G += D_ii * alpha[i]
 
             PG = 0
@@ -127,6 +155,20 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
 
                 alpha[i] = min(max(alpha_i - G / Q_bar_diag[i], 0), U)
 
+                if alpha[i] != 0:
+                    if support_vectors[i] == 0:
+                        support_set.push_back(i)
+                        it = support_set.end()
+                        dec(it)
+                        support_it[i] = it
+                        support_vectors[i] = 1
+                elif alpha[i] == 0:
+                    if support_vectors[i] == 1:
+                        it = support_it[i]
+                        support_set.erase(it)
+                        support_vectors[i] = 0
+
+
                 if linear_kernel:
                     step = (alpha[i] - alpha_old) * y_i
                     w += step * X[i]
@@ -138,7 +180,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
         if M - m <= tol:
             if active_size == n_samples:
                 if verbose >= 1:
-                    print "Stopped at iteration", it
+                    print "Stopped at iteration", t
                 break
             else:
                 active_size = n_samples
