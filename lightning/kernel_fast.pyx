@@ -166,7 +166,7 @@ cdef class PrecomputedKernel(Kernel):
         return X[i, j]
 
 
-cdef class KernelCache:
+cdef class KernelCache(Kernel):
 
     def __init__(self, Kernel kernel, long n_samples, int capacity):
         self.kernel = kernel
@@ -234,11 +234,11 @@ cdef class KernelCache:
         if n == self.n_samples:
             self.columns.clear()
 
-    cpdef compute_column(self,
-                         np.ndarray[double, ndim=2, mode='c'] X,
-                         np.ndarray[double, ndim=2, mode='c'] Y,
-                         long j,
-                         np.ndarray[double, ndim=1, mode='c'] out):
+    cdef void compute_column_ptr(self,
+                                 np.ndarray[double, ndim=2, mode='c'] X,
+                                 np.ndarray[double, ndim=2, mode='c'] Y,
+                                 int j,
+                                 double* out):
 
         cdef long i = 0
         cdef long n_computed = self.n_computed[j]

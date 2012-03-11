@@ -82,7 +82,7 @@ cdef class PrecomputedKernel(Kernel):
                          int j)
 
 
-cdef class KernelCache:
+cdef class KernelCache(Kernel):
     cdef Kernel kernel
     cdef long n_samples
     cdef list[long]* support_set
@@ -102,11 +102,11 @@ cdef class KernelCache:
                          np.ndarray[double, ndim=2, mode='c'] Y,
                          int j)
 
-    cpdef compute_column(self,
-                         np.ndarray[double, ndim=2, mode='c'] X,
-                         np.ndarray[double, ndim=2, mode='c'] Y,
-                         long j,
-                         np.ndarray[double, ndim=1, mode='c'] out)
+    cdef void compute_column_ptr(self,
+                                 np.ndarray[double, ndim=2, mode='c'] X,
+                                 np.ndarray[double, ndim=2, mode='c'] Y,
+                                 int j,
+                                 double* out)
 
     cpdef add_sv(self, long i)
 

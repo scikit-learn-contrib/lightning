@@ -9,7 +9,7 @@ from sklearn.utils import check_random_state, safe_mask
 from sklearn.metrics.pairwise import pairwise_kernels
 
 from dual_cd_fast import _dual_cd
-from .kernel_fast import get_kernel
+from .kernel_fast import get_kernel, KernelCache
 
 class DualLinearSVC(BaseEstimator, ClassifierMixin):
 
@@ -68,7 +68,8 @@ class DualSVC(BaseEstimator, ClassifierMixin):
                  shrinking=True, kernel="linear", gamma=0.1, coef0=1, degree=4,
                  selection="permute", search_size=60,
                  termination="convergence", sv_upper_bound=1000,
-                 warm_start=False, random_state=None, verbose=0, n_jobs=1):
+                 warm_start=False, random_state=None, cache_mb=500,
+                 verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
         self.max_iter = max_iter
@@ -84,6 +85,7 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         self.sv_upper_bound = sv_upper_bound
         self.warm_start = warm_start
         self.random_state = random_state
+        self.cache_mb = cache_mb
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.support_vectors_ = None
@@ -113,6 +115,7 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         coef = np.empty(0, dtype=np.float64)
 
         kernel = self._get_kernel()
+        kernel = KernelCache(kernel, n_samples, self.cache_mb * 1024 * 1024)
 
         for i in xrange(n_vectors):
             _dual_cd(coef, self.dual_coef_[i],
