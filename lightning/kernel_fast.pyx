@@ -6,7 +6,14 @@
 # Author: Mathieu Blondel
 # License: BSD
 
+from cython.operator cimport dereference as deref
+from cython.operator cimport preincrement as inc
+from cython.operator cimport predecrement as dec
 
+from libcpp.list cimport list as list
+from libc cimport stdlib
+
+import numpy as np
 cimport numpy as np
 
 
@@ -157,6 +164,123 @@ cdef class PrecomputedKernel(Kernel):
                          np.ndarray[double, ndim=2, mode='c'] Y,
                          int j):
         return X[i, j]
+
+
+cdef class KernelCache:
+
+    def __init__(self, Kernel kernel, long n_samples, int capacity):
+        self.kernel = kernel
+        self.n_samples = n_samples
+        self.capacity = capacity
+        self.size = 0
+
+    def __cinit__(self, Kernel kernel, long n_samples, int capacity):
+        self.support_set = new list[long]()
+        self.is_support_vector = <int*> stdlib.malloc(sizeof(int) * n_samples)
+        self.n_computed = <long*> stdlib.malloc(sizeof(long) * n_samples)
+        self.support_it = <list[long].iterator*> \
+            stdlib.malloc(sizeof(list[long].iterator) * n_samples)
+        self.columns = new map[long, double*]()
+
+        cdef long i
+        for i in xrange(n_samples):
+            self.is_support_vector[i] = 0
+            self.n_computed[i] = 0
+
+    def __dealloc__(self):
+        self._clear_columns(self.n_samples)
+        del self.support_set
+        stdlib.free(self.is_support_vector)
+        stdlib.free(self.support_it)
+        del self.columns
+
+    cpdef double compute(self,
+                         np.ndarray[double, ndim=2, mode='c'] X,
+                         int i,
+                         np.ndarray[double, ndim=2, mode='c'] Y,
+                         int j):
+        return self.kernel.compute(X, i, Y, j)
+
+    cdef _create_column(self, long i):
+        cdef int col_size = sizeof(double) * self.n_samples
+
+        if self.size + col_size > self.capacity:
+            self._clear_columns(self.columns.size() / 2)
+
+        self.columns[0][i] = <double*> stdlib.malloc(col_size)
+        self.size += col_size
+
+    cdef _clear_columns(self, long n):
+        cdef int col_size = sizeof(double) * self.n_samples
+        cdef map[long, double*].iterator it
+        it = self.columns.begin()
+        cdef long i = 0
+        cdef double* col
+
+        while it != self.columns.end():
+            if self.n_computed[deref(it).first]:
+                col = deref(it).second
+                stdlib.free(col)
+                self.n_computed[deref(it).first] = 0
+                self.size -= col_size
+
+                i += 1
+
+                if i >= n:
+                    break
+
+            inc(it)
+
+        if n == self.n_samples:
+            self.columns.clear()
+
+    cpdef compute_column(self,
+                         np.ndarray[double, ndim=2, mode='c'] X,
+                         np.ndarray[double, ndim=2, mode='c'] Y,
+                         long j,
+                         np.ndarray[double, ndim=1, mode='c'] out):
+
+        cdef long i = 0
+        cdef long n_computed = self.n_computed[j]
+
+        if n_computed == 0:
+            self._create_column(j)
+
+        cdef double* cache = self.columns[0][j]
+
+        if n_computed == -1:
+            for i in xrange(self.n_samples):
+                out[i] = cache[i]
+        else:
+            for i in xrange(self.n_samples):
+                out[i] = self.kernel.compute(X, i, Y, j)
+                cache[i] = out[i]
+
+        self.n_computed[j] = -1
+
+    cpdef add_sv(self, long i):
+        cdef list[long].iterator it
+
+        if not self.is_support_vector[i]:
+            self.support_set.push_back(i)
+            it = self.support_set.end()
+            dec(it)
+            self.support_it[i] = it
+            self.is_support_vector[i] = 1
+
+    cpdef remove_sv(self, long i):
+        cdef list[long].iterator it
+
+        if self.is_support_vector[i]:
+            it = self.support_it[i]
+            self.support_set.erase(it)
+            self.is_support_vector[i] = 0
+
+    cpdef long n_sv(self):
+        return self.support_set.size()
+
+    cpdef get_size(self):
+        return self.size
 
 
 def get_kernel(kernel, **kw):
