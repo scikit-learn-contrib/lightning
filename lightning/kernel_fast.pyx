@@ -11,6 +11,8 @@ from cython.operator cimport preincrement as inc
 from cython.operator cimport predecrement as dec
 
 from libcpp.list cimport list
+from libcpp.vector cimport vector
+from libcpp.map cimport map
 from libc cimport stdlib
 
 import numpy as np
@@ -180,7 +182,7 @@ cdef class KernelCache(Kernel):
         self.n_computed = <int*> stdlib.malloc(sizeof(int) * n_samples)
         self.support_it = <list[int].iterator*> \
             stdlib.malloc(sizeof(list[int].iterator) * n_samples)
-        self.columns = new map[int, double*]()
+        self.columns = new map[int, vector[double]]()
 
         cdef int i
         for i in xrange(n_samples):
@@ -202,34 +204,33 @@ cdef class KernelCache(Kernel):
         return self.kernel.compute(X, i, Y, j)
 
     cdef _create_column(self, int i):
-        cdef int col_size = sizeof(double) * self.n_samples
+        cdef int n_computed = self.n_computed[i]
+        cdef int col_size = self.n_samples * sizeof(double)
 
         if self.size + col_size > self.capacity:
             self._clear_columns(self.columns.size() / 2)
 
-        self.columns[0][i] = <double*> stdlib.malloc(col_size)
-        self.size += col_size
+        if n_computed == 0:
+            self.columns[0][i] = vector[double](self.n_samples, 0)
+            self.size += col_size
 
     cdef _clear_columns(self, int n):
         cdef int col_size = sizeof(double) * self.n_samples
-        cdef map[int, double*].iterator it
+        cdef map[int, vector[double]].iterator it
         it = self.columns.begin()
         cdef int i = 0
-        cdef double* col
 
         while it != self.columns.end():
-            if self.n_computed[deref(it).first]:
-                col = deref(it).second
-                stdlib.free(col)
-                self.n_computed[deref(it).first] = 0
-                self.size -= col_size
+            deref(it).second.clear()
+            self.n_computed[deref(it).first] = 0
+            self.size -= col_size
+            self.columns.erase(it)
 
-                i += 1
-
-                if i >= n:
-                    break
+            if i >= n - 1:
+                break
 
             inc(it)
+            i += 1
 
         if n == self.n_samples:
             self.columns.clear()
@@ -246,7 +247,7 @@ cdef class KernelCache(Kernel):
         if n_computed == 0:
             self._create_column(j)
 
-        cdef double* cache = self.columns[0][j]
+        cdef double* cache = &(self.columns[0][j][0])
 
         if n_computed == -1:
             for i in xrange(self.n_samples):

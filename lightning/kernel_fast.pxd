@@ -2,6 +2,7 @@
 # License: BSD
 
 from libcpp.list cimport list
+from libcpp.vector cimport vector
 from libcpp.map cimport map
 
 cimport numpy as np
@@ -88,7 +89,7 @@ cdef class KernelCache(Kernel):
     cdef list[int]* support_set
     cdef list[int].iterator* support_it
     cdef int* is_support_vector
-    cdef map[int, double*]* columns
+    cdef map[int, vector[double]]* columns
     cdef int* n_computed
     cdef int capacity
     cdef int size
