@@ -1,7 +1,7 @@
 # Author: Mathieu Blondel
 # License: BSD
 
-from libcpp.list cimport list as list
+from libcpp.list cimport list
 from libcpp.map cimport map
 
 cimport numpy as np

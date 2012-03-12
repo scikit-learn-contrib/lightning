@@ -10,7 +10,7 @@ from cython.operator cimport dereference as deref
 from cython.operator cimport preincrement as inc
 from cython.operator cimport predecrement as dec
 
-from libcpp.list cimport list as list
+from libcpp.list cimport list
 from libc cimport stdlib
 
 import numpy as np

@@ -1,4 +1,4 @@
-from libcpp.list cimport list as list
+from libcpp.list cimport list
 
 cimport numpy as np
 

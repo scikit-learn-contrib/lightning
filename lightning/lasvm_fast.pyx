@@ -7,7 +7,7 @@
 # License: BSD
 
 from cython.operator cimport dereference as deref, preincrement as inc
-from libcpp.list cimport list as list
+from libcpp.list cimport list
 
 import numpy as np
 cimport numpy as np
