@@ -224,15 +224,6 @@ cdef class KernelCache(Kernel):
         for i in xrange(n_samples):
             out[i] = self.kernel.compute_self(X, i)
 
-    cdef compute_column_nocache(self,
-                                np.ndarray[double, ndim=2, mode='c'] X,
-                                np.ndarray[double, ndim=2, mode='c'] Y,
-                                int j,
-                                np.ndarray[double, ndim=1, mode='c'] out):
-        cdef int i
-        for i in xrange(self.n_samples):
-            out[i] = self.kernel.compute(X, i, Y, j)
-
 
     cpdef compute_column(self,
                          np.ndarray[double, ndim=2, mode='c'] X,
@@ -240,11 +231,13 @@ cdef class KernelCache(Kernel):
                          int j,
                          np.ndarray[double, ndim=1, mode='c'] out):
 
+        cdef int i = 0
+
         if self.capacity == 0:
-            self.compute_column_nocache(X, Y, j, out)
+            for i in xrange(self.n_samples):
+                out[i] = self.kernel.compute(X, i, Y, j)
             return
 
-        cdef int i = 0
         cdef int n_computed = self.n_computed[j]
 
         self._create_column(j, self.n_samples)
