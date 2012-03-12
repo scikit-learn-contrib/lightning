@@ -203,8 +203,12 @@ cdef class KernelCache(Kernel):
                          int j):
         return self.kernel.compute(X, i, Y, j)
 
-    cdef _create_column(self, int i):
+    cdef _create_column(self, int i, int requested_size):
         cdef int n_computed = self.n_computed[i]
+
+        if n_computed == -1 or requested_size < n_computed:
+            return
+
         cdef int col_size = self.n_samples * sizeof(double)
 
         if self.size + col_size > self.capacity:
@@ -244,8 +248,7 @@ cdef class KernelCache(Kernel):
         cdef int i = 0
         cdef int n_computed = self.n_computed[j]
 
-        if n_computed == 0:
-            self._create_column(j)
+        self._create_column(j, self.n_samples)
 
         cdef double* cache = &(self.columns[0][j][0])
 

@@ -94,7 +94,7 @@ cdef class KernelCache(Kernel):
     cdef int capacity
     cdef int size
 
-    cdef _create_column(self, int i)
+    cdef _create_column(self, int i, int requested_size)
     cdef _clear_columns(self, int n)
 
     cpdef double compute(self,
