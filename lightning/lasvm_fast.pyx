@@ -21,7 +21,7 @@ cdef extern from "float.h":
 
 cdef int _argmax(np.ndarray[double, ndim=1] y,
                  np.ndarray[double, ndim=1, mode='c'] g,
-                 list[long]& support_set,
+                 list[int]& support_set,
                  np.ndarray[double, ndim=1, mode='c'] alpha,
                  double C):
 
@@ -29,7 +29,7 @@ cdef int _argmax(np.ndarray[double, ndim=1] y,
     cdef double max_ = -DBL_MAX
     cdef double Bs
 
-    cdef list[long].iterator it = support_set.begin()
+    cdef list[int].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
         Bs = max(0, C * y[s])
@@ -43,7 +43,7 @@ cdef int _argmax(np.ndarray[double, ndim=1] y,
 
 cdef int _argmin(np.ndarray[double, ndim=1] y,
                  np.ndarray[double, ndim=1, mode='c'] g,
-                 list[long]& support_set,
+                 list[int]& support_set,
                  np.ndarray[double, ndim=1, mode='c'] alpha,
                  double C):
 
@@ -51,7 +51,7 @@ cdef int _argmin(np.ndarray[double, ndim=1] y,
     cdef double min_ = DBL_MAX
     cdef double As
 
-    cdef list[long].iterator it = support_set.begin()
+    cdef list[int].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
         As = min(0, C * y[s])
@@ -67,7 +67,7 @@ cdef void _update(np.ndarray[double, ndim=2, mode='c'] X,
                   np.ndarray[double, ndim=1] y,
                   Kernel kernel,
                   np.ndarray[double, ndim=1, mode='c'] g,
-                  list[long]& support_set,
+                  list[int]& support_set,
                   np.ndarray[double, ndim=1, mode='c'] alpha,
                   int i,
                   int j,
@@ -87,7 +87,7 @@ cdef void _update(np.ndarray[double, ndim=2, mode='c'] X,
 
 
     cdef int s
-    cdef list[long].iterator it = support_set.begin()
+    cdef list[int].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
         # Need the ith and jth column (support vectors only)
@@ -101,8 +101,8 @@ cdef void _process(int k,
                    np.ndarray[double, ndim=2, mode='c'] X,
                    np.ndarray[double, ndim=1] y,
                    Kernel kernel,
-                   list[long]& support_set,
-                   np.ndarray[long, ndim=1, mode='c'] support_vectors,
+                   list[int]& support_set,
+                   np.ndarray[int, ndim=1, mode='c'] support_vectors,
                    np.ndarray[double, ndim=1, mode='c'] alpha,
                    np.ndarray[double, ndim=1, mode='c'] g,
                    double C,
@@ -116,7 +116,7 @@ cdef void _process(int k,
     cdef int s, j, i
     cdef double pred = 0
 
-    cdef list[long].iterator it = support_set.begin()
+    cdef list[int].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
         # Iterate over k-th column (support vectors only)
@@ -151,8 +151,8 @@ cdef void _process(int k,
 cdef void _reprocess(np.ndarray[double, ndim=2, mode='c'] X,
                      np.ndarray[double, ndim=1] y,
                      Kernel kernel,
-                     list[long]& support_set,
-                     np.ndarray[long, ndim=1, mode='c'] support_vectors,
+                     list[int]& support_set,
+                     np.ndarray[int, ndim=1, mode='c'] support_vectors,
                      np.ndarray[double, ndim=1, mode='c'] alpha,
                      np.ndarray[double, ndim=1, mode='c'] g,
                      np.ndarray[double, ndim=1, mode='c'] b,
@@ -179,7 +179,7 @@ cdef void _reprocess(np.ndarray[double, ndim=2, mode='c'] X,
     cdef int s, k = 0
     cdef int n_removed = 0
 
-    cdef list[long].iterator it = support_set.begin()
+    cdef list[int].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
 
@@ -200,13 +200,13 @@ cdef void _boostrap(index,
                     np.ndarray[double, ndim=2, mode='c'] X,
                     np.ndarray[double, ndim=1] y,
                     Kernel kernel,
-                    list[long]& support_set,
-                    np.ndarray[long, ndim=1, mode='c'] support_vectors,
+                    list[int]& support_set,
+                    np.ndarray[int, ndim=1, mode='c'] support_vectors,
                     np.ndarray[double, ndim=1, mode='c'] alpha,
                     np.ndarray[double, ndim=1, mode='c'] g,
                     double* col_data,
                     rs):
-    cdef np.ndarray[long, ndim=1, mode='c'] A = index
+    cdef np.ndarray[int, ndim=1, mode='c'] A = index
     cdef int n_pos = 0
     cdef int n_neg = 0
     cdef int i, s
@@ -242,12 +242,12 @@ cdef void _boostrap_warm_start(index,
                                np.ndarray[double, ndim=2, mode='c']X,
                                np.ndarray[double, ndim=1]y,
                                Kernel kernel,
-                               list[long]& support_set,
-                               np.ndarray[long, ndim=1, mode='c'] support_vectors,
+                               list[int]& support_set,
+                               np.ndarray[int, ndim=1, mode='c'] support_vectors,
                                np.ndarray[double, ndim=1, mode='c'] alpha,
                                np.ndarray[double, ndim=1, mode='c'] g,
                                double* col_data):
-    cdef np.ndarray[long, ndim=1, mode='c'] A = index
+    cdef np.ndarray[int, ndim=1, mode='c'] A = index
     cdef int i, s
     cdef Py_ssize_t n_samples = index.shape[0]
 
@@ -283,13 +283,13 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
     cdef Py_ssize_t n_samples = X.shape[0]
     cdef Py_ssize_t n_features = X.shape[1]
 
-    cdef np.ndarray[long, ndim=1, mode='c'] A
-    A = np.arange(n_samples)
+    cdef np.ndarray[int, ndim=1, mode='c'] A
+    A = np.arange(n_samples, dtype=np.int32)
 
-    cdef list[long] support_set
+    cdef list[int] support_set
 
-    cdef np.ndarray[long, ndim=1, mode='c'] support_vectors
-    support_vectors = np.zeros(n_samples, dtype=np.int64)
+    cdef np.ndarray[int, ndim=1, mode='c'] support_vectors
+    support_vectors = np.zeros(n_samples, dtype=np.int32)
 
     cdef np.ndarray[double, ndim=1, mode='c'] g
     g = y.copy()

@@ -168,21 +168,21 @@ cdef class PrecomputedKernel(Kernel):
 
 cdef class KernelCache(Kernel):
 
-    def __init__(self, Kernel kernel, long n_samples, int capacity):
+    def __init__(self, Kernel kernel, int n_samples, int capacity):
         self.kernel = kernel
         self.n_samples = n_samples
         self.capacity = capacity
         self.size = 0
 
-    def __cinit__(self, Kernel kernel, long n_samples, int capacity):
-        self.support_set = new list[long]()
+    def __cinit__(self, Kernel kernel, int n_samples, int capacity):
+        self.support_set = new list[int]()
         self.is_support_vector = <int*> stdlib.malloc(sizeof(int) * n_samples)
-        self.n_computed = <long*> stdlib.malloc(sizeof(long) * n_samples)
-        self.support_it = <list[long].iterator*> \
-            stdlib.malloc(sizeof(list[long].iterator) * n_samples)
-        self.columns = new map[long, double*]()
+        self.n_computed = <int*> stdlib.malloc(sizeof(int) * n_samples)
+        self.support_it = <list[int].iterator*> \
+            stdlib.malloc(sizeof(list[int].iterator) * n_samples)
+        self.columns = new map[int, double*]()
 
-        cdef long i
+        cdef int i
         for i in xrange(n_samples):
             self.is_support_vector[i] = 0
             self.n_computed[i] = 0
@@ -201,7 +201,7 @@ cdef class KernelCache(Kernel):
                          int j):
         return self.kernel.compute(X, i, Y, j)
 
-    cdef _create_column(self, long i):
+    cdef _create_column(self, int i):
         cdef int col_size = sizeof(double) * self.n_samples
 
         if self.size + col_size > self.capacity:
@@ -210,11 +210,11 @@ cdef class KernelCache(Kernel):
         self.columns[0][i] = <double*> stdlib.malloc(col_size)
         self.size += col_size
 
-    cdef _clear_columns(self, long n):
+    cdef _clear_columns(self, int n):
         cdef int col_size = sizeof(double) * self.n_samples
-        cdef map[long, double*].iterator it
+        cdef map[int, double*].iterator it
         it = self.columns.begin()
-        cdef long i = 0
+        cdef int i = 0
         cdef double* col
 
         while it != self.columns.end():
@@ -240,8 +240,8 @@ cdef class KernelCache(Kernel):
                                  int j,
                                  double* out):
 
-        cdef long i = 0
-        cdef long n_computed = self.n_computed[j]
+        cdef int i = 0
+        cdef int n_computed = self.n_computed[j]
 
         if n_computed == 0:
             self._create_column(j)
@@ -258,8 +258,8 @@ cdef class KernelCache(Kernel):
 
         self.n_computed[j] = -1
 
-    cpdef add_sv(self, long i):
-        cdef list[long].iterator it
+    cpdef add_sv(self, int i):
+        cdef list[int].iterator it
 
         if not self.is_support_vector[i]:
             self.support_set.push_back(i)
@@ -268,15 +268,15 @@ cdef class KernelCache(Kernel):
             self.support_it[i] = it
             self.is_support_vector[i] = 1
 
-    cpdef remove_sv(self, long i):
-        cdef list[long].iterator it
+    cpdef remove_sv(self, int i):
+        cdef list[int].iterator it
 
         if self.is_support_vector[i]:
             it = self.support_it[i]
             self.support_set.erase(it)
             self.is_support_vector[i] = 0
 
-    cpdef long n_sv(self):
+    cpdef int n_sv(self):
         return self.support_set.size()
 
     cpdef get_size(self):

@@ -28,7 +28,7 @@ cdef int get_select_method(selection):
         raise ValueError("Wrong selection method.")
 
 
-cdef int select_sv(np.ndarray[long, ndim=1, mode='c'] A,
+cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
                    int start,
                    int search_size,
                    int max_size,
@@ -38,8 +38,8 @@ cdef int select_sv(np.ndarray[long, ndim=1, mode='c'] A,
                    np.ndarray[double, ndim=2, mode='c'] X,
                    np.ndarray[double, ndim=1] y,
                    Kernel kernel,
-                   list[long]& support_set,
-                   np.ndarray[long, ndim=1, mode='c'] support_vectors):
+                   list[int]& support_set,
+                   np.ndarray[int, ndim=1, mode='c'] support_vectors):
 
     if select_method <= 1: # permute or random
         return A[start]
@@ -50,7 +50,7 @@ cdef int select_sv(np.ndarray[long, ndim=1, mode='c'] A,
     cdef double score
     cdef double min_score = DBL_MAX
     cdef int selected = 0
-    cdef list[long].iterator it
+    cdef list[int].iterator it
 
     while n_visited < search_size and i < max_size:
         s = A[i]
@@ -92,7 +92,7 @@ cdef int update_start(int start,
                       int select_method,
                       int search_size,
                       int active_size,
-                      np.ndarray[long, ndim=1, mode='c'] index,
+                      np.ndarray[int, ndim=1, mode='c'] index,
                       rs):
 
     # Update position and reshuffle if needed.

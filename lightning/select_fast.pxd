@@ -6,7 +6,7 @@ from lightning.kernel_fast cimport Kernel
 
 cdef int get_select_method(selection)
 
-cdef int select_sv(np.ndarray[long, ndim=1, mode='c'] A,
+cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
                    int start,
                    int search_size,
                    int max_size,
@@ -16,12 +16,12 @@ cdef int select_sv(np.ndarray[long, ndim=1, mode='c'] A,
                    np.ndarray[double, ndim=2, mode='c'] X,
                    np.ndarray[double, ndim=1] y,
                    Kernel kernel,
-                   list[long]& support_set,
-                   np.ndarray[long, ndim=1, mode='c'] support_vectors)
+                   list[int]& support_set,
+                   np.ndarray[int, ndim=1, mode='c'] support_vectors)
 
 cdef int update_start(int start,
                       int select_method,
                       int search_size,
                       int active_size,
-                      np.ndarray[long, ndim=1, mode='c'] index,
+                      np.ndarray[int, ndim=1, mode='c'] index,
                       rs)

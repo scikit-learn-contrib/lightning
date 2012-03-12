@@ -73,8 +73,8 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
     cdef double xj_sq
     cdef double wj_abs
 
-    cdef np.ndarray[long, ndim=1, mode='c'] index
-    index = np.arange(n_features)
+    cdef np.ndarray[int, ndim=1, mode='c'] index
+    index = np.arange(n_features, dtype=np.int32)
 
     cdef double* col_data
     cdef double* col_ro
@@ -82,12 +82,12 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
     col = np.zeros(n_samples, dtype=np.float64)
     col_data = <double*>col.data
 
-    cdef list[long] support_set
-    cdef list[long].iterator it
+    cdef list[int] support_set
+    cdef list[int].iterator it
 
-    cdef vector[list[long].iterator] support_it
+    cdef vector[list[int].iterator] support_it
 
-    cdef np.ndarray[long, ndim=1, mode='c'] support_vectors
+    cdef np.ndarray[int, ndim=1, mode='c'] support_vectors
 
     cdef int check_n_sv = termination in ("n_sv", "n_nz_coef")
     cdef int check_convergence = termination == "convergence"
@@ -95,7 +95,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
     cdef int select_method = get_select_method(selection)
 
     support_it.resize(n_features)
-    support_vectors = np.zeros(n_features, dtype=np.int64)
+    support_vectors = np.zeros(n_features, dtype=np.int32)
 
     # FIXME: would be better to store the support indices in the class.
     for j in xrange(n_features):
@@ -324,8 +324,8 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
     cdef double sigma = 0.01
     cdef double xj_sq, val, b_new, bound
 
-    cdef np.ndarray[long, ndim=1, mode='c'] index
-    index = np.arange(n_features)
+    cdef np.ndarray[int, ndim=1, mode='c'] index
+    index = np.arange(n_features, dtype=np.int32)
 
     cdef double* col_data
     cdef double* col_ro

@@ -84,17 +84,17 @@ cdef class PrecomputedKernel(Kernel):
 
 cdef class KernelCache(Kernel):
     cdef Kernel kernel
-    cdef long n_samples
-    cdef list[long]* support_set
-    cdef list[long].iterator* support_it
+    cdef int n_samples
+    cdef list[int]* support_set
+    cdef list[int].iterator* support_it
     cdef int* is_support_vector
-    cdef map[long, double*]* columns
-    cdef long* n_computed
+    cdef map[int, double*]* columns
+    cdef int* n_computed
     cdef int capacity
     cdef int size
 
-    cdef _create_column(self, long i)
-    cdef _clear_columns(self, long n)
+    cdef _create_column(self, int i)
+    cdef _clear_columns(self, int n)
 
     cpdef double compute(self,
                          np.ndarray[double, ndim=2, mode='c'] X,
@@ -108,10 +108,10 @@ cdef class KernelCache(Kernel):
                                  int j,
                                  double* out)
 
-    cpdef add_sv(self, long i)
+    cpdef add_sv(self, int i)
 
-    cpdef remove_sv(self, long i)
+    cpdef remove_sv(self, int i)
 
-    cpdef long n_sv(self)
+    cpdef int n_sv(self)
 
     cpdef get_size(self)

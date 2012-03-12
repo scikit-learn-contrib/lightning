@@ -46,8 +46,8 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
     cdef Py_ssize_t n_samples = X.shape[0]
     cdef Py_ssize_t n_features = X.shape[1]
 
-    cdef np.ndarray[long, ndim=1, mode='c'] A
-    A = np.arange(n_samples)
+    cdef np.ndarray[int, ndim=1, mode='c'] A
+    A = np.arange(n_samples, dtype=np.int32)
     cdef Py_ssize_t active_size = n_samples
 
     cdef double U
@@ -82,16 +82,16 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
     cdef int s, start = 0
     cdef double G, PG
     cdef double step
-    cdef long r
+    cdef int r
 
-    cdef list[long] support_set
-    cdef list[long].iterator it
+    cdef list[int] support_set
+    cdef list[int].iterator it
 
-    cdef vector[list[long].iterator] support_it
+    cdef vector[list[int].iterator] support_it
     support_it.resize(n_samples)
 
-    cdef np.ndarray[long, ndim=1, mode='c'] support_vectors
-    support_vectors = np.zeros(n_samples, dtype=np.int64)
+    cdef np.ndarray[int, ndim=1, mode='c'] support_vectors
+    support_vectors = np.zeros(n_samples, dtype=np.int32)
 
     cdef int select_method = get_select_method(selection)
     cdef int check_n_sv = termination == "n_sv"
