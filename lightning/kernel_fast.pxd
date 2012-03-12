@@ -67,7 +67,7 @@ cdef class KernelCache(Kernel):
     cdef int n_samples
     cdef list[int]* support_set
     cdef list[int].iterator* support_it
-    cdef int* is_support_vector
+    cdef int* support_vector
     cdef map[int, vector[double]]* columns
     cdef int* n_computed
     cdef int capacity
@@ -103,6 +103,7 @@ cdef class KernelCache(Kernel):
                             int j,
                             np.ndarray[double, ndim=1, mode='c'] out)
 
+    cpdef remove_column(self, int i)
     cpdef add_sv(self, int i)
     cpdef remove_sv(self, int i)
     cpdef int n_sv(self)

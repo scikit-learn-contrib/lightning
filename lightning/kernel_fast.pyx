@@ -148,7 +148,7 @@ cdef class KernelCache(Kernel):
 
         if capacity > 0:
             self.support_set = new list[int]()
-            self.is_support_vector = <int*> stdlib.malloc(sizeof(int) *
+            self.support_vector = <int*> stdlib.malloc(sizeof(int) *
                                                           n_samples)
             self.n_computed = <int*> stdlib.malloc(sizeof(int) * n_samples)
             self.support_it = <list[int].iterator*> \
@@ -156,14 +156,14 @@ cdef class KernelCache(Kernel):
             self.columns = new map[int, vector[double]]()
 
             for i in xrange(n_samples):
-                self.is_support_vector[i] = 0
+                self.support_vector[i] = -1
                 self.n_computed[i] = 0
 
     def __dealloc__(self):
         if self.capacity > 0:
             self._clear_columns(self.n_samples)
             del self.support_set
-            stdlib.free(self.is_support_vector)
+            stdlib.free(self.support_vector)
             stdlib.free(self.support_it)
             del self.columns
 
@@ -305,23 +305,52 @@ cdef class KernelCache(Kernel):
 
         self.n_computed[j] = ssize
 
+    cpdef remove_column(self, int i):
+        cdef map[int, vector[double]].iterator it
+        cdef int col_size
+
+        it = self.columns.find(i)
+
+        if it != self.columns.end():
+            col_size = deref(it).second.size() * sizeof(double)
+            self.n_computed[deref(it).first] = 0
+            deref(it).second.clear()
+            self.columns.erase(it)
+            self.size -= col_size
+
     cpdef add_sv(self, int i):
         cdef list[int].iterator it
 
-        if not self.is_support_vector[i]:
+        if self.support_vector[i] == -1:
             self.support_set.push_back(i)
             it = self.support_set.end()
             dec(it)
             self.support_it[i] = it
-            self.is_support_vector[i] = 1
+            self.support_vector[i] = self.support_set.size() - 1
 
     cpdef remove_sv(self, int i):
         cdef list[int].iterator it
+        cdef map[int, vector[double]].iterator it2
+        cdef double* cache
+        cdef int j, end, k
 
-        if self.is_support_vector[i]:
+        if self.support_vector[i] >= 0:
             it = self.support_it[i]
             self.support_set.erase(it)
-            self.is_support_vector[i] = 0
+            k = self.support_vector[i]
+            self.support_vector[i] = -1
+
+            it2 = self.columns.begin()
+            while it2 != self.columns.end():
+                j = deref(it2).first
+
+                if self.n_computed[j] > 0:
+                    cache = &(self.columns[0][j][0])
+                    end = self.n_computed[j] - 1
+                    cache[k], cache[end] = cache[end], cache[k]
+                    self.n_computed[j] -= 1
+
+                inc(it2)
 
     cpdef int n_sv(self):
         return self.support_set.size()
