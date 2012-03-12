@@ -174,33 +174,38 @@ cdef class KernelCache(Kernel):
                          int j):
         return self.kernel.compute(X, i, Y, j)
 
+    cpdef double compute_self(self,
+                              np.ndarray[double, ndim=2, mode='c'] X,
+                              int i):
+        return self.kernel.compute_self(X, i)
+
     cdef _create_column(self, int i, int requested_size):
         cdef int n_computed = self.n_computed[i]
 
         if n_computed == -1 or requested_size < n_computed:
             return
 
-        cdef int col_size = self.n_samples * sizeof(double)
+        cdef int extra_size = (requested_size - n_computed) * sizeof(double)
 
-        if self.size + col_size > self.capacity:
+        if self.size + extra_size > self.capacity:
+            # FIXME: make sure that the decrease is sufficient.
             self._clear_columns(self.columns.size() / 2)
 
         if n_computed == 0:
-            self.columns[0][i] = vector[double](self.n_samples, 0)
-            self.size += col_size
-
-    cpdef double compute_self(self,
-                              np.ndarray[double, ndim=2, mode='c'] X,
-                              int i):
-        return self.kernel.compute_self(X, i)
+            self.columns[0][i] = vector[double](requested_size, 0)
+            self.size += extra_size
+        else:
+            self.columns[0][i].resize(requested_size, 0)
+            self.size += extra_size
 
     cdef _clear_columns(self, int n):
-        cdef int col_size = sizeof(double) * self.n_samples
         cdef map[int, vector[double]].iterator it
         it = self.columns.begin()
         cdef int i = 0
+        cdef int col_size
 
         while it != self.columns.end():
+            col_size = deref(it).second.size() * sizeof(double)
             deref(it).second.clear()
             self.n_computed[deref(it).first] = 0
             self.size -= col_size
@@ -248,11 +253,57 @@ cdef class KernelCache(Kernel):
             for i in xrange(self.n_samples):
                 out[i] = cache[i]
         else:
+            # FIXME: can reuse cache if n_computed > 0
             for i in xrange(self.n_samples):
                 out[i] = self.kernel.compute(X, i, Y, j)
                 cache[i] = out[i]
 
         self.n_computed[j] = -1
+
+
+    cpdef compute_column_sv(self,
+                            np.ndarray[double, ndim=2, mode='c'] X,
+                            np.ndarray[double, ndim=2, mode='c'] Y,
+                            int j,
+                            np.ndarray[double, ndim=1, mode='c'] out):
+
+        cdef int s, i = 0
+        cdef list[int].iterator it
+        cdef int n_computed = self.n_computed[j]
+        cdef int ssize = self.support_set.size()
+
+        if self.capacity == 0:
+            it = self.support_set.begin()
+            while it != self.support_set.end():
+                s = deref(it)
+                out[s] = self.kernel(X, s, Y, j)
+                inc(it)
+            return
+
+        self._create_column(j, ssize)
+        cdef double* cache = &(self.columns[0][j][0])
+
+        if n_computed == -1:
+            it = self.support_set.begin()
+            while it != self.support_set.end():
+                s = deref(it)
+                out[s] = cache[s]
+                inc(it)
+            return
+
+        it = self.support_set.begin()
+        while it != self.support_set.end():
+            s = deref(it)
+            if i < n_computed:
+                out[s] = cache[i]
+            else:
+                out[s] = self.kernel.compute(X, s, Y, j)
+                cache[i] = out[s]
+
+            inc(it)
+            i += 1
+
+        self.n_computed[j] = ssize
 
     cpdef add_sv(self, int i):
         cdef list[int].iterator it

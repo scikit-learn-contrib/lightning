@@ -78,41 +78,110 @@ def test_kernel_cache_add_remove():
 
 def test_kernel_cache_column():
     K = pairwise_kernels(X, metric="rbf", gamma=0.1)
-
     kernel = RbfKernel(gamma=0.1)
     kcache = KernelCache(kernel, 20, capacity)
-
     out = np.zeros(20, dtype=np.float64)
 
     # Compute a first column.
     kcache.compute_column(X, X, 12, out)
-    assert_almost_equal(K[:, 12], out)
+    assert_array_almost_equal(K[:, 12], out)
     assert_equal(kcache.get_size(), 160)
 
     # Check that the works.
     kcache.compute_column(X2, X2, 12, out)
-    assert_almost_equal(K[:, 12], out)
+    assert_array_almost_equal(K[:, 12], out)
     assert_equal(kcache.get_size(), 160)
 
     # Compute more columns.
     kcache.compute_column(X, X, 13, out)
-    assert_almost_equal(K[:, 13], out)
+    assert_array_almost_equal(K[:, 13], out)
     assert_equal(kcache.get_size(), 320)
 
     kcache.compute_column(X, X, 14, out)
-    assert_almost_equal(K[:, 14], out)
+    assert_array_almost_equal(K[:, 14], out)
     assert_equal(kcache.get_size(), 480)
 
     kcache.compute_column(X, X, 15, out)
-    assert_almost_equal(K[:, 15], out)
+    assert_array_almost_equal(K[:, 15], out)
     assert_equal(kcache.get_size(), 640)
 
     # Maximum size reached.
     kcache.compute_column(X, X, 16, out)
-    assert_almost_equal(K[:, 16], out)
+    assert_array_almost_equal(K[:, 16], out)
     assert_equal(kcache.get_size(), 480)
 
     # Check that cache works.
     kcache.compute_column(X2, X2, 16, out)
-    assert_almost_equal(K[:, 16], out)
+    assert_array_almost_equal(K[:, 16], out)
     assert_equal(kcache.get_size(), 480)
+
+
+def test_kernel_cache_column_sv():
+    K = pairwise_kernels(X, metric="rbf", gamma=0.1)
+    kernel = RbfKernel(gamma=0.1)
+    kcache = KernelCache(kernel, 20, capacity)
+    out = np.zeros(20, dtype=np.float64)
+
+    size = 0
+
+    # Add 3 SVs.
+    kcache.add_sv(6)
+    kcache.add_sv(12)
+    kcache.add_sv(3)
+    size += 3 * 8
+
+    # Compute values.
+    kcache.compute_column_sv(X, X, 7, out)
+    assert_almost_equal(K[6, 7], out[6])
+    assert_almost_equal(K[12, 7], out[12])
+    assert_almost_equal(K[3, 7], out[3])
+    assert_equal(size, kcache.get_size())
+
+    # Check that the works.
+    kcache.compute_column_sv(X2, X2, 7, out)
+    assert_almost_equal(K[6, 7], out[6])
+    assert_almost_equal(K[12, 7], out[12])
+    assert_almost_equal(K[3, 7], out[3])
+    assert_equal(size, kcache.get_size())
+
+    # Add one more SV.
+    kcache.add_sv(17)
+    size += 8
+
+    # Compute values.
+    kcache.compute_column_sv(X, X, 7, out)
+    assert_almost_equal(K[6, 7], out[6])
+    assert_almost_equal(K[12, 7], out[12])
+    assert_almost_equal(K[3, 7], out[3])
+    assert_almost_equal(K[17, 7], out[17])
+    assert_equal(size, kcache.get_size())
+
+    # Check that the works.
+    kcache.compute_column_sv(X2, X2, 7, out)
+    assert_almost_equal(K[6, 7], out[6])
+    assert_almost_equal(K[12, 7], out[12])
+    assert_almost_equal(K[3, 7], out[3])
+    assert_almost_equal(K[17, 7], out[17])
+    assert_equal(size, kcache.get_size())
+
+    # Compute the entire same column.
+    kcache.compute_column(X, X, 7, out)
+    size = 20 * 8
+    assert_array_almost_equal(K[:, 7], out)
+    assert_equal(size, kcache.get_size())
+
+    # Compute an entire new column.
+    kcache.compute_column(X, X, 8, out)
+    size += 20 * 8
+    assert_array_almost_equal(K[:, 8], out)
+    assert_equal(size, kcache.get_size())
+
+    # Retrieve the SV only.
+    out *= 0
+    kcache.compute_column_sv(X, X, 8, out)
+    assert_almost_equal(K[6, 8], out[6])
+    assert_almost_equal(K[12, 8], out[12])
+    assert_almost_equal(K[3, 8], out[3])
+    assert_almost_equal(K[17, 8], out[17])
+
+
