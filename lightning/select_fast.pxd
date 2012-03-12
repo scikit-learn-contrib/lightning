@@ -2,7 +2,7 @@ from libcpp.list cimport list
 
 cimport numpy as np
 
-from lightning.kernel_fast cimport Kernel
+from lightning.kernel_fast cimport KernelCache
 
 cdef int get_select_method(selection)
 
@@ -15,7 +15,7 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
                    double b,
                    np.ndarray[double, ndim=2, mode='c'] X,
                    np.ndarray[double, ndim=1] y,
-                   Kernel kernel,
+                   KernelCache kcache,
                    list[int]& support_set,
                    np.ndarray[int, ndim=1, mode='c'] support_vectors)
 

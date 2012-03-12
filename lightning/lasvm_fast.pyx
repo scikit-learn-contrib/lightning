@@ -12,7 +12,7 @@ from libcpp.list cimport list
 import numpy as np
 cimport numpy as np
 
-from lightning.kernel_fast cimport Kernel
+from lightning.kernel_fast cimport KernelCache
 from lightning.select_fast cimport get_select_method, select_sv, update_start
 
 cdef extern from "float.h":
@@ -65,7 +65,7 @@ cdef int _argmin(np.ndarray[double, ndim=1] y,
 
 cdef void _update(np.ndarray[double, ndim=2, mode='c'] X,
                   np.ndarray[double, ndim=1] y,
-                  Kernel kernel,
+                  KernelCache kcache,
                   np.ndarray[double, ndim=1, mode='c'] g,
                   list[int]& support_set,
                   np.ndarray[double, ndim=1, mode='c'] alpha,
@@ -77,9 +77,9 @@ cdef void _update(np.ndarray[double, ndim=2, mode='c'] X,
     cdef double Kii, Kjj, Kij, Kis, Kjs
 
     # Need only three elements.
-    Kii = kernel.compute_self(X, i)
-    Kjj = kernel.compute_self(X, j)
-    Kij = kernel.compute(X, i, X, j)
+    Kii = kcache.compute_self(X, i)
+    Kjj = kcache.compute_self(X, j)
+    Kij = kcache.compute(X, i, X, j)
     cdef double lambda_ = min((g[i] - g[j]) / (Kii + Kjj - 2 * Kij),
                               min(Bi - alpha[i], alpha[j] - Aj))
     alpha[i] += lambda_
@@ -91,8 +91,8 @@ cdef void _update(np.ndarray[double, ndim=2, mode='c'] X,
     while it != support_set.end():
         s = deref(it)
         # Need the ith and jth column (support vectors only)
-        Kis = kernel.compute(X, s, X, i)
-        Kjs = kernel.compute(X, s, X, j)
+        Kis = kcache.compute(X, s, X, i)
+        Kjs = kcache.compute(X, s, X, j)
         g[s] -= lambda_ * (Kis - Kjs)
         inc(it)
 
@@ -100,7 +100,7 @@ cdef void _update(np.ndarray[double, ndim=2, mode='c'] X,
 cdef void _process(int k,
                    np.ndarray[double, ndim=2, mode='c'] X,
                    np.ndarray[double, ndim=1] y,
-                   Kernel kernel,
+                   KernelCache kcache,
                    list[int]& support_set,
                    np.ndarray[int, ndim=1, mode='c'] support_vectors,
                    np.ndarray[double, ndim=1, mode='c'] alpha,
@@ -120,7 +120,7 @@ cdef void _process(int k,
     while it != support_set.end():
         s = deref(it)
         # Iterate over k-th column (support vectors only)
-        pred += alpha[s] * kernel.compute(X, s, X, k)
+        pred += alpha[s] * kcache.compute(X, s, X, k)
         inc(it)
 
     g[k] = y[k] - pred
@@ -144,13 +144,13 @@ cdef void _process(int k,
     if not violating_pair:
         return
 
-    _update(X, y, kernel, g, support_set, alpha, i, j, Aj, Bi)
+    _update(X, y, kcache, g, support_set, alpha, i, j, Aj, Bi)
 
 
 
 cdef void _reprocess(np.ndarray[double, ndim=2, mode='c'] X,
                      np.ndarray[double, ndim=1] y,
-                     Kernel kernel,
+                     KernelCache kcache,
                      list[int]& support_set,
                      np.ndarray[int, ndim=1, mode='c'] support_vectors,
                      np.ndarray[double, ndim=1, mode='c'] alpha,
@@ -171,7 +171,7 @@ cdef void _reprocess(np.ndarray[double, ndim=2, mode='c'] X,
     if not violating_pair:
         return
 
-    _update(X, y, kernel, g, support_set, alpha, i, j, Aj, Bi)
+    _update(X, y, kcache, g, support_set, alpha, i, j, Aj, Bi)
 
     i = _argmax(y, g, support_set, alpha, C)
     j = _argmin(y, g, support_set, alpha, C)
@@ -199,12 +199,12 @@ cdef void _reprocess(np.ndarray[double, ndim=2, mode='c'] X,
 cdef void _boostrap(index,
                     np.ndarray[double, ndim=2, mode='c'] X,
                     np.ndarray[double, ndim=1] y,
-                    Kernel kernel,
+                    KernelCache kcache,
                     list[int]& support_set,
                     np.ndarray[int, ndim=1, mode='c'] support_vectors,
                     np.ndarray[double, ndim=1, mode='c'] alpha,
                     np.ndarray[double, ndim=1, mode='c'] g,
-                    double* col_data,
+                    np.ndarray[double, ndim=1, mode='c'] col,
                     rs):
     cdef np.ndarray[int, ndim=1, mode='c'] A = index
     cdef int n_pos = 0
@@ -223,11 +223,11 @@ cdef void _boostrap(index,
 
             alpha[s] = y[s]
             # Entire sth column
-            kernel.compute_column_ptr(X, X, s, col_data)
+            kcache.compute_column(X, X, s, col)
 
             for j in xrange(n_samples):
                 # All elements of the s-th column.
-                g[j] -= y[s] * col_data[j]
+                g[j] -= y[s] * col[j]
 
             if y[s] == -1:
                 n_neg += 1
@@ -241,12 +241,12 @@ cdef void _boostrap(index,
 cdef void _boostrap_warm_start(index,
                                np.ndarray[double, ndim=2, mode='c']X,
                                np.ndarray[double, ndim=1]y,
-                               Kernel kernel,
+                               KernelCache kcache,
                                list[int]& support_set,
                                np.ndarray[int, ndim=1, mode='c'] support_vectors,
                                np.ndarray[double, ndim=1, mode='c'] alpha,
                                np.ndarray[double, ndim=1, mode='c'] g,
-                               double* col_data):
+                               np.ndarray[double, ndim=1, mode='c'] col):
     cdef np.ndarray[int, ndim=1, mode='c'] A = index
     cdef int i, s
     cdef Py_ssize_t n_samples = index.shape[0]
@@ -254,11 +254,11 @@ cdef void _boostrap_warm_start(index,
 
     for i in xrange(n_samples):
         if alpha[i] != 0:
-            kernel.compute_column_ptr(X, X, i, col_data)
+            kcache.compute_column(X, X, i, col)
 
             for j in xrange(n_samples):
                 # All elements of the i-th column.
-                g[j] -= alpha[i] * col_data[j]
+                g[j] -= alpha[i] * col[j]
 
             support_set.push_back(i)
             support_vectors[i] = 1
@@ -267,7 +267,7 @@ cdef void _boostrap_warm_start(index,
 def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
            np.ndarray[double, ndim=2, mode='c'] X,
            np.ndarray[double, ndim=1] y,
-           Kernel kernel,
+           KernelCache kcache,
            selection,
            int search_size,
            termination,
@@ -300,10 +300,8 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
     cdef np.ndarray[double, ndim=1, mode='c'] delta
     delta = np.zeros(1, dtype=np.float64)
 
-    cdef double* col_data
     cdef np.ndarray[double, ndim=1, mode='c'] col
     col = np.zeros(n_samples, dtype=np.float64)
-    col_data = <double*>col.data
 
     cdef int check_n_sv = termination == "n_sv"
 
@@ -314,11 +312,11 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
     cdef int select_method = get_select_method(selection)
 
     if warm_start:
-        _boostrap_warm_start(A, X, y, kernel,
-                             support_set, support_vectors, alpha, g, col_data)
+        _boostrap_warm_start(A, X, y, kcache,
+                             support_set, support_vectors, alpha, g, col)
     else:
-        _boostrap(A, X, y, kernel,
-                  support_set, support_vectors, alpha, g, col_data, rs)
+        _boostrap(A, X, y, kcache,
+                  support_set, support_vectors, alpha, g, col, rs)
 
     for it in xrange(max_iter):
 
@@ -328,15 +326,15 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
         for i in xrange(n_samples):
             # Select a support vector candidate.
             s = select_sv(A, start, search_size, n_samples, select_method,
-                          alpha, b[0], X, y, kernel,
+                          alpha, b[0], X, y, kcache,
                           support_set, support_vectors)
 
             # Attempt to add it.
-            _process(s, X, y, kernel,
+            _process(s, X, y, kcache,
                      support_set, support_vectors, alpha, g, C, tau)
 
             # Remove blatant non support vectors.
-            _reprocess(X, y, kernel,
+            _reprocess(X, y, kcache,
                        support_set, support_vectors, alpha, g, b, delta, C, tau)
 
             # Exit if necessary.
@@ -354,7 +352,7 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
 
     if finish_step:
         while delta[0] > tau:
-            _reprocess(X, y, kernel,
+            _reprocess(X, y, kcache,
                        support_set, support_vectors, alpha,
                        g, b, delta, C, tau)
 

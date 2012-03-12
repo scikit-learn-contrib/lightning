@@ -16,7 +16,7 @@ from libcpp.vector cimport vector
 import numpy as np
 cimport numpy as np
 
-from lightning.kernel_fast cimport Kernel
+from lightning.kernel_fast cimport KernelCache
 from lightning.select_fast cimport get_select_method, select_sv, update_start
 
 cdef extern from "math.h":
@@ -30,7 +30,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
              np.ndarray[double, ndim=1, mode='c'] alpha,
              np.ndarray[double, ndim=2, mode='c'] X,
              np.ndarray[double, ndim=1]y,
-             Kernel kernel,
+             KernelCache kcache,
              int linear_kernel,
              selection,
              int search_size,
@@ -60,15 +60,13 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
         U = DBL_MAX
         D_ii = 1.0 / (2 * C)
 
-    cdef double* col_data
     cdef np.ndarray[double, ndim=1, mode='c'] col
     col = np.zeros(n_samples, dtype=np.float64)
-    col_data = <double*>col.data
 
     cdef np.ndarray[double, ndim=1, mode='c'] Q_bar_diag
     Q_bar_diag = np.zeros(n_samples, dtype=np.float64)
 
-    kernel.compute_diag_ptr(X, <double*>Q_bar_diag.data)
+    kcache.compute_diag(X, Q_bar_diag)
     Q_bar_diag += D_ii
 
     cdef double M
@@ -117,7 +115,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
         start = 0
         while s < active_size:
             i = select_sv(A, start, search_size, active_size, select_method,
-                          alpha, 0, X, y, kernel,
+                          alpha, 0, X, y, kcache,
                           support_set, support_vectors)
 
             y_i = y[i]
@@ -134,11 +132,11 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
                 # G = np.dot(Q_bar, alpha)[i] - 1
                 G = -1
                 # FIXME: retrieve sv only and iterate over non-zero alpha[j]
-                kernel.compute_column_ptr(X, X, i, col_data)
+                kcache.compute_column(X, X, i, col)
                 it = support_set.begin()
                 while it != support_set.end():
                     j = deref(it)
-                    G += col_data[j] * y[i] * y[j] * alpha[j]
+                    G += col[j] * y[i] * y[j] * alpha[j]
                     inc(it)
                 G += D_ii * alpha[i]
 

@@ -37,7 +37,7 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
                    double b,
                    np.ndarray[double, ndim=2, mode='c'] X,
                    np.ndarray[double, ndim=1] y,
-                   Kernel kernel,
+                   KernelCache kcache,
                    list[int]& support_set,
                    np.ndarray[int, ndim=1, mode='c'] support_vectors):
 
@@ -68,7 +68,7 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
         while it != support_set.end():
             j = deref(it)
             # Iterate over sth column (support vectors only)
-            score += alpha[j] * kernel.compute(X, j, X, s)
+            score += alpha[j] * kcache.compute(X, j, X, s)
             inc(it)
 
         score += b

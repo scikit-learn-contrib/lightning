@@ -16,7 +16,7 @@ from libcpp.vector cimport vector
 import numpy as np
 cimport numpy as np
 
-from lightning.kernel_fast cimport Kernel
+from lightning.kernel_fast cimport KernelCache
 from lightning.select_fast cimport get_select_method, select_sv, update_start
 
 cdef extern from "math.h":
@@ -30,7 +30,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
                          np.ndarray[double, ndim=1, mode='c'] b,
                          X,
                          np.ndarray[double, ndim=1] y,
-                         Kernel kernel,
+                         KernelCache kcache,
                          int linear_kernel,
                          selection,
                          int search_size,
@@ -116,7 +116,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
         while s < active_size:
             if not linear_kernel:
                 j = select_sv(index, start, search_size, active_size,
-                              select_method, w, 0, Xc, y, kernel,
+                              select_method, w, 0, Xc, y, kcache,
                               support_set, support_vectors)
             else:
                 j = index[s]
@@ -128,7 +128,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
             if linear_kernel:
                 col_ro = (<double*>Xf.data) + j * n_samples
             else:
-                kernel.compute_column_ptr(Xc, Xc, j, col_data)
+                kcache.compute_column(Xc, Xc, j, col)
                 col_ro = col_data
 
             for i in xrange(n_samples):
@@ -297,7 +297,7 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
                          np.ndarray[double, ndim=1, mode='c'] b,
                          X,
                          np.ndarray[double, ndim=1] y,
-                         Kernel kernel,
+                         KernelCache kcache,
                          int linear_kernel,
                          termination,
                          double C,
@@ -349,7 +349,7 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
             if linear_kernel:
                 col_ro = (<double*>Xf.data) + j * n_samples
             else:
-                kernel.compute_column_ptr(Xc, Xc, j, col_data)
+                kcache.compute_column(Xc, Xc, j, col)
                 col_ro = col_data
 
             # Iterate over samples that have the feature

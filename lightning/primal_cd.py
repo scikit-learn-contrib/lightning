@@ -10,7 +10,7 @@ from sklearn.metrics.pairwise import pairwise_kernels
 
 from .primal_cd_fast import _primal_cd_l2svm_l1r
 from .primal_cd_fast import _primal_cd_l2svm_l2r
-from .kernel_fast import get_kernel
+from .kernel_fast import get_kernel, KernelCache
 
 class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
 
@@ -40,6 +40,7 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
         n_vectors = Y.shape[1]
 
         kernel = get_kernel("linear")
+        kcache = KernelCache(kernel, 0, 0)
 
         if not self.warm_start or self.coef_ is None:
             self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
@@ -48,14 +49,14 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
         for i in xrange(n_vectors):
             if self.penalty == "l1":
                 _primal_cd_l2svm_l1r(self.coef_[i], self.errors_[i],
-                                     X, Y[:, i], kernel, True,
+                                     X, Y[:, i], kcache, True,
                                      "permute", 60,
                                      self.termination, self.nz_coef_upper_bound,
                                      self.C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)
             else:
                 _primal_cd_l2svm_l2r(self.coef_[i], self.errors_[i],
-                                     X, Y[:, i], kernel, True,
+                                     X, Y[:, i], kcache, True,
                                      self.termination,
                                      self.C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)
@@ -76,7 +77,8 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  selection="permute", search_size=60,
                  termination="convergence", sv_upper_bound=1000,
-                 warm_start=False, random_state=None, verbose=0, n_jobs=1):
+                 cache_mb=500, warm_start=False, random_state=None,
+                 verbose=0, n_jobs=1):
         self.C = C
         self.penalty = penalty
         self.max_iter = max_iter
@@ -91,6 +93,7 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
         self.sv_upper_bound = sv_upper_bound
         self.warm_start = warm_start
         self.random_state = random_state
+        self.cache_mb = cache_mb
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.support_vectors_ = None
@@ -117,18 +120,19 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
             self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
 
         kernel = self._get_kernel()
+        kcache = KernelCache(kernel, n_samples, self.cache_mb * 1024 * 1024)
 
         for i in xrange(n_vectors):
             if self.penalty == "l1":
                 _primal_cd_l2svm_l1r(self.coef_[i], self.errors_[i],
-                                     X, Y[:, i], kernel, False,
+                                     X, Y[:, i], kcache, False,
                                      self.selection, self.search_size,
                                      self.termination, self.sv_upper_bound,
                                      self.C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)
             else:
                 _primal_cd_l2svm_l2r(self.coef_[i], self.errors_[i],
-                                     X, Y[:, i], kernel, False,
+                                     X, Y[:, i], kcache, False,
                                      self.termination,
                                      self.C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)

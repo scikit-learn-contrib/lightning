@@ -52,39 +52,6 @@ cdef class Kernel:
                               int i):
         return self.compute(X, i, X, i)
 
-    cpdef compute_diag(self,
-                       np.ndarray[double, ndim=2, mode='c'] X,
-                       np.ndarray[double, ndim=1, mode='c'] out):
-        self.compute_diag_ptr(X, <double*>out.data)
-
-    cdef void compute_diag_ptr(self,
-                               np.ndarray[double, ndim=2, mode='c'] X,
-                               double* out):
-
-        cdef Py_ssize_t n_samples = X.shape[0]
-        cdef int i
-
-        for i in xrange(n_samples):
-            out[i] = self.compute_self(X, i)
-
-    cpdef compute_column(self,
-                         np.ndarray[double, ndim=2, mode='c'] X,
-                         np.ndarray[double, ndim=2, mode='c'] Y,
-                         int j,
-                         np.ndarray[double, ndim=1, mode='c'] out):
-        self.compute_column_ptr(X, Y, j, <double*>out.data)
-
-    cdef void compute_column_ptr(self,
-                                 np.ndarray[double, ndim=2, mode='c'] X,
-                                 np.ndarray[double, ndim=2, mode='c'] Y,
-                                 int j,
-                                 double* out):
-
-        cdef Py_ssize_t n_samples = X.shape[0]
-        cdef int i
-
-        for i in xrange(n_samples):
-            out[i] = self.compute(X, i, Y, j)
 
 
 cdef class LinearKernel(Kernel):
@@ -218,6 +185,11 @@ cdef class KernelCache(Kernel):
             self.columns[0][i] = vector[double](self.n_samples, 0)
             self.size += col_size
 
+    cpdef double compute_self(self,
+                              np.ndarray[double, ndim=2, mode='c'] X,
+                              int i):
+        return self.kernel.compute_self(X, i)
+
     cdef _clear_columns(self, int n):
         cdef int col_size = sizeof(double) * self.n_samples
         cdef map[int, vector[double]].iterator it
@@ -239,11 +211,20 @@ cdef class KernelCache(Kernel):
         if n == self.n_samples:
             self.columns.clear()
 
-    cdef void compute_column_ptr(self,
-                                 np.ndarray[double, ndim=2, mode='c'] X,
-                                 np.ndarray[double, ndim=2, mode='c'] Y,
-                                 int j,
-                                 double* out):
+    cpdef compute_diag(self,
+                       np.ndarray[double, ndim=2, mode='c'] X,
+                       np.ndarray[double, ndim=1, mode='c'] out):
+        cdef Py_ssize_t n_samples = X.shape[0]
+        cdef int i
+
+        for i in xrange(n_samples):
+            out[i] = self.kernel.compute_self(X, i)
+
+    cpdef compute_column(self,
+                         np.ndarray[double, ndim=2, mode='c'] X,
+                         np.ndarray[double, ndim=2, mode='c'] Y,
+                         int j,
+                         np.ndarray[double, ndim=1, mode='c'] out):
 
         cdef int i = 0
         cdef int n_computed = self.n_computed[j]

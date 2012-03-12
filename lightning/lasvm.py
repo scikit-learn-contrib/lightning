@@ -8,7 +8,7 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state, safe_mask
 from sklearn.metrics.pairwise import pairwise_kernels
 
-from .kernel_fast import get_kernel
+from .kernel_fast import get_kernel, KernelCache
 from .lasvm_fast import _lasvm
 
 class LaSVM(BaseEstimator, ClassifierMixin):
@@ -18,7 +18,8 @@ class LaSVM(BaseEstimator, ClassifierMixin):
                  selection="permute", search_size=60,
                  termination="n_iter", sv_upper_bound=1000,
                  tau=1e-3, finish_step=True,
-                 warm_start=False, random_state=None, verbose=0, n_jobs=1):
+                 warm_start=False, cache_mb=500,
+                 random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.max_iter = max_iter
         self.kernel = kernel
@@ -33,6 +34,7 @@ class LaSVM(BaseEstimator, ClassifierMixin):
         self.finish_step = finish_step
         self.warm_start = warm_start
         self.random_state = random_state
+        self.cache_mb = cache_mb
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.support_vectors_ = None
@@ -63,10 +65,11 @@ class LaSVM(BaseEstimator, ClassifierMixin):
 
         self.intercept_ = np.zeros((n_vectors,), dtype=np.float64)
         kernel = self._get_kernel()
+        kcache = KernelCache(kernel, n_samples, self.cache_mb * 1024 * 1024)
 
         for i in xrange(n_vectors):
             b = _lasvm(self.dual_coef_[i],
-                       X, Y[:, i], kernel, self.selection, self.search_size,
+                       X, Y[:, i], kcache, self.selection, self.search_size,
                        self.termination, self.sv_upper_bound, self.tau,
                        self.finish_step, self.C, self.max_iter, rs,
                        verbose=self.verbose, warm_start=warm_start)
