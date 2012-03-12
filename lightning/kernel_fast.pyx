@@ -144,24 +144,28 @@ cdef class KernelCache(Kernel):
         self.size = 0
 
     def __cinit__(self, Kernel kernel, int n_samples, int capacity):
-        self.support_set = new list[int]()
-        self.is_support_vector = <int*> stdlib.malloc(sizeof(int) * n_samples)
-        self.n_computed = <int*> stdlib.malloc(sizeof(int) * n_samples)
-        self.support_it = <list[int].iterator*> \
-            stdlib.malloc(sizeof(list[int].iterator) * n_samples)
-        self.columns = new map[int, vector[double]]()
-
         cdef int i
-        for i in xrange(n_samples):
-            self.is_support_vector[i] = 0
-            self.n_computed[i] = 0
+
+        if capacity > 0:
+            self.support_set = new list[int]()
+            self.is_support_vector = <int*> stdlib.malloc(sizeof(int) *
+                                                          n_samples)
+            self.n_computed = <int*> stdlib.malloc(sizeof(int) * n_samples)
+            self.support_it = <list[int].iterator*> \
+                stdlib.malloc(sizeof(list[int].iterator) * n_samples)
+            self.columns = new map[int, vector[double]]()
+
+            for i in xrange(n_samples):
+                self.is_support_vector[i] = 0
+                self.n_computed[i] = 0
 
     def __dealloc__(self):
-        self._clear_columns(self.n_samples)
-        del self.support_set
-        stdlib.free(self.is_support_vector)
-        stdlib.free(self.support_it)
-        del self.columns
+        if self.capacity > 0:
+            self._clear_columns(self.n_samples)
+            del self.support_set
+            stdlib.free(self.is_support_vector)
+            stdlib.free(self.support_it)
+            del self.columns
 
     cpdef double compute(self,
                          np.ndarray[double, ndim=2, mode='c'] X,
@@ -220,11 +224,25 @@ cdef class KernelCache(Kernel):
         for i in xrange(n_samples):
             out[i] = self.kernel.compute_self(X, i)
 
+    cdef compute_column_nocache(self,
+                                np.ndarray[double, ndim=2, mode='c'] X,
+                                np.ndarray[double, ndim=2, mode='c'] Y,
+                                int j,
+                                np.ndarray[double, ndim=1, mode='c'] out):
+        cdef int i
+        for i in xrange(self.n_samples):
+            out[i] = self.kernel.compute(X, i, Y, j)
+
+
     cpdef compute_column(self,
                          np.ndarray[double, ndim=2, mode='c'] X,
                          np.ndarray[double, ndim=2, mode='c'] Y,
                          int j,
                          np.ndarray[double, ndim=1, mode='c'] out):
+
+        if self.capacity == 0:
+            self.compute_column_nocache(X, Y, j, out)
+            return
 
         cdef int i = 0
         cdef int n_computed = self.n_computed[j]

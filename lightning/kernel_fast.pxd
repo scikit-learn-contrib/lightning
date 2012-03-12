@@ -90,16 +90,20 @@ cdef class KernelCache(Kernel):
                        np.ndarray[double, ndim=2, mode='c'] X,
                        np.ndarray[double, ndim=1, mode='c'] out)
 
+    cdef compute_column_nocache(self,
+                                np.ndarray[double, ndim=2, mode='c'] X,
+                                np.ndarray[double, ndim=2, mode='c'] Y,
+                                int j,
+                                np.ndarray[double, ndim=1, mode='c'] out)
+
     cpdef compute_column(self,
                          np.ndarray[double, ndim=2, mode='c'] X,
                          np.ndarray[double, ndim=2, mode='c'] Y,
                          int j,
                          np.ndarray[double, ndim=1, mode='c'] out)
 
+
     cpdef add_sv(self, int i)
-
     cpdef remove_sv(self, int i)
-
     cpdef int n_sv(self)
-
     cpdef get_size(self)
