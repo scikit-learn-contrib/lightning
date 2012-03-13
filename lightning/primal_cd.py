@@ -154,6 +154,9 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
 
         return self
 
+    def n_support_vectors(self):
+        return np.sum(self.coef_ != 0)
+
     def decision_function(self, X):
         K = pairwise_kernels(X, self.support_vectors_, metric=self.kernel,
                              filter_params=True, n_jobs=self.n_jobs,
