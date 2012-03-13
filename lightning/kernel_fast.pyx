@@ -231,7 +231,7 @@ cdef class KernelCache(Kernel):
                          int j,
                          np.ndarray[double, ndim=1, mode='c'] out):
 
-        cdef int i = 0
+        cdef int k = 0, i = 0
 
         if self.capacity == 0:
             for i in xrange(self.n_samples):
@@ -245,10 +245,20 @@ cdef class KernelCache(Kernel):
         cdef double* cache = &(self.columns[0][j][0])
 
         if n_computed == -1:
+            # Full column is already computed.
             for i in xrange(self.n_samples):
                 out[i] = cache[i]
+        elif n_computed > 0:
+            # Some elements are already computed.
+            for i in xrange(self.n_samples):
+                if self.support_vector[i] >= 0 and k < n_computed:
+                    out[i] = cache[i]
+                else:
+                    out[i] = self.kernel.compute(X, i, Y, j)
+                    cache[i] = out[i]
+                k += 1
         else:
-            # FIXME: can reuse cache if n_computed > 0
+            # All elements must be computed.
             for i in xrange(self.n_samples):
                 out[i] = self.kernel.compute(X, i, Y, j)
                 cache[i] = out[i]
