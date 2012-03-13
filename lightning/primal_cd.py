@@ -73,7 +73,7 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
 
 class PrimalSVC(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, C=1.0, penalty="l1", max_iter=1000, tol=1e-3,
+    def __init__(self, C=1.0, penalty="l1", max_iter=10, tol=1e-3,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  selection="permute", search_size=60,
                  termination="convergence", sv_upper_bound=1000,
