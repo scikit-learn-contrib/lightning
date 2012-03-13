@@ -146,26 +146,25 @@ cdef class KernelCache(Kernel):
     def __cinit__(self, Kernel kernel, int n_samples, int capacity):
         cdef int i
 
-        if capacity > 0:
-            self.support_set = new list[int]()
-            self.support_vector = <int*> stdlib.malloc(sizeof(int) *
-                                                          n_samples)
-            self.n_computed = <int*> stdlib.malloc(sizeof(int) * n_samples)
-            self.support_it = <list[int].iterator*> \
-                stdlib.malloc(sizeof(list[int].iterator) * n_samples)
-            self.columns = new map[int, vector[double]]()
+        self.support_set = new list[int]()
+        self.support_vector = <int*> stdlib.malloc(sizeof(int) * n_samples)
+        self.support_it = <list[int].iterator*> \
+            stdlib.malloc(sizeof(list[int].iterator) * n_samples)
 
-            for i in xrange(n_samples):
-                self.support_vector[i] = -1
-                self.n_computed[i] = 0
+        self.n_computed = <int*> stdlib.malloc(sizeof(int) * n_samples)
+        self.columns = new map[int, vector[double]]()
+
+        for i in xrange(n_samples):
+            self.support_vector[i] = -1
+            self.n_computed[i] = 0
 
     def __dealloc__(self):
-        if self.capacity > 0:
-            self._clear_columns(self.n_samples)
-            del self.support_set
-            stdlib.free(self.support_vector)
-            stdlib.free(self.support_it)
-            del self.columns
+        del self.support_set
+        stdlib.free(self.support_vector)
+        stdlib.free(self.support_it)
+
+        self._clear_columns(self.n_samples)
+        del self.columns
 
     cpdef double compute(self,
                          np.ndarray[double, ndim=2, mode='c'] X,
@@ -191,7 +190,10 @@ cdef class KernelCache(Kernel):
             # FIXME: make sure that the decrease is sufficient.
             self._clear_columns(self.columns.size() / 2)
 
+        #cdef map[int, vector[double]].iterator it
+
         if n_computed == 0:
+
             self.columns[0][i] = vector[double](requested_size, 0)
             self.size += extra_size
         else:
@@ -320,7 +322,6 @@ cdef class KernelCache(Kernel):
 
     cpdef add_sv(self, int i):
         cdef list[int].iterator it
-
         if self.support_vector[i] == -1:
             self.support_set.push_back(i)
             it = self.support_set.end()
@@ -329,6 +330,9 @@ cdef class KernelCache(Kernel):
             self.support_vector[i] = self.support_set.size() - 1
 
     cpdef remove_sv(self, int i):
+        self._remove_sv(i)
+
+    cdef list[int].iterator _remove_sv(self, int i):
         cdef list[int].iterator it
         cdef map[int, vector[double]].iterator it2
         cdef double* cache
@@ -336,7 +340,7 @@ cdef class KernelCache(Kernel):
 
         if self.support_vector[i] >= 0:
             it = self.support_it[i]
-            self.support_set.erase(it)
+            it = self.support_set.erase(it)
             k = self.support_vector[i]
             self.support_vector[i] = -1
 
@@ -351,6 +355,10 @@ cdef class KernelCache(Kernel):
                     self.n_computed[j] -= 1
 
                 inc(it2)
+
+            return it
+
+        return self.support_set.end()
 
     cpdef int n_sv(self):
         return self.support_set.size()

@@ -82,14 +82,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
     cdef double step
     cdef int r
 
-    cdef list[int] support_set
     cdef list[int].iterator it
-
-    cdef vector[list[int].iterator] support_it
-    support_it.resize(n_samples)
-
-    cdef np.ndarray[int, ndim=1, mode='c'] support_vectors
-    support_vectors = np.zeros(n_samples, dtype=np.int32)
 
     cdef int select_method = get_select_method(selection)
     cdef int check_n_sv = termination == "n_sv"
@@ -97,13 +90,10 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
     cdef int stop = 0
 
     # FIXME: would be better to store the support indices in the class
-    for i in xrange(n_samples):
-        if alpha[i] != 0:
-            support_set.push_back(i)
-            support_vectors[i] = 1
-            it = support_set.end()
-            dec(it)
-            support_it[i] = it
+    if not linear_kernel:
+        for i in xrange(n_samples):
+            if alpha[i] != 0:
+                kcache.add_sv(i)
 
     for t in xrange(max_iter):
         rs.shuffle(A[:active_size])
@@ -115,8 +105,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
         start = 0
         while s < active_size:
             i = select_sv(A, start, search_size, active_size, select_method,
-                          alpha, 0, X, y, kcache,
-                          support_set, support_vectors)
+                          alpha, 0, X, y, kcache, col)
 
             y_i = y[i]
             alpha_i = alpha[i]
@@ -133,8 +122,8 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
                 G = -1
                 # FIXME: retrieve sv only and iterate over non-zero alpha[j]
                 kcache.compute_column(X, X, i, col)
-                it = support_set.begin()
-                while it != support_set.end():
+                it = kcache.support_set.begin()
+                while it != kcache.support_set.end():
                     j = deref(it)
                     G += col[j] * y[i] * y[j] * alpha[j]
                     inc(it)
@@ -160,7 +149,6 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
                     continue
             else:
                 PG = G
-
             M = max(M, PG)
             m = min(m, PG)
 
@@ -171,25 +159,18 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
                 alpha[i] = min(max(alpha_i - G / Q_bar_diag[i], 0), U)
 
                 # Update support set.
-                if alpha[i] != 0:
-                    if support_vectors[i] == 0:
-                        support_set.push_back(i)
-                        it = support_set.end()
-                        dec(it)
-                        support_it[i] = it
-                        support_vectors[i] = 1
-                elif alpha[i] == 0:
-                    if support_vectors[i] == 1:
-                        it = support_it[i]
-                        support_set.erase(it)
-                        support_vectors[i] = 0
+                if not linear_kernel:
+                    if alpha[i] != 0:
+                        kcache.add_sv(i)
+                    elif alpha[i] == 0:
+                        kcache.remove_sv(i)
 
                 if linear_kernel:
                     step = (alpha[i] - alpha_old) * y_i
                     w += step * X[i]
 
             # Exit if necessary.
-            if check_n_sv and support_set.size() >= sv_upper_bound:
+            if check_n_sv and kcache.n_sv() >= sv_upper_bound:
                 stop = 1
                 break
 

@@ -105,6 +105,7 @@ cdef class KernelCache(Kernel):
 
     cpdef remove_column(self, int i)
     cpdef add_sv(self, int i)
+    cdef list[int].iterator _remove_sv(self, int i)
     cpdef remove_sv(self, int i)
     cpdef int n_sv(self)
     cpdef get_size(self)

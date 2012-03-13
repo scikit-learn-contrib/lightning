@@ -82,29 +82,18 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
     col = np.zeros(n_samples, dtype=np.float64)
     col_data = <double*>col.data
 
-    cdef list[int] support_set
     cdef list[int].iterator it
-
-    cdef vector[list[int].iterator] support_it
-
-    cdef np.ndarray[int, ndim=1, mode='c'] support_vectors
 
     cdef int check_n_sv = termination in ("n_sv", "n_nz_coef")
     cdef int check_convergence = termination == "convergence"
     cdef int stop = 0
     cdef int select_method = get_select_method(selection)
 
-    support_it.resize(n_features)
-    support_vectors = np.zeros(n_features, dtype=np.int32)
-
     # FIXME: would be better to store the support indices in the class.
-    for j in xrange(n_features):
-        if w[j] != 0:
-            support_set.push_back(j)
-            support_vectors[j] = 1
-            it = support_set.end()
-            dec(it)
-            support_it[j] = it
+    if not linear_kernel:
+        for j in xrange(n_features):
+            if w[j] != 0:
+                kcache.add_sv(j)
 
     for t in xrange(max_iter):
         Lpmax_new = 0
@@ -116,8 +105,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
         while s < active_size:
             if not linear_kernel:
                 j = select_sv(index, start, search_size, active_size,
-                              select_method, w, 0, Xc, y, kcache,
-                              support_set, support_vectors)
+                              select_method, w, 0, Xc, y, kcache, col)
             else:
                 j = index[s]
 
@@ -245,21 +233,14 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
             w[j] += z
 
             # Update support set.
-            if w[j] != 0:
-                if support_vectors[j] == 0:
-                    support_set.push_back(j)
-                    it = support_set.end()
-                    dec(it)
-                    support_it[j] = it
-                    support_vectors[j] = 1
-            elif w[j] == 0:
-                if support_vectors[j] == 1:
-                    it = support_it[j]
-                    support_set.erase(it)
-                    support_vectors[j] = 0
+            if not linear_kernel:
+                if w[j] != 0:
+                    kcache.add_sv(j)
+                elif w[j] == 0:
+                    kcache.remove_sv(j)
 
             # Exit if necessary.
-            if check_n_sv and support_set.size() >= sv_upper_bound:
+            if check_n_sv and kcache.n_sv() >= sv_upper_bound:
                 stop = 1
                 break
 

@@ -40,7 +40,7 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
         n_vectors = Y.shape[1]
 
         kernel = get_kernel("linear")
-        kcache = KernelCache(kernel, 0, 0)
+        kcache = KernelCache(kernel, n_samples, 0)
 
         if not self.warm_start or self.coef_ is None:
             self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
@@ -136,6 +136,8 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
                                      self.termination,
                                      self.C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)
+
+        del kcache
 
         sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
 

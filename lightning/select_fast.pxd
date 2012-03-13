@@ -16,8 +16,7 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
                    np.ndarray[double, ndim=2, mode='c'] X,
                    np.ndarray[double, ndim=1] y,
                    KernelCache kcache,
-                   list[int]& support_set,
-                   np.ndarray[int, ndim=1, mode='c'] support_vectors)
+                   np.ndarray[double, ndim=1, mode='c'] col)
 
 cdef int update_start(int start,
                       int select_method,

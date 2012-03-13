@@ -38,8 +38,7 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
                    np.ndarray[double, ndim=2, mode='c'] X,
                    np.ndarray[double, ndim=1] y,
                    KernelCache kcache,
-                   list[int]& support_set,
-                   np.ndarray[int, ndim=1, mode='c'] support_vectors):
+                   np.ndarray[double, ndim=1, mode='c'] col):
 
     if select_method <= 1: # permute or random
         return A[start]
@@ -51,12 +50,14 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
     cdef double min_score = DBL_MAX
     cdef int selected = 0
     cdef list[int].iterator it
+    cdef list[int]* support_set = kcache.support_set
+    cdef int* support_vectors = kcache.support_vector
 
     while n_visited < search_size and i < max_size:
         s = A[i]
 
         # Only non support vectors are candidates.
-        if support_vectors[s]:
+        if support_vectors[s] >= 0:
             i += 1
             continue
 
@@ -65,10 +66,10 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
 
         # Compute prediction.
         it = support_set.begin()
+        kcache.compute_column_sv(X, X, s, col)
         while it != support_set.end():
             j = deref(it)
-            # Iterate over sth column (support vectors only)
-            score += alpha[j] * kcache.compute(X, j, X, s)
+            score += alpha[j] * col[j]
             inc(it)
 
         score += b
