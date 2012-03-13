@@ -6,6 +6,8 @@
 # Author: Mathieu Blondel
 # License: BSD
 
+import sys
+
 from cython.operator cimport dereference as deref
 from cython.operator cimport preincrement as inc
 from cython.operator cimport predecrement as dec
@@ -96,6 +98,9 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
                 kcache.add_sv(i)
 
     for t in xrange(max_iter):
+        if verbose >= 1:
+            print "\nIteration", t
+
         rs.shuffle(A[:active_size])
 
         M = -DBL_MAX
@@ -177,6 +182,10 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
             start = update_start(start, select_method, search_size,
                                  active_size, A, rs)
 
+            if verbose >= 1 and s % 100 == 0:
+                sys.stdout.write(".")
+                sys.stdout.flush()
+
             s += 1
 
         # end while
@@ -203,6 +212,9 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
         if m >= 0: m_bar = -DBL_MAX
 
     # end for
+
+    if verbose >= 1:
+        print
 
     if linear_kernel:
         return w
