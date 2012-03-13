@@ -128,7 +128,9 @@ def test_kernel_cache_column_sv():
     kcache.add_sv(6)
     kcache.add_sv(12)
     kcache.add_sv(3)
-    size += 3 * 8
+    # That's a limitation of the current implementation:
+    # it allocates a full column.
+    size += 20 * 8
 
     # Compute values.
     kcache.compute_column_sv(X, X, 7, out)
@@ -146,7 +148,6 @@ def test_kernel_cache_column_sv():
 
     # Add one more SV.
     kcache.add_sv(17)
-    size += 8
 
     # Compute values.
     kcache.compute_column_sv(X, X, 7, out)
@@ -166,7 +167,6 @@ def test_kernel_cache_column_sv():
 
     # Compute the entire same column.
     kcache.compute_column(X, X, 7, out)
-    size = 20 * 8
     assert_array_almost_equal(K[:, 7], out)
     assert_equal(size, kcache.get_size())
 
@@ -198,8 +198,12 @@ def test_kernel_cache_column_sv():
     for i in (12, 6, 3, 17):
         kcache.remove_sv(i)
 
+    assert_equal(kcache.n_sv(), 0)
+
     # Add back some new SV.
     kcache.add_sv(15)
+    assert_equal(kcache.n_sv(), 1)
+
     out *= 0
     kcache.compute_column_sv(X, X, 8, out)
     assert_almost_equal(0, out[6])

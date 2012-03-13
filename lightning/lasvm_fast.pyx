@@ -89,8 +89,8 @@ cdef void _update(np.ndarray[double, ndim=2, mode='c'] X,
 
     cdef int s
     cdef list[int].iterator it = support_set.begin()
-    kcache.compute_column(X, X, i, col)
-    kcache.compute_column(X, X, j, col2)
+    kcache.compute_column_sv(X, X, i, col)
+    kcache.compute_column_sv(X, X, j, col2)
     while it != support_set.end():
         s = deref(it)
         g[s] -= lambda_ * (col[s] - col2[s])
@@ -120,7 +120,7 @@ cdef void _process(int k,
     cdef double pred = 0
 
     cdef list[int].iterator it = support_set.begin()
-    kcache.compute_column(X, X, k, col)
+    kcache.compute_column_sv(X, X, k, col)
     while it != support_set.end():
         s = deref(it)
         pred += alpha[s] * col[s]
@@ -185,23 +185,21 @@ cdef void _reprocess(np.ndarray[double, ndim=2, mode='c'] X,
     cdef int s, k = 0
     cdef int n_removed = 0
 
-    to_remove = []
-
     cdef list[int].iterator it = support_set.begin()
+    cdef list[int] to_remove
     while it != support_set.end():
         s = deref(it)
 
         if alpha[s] == 0:
             if (y[s] == -1 and g[s] >= g[i]) or (y[s] == 1 and g[s] <= g[j]):
-                #to_remove.append(s)
-                it = kcache._remove_sv(s)
-                n_removed += 1
-                continue
+                to_remove.push_back(s)
 
         inc(it)
 
-    #for s in to_remove:
-        #kcache.remove_sv(s)
+    it = to_remove.begin()
+    while it != to_remove.begin():
+        kcache.remove_sv(deref(it))
+        inc(it)
 
     b[0] = (g[i] + g[j]) / 2
     delta[0] = g[i] - g[j]
