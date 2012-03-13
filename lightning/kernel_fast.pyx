@@ -136,13 +136,14 @@ cdef class PrecomputedKernel(Kernel):
 
 cdef class KernelCache(Kernel):
 
-    def __init__(self, Kernel kernel, int n_samples, int capacity):
+    def __init__(self, Kernel kernel, int n_samples, int capacity, int verbose):
         self.kernel = kernel
         self.n_samples = n_samples
         self.capacity = capacity
+        self.verbose = verbose
         self.size = 0
 
-    def __cinit__(self, Kernel kernel, int n_samples, int capacity):
+    def __cinit__(self, Kernel kernel, int n_samples, int capacity, int verbose):
         cdef int i
 
         self.support_set = new list[int]()
@@ -187,6 +188,8 @@ cdef class KernelCache(Kernel):
         cdef int col_size = self.n_samples * sizeof(double)
 
         if self.size + col_size > self.capacity:
+            if self.verbose >= 1:
+                print "Half cache"
             self._clear_columns(self.columns.size() / 2)
 
         self.columns[0][i] = <double*> stdlib.malloc(sizeof(double) *
@@ -298,6 +301,9 @@ cdef class KernelCache(Kernel):
         self.n_computed[j] = ssize
 
     cpdef remove_column(self, int i):
+        if self.verbose >= 2:
+            print "Remove column SV", i
+
         cdef map[int, double*].iterator it
         cdef int col_size = self.n_samples * sizeof(double)
 
@@ -310,6 +316,9 @@ cdef class KernelCache(Kernel):
             self.size -= col_size
 
     cpdef add_sv(self, int i):
+        if self.verbose >= 2:
+            print "Add SV", i
+
         cdef list[int].iterator it
         if self.support_vector[i] == -1:
             self.support_set.push_back(i)
@@ -319,6 +328,9 @@ cdef class KernelCache(Kernel):
             self.support_vector[i] = self.support_set.size() - 1
 
     cpdef remove_sv(self, int i):
+        if self.verbose >= 2:
+            print "Remove SV", i
+
         cdef list[int].iterator it
         cdef int j
 
