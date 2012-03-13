@@ -6,6 +6,8 @@
 # Author: Mathieu Blondel
 # License: BSD
 
+import sys
+
 from cython.operator cimport dereference as deref, preincrement as inc
 from libcpp.list cimport list
 
@@ -324,6 +326,9 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
 
     for it in xrange(max_iter):
 
+        if verbose >= 1:
+            print "\nIteration", it
+
         start = 0
         rs.shuffle(A)
 
@@ -346,6 +351,10 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
             start = update_start(start, select_method, search_size,
                                  n_samples, A, rs)
 
+            if verbose >= 1 and i % 100 == 0:
+                sys.stdout.write(".")
+                sys.stdout.flush()
+
         # end for
 
         if stop:
@@ -354,6 +363,9 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
     if finish_step:
         while delta[0] > tau:
             _reprocess(X, y, kcache, alpha, g, b, delta, C, tau, col, col2)
+
+    if verbose >= 1:
+        print
 
     # Return intercept.
     return b[0]
