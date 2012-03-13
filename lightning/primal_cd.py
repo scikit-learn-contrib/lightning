@@ -149,6 +149,9 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
                 # Cannot trim the non-zero weights if warm start is used...
                 self.support_vectors_ = X
 
+        if self.verbose >= 1:
+            print "Number of support vectors:", np.sum(sv)
+
         return self
 
     def decision_function(self, X):

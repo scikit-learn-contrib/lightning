@@ -6,6 +6,8 @@
 # Author: Mathieu Blondel
 # License: BSD
 
+import sys
+
 from cython.operator cimport dereference as deref
 from cython.operator cimport preincrement as inc
 from cython.operator cimport predecrement as dec
@@ -96,6 +98,9 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
                 kcache.add_sv(j)
 
     for t in xrange(max_iter):
+        if verbose >= 1:
+            print "\nIteration", t
+
         Lpmax_new = 0
         rs.shuffle(index[:active_size])
 
@@ -247,6 +252,9 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
             start = update_start(start, select_method, search_size,
                                  active_size, index, rs)
 
+            if verbose >= 1 and s % 100 == 0:
+                sys.stdout.write(".")
+                sys.stdout.flush()
 
             s += 1
         # while active_size
@@ -270,6 +278,9 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
         Lpmax_old = Lpmax_new
 
     # end for while max_iter
+
+    if verbose >= 1:
+        print
 
     return w
 
@@ -317,6 +328,9 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
     cdef int check_convergence = termination == "convergence"
 
     for t in xrange(max_iter):
+        if verbose >= 1:
+            print "\Iteration", t
+
         Dpmax = 0
 
         rs.shuffle(index)
@@ -390,6 +404,10 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
 
             w[j] += z
 
+            if verbose >= 1 and s % 100 == 0:
+                sys.stdout.write(".")
+                sys.stdout.flush()
+
         # end for (iterate over features)
 
         if check_convergence and Dpmax < tol:
@@ -398,6 +416,9 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
             break
 
     # for iterations
+
+    if verbose >= 1:
+        print
 
     return w
 
