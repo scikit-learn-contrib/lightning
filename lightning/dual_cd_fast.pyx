@@ -197,7 +197,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
         if check_convergence and M - m <= tol:
             if active_size == n_samples:
                 if verbose >= 1:
-                    print "Stopped at iteration", t
+                    print "\nConverged at iteration", t
                 break
             else:
                 active_size = n_samples
