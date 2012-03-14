@@ -32,14 +32,6 @@ from lightning.datasets import get_data_home
 memory = Memory(cachedir=get_data_home(), verbose=0, compress=6)
 
 
-def l1_norm(coef):
-    return np.sum(np.abs(coef))
-
-
-def l0_norm(coef):
-    return np.sum(coef != 0)
-
-
 @memory.cache
 def fit_nusvc(X_train, y_train, nu, kernel, gamma=0.1, degree=4, coef0=1):
     print "Training, nu = ", nu
