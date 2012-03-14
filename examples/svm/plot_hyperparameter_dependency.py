@@ -114,8 +114,8 @@ pl.plot(Cs, [np.mean(1.0 * clf.n_support_vectors() / n_samples) for clf in clfs_
 pl.plot(Cs, [np.mean(1.0 * clf.n_support_vectors() / n_samples) for clf in clfs_d],
         style[1], label="L2R Dual CD", **opt)
 pl.xlabel('C', size=15)
-pl.ylabel('Fraction of support vectors', size=15)
-pl.legend(loc='upper right', prop=prop)
+pl.ylabel('Fraction of anchor / support vectors', size=15)
+pl.legend(loc='lower right', prop=prop)
 if not opts.notitle:
     pl.title('Relation between C and sparsity')
 
@@ -125,7 +125,6 @@ pl.plot(Cs, train_times_p, style[0], label="L1R Primal CD", **opt)
 pl.plot(Cs, train_times_d, style[1], label="L2R Dual CD", **opt)
 pl.xlabel('C', size=15)
 pl.ylabel('Training time in seconds', size=15)
-pl.legend(loc='upper left', prop=prop)
 if not opts.notitle:
     pl.title('Relation between C and training time')
 
@@ -135,7 +134,6 @@ pl.plot(Cs, accuracies_p, style[0], label="L1R Primal CD", **opt)
 pl.plot(Cs, accuracies_d, style[1], label="L2R Dual CD", **opt)
 pl.xlabel('C', size=15)
 pl.ylabel('Accuracy', size=15)
-pl.legend(loc='lower right', prop=prop)
 if not opts.notitle:
     pl.title('Relation between C and accuracy')
 
