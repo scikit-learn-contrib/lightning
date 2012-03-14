@@ -60,6 +60,12 @@ def predict(clf, X_test, y_test):
 op = OptionParser()
 op.add_option("--notitle", action="store_true", default=False, dest="notitle")
 op.add_option("--bw", action="store_true", default=False, dest="bw")
+op.add_option("--kernel", action="store", default="rbf", dest="kernel",
+              type="str")
+op.add_option("--gamma", action="store", default=0.1, dest="gamma",
+              type="float")
+op.add_option("--degree", action="store", default=4, dest="degree",
+              type="int")
 
 (opts, args) = op.parse_args()
 
@@ -67,11 +73,6 @@ try:
     dataset = args[0]
 except:
     dataset = "usps0"
-
-try:
-    kernel = args[1]
-except:
-    kernel = "rbf"
 
 try:
     X_train, y_train, X_test, y_test = load_dataset(dataset)
@@ -83,12 +84,14 @@ except KeyError:
 
 Cs = np.linspace(0.1, 2, 10)
 
-res_p = [fit_primal_svc(X_train, y_train, C=C, kernel=kernel) for C in Cs]
+res_p = [fit_primal_svc(X_train, y_train, C=C, kernel=opts.kernel,
+                        gamma=opts.gamma, degree=opts.degree) for C in Cs]
 clfs_p, train_times_p = zip(*res_p)
 res_p = [predict(clf, X_test, y_test) for clf in clfs_p]
 accuracies_p, test_times_p = zip(*res_p)
 
-res_d = [fit_dual_svc(X_train, y_train, C=C, kernel=kernel) for C in Cs]
+res_d = [fit_dual_svc(X_train, y_train, C=C, kernel=opts.kernel,
+                      gamma=opts.gamma, degree=opts.degree) for C in Cs]
 clfs_d, train_times_d = zip(*res_d)
 res_d = [predict(clf, X_test, y_test) for clf in clfs_d]
 accuracies_d, test_times_d = zip(*res_d)
