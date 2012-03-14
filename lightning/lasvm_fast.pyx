@@ -20,49 +20,47 @@ from lightning.select_fast cimport get_select_method, select_sv, update_start
 cdef extern from "float.h":
    double DBL_MAX
 
+cdef struct Intpair:
+    int left
+    int right
 
-cdef int _argmax(np.ndarray[double, ndim=1] y,
-                 np.ndarray[double, ndim=1, mode='c'] g,
-                 list[int]* support_set,
-                 np.ndarray[double, ndim=1, mode='c'] alpha,
-                 double C):
 
-    cdef int s, selected
+cdef Intpair _argmin_argmax(np.ndarray[double, ndim=1] y,
+                            np.ndarray[double, ndim=1, mode='c'] g,
+                            list[int]* support_set,
+                            np.ndarray[double, ndim=1, mode='c'] alpha,
+                            double C):
+
+    cdef int s, sel_min, sel_max
+    cdef double min_ = DBL_MAX
     cdef double max_ = -DBL_MAX
+    cdef double As
     cdef double Bs
+    cdef double Cy
 
     cdef list[int].iterator it = support_set.begin()
     while it != support_set.end():
         s = deref(it)
-        Bs = max(0, C * y[s])
+        Cy = C * y[s]
+
+        As = min(0, Cy)
+        Bs = max(0, Cy)
+
         if g[s] > max_ and alpha[s] < Bs:
             max_ = g[s]
-            selected = s
-        inc(it)
+            sel_max = s
 
-    return selected
-
-
-cdef int _argmin(np.ndarray[double, ndim=1] y,
-                 np.ndarray[double, ndim=1, mode='c'] g,
-                 list[int]* support_set,
-                 np.ndarray[double, ndim=1, mode='c'] alpha,
-                 double C):
-
-    cdef int s, selected
-    cdef double min_ = DBL_MAX
-    cdef double As
-
-    cdef list[int].iterator it = support_set.begin()
-    while it != support_set.end():
-        s = deref(it)
-        As = min(0, C * y[s])
         if g[s] < min_ and alpha[s] > As:
             min_ = g[s]
-            selected = s
+            sel_min = s
+
         inc(it)
 
-    return selected
+    cdef Intpair ret
+    ret.left = sel_min
+    ret.right = sel_max
+
+    return ret
 
 
 cdef void _update(np.ndarray[double, ndim=2, mode='c'] X,
@@ -134,10 +132,10 @@ cdef void _process(int k,
 
     if y[k] == 1:
         i = k
-        j = _argmin(y, g, support_set, alpha, C)
+        j = _argmin_argmax(y, g, support_set, alpha, C).left
     else:
         j = k
-        i = _argmax(y, g, support_set, alpha, C)
+        i = _argmin_argmax(y, g, support_set, alpha, C).right
 
     cdef double Aj = min(0, C * y[j])
     cdef double Bi = max(0, C * y[i])
@@ -167,8 +165,10 @@ cdef void _reprocess(np.ndarray[double, ndim=2, mode='c'] X,
     cdef int* support_vectors = kcache.support_vector
     cdef list[int]* support_set = kcache.support_set
 
-    cdef i = _argmax(y, g, support_set, alpha, C)
-    cdef j = _argmin(y, g, support_set, alpha, C)
+    cdef Intpair p
+    p = _argmin_argmax(y, g, support_set, alpha, C)
+    cdef int i = p.right
+    cdef int j = p.left
 
     cdef double Aj = min(0, C * y[j])
     cdef double Bi = max(0, C * y[i])
@@ -181,8 +181,9 @@ cdef void _reprocess(np.ndarray[double, ndim=2, mode='c'] X,
 
     _update(X, y, kcache, g, alpha, i, j, Aj, Bi, col, col2)
 
-    i = _argmax(y, g, support_set, alpha, C)
-    j = _argmin(y, g, support_set, alpha, C)
+    p = _argmin_argmax(y, g, support_set, alpha, C)
+    i = p.right
+    j = p.left
 
     cdef int s, k = 0
     cdef int n_removed = 0
