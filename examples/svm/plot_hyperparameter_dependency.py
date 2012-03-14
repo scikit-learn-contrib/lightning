@@ -38,7 +38,7 @@ def fit_primal_svc(X_train, y_train, C, kernel, gamma=0.1, degree=4, coef0=1):
     print "Training primal SVC, C = ", C
     start = time.time()
     clf = PrimalSVC(C=C, kernel=kernel, degree=degree, coef0=coef0,
-                    max_iter=1000, verbose=1)
+                    max_iter=1000, tol=1e-4, verbose=1)
     clf.fit(X_train, y_train)
     return clf, time.time() - start
 
@@ -47,7 +47,7 @@ def fit_dual_svc(X_train, y_train, C, kernel, gamma=0.1, degree=4, coef0=1):
     print "Training dual SVC, C = ", C
     start = time.time()
     clf = DualSVC(C=C, kernel=kernel, degree=degree, coef0=coef0, max_iter=1000,
-                 verbose=1)
+                  tol=1e-4, verbose=1)
     clf.fit(X_train, y_train)
     return clf, time.time() - start
 
@@ -82,7 +82,7 @@ try:
 except KeyError:
     raise ValueError("Wrong dataset name!")
 
-Cs = np.linspace(0.1, 2, 10)
+Cs = np.linspace(0.1, 1, 10)
 
 res_p = [fit_primal_svc(X_train, y_train, C=C, kernel=opts.kernel,
                         gamma=opts.gamma, degree=opts.degree) for C in Cs]
@@ -124,7 +124,7 @@ set_axes_size(pl)
 pl.plot(Cs, train_times_p, style[0], label="L1R Primal CD", **opt)
 pl.plot(Cs, train_times_d, style[1], label="L2R Dual CD", **opt)
 pl.xlabel('C', size=15)
-pl.ylabel('Training time in second', size=15)
+pl.ylabel('Training time in seconds', size=15)
 pl.legend(loc='upper left', prop=prop)
 if not opts.notitle:
     pl.title('Relation between C and training time')
