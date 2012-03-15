@@ -10,6 +10,7 @@ from sklearn.metrics.pairwise import pairwise_kernels
 
 from dual_cd_fast import _dual_cd
 from .kernel_fast import get_kernel, KernelCache
+from .predict_fast import predict_alpha, decision_function_alpha
 
 class DualLinearSVC(BaseEstimator, ClassifierMixin):
 
@@ -133,12 +134,14 @@ class DualSVC(BaseEstimator, ClassifierMixin):
 
         if self.kernel != "precomputed":
             if not self.warm_start:
-                self.dual_coef_ = self.dual_coef_[:, sv]
+                self.dual_coef_ = np.ascontiguousarray(self.dual_coef_[:, sv])
                 mask = safe_mask(X, sv)
                 self.support_vectors_ = X[mask]
             else:
                 # Cannot trim the non-zero weights if warm start is used...
                 self.support_vectors_ = X
+
+        self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
 
         if self.verbose >= 1:
             print "Number of support vectors:", np.sum(sv)
@@ -149,11 +152,14 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         return np.sum(self.dual_coef_ != 0)
 
     def decision_function(self, X):
-        K = pairwise_kernels(X, self.support_vectors_, metric=self.kernel,
-                             filter_params=True, n_jobs=self.n_jobs,
-                             **self._kernel_params())
-        return np.dot(K, self.dual_coef_.T)
+        out = np.zeros((X.shape[0], self.dual_coef_.shape[0]), dtype=np.float64)
+        sv = self.support_vectors_ if self.kernel != "precomputed" else X
+        decision_function_alpha(X, sv, self.dual_coef_, self._get_kernel(), out)
+        return out
 
     def predict(self, X):
-        pred = self.decision_function(X)
-        return self.label_binarizer_.inverse_transform(pred, threshold=0)
+        out = np.zeros(X.shape[0], dtype=np.float64)
+        sv = self.support_vectors_ if self.kernel != "precomputed" else X
+        predict_alpha(X, sv, self.dual_coef_, self.classes_,
+                      self._get_kernel(), out)
+        return out

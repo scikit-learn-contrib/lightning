@@ -45,6 +45,14 @@ def test_fit_rbf_binary():
                 assert_equal(np.mean(y_pred == bin_target), 1.0)
 
 
+def test_fit_rbf_multi():
+    clf = DualSVC(kernel="rbf", gamma=0.1, random_state=0)
+    clf.fit(mult_dense, mult_target)
+    y_pred = clf.predict(mult_dense)
+    acc = np.mean(y_pred == mult_target)
+    assert_almost_equal(acc, 1.0)
+
+
 def test_fit_rbf_binary_early_stopping():
     clf = DualSVC(loss="l1", kernel="rbf", gamma=0.5, random_state=0,
                   shrinking=True, selection="loss",

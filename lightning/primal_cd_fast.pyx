@@ -267,7 +267,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
 
         if check_convergence and Lpmax_new <= tol * Lpmax_init:
             if active_size == n_features:
-                if verbose:
+                if verbose >= 1:
                     print "\nConverged at iteration", t
                 break
             else:

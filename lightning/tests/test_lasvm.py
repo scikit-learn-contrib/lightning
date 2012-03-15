@@ -40,6 +40,14 @@ def test_fit_rbf_binary():
         assert_almost_equal(acc, 1.0)
 
 
+def test_fit_rbf_multi():
+    clf = LaSVM(kernel="rbf", gamma=0.1, random_state=0)
+    clf.fit(mult_dense, mult_target)
+    y_pred = clf.predict(mult_dense)
+    acc = np.mean(y_pred == mult_target)
+    assert_almost_equal(acc, 1.0)
+
+
 def test_warm_start():
     for selection in ("permute", "active", "loss"):
         clf = LaSVM(random_state=0, max_iter=2, kernel="rbf", warm_start=True,

@@ -20,6 +20,11 @@ def configuration(parent_package='', top_path=None):
          include_dirs=[numpy.get_include()]
          )
 
+    config.add_extension('predict_fast',
+         sources=['predict_fast.cpp'],
+         include_dirs=[numpy.get_include()]
+         )
+
     config.add_extension('primal_cd_fast',
          sources=['primal_cd_fast.cpp'],
          include_dirs=[numpy.get_include()]

@@ -66,6 +66,14 @@ def test_fit_rbf_binary_l1r_selection():
         assert_true(n_nz <= 70)
 
 
+def test_fit_rbf_multi():
+    clf = PrimalSVC(penalty="l1", kernel="rbf", gamma=0.1, random_state=0)
+    clf.fit(mult_dense, mult_target)
+    y_pred = clf.predict(mult_dense)
+    acc = np.mean(y_pred == mult_target)
+    assert_almost_equal(acc, 1.0)
+
+
 def test_warm_start_l1r():
     clf = PrimalLinearSVC(warm_start=True, random_state=0, penalty="l1")
 
@@ -107,7 +115,7 @@ def test_early_stopping_l1r_rbf():
 
 
 def test_fit_linear_binary_l2r():
-    clf = PrimalLinearSVC(C=1.0, random_state=0, penalty="l2", verbose=1)
+    clf = PrimalLinearSVC(C=1.0, random_state=0, penalty="l2")
     clf.fit(bin_dense, bin_target)
     acc = clf.score(bin_dense, bin_target)
     assert_almost_equal(acc, 1.0)
