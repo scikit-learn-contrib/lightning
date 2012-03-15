@@ -182,3 +182,29 @@ def test_debiasing():
 
     assert_array_almost_equal(pred, pred2)
 
+def test_debiasing_warm_start():
+    clf = PrimalSVC(kernel="rbf", gamma=0.1, penalty="l1", max_iter=10)
+    clf.C = 0.5
+    clf.fit(bin_dense, bin_target)
+    assert_equal(clf.n_support_vectors(), 160)
+    assert_almost_equal(clf.score(bin_dense, bin_target), 0.845)
+
+    clf = PrimalSVC(kernel="rbf", gamma=0.1, penalty="l1", max_iter=10)
+    clf.C = 0.500001
+    clf.fit(bin_dense, bin_target)
+    assert_equal(clf.n_support_vectors(), 191)
+    assert_almost_equal(clf.score(bin_dense, bin_target), 0.97)
+
+    clf = PrimalSVC(kernel="rbf", gamma=0.1, penalty="l1", max_iter=10,
+                    warm_start=True)
+    clf.C = 0.5
+    clf.fit(bin_dense, bin_target)
+    assert_equal(clf.n_support_vectors(), 160)
+    assert_almost_equal(clf.score(bin_dense, bin_target), 0.845)
+
+    clf = PrimalSVC(kernel="rbf", gamma=0.1, penalty="l1", max_iter=10,
+                    warm_start=True)
+    clf.C = 0.500001
+    clf.fit(bin_dense, bin_target)
+    assert_equal(clf.n_support_vectors(), 191)
+    assert_almost_equal(clf.score(bin_dense, bin_target), 0.97)

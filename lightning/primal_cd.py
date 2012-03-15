@@ -159,16 +159,24 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
                                      C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)
 
+        if self.penalty == "l1l2" and self.warm_start:
+            # Need to restore the original size of coef_.
+            coef = np.zeros((n_vectors, n_samples), dtype=np.float64)
+            coef[:, sv] = self.coef_
+            self.coef_ = coef
+            A = X
+
         sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
 
+        # We can't know the support vectors when using precomputed kernels.
         if self.kernel != "precomputed":
-            if not self.warm_start:
-                self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
-                mask = safe_mask(X, sv)
-                self.support_vectors_ = A[mask]
-            else:
-                # Cannot trim the non-zero weights if warm start is used...
-                self.support_vectors_ = A
+            self.support_vectors_ = A
+
+        # Cannot trim the non-zero weights if warm start is used...
+        if not self.warm_start and self.penalty == "l1":
+            self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
+            mask = safe_mask(X, sv)
+            self.support_vectors_ = A[mask]
 
         self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
 
