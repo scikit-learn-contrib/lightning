@@ -57,7 +57,7 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
                                      verbose=self.verbose)
             else:
                 _primal_cd_l2svm_l2r(self.coef_[i], self.errors_[i],
-                                     X, Y[:, i], kcache, True,
+                                     X, None, Y[:, i], kcache, True,
                                      self.termination,
                                      self.C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)
@@ -76,6 +76,7 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, C=1.0, penalty="l1", max_iter=10, tol=1e-3,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
+                 Cd=1.0, warm_debiasing=False,
                  selection="permute", search_size=60,
                  termination="convergence", sv_upper_bound=1000,
                  cache_mb=500, warm_start=False, random_state=None,
@@ -88,6 +89,8 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
         self.gamma = gamma
         self.coef0 = coef0
         self.degree = degree
+        self.Cd = Cd
+        self.warm_debiasing = warm_debiasing
         self.selection = selection
         self.search_size = search_size
         self.termination = termination
@@ -124,19 +127,36 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
         kcache = KernelCache(kernel, n_samples, self.cache_mb * 1024 * 1024,
                              self.verbose)
 
-        for i in xrange(n_vectors):
-            if self.penalty == "l1":
-                _primal_cd_l2svm_l1r(self.coef_[i], self.errors_[i],
-                                     X, Y[:, i], kcache, False,
-                                     self.selection, self.search_size,
-                                     self.termination, self.sv_upper_bound,
-                                     self.C, self.max_iter, rs, self.tol,
-                                     verbose=self.verbose)
+        if self.penalty in ("l1", "l1l2"):
+            for i in xrange(n_vectors):
+                    _primal_cd_l2svm_l1r(self.coef_[i], self.errors_[i],
+                                         X, Y[:, i], kcache, False,
+                                         self.selection, self.search_size,
+                                         self.termination, self.sv_upper_bound,
+                                         self.C, self.max_iter, rs, self.tol,
+                                         verbose=self.verbose)
+
+        A = X
+        C = self.C
+
+        if self.penalty == "l1l2":
+            sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
+            A = X[sv]
+            kcache = KernelCache(kernel, n_samples,
+                                 self.cache_mb * 1024 * 1024, self.verbose)
+            if self.warm_debiasing:
+                self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
             else:
+                self.coef_ = np.zeros((n_vectors, A.shape[0]), dtype=np.float64)
+                self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
+            C = self.Cd
+
+        if self.penalty in ("l2", "l1l2"):
+            for i in xrange(n_vectors):
                 _primal_cd_l2svm_l2r(self.coef_[i], self.errors_[i],
-                                     X, Y[:, i], kcache, False,
+                                     X, A, Y[:, i], kcache, False,
                                      self.termination,
-                                     self.C, self.max_iter, rs, self.tol,
+                                     C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)
 
         sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
@@ -145,10 +165,10 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
             if not self.warm_start:
                 self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
                 mask = safe_mask(X, sv)
-                self.support_vectors_ = X[mask]
+                self.support_vectors_ = A[mask]
             else:
                 # Cannot trim the non-zero weights if warm start is used...
-                self.support_vectors_ = X
+                self.support_vectors_ = A
 
         self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
 

@@ -288,6 +288,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
 def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
                          np.ndarray[double, ndim=1, mode='c'] b,
                          X,
+                         A,
                          np.ndarray[double, ndim=1] y,
                          KernelCache kcache,
                          int linear_kernel,
@@ -303,12 +304,14 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
 
     cdef np.ndarray[double, ndim=2, mode='fortran'] Xf
     cdef np.ndarray[double, ndim=2, mode='c'] Xc
+    cdef np.ndarray[double, ndim=2, mode='c'] Ac
 
     if linear_kernel:
         Xf = X
     else:
         Xc = X
-        n_features = n_samples
+        Ac = A
+        n_features = A.shape[0]
 
     cdef int i, j, s, step, t
     cdef double z, z_old, z_diff,
@@ -344,7 +347,7 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
             if linear_kernel:
                 col_ro = (<double*>Xf.data) + j * n_samples
             else:
-                kcache.compute_column(Xc, Xc, j, col)
+                kcache.compute_column(Xc, Ac, j, col)
                 col_ro = col_data
 
             # Iterate over samples that have the feature
