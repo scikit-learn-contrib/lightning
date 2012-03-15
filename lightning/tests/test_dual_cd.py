@@ -23,11 +23,11 @@ mult_sparse = sp.csr_matrix(mult_dense)
 
 def test_fit_linear_binary():
     for loss in ("l1", "l2"):
-        clf = DualLinearSVC(loss=loss, random_state=0)
+        clf = DualLinearSVC(loss=loss, random_state=0, max_iter=100)
         clf.fit(bin_dense, bin_target)
         y_pred = clf.decision_function(bin_dense)
 
-        clf2 = DualSVC(loss=loss, random_state=0)
+        clf2 = DualSVC(loss=loss, random_state=0, max_iter=100)
         clf2.fit(bin_dense, bin_target)
         y_pred2 = clf2.decision_function(bin_dense)
 
@@ -68,8 +68,10 @@ def test_precomputed_kernel():
 
 
 def test_warm_start():
-    clf = DualSVC(warm_start=True, loss="l1", kernel="linear", random_state=0)
-    clf2 = DualLinearSVC(warm_start=True, loss="l1", random_state=0)
+    clf = DualSVC(warm_start=True, loss="l1", kernel="linear", random_state=0,
+                  max_iter=100)
+    clf2 = DualLinearSVC(warm_start=True, loss="l1", random_state=0,
+                         max_iter=100)
 
     for C in (0.1, 0.2):
         clf.C = C
