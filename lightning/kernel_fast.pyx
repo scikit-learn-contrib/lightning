@@ -192,8 +192,8 @@ cdef class KernelCache(Kernel):
                 print "Half cache"
             self._clear_columns(self.columns.size() / 2)
 
-        self.columns[0][i] = <double*> stdlib.malloc(sizeof(double) *
-                                                     self.n_samples)
+        self.columns[0][i] = <double*> stdlib.calloc(self.n_samples,
+                                                     sizeof(double))
         self.size += col_size
 
     cdef _clear_columns(self, int n):
@@ -231,7 +231,7 @@ cdef class KernelCache(Kernel):
                          int j,
                          np.ndarray[double, ndim=1, mode='c'] out):
 
-        cdef int k = 0, i = 0
+        cdef int i = 0
 
         if self.capacity == 0:
             for i in xrange(self.n_samples):
@@ -251,12 +251,11 @@ cdef class KernelCache(Kernel):
         elif n_computed > 0:
             # Some elements are already computed.
             for i in xrange(self.n_samples):
-                if self.support_vector[i] >= 0 and k < n_computed:
-                    out[i] = cache[i]
-                else:
+                if cache[i] == 0:
                     out[i] = self.kernel.compute(X, i, Y, j)
                     cache[i] = out[i]
-                k += 1
+                else:
+                    out[i] = cache[i]
         else:
             # All elements must be computed.
             for i in xrange(self.n_samples):
@@ -272,7 +271,7 @@ cdef class KernelCache(Kernel):
                             int j,
                             np.ndarray[double, ndim=1, mode='c'] out):
 
-        cdef int s, i = 0
+        cdef int s
         cdef list[int].iterator it
         cdef int n_computed = self.n_computed[j]
         cdef int ssize = self.support_set.size()
@@ -299,14 +298,13 @@ cdef class KernelCache(Kernel):
         it = self.support_set.begin()
         while it != self.support_set.end():
             s = deref(it)
-            if i < n_computed:
-                out[s] = cache[s]
-            else:
+            if cache[s] == 0:
                 out[s] = self.kernel.compute(X, s, Y, j)
                 cache[s] = out[s]
+            else:
+                out[s] = cache[s]
 
             inc(it)
-            i += 1
 
         self.n_computed[j] = ssize
 
@@ -342,6 +340,8 @@ cdef class KernelCache(Kernel):
             print "Remove SV", i
 
         cdef list[int].iterator it
+        cdef map[int, double*].iterator it2
+        cdef double* cache
         cdef int j
 
         if self.support_vector[i] >= 0:
@@ -350,6 +350,11 @@ cdef class KernelCache(Kernel):
             k = self.support_vector[i]
             self.support_vector[i] = -1
 
+            it2 = self.columns.begin()
+            while it2 != self.columns.end():
+                j = deref(it2).first
+                self.columns[0][j][i] = 0
+                inc(it2)
 
     cpdef int n_sv(self):
         return self.support_set.size()

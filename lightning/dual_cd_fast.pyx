@@ -125,8 +125,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
             else:
                 # G = np.dot(Q_bar, alpha)[i] - 1
                 G = -1
-                # FIXME: retrieve sv only and iterate over non-zero alpha[j]
-                kcache.compute_column(X, X, i, col)
+                kcache.compute_column_sv(X, X, i, col)
                 it = kcache.support_set.begin()
                 while it != kcache.support_set.end():
                     j = deref(it)
