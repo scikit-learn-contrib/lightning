@@ -58,7 +58,7 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
             else:
                 _primal_cd_l2svm_l2r(self.coef_[i], self.errors_[i],
                                      X, None, Y[:, i], kcache, True,
-                                     self.termination,
+                                     self.termination, self.nz_coef_upper_bound,
                                      self.C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)
 
@@ -155,7 +155,7 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
             for i in xrange(n_vectors):
                 _primal_cd_l2svm_l2r(self.coef_[i], self.errors_[i],
                                      X, A, Y[:, i], kcache, False,
-                                     self.termination,
+                                     self.termination, self.sv_upper_bound,
                                      C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)
 
@@ -173,7 +173,7 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
             self.support_vectors_ = A
 
         # Cannot trim the non-zero weights if warm start is used...
-        if not self.warm_start and self.penalty == "l1":
+        if not self.warm_start:
             self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
             mask = safe_mask(X, sv)
             self.support_vectors_ = A[mask]

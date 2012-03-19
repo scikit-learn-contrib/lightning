@@ -208,3 +208,14 @@ def test_debiasing_warm_start():
     clf.fit(bin_dense, bin_target)
     assert_equal(clf.n_support_vectors(), 191)
     assert_almost_equal(clf.score(bin_dense, bin_target), 0.97)
+
+
+def test_early_stopping_l2r_rbf():
+    clf = PrimalSVC(kernel="rbf", gamma=0.1,
+                    termination="n_sv", sv_upper_bound=30,
+                    random_state=0, penalty="l2")
+
+    clf.fit(bin_dense, bin_target)
+    n_nz = np.sum(clf.coef_ != 0)
+
+    assert_equal(n_nz, 30)

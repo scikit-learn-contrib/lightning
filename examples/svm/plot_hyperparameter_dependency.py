@@ -76,13 +76,22 @@ except:
 
 try:
     X_train, y_train, X_test, y_test = load_dataset(dataset)
-
-    if X_test is None:
-        X_test, y_test = X_train, y_train
 except KeyError:
     raise ValueError("Wrong dataset name!")
 
+n_samples = X_train.shape[0]
+
+if n_samples > 5000:
+    ind = np.arange(n_samples)
+    np.random.shuffle(ind)
+    ind = ind[:5000]
+    X_train, y_train = X_train[ind], y_train[ind]
+
+if X_test is None:
+    X_test, y_test = X_train, y_train
+
 Cs = np.linspace(0.1, 1, 10)
+#Cs = np.linspace(0.1, 5, 10)
 
 res_p = [fit_primal_svc(X_train, y_train, C=C, kernel=opts.kernel,
                         gamma=opts.gamma, degree=opts.degree) for C in Cs]
@@ -95,8 +104,6 @@ res_d = [fit_dual_svc(X_train, y_train, C=C, kernel=opts.kernel,
 clfs_d, train_times_d = zip(*res_d)
 res_d = [predict(clf, X_test, y_test) for clf in clfs_d]
 accuracies_d, test_times_d = zip(*res_d)
-
-n_samples = X_train.shape[0]
 
 opt = {"linewidth":1, "markersize":15, "markerfacecolor":'None'}
 

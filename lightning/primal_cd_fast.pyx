@@ -293,6 +293,7 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
                          KernelCache kcache,
                          int linear_kernel,
                          termination,
+                         int sv_upper_bound,
                          double C,
                          int max_iter,
                          rs,
@@ -328,7 +329,11 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
     col = np.zeros(n_samples, dtype=np.float64)
     col_data = <double*>col.data
 
+    cdef int check_n_sv = termination in ("n_sv", "n_nz_coef")
     cdef int check_convergence = termination == "convergence"
+    cdef int stop = 0
+    cdef int n_sv = 0
+
 
     for t in xrange(max_iter):
         if verbose >= 1:
@@ -407,11 +412,21 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
 
             w[j] += z
 
+            if w[j] != 0:
+                n_sv += 1
+
+            if check_n_sv and n_sv == sv_upper_bound:
+                stop = 1
+                break
+
             if verbose >= 1 and s % 100 == 0:
                 sys.stdout.write(".")
                 sys.stdout.flush()
 
         # end for (iterate over features)
+
+        if stop:
+            break
 
         if check_convergence and Dpmax < tol:
             if verbose >= 1:
