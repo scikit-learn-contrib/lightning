@@ -195,20 +195,22 @@ def test_kernel_cache_column_sv():
     assert_almost_equal(K[17, 8], out[17])
     assert_equal(size, kcache.get_size())
 
-    for i in (12, 6, 3, 17):
+    for i in (12, 6, 3):
         kcache.remove_sv(i)
 
-    assert_equal(kcache.n_sv(), 0)
+    assert_equal(kcache.n_sv(), 1)
 
     # Add back some new SV.
     kcache.add_sv(15)
-    assert_equal(kcache.n_sv(), 1)
+    assert_equal(kcache.n_sv(), 2)
 
     out *= 0
     kcache.compute_column_sv(X, X, 8, out)
     assert_almost_equal(0, out[6])
     assert_almost_equal(0, out[12])
+    assert_almost_equal(0, out[3])
     assert_almost_equal(K[15, 8], out[15])
+    assert_almost_equal(K[17, 8], out[17])
     assert_equal(size, kcache.get_size())
 
     # Remove non-existing column.
