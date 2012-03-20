@@ -89,6 +89,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
     cdef int select_method = get_select_method(selection)
     cdef int check_n_sv = termination == "n_sv"
     cdef int check_convergence = termination == "convergence"
+    cdef int permute = selection == "permute" or linear_kernel
     cdef int stop = 0
 
     # FIXME: would be better to store the support indices in the class
@@ -109,8 +110,11 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
         s = 0
         start = 0
         while s < active_size:
-            i = select_sv(A, start, search_size, active_size, select_method,
-                          alpha, 0, X, y, kcache, col)
+            if permute:
+                i = A[s]
+            else:
+                i = select_sv(A, start, search_size, active_size, select_method,
+                              alpha, 0, X, y, kcache, col)
 
             y_i = y[i]
             alpha_i = fabs(alpha[i])
@@ -142,6 +146,8 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
                 elif G > M_bar:
                     active_size -= 1
                     A[s], A[active_size] = A[active_size], A[s]
+                    start = update_start(start, select_method, search_size,
+                                         active_size, A, rs)
                     # Jump w/o incrementing s so as to use the swapped sample.
                     continue
             elif alpha_i == U:
@@ -150,9 +156,13 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
                 elif G < m_bar:
                     active_size -= 1
                     A[s], A[active_size] = A[active_size], A[s]
+                    start = update_start(start, select_method, search_size,
+                                         active_size, A, rs)
                     continue
             else:
                 PG = G
+
+
             M = max(M, PG)
             m = min(m, PG)
 

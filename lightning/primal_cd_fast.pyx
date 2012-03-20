@@ -90,6 +90,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
     cdef int check_convergence = termination == "convergence"
     cdef int stop = 0
     cdef int select_method = get_select_method(selection)
+    cdef int permute = selection == "permute" or linear_kernel
 
     # FIXME: would be better to store the support indices in the class.
     if not linear_kernel:
@@ -108,11 +109,11 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
         start = 0
 
         while s < active_size:
-            if not linear_kernel:
+            if permute:
+                j = index[s]
+            else:
                 j = select_sv(index, start, search_size, active_size,
                               select_method, w, 0, Xc, y, kcache, col)
-            else:
-                j = index[s]
 
             Lp = 0
             Lpp = 0
@@ -153,6 +154,9 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
                 elif Lp_p > Lpmax_old / n_samples and Lp_n < -Lpmax_old / n_samples:
                     active_size -= 1
                     index[s], index[active_size] = index[active_size], index[s]
+                    start = update_start(start, select_method, search_size,
+                                         active_size, index, rs)
+                    # Jump w/o incrementing s so as to use the swapped sample.
                     continue
             elif w[j] > 0:
                 violation = fabs(Lp_p)

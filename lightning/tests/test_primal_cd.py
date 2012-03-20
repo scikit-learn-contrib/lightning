@@ -61,9 +61,9 @@ def test_fit_rbf_binary_l1r_selection():
                         penalty="l1", selection=selection)
         clf.fit(bin_dense, bin_target)
         acc = clf.score(bin_dense, bin_target)
-        assert_true(acc >= 0.84)
+        assert_true(acc >= 0.74)
         n_nz = np.sum(clf.coef_ != 0)
-        assert_true(n_nz <= 70)
+        assert_true(n_nz <= 85)
 
 
 def test_fit_rbf_multi():
