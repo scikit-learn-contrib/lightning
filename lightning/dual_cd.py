@@ -111,8 +111,6 @@ class DualSVC(BaseEstimator, ClassifierMixin):
 
         if not self.warm_start or self.dual_coef_ is None:
             self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
-        else:
-            self.dual_coef_ *= Y.T
 
         coef = np.empty(0, dtype=np.float64)
 
@@ -127,8 +125,6 @@ class DualSVC(BaseEstimator, ClassifierMixin):
                      self.termination, self.sv_upper_bound,
                      self.C, self.loss, self.max_iter, rs, self.tol,
                      self.shrinking, verbose=self.verbose)
-
-        self.dual_coef_ *= Y.T
 
         sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)
 

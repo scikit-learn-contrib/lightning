@@ -113,7 +113,7 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
                           alpha, 0, X, y, kcache, col)
 
             y_i = y[i]
-            alpha_i = alpha[i]
+            alpha_i = fabs(alpha[i])
 
             # Compute ith element of the gradient.
             if linear_kernel:
@@ -129,9 +129,9 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
                 it = kcache.support_set.begin()
                 while it != kcache.support_set.end():
                     j = deref(it)
-                    G += col[j] * y[i] * y[j] * alpha[j]
+                    G += col[j] * y[i] * alpha[j]
                     inc(it)
-                G += D_ii * alpha[i]
+                G += D_ii * alpha_i
 
             PG = 0
 
@@ -160,17 +160,18 @@ def _dual_cd(np.ndarray[double, ndim=1, mode='c'] w,
                 alpha_old = alpha_i
 
                 # Closed-form solution of the one-variable subproblem.
-                alpha[i] = min(max(alpha_i - G / Q_bar_diag[i], 0), U)
+                alpha_i = min(max(alpha_i - G / Q_bar_diag[i], 0), U)
+                alpha[i] = alpha_i * y_i
 
                 # Update support set.
                 if not linear_kernel:
-                    if alpha[i] != 0:
+                    if alpha_i != 0:
                         kcache.add_sv(i)
-                    elif alpha[i] == 0:
+                    elif alpha_i == 0:
                         kcache.remove_sv(i)
 
                 if linear_kernel:
-                    step = (alpha[i] - alpha_old) * y_i
+                    step = (alpha_i - alpha_old) * y_i
                     w += step * X[i]
 
             # Exit if necessary.
