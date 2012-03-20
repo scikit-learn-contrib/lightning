@@ -219,3 +219,17 @@ def test_early_stopping_l2r_rbf():
     n_nz = np.sum(clf.coef_ != 0)
 
     assert_equal(n_nz, 30)
+
+
+def test_empty_model():
+    clf = PrimalSVC(kernel="rbf", gamma=0.1, C=0.1, penalty="l1")
+    clf.fit(bin_dense, bin_target)
+    assert_equal(clf.n_support_vectors(), 0)
+    acc = clf.score(bin_dense, bin_target)
+    assert_equal(acc, 0.5)
+
+    clf = PrimalSVC(kernel="rbf", gamma=0.1, C=0.1, penalty="l1l2")
+    clf.fit(bin_dense, bin_target)
+    assert_equal(clf.n_support_vectors(), 0)
+    acc = clf.score(bin_dense, bin_target)
+    assert_equal(acc, 0.5)

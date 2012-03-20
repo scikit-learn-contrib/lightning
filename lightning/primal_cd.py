@@ -168,6 +168,11 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
 
         sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
 
+        if np.sum(sv) == 0:
+            # Empty model...
+            self.coef_ = None
+            return self
+
         # We can't know the support vectors when using precomputed kernels.
         if self.kernel != "precomputed":
             self.support_vectors_ = A
@@ -186,17 +191,19 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
         return self
 
     def n_support_vectors(self):
-        return np.sum(self.coef_ != 0)
+        return 0 if self.coef_ is None else np.sum(self.coef_ != 0)
 
     def decision_function(self, X):
         out = np.zeros((X.shape[0], self.coef_.shape[0]), dtype=np.float64)
-        sv = self.support_vectors_ if self.kernel != "precomputed" else X
-        decision_function_alpha(X, sv, self.coef_, self._get_kernel(), out)
+        if self.coef_ is not None:
+            sv = self.support_vectors_ if self.kernel != "precomputed" else X
+            decision_function_alpha(X, sv, self.coef_, self._get_kernel(), out)
         return out
 
     def predict(self, X):
         out = np.zeros(X.shape[0], dtype=np.float64)
-        sv = self.support_vectors_ if self.kernel != "precomputed" else X
-        predict_alpha(X, sv, self.coef_, self.classes_,
-                      self._get_kernel(), out)
+        if self.coef_ is not None:
+            sv = self.support_vectors_ if self.kernel != "precomputed" else X
+            predict_alpha(X, sv, self.coef_, self.classes_,
+                          self._get_kernel(), out)
         return out
