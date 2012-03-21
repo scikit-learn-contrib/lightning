@@ -138,6 +138,7 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
 
         A = X
         C = self.C
+        termination = self.termination
 
         if self.penalty == "l1l2":
             sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
@@ -150,12 +151,13 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
                 self.coef_ = np.zeros((n_vectors, A.shape[0]), dtype=np.float64)
                 self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
             C = self.Cd
+            termination = "convergence"
 
         if self.penalty in ("l2", "l1l2"):
             for i in xrange(n_vectors):
                 _primal_cd_l2svm_l2r(self.coef_[i], self.errors_[i],
                                      X, A, Y[:, i], kcache, False,
-                                     self.termination, self.sv_upper_bound,
+                                     termination, self.sv_upper_bound,
                                      C, self.max_iter, rs, self.tol,
                                      verbose=self.verbose)
 
