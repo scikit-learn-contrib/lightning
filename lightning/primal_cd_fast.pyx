@@ -18,7 +18,7 @@ from libcpp.vector cimport vector
 import numpy as np
 cimport numpy as np
 
-from lightning.kernel_fast cimport KernelCache
+from lightning.kernel_fast cimport KernelCache, Kernel
 from lightning.select_fast cimport get_select_method, select_sv, update_start
 
 cdef extern from "math.h":
@@ -444,3 +444,41 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
 
     return w
 
+
+cpdef _C_lower_bound_kernel(np.ndarray[double, ndim=2, mode='c'] X,
+                            np.ndarray[double, ndim=2, mode='c'] Y,
+                            Kernel kernel,
+                            search_size=None,
+                            random_state=None):
+
+    cdef int n_samples = X.shape[0]
+    cdef int n = n_samples
+
+    cdef int i, j, k, l
+    cdef int n_vectors = Y.shape[1]
+
+    cdef double val, max_ = -DBL_MAX
+
+    cdef np.ndarray[int, ndim=1, mode='c'] ind
+    ind = np.arange(n, dtype=np.int32)
+
+    cdef np.ndarray[double, ndim=1, mode='c'] col
+    col = np.zeros(n, dtype=np.float64)
+
+    if search_size is not None:
+        n = search_size
+        random_state.shuffle(ind)
+
+    for j in xrange(n):
+        k = ind[j]
+
+        for i in xrange(n_samples):
+            col[i] = kernel.compute(X, i, X, k)
+
+        for l in xrange(n_vectors):
+            val = 0
+            for i in xrange(n_samples):
+                val += Y[i, l] * col[i]
+            max_ = max(max_, fabs(val))
+
+    return max_

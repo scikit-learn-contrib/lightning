@@ -10,6 +10,7 @@ from sklearn.metrics.pairwise import pairwise_kernels
 
 from .primal_cd_fast import _primal_cd_l2svm_l1r
 from .primal_cd_fast import _primal_cd_l2svm_l2r
+from .primal_cd_fast import _C_lower_bound_kernel
 from .kernel_fast import get_kernel, KernelCache
 from .predict_fast import predict_alpha, decision_function_alpha
 
@@ -209,3 +210,23 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
             predict_alpha(X, sv, self.coef_, self.classes_,
                           self._get_kernel(), out)
         return out
+
+
+def C_lower_bound(X, y, kernel=None, search_size=None, random_state=None,
+                  **kernel_params):
+    classes = np.unique(y)
+    n_classes = np.size(classes)
+
+    Y = LabelBinarizer(neg_label=-1, pos_label=1).fit_transform(y)
+
+    if kernel is None:
+        den = np.max(np.abs(np.dot(Y.T, X)))
+    else:
+        kernel = get_kernel(kernel, **kernel_params)
+        random_state = check_random_state(random_state)
+        den = _C_lower_bound_kernel(X, Y, kernel, search_size, random_state)
+
+    if den == 0.0:
+        raise ValueError('Ill-posed')
+
+    return 0.5 / den

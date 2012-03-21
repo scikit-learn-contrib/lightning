@@ -3,13 +3,13 @@ import scipy.sparse as sp
 
 from numpy.testing import assert_array_equal, assert_array_almost_equal, \
                           assert_almost_equal
-from nose.tools import assert_raises, assert_true, assert_equal
+from nose.tools import assert_raises, assert_true, assert_equal, \
+                       assert_not_equal
 
 from sklearn.datasets.samples_generator import make_classification
-from sklearn.svm import LinearSVC
 from sklearn.metrics.pairwise import pairwise_kernels
 
-from lightning.primal_cd import PrimalLinearSVC, PrimalSVC
+from lightning.primal_cd import PrimalLinearSVC, PrimalSVC, C_lower_bound
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
@@ -233,3 +233,41 @@ def test_empty_model():
     assert_equal(clf.n_support_vectors(), 0)
     acc = clf.score(bin_dense, bin_target)
     assert_equal(acc, 0.5)
+
+
+def test_lower_bound_binary():
+    Cmin = C_lower_bound(bin_dense, bin_target)
+    clf = PrimalLinearSVC(C=Cmin, random_state=0, penalty="l1")
+    clf.fit(bin_dense, bin_target)
+    n_nz = np.sum(clf.coef_ != 0)
+    assert_equal(0, n_nz)
+
+    clf = PrimalLinearSVC(C=Cmin * 2, random_state=0, penalty="l1")
+    clf.fit(bin_dense, bin_target)
+    n_nz = np.sum(clf.coef_ != 0)
+    assert_not_equal(0, n_nz)
+
+
+def test_lower_bound_multi():
+    Cmin = C_lower_bound(mult_dense, mult_target)
+    assert_almost_equal(Cmin, 0.00176106681581)
+
+
+def test_lower_bound_binary_rbf():
+    K = pairwise_kernels(bin_dense, metric="rbf", gamma=0.1)
+    Cmin = C_lower_bound(K, bin_target)
+    Cmin2 = C_lower_bound(bin_dense, bin_target, kernel="rbf", gamma=0.1)
+    assert_almost_equal(Cmin, Cmin2, 4)
+    Cmin3 = C_lower_bound(bin_dense, bin_target, kernel="rbf", gamma=0.1,
+                          search_size=60, random_state=0)
+    assert_almost_equal(Cmin, Cmin3, 4)
+
+
+def test_lower_bound_multi_rbf():
+    K = pairwise_kernels(mult_dense, metric="rbf", gamma=0.1)
+    Cmin = C_lower_bound(K, mult_target)
+    Cmin2 = C_lower_bound(mult_dense, mult_target, kernel="rbf", gamma=0.1)
+    Cmin3 = C_lower_bound(mult_dense, mult_target, kernel="rbf", gamma=0.1,
+                          search_size=60, random_state=0)
+    assert_almost_equal(Cmin, Cmin2, 4)
+    assert_almost_equal(Cmin, Cmin3, 4)
