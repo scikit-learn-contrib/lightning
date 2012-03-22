@@ -166,6 +166,7 @@ cdef class KernelCache(Kernel):
         self._clear_columns(self.n_samples)
         self.columns.clear()
         del self.columns
+        stdlib.free(self.n_computed)
 
     cpdef double compute(self,
                          np.ndarray[double, ndim=2, mode='c'] X,
