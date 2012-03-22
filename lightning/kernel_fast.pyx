@@ -277,6 +277,9 @@ cdef class KernelCache(Kernel):
         cdef int n_computed = self.n_computed[j]
         cdef int ssize = self.support_set.size()
 
+        if ssize == 0:
+            return
+
         if self.capacity == 0:
             it = self.support_set.begin()
             while it != self.support_set.end():
