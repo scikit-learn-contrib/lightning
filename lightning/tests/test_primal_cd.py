@@ -9,7 +9,8 @@ from nose.tools import assert_raises, assert_true, assert_equal, \
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.metrics.pairwise import pairwise_kernels
 
-from lightning.primal_cd import PrimalLinearSVC, PrimalSVC, C_lower_bound
+from lightning.primal_cd import PrimalLinearSVC, PrimalSVC
+from lightning.primal_cd import C_lower_bound, C_upper_bound
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
@@ -271,3 +272,12 @@ def test_lower_bound_multi_rbf():
                           search_size=60, random_state=0)
     assert_almost_equal(Cmin, Cmin2, 4)
     assert_almost_equal(Cmin, Cmin3, 4)
+
+
+def test_upper_bound_rbf():
+    clf = PrimalSVC(random_state=0, penalty="l1", kernel="rbf", gamma=0.1)
+    Cmin = C_lower_bound(bin_dense, bin_target, kernel="rbf", gamma=0.1)
+    Cmax = C_upper_bound(bin_dense, bin_target, clf, Cmin, 5.0, 100, 10)
+    clf.set_params(C=Cmax)
+    clf.fit(bin_dense, bin_target)
+    assert_true(clf.n_support_vectors() < 110)
