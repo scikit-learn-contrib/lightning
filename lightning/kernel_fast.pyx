@@ -8,6 +8,7 @@
 
 from cython.operator cimport dereference as deref
 from cython.operator cimport preincrement as inc
+from cython.operator cimport postincrement as postinc
 from cython.operator cimport predecrement as dec
 
 from libcpp.list cimport list
@@ -208,12 +209,11 @@ cdef class KernelCache(Kernel):
             stdlib.free(deref(it).second)
             self.n_computed[deref(it).first] = 0
             self.size -= col_size
-            self.columns.erase(it)
+            self.columns.erase(postinc(it))
 
             if i >= n - 1:
                 break
 
-            inc(it)
             i += 1
 
     cpdef compute_diag(self,
