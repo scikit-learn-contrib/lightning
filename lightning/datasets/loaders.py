@@ -124,6 +124,17 @@ def load_reuters():
     return _load(train_file, test_file, "reuters")
 
 
+def load_protein0():
+    X_train, y_train, X_test, y_test = load_protein()
+    selected = y_train == 0
+    y_train[selected] = 1
+    y_train[~selected] = 0
+    selected = y_test == 0
+    y_test[selected] = 1
+    y_test[~selected] = 0
+    return X_train, y_train, X_test, y_test
+
+
 def load_usps0():
     X_train, y_train, X_test, y_test = load_usps()
     selected = y_train == 10
@@ -239,6 +250,7 @@ LOADERS = {
             "ijcnn": load_ijcnn,
             "mnist8": load_mnist8,
             "reuters": load_reuters,
+            "protein0": load_protein0,
             "usps0": load_usps0,
             "usps0_noisy": load_usps0_noisy,
             "waveform": load_waveform,
