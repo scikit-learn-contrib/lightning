@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, clone
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state, safe_mask
 from sklearn.metrics.pairwise import pairwise_kernels
@@ -234,6 +234,7 @@ def C_lower_bound(X, y, kernel=None, search_size=None, random_state=None,
 
 def C_upper_bound(X, y, clf, Cmin, Cmax, sv_upper_bound, epsilon, verbose=0):
     Nmax = np.inf
+    clf = clone(clf)
 
     while Nmax - sv_upper_bound > epsilon:
         Cmid = (Cmin + Cmax) / 2
