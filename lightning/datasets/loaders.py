@@ -10,7 +10,7 @@ except ImportError:
     from sklearn.datasets import load_svmlight_files
 
 from sklearn.datasets.base import get_data_home as _get_data_home
-from sklearn.cross_validation import ShuffleSplit
+from sklearn.cross_validation import StratifiedShuffleSplit
 from sklearn.utils import check_random_state
 
 
@@ -89,6 +89,14 @@ def load_covtype():
     data_home = get_data_home()
     train_file = os.path.join(data_home, "covtype.libsvm.binary.scale")
     return _todense(_load(train_file, None, "covtype"))
+
+
+def load_covtype_subset():
+    X_train, y_train, _, _ = load_covtype()
+    cv = StratifiedShuffleSplit(y_train, train_size=100000, test_size=50000,
+                                n_iterations=1, random_state=0)
+    tr, te = iter(cv).next()
+    return X_train[tr], y_train[tr], X_train[te], y_train[te]
 
 
 def load_mnist8():
@@ -220,6 +228,7 @@ LOADERS = {
             "adult": load_adult,
             "banana": load_banana,
             "covtype": load_covtype,
+            "covtype_subset": load_covtype_subset,
             "mnist8": load_mnist8,
             "reuters": load_reuters,
             "usps0": load_usps0,
