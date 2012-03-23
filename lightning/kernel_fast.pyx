@@ -190,8 +190,8 @@ cdef class KernelCache(Kernel):
         cdef int col_size = self.n_samples * sizeof(double)
 
         if self.size + col_size > self.capacity:
-            if self.verbose >= 1:
-                print "Half cache"
+            if self.verbose >= 2:
+                print "Empty cache by half"
             self._clear_columns(self.columns.size() / 2)
 
         self.columns[0][i] = <double*> stdlib.calloc(self.n_samples,
