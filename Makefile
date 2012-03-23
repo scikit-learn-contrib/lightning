@@ -76,6 +76,13 @@ download-covtype:
 	bunzip2 covtype.libsvm.binary.scale.bz2
 	mv covtype.libsvm.binary.scale $(DATADIR)
 
+download-ijcnn:
+	./download.sh http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/ijcnn1.tr.bz2
+	./download.sh http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/ijcnn1.t.bz2
+	bunzip2 ijcnn1.tr.bz2
+	bunzip2 ijcnn1.t.bz2
+	mv ijcnn1* $(DATADIR)
+
 download-reuters: datadir
 	./download.sh http://leon.bottou.org/_media/papers/lasvm-reuters.tar.bz2
 	tar xvfj lasvm-reuters.tar.bz2

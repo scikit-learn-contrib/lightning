@@ -99,6 +99,13 @@ def load_covtype_subset():
     return X_train[tr], y_train[tr], X_train[te], y_train[te]
 
 
+def load_ijcnn():
+    data_home = get_data_home()
+    train_file = os.path.join(data_home, "ijcnn1.tr")
+    test_file = os.path.join(data_home, "ijcnn1.t")
+    return _todense(_load(train_file, test_file, "ijcnn"))
+
+
 def load_mnist8():
     X_train, y_train, X_test, y_test = load_mnist()
     selected = y_train == 8
@@ -229,6 +236,7 @@ LOADERS = {
             "banana": load_banana,
             "covtype": load_covtype,
             "covtype_subset": load_covtype_subset,
+            "ijcnn": load_ijcnn,
             "mnist8": load_mnist8,
             "reuters": load_reuters,
             "usps0": load_usps0,
