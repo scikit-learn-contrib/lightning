@@ -214,9 +214,6 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
 
 def C_lower_bound(X, y, kernel=None, search_size=None, random_state=None,
                   **kernel_params):
-    classes = np.unique(y)
-    n_classes = np.size(classes)
-
     Y = LabelBinarizer(neg_label=-1, pos_label=1).fit_transform(y)
 
     if kernel is None:
