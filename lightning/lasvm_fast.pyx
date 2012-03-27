@@ -274,7 +274,8 @@ cdef void _boostrap_warm_start(index,
             kcache.add_sv(i)
 
 
-def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
+def _lasvm(self,
+           np.ndarray[double, ndim=1, mode='c'] alpha,
            np.ndarray[double, ndim=2, mode='c'] X,
            np.ndarray[double, ndim=1] y,
            KernelCache kcache,
@@ -287,6 +288,7 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
            double C,
            int max_iter,
            rs,
+           callback,
            int verbose,
            int warm_start):
 
@@ -314,6 +316,7 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
     col2 = np.zeros(n_samples, dtype=np.float64)
 
     cdef int check_n_sv = termination == "n_sv"
+    cdef int has_callback = callback is not None
 
     cdef int it, i, j, s, k, start
     cdef int n_pos, n_neg
@@ -351,6 +354,13 @@ def _lasvm(np.ndarray[double, ndim=1, mode='c'] alpha,
 
             start = update_start(start, select_method, search_size,
                                  n_samples, A, rs)
+
+            # Callback
+            if has_callback and i % 100 == 0:
+                ret = callback(self)
+                if ret is not None:
+                    stop = 1
+                    break
 
             if verbose >= 1 and i % 100 == 0:
                 sys.stdout.write(".")

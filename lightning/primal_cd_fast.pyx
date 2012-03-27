@@ -28,7 +28,8 @@ cdef extern from "float.h":
    double DBL_MAX
 
 
-def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
+def _primal_cd_l2svm_l1r(self,
+                         np.ndarray[double, ndim=1, mode='c'] w,
                          np.ndarray[double, ndim=1, mode='c'] b,
                          X,
                          np.ndarray[double, ndim=1] y,
@@ -42,6 +43,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
                          int max_iter,
                          rs,
                          double tol,
+                         callback,
                          int verbose):
 
     cdef Py_ssize_t n_samples = X.shape[0]
@@ -91,6 +93,7 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
     cdef int stop = 0
     cdef int select_method = get_select_method(selection)
     cdef int permute = selection == "permute" or linear_kernel
+    cdef int has_callback = callback is not None
 
     # FIXME: would be better to store the support indices in the class.
     if not linear_kernel:
@@ -256,6 +259,13 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
             start = update_start(start, select_method, search_size,
                                  active_size, index, rs)
 
+            # Callback
+            if has_callback and s % 100 == 0:
+                ret = callback(self)
+                if ret is not None:
+                    stop = 1
+                    break
+
             if verbose >= 1 and s % 100 == 0:
                 sys.stdout.write(".")
                 sys.stdout.flush()
@@ -289,7 +299,8 @@ def _primal_cd_l2svm_l1r(np.ndarray[double, ndim=1, mode='c'] w,
     return w
 
 
-def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
+def _primal_cd_l2svm_l2r(self,
+                         np.ndarray[double, ndim=1, mode='c'] w,
                          np.ndarray[double, ndim=1, mode='c'] b,
                          X,
                          A,
@@ -302,6 +313,7 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
                          int max_iter,
                          rs,
                          double tol,
+                         callback,
                          int verbose):
 
     cdef Py_ssize_t n_samples = X.shape[0]
@@ -335,6 +347,7 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
 
     cdef int check_n_sv = termination in ("n_sv", "n_nz_coef")
     cdef int check_convergence = termination == "convergence"
+    cdef int has_callback = callback is not None
     cdef int stop = 0
     cdef int n_sv = 0
 
@@ -422,6 +435,13 @@ def _primal_cd_l2svm_l2r(np.ndarray[double, ndim=1, mode='c'] w,
             if check_n_sv and n_sv == sv_upper_bound:
                 stop = 1
                 break
+
+            # Callback
+            if has_callback and s % 100 == 0:
+                ret = callback(self)
+                if ret is not None:
+                    stop = 1
+                    break
 
             if verbose >= 1 and s % 100 == 0:
                 sys.stdout.write(".")

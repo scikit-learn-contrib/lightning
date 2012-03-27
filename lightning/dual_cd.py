@@ -17,6 +17,7 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
     def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-3,
                  termination="convergence", sv_upper_bound=1000,
                  shrinking=True, warm_start=False, random_state=None,
+                 callback=None,
                  verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
@@ -27,6 +28,7 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
         self.shrinking = shrinking
         self.warm_start = warm_start
         self.random_state = random_state
+        self.callback = callback
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.coef_ = None
@@ -48,11 +50,11 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
         kcache = KernelCache(kernel, n_samples, 0, self.verbose)
 
         for i in xrange(n_vectors):
-            _dual_cd(self.coef_[i], self.dual_coef_[i],
+            _dual_cd(self, self.coef_[i], self.dual_coef_[i],
                      X, Y[:, i], kcache, True,
                      "permute", 60, self.termination, self.sv_upper_bound,
                      self.C, self.loss, self.max_iter, rs, self.tol,
-                     self.shrinking, verbose=self.verbose)
+                     self.shrinking, self.callback, verbose=self.verbose)
 
         return self
 
@@ -71,6 +73,7 @@ class DualSVC(BaseEstimator, ClassifierMixin):
                  selection="permute", search_size=60,
                  termination="convergence", sv_upper_bound=1000,
                  warm_start=False, random_state=None, cache_mb=500,
+                 callback=None,
                  verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
@@ -88,6 +91,7 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         self.warm_start = warm_start
         self.random_state = random_state
         self.cache_mb = cache_mb
+        self.callback = callback
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.support_vectors_ = None
@@ -107,6 +111,7 @@ class DualSVC(BaseEstimator, ClassifierMixin):
 
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = self.label_binarizer_.fit_transform(y)
+        self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
         n_vectors = Y.shape[1]
 
         if not self.warm_start or self.dual_coef_ is None:
@@ -118,13 +123,15 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         kcache = KernelCache(kernel, n_samples, self.cache_mb * 1024 * 1024,
                              self.verbose)
 
+        self.support_vectors_ = X
+
         for i in xrange(n_vectors):
-            _dual_cd(coef, self.dual_coef_[i],
+            _dual_cd(self, coef, self.dual_coef_[i],
                      X, Y[:, i], kcache, False,
                      self.selection, self.search_size,
                      self.termination, self.sv_upper_bound,
                      self.C, self.loss, self.max_iter, rs, self.tol,
-                     self.shrinking, verbose=self.verbose)
+                     self.shrinking, self.callback, verbose=self.verbose)
 
         sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)
 
@@ -136,8 +143,6 @@ class DualSVC(BaseEstimator, ClassifierMixin):
             else:
                 # Cannot trim the non-zero weights if warm start is used...
                 self.support_vectors_ = X
-
-        self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
 
         if self.verbose >= 1:
             print "Number of support vectors:", np.sum(sv)
