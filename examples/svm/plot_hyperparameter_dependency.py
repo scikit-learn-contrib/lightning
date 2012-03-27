@@ -33,29 +33,33 @@ def set_axes_size(pl):
     for ylabel in ax.get_yticklabels():
         ylabel.set_fontsize(13)
 
+
 @memory.cache
 def fit_primal_svc(X_train, y_train, C, kernel, gamma=0.1, degree=4, coef0=1):
     print "Training primal SVC, C = ", C
     start = time.time()
     clf = PrimalSVC(C=C, kernel=kernel, degree=degree, coef0=coef0,
-                    max_iter=1000, tol=1e-4, verbose=1)
+                    max_iter=100, tol=1e-4, verbose=1)
     clf.fit(X_train, y_train)
     return clf, time.time() - start
+
 
 @memory.cache
 def fit_dual_svc(X_train, y_train, C, kernel, gamma=0.1, degree=4, coef0=1):
     print "Training dual SVC, C = ", C
     start = time.time()
-    clf = DualSVC(C=C, kernel=kernel, degree=degree, coef0=coef0, max_iter=1000,
-                  tol=1e-4, verbose=1)
+    clf = DualSVC(C=C, kernel=kernel, degree=degree, coef0=coef0, max_iter=100,
+                  loss="l1", tol=1e-4, verbose=1)
     clf.fit(X_train, y_train)
     return clf, time.time() - start
+
 
 @memory.cache
 def predict(clf, X_test, y_test):
     start = time.time()
     y_pred = clf.predict(X_test)
     return np.mean(y_test == y_pred), time.time() - start
+
 
 op = OptionParser()
 op.add_option("--notitle", action="store_true", default=False, dest="notitle")
@@ -80,12 +84,6 @@ except KeyError:
     raise ValueError("Wrong dataset name!")
 
 n_samples = X_train.shape[0]
-
-if n_samples > 5000:
-    ind = np.arange(n_samples)
-    np.random.shuffle(ind)
-    ind = ind[:5000]
-    X_train, y_train = X_train[ind], y_train[ind]
 
 if X_test is None:
     X_test, y_test = X_train, y_train
@@ -117,19 +115,19 @@ prop = fm.FontProperties(size=18)
 pl.figure()
 set_axes_size(pl)
 pl.plot(Cs, [np.mean(1.0 * clf.n_support_vectors() / n_samples) for clf in clfs_p],
-        style[0], label="L1R Primal CD", **opt)
+        style[0], label="L2L L1R Primal", **opt)
 pl.plot(Cs, [np.mean(1.0 * clf.n_support_vectors() / n_samples) for clf in clfs_d],
-        style[1], label="L2R Dual CD", **opt)
+        style[1], label="L1L L2R Dual", **opt)
 pl.xlabel('C', size=15)
-pl.ylabel('Fraction of anchor / support vectors', size=15)
+pl.ylabel('Percentage of components / support vectors', size=15)
 pl.legend(loc='lower right', prop=prop)
 if not opts.notitle:
     pl.title('Relation between C and sparsity')
 
 pl.figure()
 set_axes_size(pl)
-pl.plot(Cs, train_times_p, style[0], label="L1R Primal CD", **opt)
-pl.plot(Cs, train_times_d, style[1], label="L2R Dual CD", **opt)
+pl.plot(Cs, train_times_p, style[0], label="L2L L1R Primal", **opt)
+pl.plot(Cs, train_times_d, style[1], label="L1L L2R Dual", **opt)
 pl.xlabel('C', size=15)
 pl.ylabel('Training time in seconds', size=15)
 if not opts.notitle:
@@ -137,10 +135,10 @@ if not opts.notitle:
 
 pl.figure()
 set_axes_size(pl)
-pl.plot(Cs, accuracies_p, style[0], label="L1R Primal CD", **opt)
-pl.plot(Cs, accuracies_d, style[1], label="L2R Dual CD", **opt)
+pl.plot(Cs, accuracies_p, style[0], label="L2L L1R Primal", **opt)
+pl.plot(Cs, accuracies_d, style[1], label="L1L L2R Dual", **opt)
 pl.xlabel('C', size=15)
-pl.ylabel('Accuracy', size=15)
+pl.ylabel('Test accuracy', size=15)
 if not opts.notitle:
     pl.title('Relation between C and accuracy')
 
