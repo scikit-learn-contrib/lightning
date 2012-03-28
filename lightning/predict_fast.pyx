@@ -15,6 +15,7 @@ cimport numpy as np
 cpdef decision_function_alpha(np.ndarray[double, ndim=2, mode='c'] X,
                               np.ndarray[double, ndim=2, mode='c'] sv,
                               np.ndarray[double, ndim=2, mode='c'] alpha,
+                              np.ndarray[double, ndim=1, mode='c'] b,
                               Kernel kernel,
                               np.ndarray[double, ndim=2, mode='c'] out):
 
@@ -37,10 +38,16 @@ cpdef decision_function_alpha(np.ndarray[double, ndim=2, mode='c'] X,
                 for k in xrange(n_vectors):
                     out[j, k] += alpha[k, i] * kvalue
 
+    for k in xrange(n_vectors):
+        if b[k] != 0:
+            for j in xrange(n_samples):
+                out[j, k] += b[k]
+
 
 cpdef predict_alpha(np.ndarray[double, ndim=2, mode='c'] X,
                     np.ndarray[double, ndim=2, mode='c'] sv,
                     np.ndarray[double, ndim=2, mode='c'] alpha,
+                    np.ndarray[double, ndim=1, mode='c'] b,
                     np.ndarray[int, ndim=1, mode='c'] classes,
                     Kernel kernel,
                     np.ndarray[double, ndim=1, mode='c'] out):
@@ -59,6 +66,10 @@ cpdef predict_alpha(np.ndarray[double, ndim=2, mode='c'] X,
                 for j in xrange(n_samples):
                     out[j] += alpha[0, i] * kernel.compute(X, j, sv, i)
 
+        if b[0] != 0:
+            for j in xrange(n_samples):
+                out[j] += b[0]
+
         for j in xrange(n_samples):
             if out[j] > 0:
                 out[j] = classes[1]
@@ -66,7 +77,7 @@ cpdef predict_alpha(np.ndarray[double, ndim=2, mode='c'] X,
                 out[j] = classes[0]
     else:
         out2 = np.zeros((n_samples, n_classes), dtype=np.float64)
-        decision_function_alpha(X, sv, alpha, kernel, out2)
+        decision_function_alpha(X, sv, alpha, b, kernel, out2)
 
         for i in xrange(n_samples):
 

@@ -103,12 +103,13 @@ class LaSVM(BaseEstimator, ClassifierMixin):
     def decision_function(self, X):
         out = np.zeros((X.shape[0], self.dual_coef_.shape[0]), dtype=np.float64)
         sv = self.support_vectors_ if self.kernel != "precomputed" else X
-        decision_function_alpha(X, sv, self.dual_coef_, self._get_kernel(), out)
+        decision_function_alpha(X, sv, self.dual_coef_, self.intercept_,
+                                self._get_kernel(), out)
         return out
 
     def predict(self, X):
         out = np.zeros(X.shape[0], dtype=np.float64)
         sv = self.support_vectors_ if self.kernel != "precomputed" else X
-        predict_alpha(X, sv, self.dual_coef_, self.classes_,
-                      self._get_kernel(), out)
+        predict_alpha(X, sv, self.dual_coef_, self.intercept_,
+                      self.classes_, self._get_kernel(), out)
         return out

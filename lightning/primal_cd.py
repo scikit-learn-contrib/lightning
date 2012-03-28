@@ -133,6 +133,7 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
                              self.verbose)
 
         self.support_vectors_ = X
+        self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
 
         if self.penalty in ("l1", "l1l2"):
             for i in xrange(n_vectors):
@@ -204,15 +205,16 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
         out = np.zeros((X.shape[0], self.coef_.shape[0]), dtype=np.float64)
         if self.coef_ is not None:
             sv = self.support_vectors_ if self.kernel != "precomputed" else X
-            decision_function_alpha(X, sv, self.coef_, self._get_kernel(), out)
+            decision_function_alpha(X, sv, self.coef_, self.intercept_,
+                                    self._get_kernel(), out)
         return out
 
     def predict(self, X):
         out = np.zeros(X.shape[0], dtype=np.float64)
         if self.coef_ is not None:
             sv = self.support_vectors_ if self.kernel != "precomputed" else X
-            predict_alpha(X, sv, self.coef_, self.classes_,
-                          self._get_kernel(), out)
+            predict_alpha(X, sv, self.coef_, self.intercept_,
+                          self.classes_, self._get_kernel(), out)
         return out
 
 
