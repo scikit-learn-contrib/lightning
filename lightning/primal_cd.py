@@ -83,7 +83,7 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
                  selection="permute", search_size=60,
                  termination="convergence", sv_upper_bound=1000,
                  cache_mb=500, warm_start=False, random_state=None,
-                 callback=None, verbose=0, n_jobs=1):
+                 components=None, callback=None, verbose=0, n_jobs=1):
         self.C = C
         self.penalty = penalty
         self.max_iter = max_iter
@@ -98,9 +98,10 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
         self.search_size = search_size
         self.termination = termination
         self.sv_upper_bound = sv_upper_bound
+        self.cache_mb = cache_mb
         self.warm_start = warm_start
         self.random_state = random_state
-        self.cache_mb = cache_mb
+        self.components = components
         self.callback = callback
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -160,6 +161,9 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
                 self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
             C = self.Cd
             termination = "convergence"
+
+        if self.penalty == "l2" and self.components is not None:
+            A = self.components
 
         if self.penalty in ("l2", "l1l2"):
             for i in xrange(n_vectors):

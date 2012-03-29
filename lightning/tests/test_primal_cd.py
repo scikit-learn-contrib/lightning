@@ -281,3 +281,17 @@ def test_upper_bound_rbf():
     clf.set_params(C=Cmax)
     clf.fit(bin_dense, bin_target)
     assert_true(clf.n_support_vectors() < 110)
+
+
+def test_components():
+    clf = PrimalSVC(random_state=0, penalty="l1", kernel="rbf",
+                    gamma=0.1, C=0.5)
+    clf.fit(bin_dense, bin_target)
+    acc = clf.score(bin_dense, bin_target)
+
+    clf = PrimalSVC(random_state=0, penalty="l2", kernel="rbf",
+                    gamma=0.1, C=0.5, components=clf.support_vectors_)
+    clf.fit(bin_dense, bin_target)
+    assert_equal(clf.n_support_vectors(), 160)
+    acc2 = clf.score(bin_dense, bin_target)
+    assert_equal(acc, acc2)
