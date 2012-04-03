@@ -68,8 +68,7 @@ class LaSVM(BaseEstimator, ClassifierMixin):
 
         self.intercept_ = np.zeros((n_vectors,), dtype=np.float64)
         kernel = self._get_kernel()
-        kcache = KernelCache(kernel, n_samples, self.cache_mb * 1024 * 1024,
-                             self.verbose)
+        kcache = KernelCache(kernel, n_samples, self.cache_mb, 1, self.verbose)
         self.support_vectors_ = X
 
         for i in xrange(n_vectors):

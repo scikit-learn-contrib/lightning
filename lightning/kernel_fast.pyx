@@ -137,14 +137,19 @@ cdef class PrecomputedKernel(Kernel):
 
 cdef class KernelCache(Kernel):
 
-    def __init__(self, Kernel kernel, int n_samples, int capacity, int verbose):
+    def __init__(self, Kernel kernel, int n_samples,
+                 long capacity, int mb, int verbose):
         self.kernel = kernel
         self.n_samples = n_samples
-        self.capacity = capacity
+        if mb:
+            self.capacity = capacity * (1 << 20)
+        else:
+            self.capacity = capacity
         self.verbose = verbose
         self.size = 0
 
-    def __cinit__(self, Kernel kernel, int n_samples, int capacity, int verbose):
+    def __cinit__(self, Kernel kernel, int n_samples,
+                  long capacity, int mb, int verbose):
         cdef int i
 
         self.support_set = new list[int]()

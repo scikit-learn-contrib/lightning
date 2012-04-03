@@ -47,7 +47,7 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
                                        dtype=np.float64)
 
         kernel = get_kernel("linear")
-        kcache = KernelCache(kernel, n_samples, 0, self.verbose)
+        kcache = KernelCache(kernel, n_samples, 0, 0, self.verbose)
 
         for i in xrange(n_vectors):
             _dual_cd(self, self.coef_[i], self.dual_coef_[i],
@@ -120,8 +120,7 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         coef = np.empty(0, dtype=np.float64)
 
         kernel = self._get_kernel()
-        kcache = KernelCache(kernel, n_samples, self.cache_mb * 1024 * 1024,
-                             self.verbose)
+        kcache = KernelCache(kernel, n_samples, self.cache_mb, 1, self.verbose)
 
         self.support_vectors_ = X
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)

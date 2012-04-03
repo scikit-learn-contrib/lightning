@@ -59,13 +59,13 @@ def test_precomputed_kernel():
 
 def test_kernel_cache_compute():
     kernel = RbfKernel(gamma=0.1)
-    kcache = KernelCache(kernel, 20, capacity, 0)
+    kcache = KernelCache(kernel, 20, capacity, 0, 0)
     assert_equal(kcache.compute(X, 0, X, 0), 1.0)
 
 
 def test_kernel_cache_add_remove():
     kernel = RbfKernel(gamma=0.1)
-    kcache = KernelCache(kernel, 20, capacity, 0)
+    kcache = KernelCache(kernel, 20, capacity, 0, 0)
 
     for i in xrange(3):
         kcache.add_sv(i)
@@ -79,7 +79,7 @@ def test_kernel_cache_add_remove():
 def test_kernel_cache_column():
     K = pairwise_kernels(X, metric="rbf", gamma=0.1)
     kernel = RbfKernel(gamma=0.1)
-    kcache = KernelCache(kernel, 20, capacity, 0)
+    kcache = KernelCache(kernel, 20, capacity, 0, 0)
     out = np.zeros(20, dtype=np.float64)
 
     # Compute a first column.
@@ -119,7 +119,7 @@ def test_kernel_cache_column():
 def test_kernel_cache_column_sv():
     K = pairwise_kernels(X, metric="rbf", gamma=0.1)
     kernel = RbfKernel(gamma=0.1)
-    kcache = KernelCache(kernel, 20, capacity, 0)
+    kcache = KernelCache(kernel, 20, capacity, 0, 0)
     out = np.zeros(20, dtype=np.float64)
 
     size = 0

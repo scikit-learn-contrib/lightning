@@ -69,9 +69,9 @@ cdef class KernelCache(Kernel):
     cdef int* support_vector
     cdef map[int, double*]* columns
     cdef int* n_computed
-    cdef int capacity
+    cdef long capacity
     cdef int verbose
-    cdef int size
+    cdef long size
 
     cdef _create_column(self, int i)
     cdef _clear_columns(self, int n)
