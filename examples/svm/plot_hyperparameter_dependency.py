@@ -38,7 +38,7 @@ def set_axes_size(pl):
 def fit_primal_svc(X_train, y_train, C, kernel, gamma=0.1, degree=4, coef0=1):
     print "Training primal SVC, C = ", C
     start = time.time()
-    clf = PrimalSVC(C=C, kernel=kernel, degree=degree, coef0=coef0,
+    clf = PrimalSVC(C=C, kernel=kernel, degree=degree, coef0=coef0, gamma=gamma,
                     max_iter=100, tol=1e-4, verbose=1)
     clf.fit(X_train, y_train)
     return clf, time.time() - start
@@ -48,8 +48,8 @@ def fit_primal_svc(X_train, y_train, C, kernel, gamma=0.1, degree=4, coef0=1):
 def fit_dual_svc(X_train, y_train, C, kernel, gamma=0.1, degree=4, coef0=1):
     print "Training dual SVC, C = ", C
     start = time.time()
-    clf = DualSVC(C=C, kernel=kernel, degree=degree, coef0=coef0, max_iter=100,
-                  loss="l1", tol=1e-4, verbose=1)
+    clf = DualSVC(C=C, kernel=kernel, degree=degree, coef0=coef0, gamma=gamma,
+                  max_iter=100, loss="l1", tol=1e-4, verbose=1)
     clf.fit(X_train, y_train)
     return clf, time.time() - start
 
