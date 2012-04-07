@@ -101,8 +101,8 @@ def load_covtype_subset():
 
 def load_ijcnn():
     data_home = get_data_home()
-    train_file = os.path.join(data_home, "ijcnn1.tr")
-    test_file = os.path.join(data_home, "ijcnn1.t")
+    train_file = os.path.join(data_home, "ijcnn1.t")
+    test_file = os.path.join(data_home, "ijcnn1.tr")
     return _todense(_load(train_file, test_file, "ijcnn"))
 
 
