@@ -59,14 +59,17 @@ class LaSVM(BaseEstimator, ClassifierMixin):
         self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
         n_vectors = Y.shape[1]
 
+        dual_coef = np.zeros((n_vectors, n_samples), dtype=np.float64)
+
         warm_start = False
         if self.warm_start and self.dual_coef_ is not None:
             warm_start = True
+            dual_coef[:, self.support_indices_] = self.dual_coef_
+        else:
+            self.intercept_ = np.zeros((n_vectors,), dtype=np.float64)
 
-        if not self.warm_start or self.dual_coef_ is None:
-            self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
+        self.dual_coef_ = dual_coef
 
-        self.intercept_ = np.zeros((n_vectors,), dtype=np.float64)
         kernel = self._get_kernel()
         kcache = KernelCache(kernel, n_samples, self.cache_mb, 1, self.verbose)
         self.support_vectors_ = X
@@ -81,15 +84,12 @@ class LaSVM(BaseEstimator, ClassifierMixin):
             self.intercept_[i] = b
 
         sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)
+        self.support_indices_ = np.arange(n_samples)[sv]
 
         if self.kernel != "precomputed":
-            if not self.warm_start:
-                self.dual_coef_ = np.ascontiguousarray(self.dual_coef_[:, sv])
-                mask = safe_mask(X, sv)
-                self.support_vectors_ = X[mask]
-            else:
-                # Cannot trim the non-zero weights if warm start is used...
-                self.support_vectors_ = X
+            self.dual_coef_ = np.ascontiguousarray(self.dual_coef_[:, sv])
+            mask = safe_mask(X, sv)
+            self.support_vectors_ = X[mask]
 
         if self.verbose >= 1:
             print "Number of support vectors:", np.sum(sv)

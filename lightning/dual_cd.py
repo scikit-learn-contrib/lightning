@@ -114,8 +114,12 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
         n_vectors = Y.shape[1]
 
-        if not self.warm_start or self.dual_coef_ is None:
-            self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
+        dual_coef = np.zeros((n_vectors, n_samples), dtype=np.float64)
+
+        if self.warm_start and self.dual_coef_ is not None:
+            dual_coef[:, self.support_indices_] = self.dual_coef_
+
+        self.dual_coef_ = dual_coef
 
         coef = np.empty(0, dtype=np.float64)
 
@@ -134,15 +138,12 @@ class DualSVC(BaseEstimator, ClassifierMixin):
                      self.shrinking, self.callback, verbose=self.verbose)
 
         sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)
+        self.support_indices_ = np.arange(n_samples)[sv]
 
         if self.kernel != "precomputed":
-            if not self.warm_start:
-                self.dual_coef_ = np.ascontiguousarray(self.dual_coef_[:, sv])
-                mask = safe_mask(X, sv)
-                self.support_vectors_ = X[mask]
-            else:
-                # Cannot trim the non-zero weights if warm start is used...
-                self.support_vectors_ = X
+            self.dual_coef_ = np.ascontiguousarray(self.dual_coef_[:, sv])
+            mask = safe_mask(X, sv)
+            self.support_vectors_ = X[mask]
 
         if self.verbose >= 1:
             print "Number of support vectors:", np.sum(sv)
