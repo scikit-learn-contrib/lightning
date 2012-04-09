@@ -12,6 +12,8 @@ from sklearn.metrics.pairwise import pairwise_kernels
 from lightning.primal_cd import PrimalLinearSVC, PrimalSVC
 from lightning.primal_cd import C_lower_bound, C_upper_bound
 
+from lightning.kernel_fast import get_kernel, KernelCache
+
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
                                             n_classes=2, random_state=0)
@@ -295,3 +297,19 @@ def test_components():
     assert_equal(clf.n_support_vectors(), 160)
     acc2 = clf.score(bin_dense, bin_target)
     assert_equal(acc, acc2)
+
+def test_shared_kcache():
+    clf = PrimalSVC(warm_start=True, kernel="rbf", gamma=0.1,
+                    random_state=0, penalty="l1")
+    kernel = get_kernel("rbf", gamma=0.1)
+    kcache = KernelCache(kernel, bin_dense.shape[0], 10, 1, 0)
+
+    clf.C = 0.5
+    clf.fit(bin_dense, bin_target, kcache=kcache)
+    n_nz = np.sum(clf.coef_ != 0)
+
+    clf.C = 0.6
+    clf.fit(bin_dense, bin_target, kcache=kcache)
+    n_nz2 = np.sum(clf.coef_ != 0)
+
+    assert_true(n_nz < n_nz2)

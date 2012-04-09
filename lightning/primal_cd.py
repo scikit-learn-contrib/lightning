@@ -116,7 +116,7 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
     def _get_kernel(self):
         return get_kernel(self.kernel, **self._kernel_params())
 
-    def fit(self, X, y):
+    def fit(self, X, y, kcache=None):
         n_samples = X.shape[0]
         rs = check_random_state(self.random_state)
 
@@ -133,8 +133,10 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
             self.coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
             self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
 
-        kernel = self._get_kernel()
-        kcache = KernelCache(kernel, n_samples, self.cache_mb, 1, self.verbose)
+        if kcache is None:
+            kernel = self._get_kernel()
+            kcache = KernelCache(kernel, n_samples,
+                                 self.cache_mb, 1, self.verbose)
 
         self.support_vectors_ = X
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
