@@ -18,6 +18,14 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
                    KernelCache kcache,
                    np.ndarray[double, ndim=1, mode='c'] col)
 
+cdef int select_sv_precomputed(np.ndarray[int, ndim=1, mode='c'] A,
+                               int start,
+                               int search_size,
+                               int max_size,
+                               int select_method,
+                               np.ndarray[double, ndim=1, mode='c'] errors,
+                               KernelCache kcache)
+
 cdef int update_start(int start,
                       int select_method,
                       int search_size,

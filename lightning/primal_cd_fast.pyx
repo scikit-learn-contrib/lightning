@@ -18,8 +18,11 @@ from libcpp.vector cimport vector
 import numpy as np
 cimport numpy as np
 
-from lightning.kernel_fast cimport KernelCache, Kernel
-from lightning.select_fast cimport get_select_method, select_sv, update_start
+from lightning.kernel_fast cimport KernelCache
+from lightning.kernel_fast cimport Kernel
+from lightning.select_fast cimport get_select_method
+from lightning.select_fast cimport select_sv_precomputed
+from lightning.select_fast cimport update_start
 
 cdef extern from "math.h":
    double fabs(double)
@@ -115,8 +118,8 @@ def _primal_cd_l2svm_l1r(self,
             if permute:
                 j = index[s]
             else:
-                j = select_sv(index, start, search_size, active_size,
-                              select_method, w, 0, Xc, y, kcache, col)
+                j = select_sv_precomputed(index, start, search_size,
+                                          active_size, select_method, b, kcache)
 
             Lp = 0
             Lpp = 0

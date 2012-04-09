@@ -88,6 +88,47 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
 
     return selected
 
+cdef int select_sv_precomputed(np.ndarray[int, ndim=1, mode='c'] A,
+                               int start,
+                               int search_size,
+                               int max_size,
+                               int select_method,
+                               np.ndarray[double, ndim=1, mode='c'] errors,
+                               KernelCache kcache):
+
+    if select_method <= 1: # permute or random
+        return A[start]
+
+    cdef int i = start
+    cdef int n_visited = 0
+    cdef int s
+    cdef double score
+    cdef double min_score = DBL_MAX
+    cdef int selected = 0
+    cdef int* support_vectors = kcache.support_vector
+
+    while n_visited < search_size and i < max_size:
+        s = A[i]
+
+        # Only non support vectors are candidates.
+        if support_vectors[s] >= 0:
+            i += 1
+            continue
+
+        if select_method == 2: # active
+            score = fabs(errors[s] - 1)
+        elif select_method == 3: # loss
+            score = -errors[s]
+
+        if score < min_score:
+            min_score = score
+            selected = s
+
+        n_visited += 1
+        i += 1
+
+    return selected
+
 
 cdef int update_start(int start,
                       int select_method,
