@@ -50,17 +50,19 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
             self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
             self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
 
+        indices = np.arange(n_features, dtype=np.int32)
+
         for i in xrange(n_vectors):
             if self.penalty == "l1":
                 _primal_cd_l2svm_l1r(self, self.coef_[i], self.errors_[i],
-                                     X, Y[:, i], kcache, True,
+                                     X, Y[:, i], indices, kcache, True,
                                      "permute", 60,
                                      self.termination, self.nz_coef_upper_bound,
                                      self.C, self.max_iter, rs, self.tol,
                                      self.callback, verbose=self.verbose)
             else:
                 _primal_cd_l2svm_l2r(self, self.coef_[i], self.errors_[i],
-                                     X, None, Y[:, i], kcache, True,
+                                     X, None, Y[:, i], indices, kcache, True,
                                      self.termination, self.nz_coef_upper_bound,
                                      self.C, self.max_iter, rs, self.tol,
                                      self.callback, verbose=self.verbose)
@@ -125,13 +127,22 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
         self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
         n_vectors = Y.shape[1]
 
+        A = X
+        C = self.C
+        termination = self.termination
+
+        if self.penalty == "l2" and self.components is not None:
+            A = self.components
+
         if self.warm_start and self.coef_ is not None:
-            coef = np.zeros((n_vectors, n_samples), dtype=np.float64)
+            coef = np.zeros((n_vectors, A.shape[0]), dtype=np.float64)
             coef[:, self.support_indices_] = self.coef_
             self.coef_ = coef
         else:
-            self.coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
+            self.coef_ = np.zeros((n_vectors, A.shape[0]), dtype=np.float64)
             self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
+
+        indices = np.arange(A.shape[0], dtype=np.int32)
 
         if kcache is None:
             kernel = self._get_kernel()
@@ -144,46 +155,34 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
         if self.penalty in ("l1", "l1l2"):
             for i in xrange(n_vectors):
                     _primal_cd_l2svm_l1r(self, self.coef_[i], self.errors_[i],
-                                         X, Y[:, i], kcache, False,
+                                         X, Y[:, i], indices, kcache, False,
                                          self.selection, self.search_size,
                                          self.termination, self.sv_upper_bound,
                                          self.C, self.max_iter, rs, self.tol,
                                          self.callback, verbose=self.verbose)
 
-        A = X
-        C = self.C
-        termination = self.termination
-
         if self.penalty == "l1l2":
             sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
-            self.support_indices_ = np.arange(n_samples)[sv]
-            A = X[sv]
+            self.support_indices_ = np.arange(n_samples, dtype=np.int32)[sv]
+            indices = self.support_indices_.copy()
+            A = X
             self.support_vectors_ = A
-            kcache = KernelCache(kernel, n_samples, self.cache_mb, 1, self.verbose)
-            if self.warm_debiasing:
-                self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
-            else:
-                self.coef_ = np.zeros((n_vectors, A.shape[0]), dtype=np.float64)
+            if not self.warm_debiasing:
+                self.coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
                 self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
             C = self.Cd
             termination = "convergence"
 
-        if self.penalty == "l2" and self.components is not None:
-            A = self.components
-
         if self.penalty in ("l2", "l1l2"):
             for i in xrange(n_vectors):
                 _primal_cd_l2svm_l2r(self, self.coef_[i], self.errors_[i],
-                                     X, A, Y[:, i], kcache, False,
+                                     X, A, Y[:, i], indices, kcache, False,
                                      termination, self.sv_upper_bound,
                                      C, self.max_iter, rs, self.tol,
                                      self.callback, verbose=self.verbose)
 
-        if self.penalty == "l1l2":
-            return self
-
         sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
-        self.support_indices_ = np.arange(n_samples)[sv]
+        self.support_indices_ = np.arange(A.shape[0], dtype=np.int32)[sv]
 
         if np.sum(sv) == 0:
             # Empty model...

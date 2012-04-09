@@ -298,6 +298,7 @@ def test_components():
     acc2 = clf.score(bin_dense, bin_target)
     assert_equal(acc, acc2)
 
+
 def test_shared_kcache():
     clf = PrimalSVC(warm_start=True, kernel="rbf", gamma=0.1,
                     random_state=0, penalty="l1")

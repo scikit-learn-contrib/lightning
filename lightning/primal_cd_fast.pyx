@@ -36,6 +36,7 @@ def _primal_cd_l2svm_l1r(self,
                          np.ndarray[double, ndim=1, mode='c'] b,
                          X,
                          np.ndarray[double, ndim=1] y,
+                         np.ndarray[int, ndim=1, mode='c'] index,
                          KernelCache kcache,
                          int linear_kernel,
                          selection,
@@ -79,9 +80,6 @@ def _primal_cd_l2svm_l1r(self,
     cdef double delta, b_new, b_add
     cdef double xj_sq
     cdef double wj_abs
-
-    cdef np.ndarray[int, ndim=1, mode='c'] index
-    index = np.arange(n_features, dtype=np.int32)
 
     cdef double* col_data
     cdef double* col_ro
@@ -308,6 +306,7 @@ def _primal_cd_l2svm_l2r(self,
                          X,
                          A,
                          np.ndarray[double, ndim=1] y,
+                         np.ndarray[int, ndim=1, mode='c'] index,
                          KernelCache kcache,
                          int linear_kernel,
                          termination,
@@ -331,16 +330,13 @@ def _primal_cd_l2svm_l2r(self,
     else:
         Xc = X
         Ac = A
-        n_features = A.shape[0]
+        n_features = index.shape[0]
 
     cdef int i, j, s, step, t
     cdef double z, z_old, z_diff,
     cdef double Dp, Dpmax, Dpp, Dj_zero, Dj_z
     cdef double sigma = 0.01
     cdef double xj_sq, val, b_new, bound
-
-    cdef np.ndarray[int, ndim=1, mode='c'] index
-    index = np.arange(n_features, dtype=np.int32)
 
     cdef double* col_data
     cdef double* col_ro
