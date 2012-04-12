@@ -28,6 +28,7 @@ class Callback(object):
 
     def __init__(self, K_test, y_test):
         self.n_svs = []
+        self.times = []
         self.accuracies = []
         self.K_test = K_test
         self.y_test = y_test
@@ -41,6 +42,7 @@ class Callback(object):
         pred = clf.label_binarizer_.inverse_transform(pred)
         acc = np.mean(pred == y_test)
         self.accuracies.append(acc)
+        self.times.append(time.time())
 
 op = OptionParser()
 op.add_option("--notitle", action="store_true", default=False, dest="notitle")
@@ -92,14 +94,16 @@ prop = fm.FontProperties(size=18)
 
 pl.figure()
 set_axes_size(pl)
-pl.plot(np.arange(len(callback_primal.n_svs)) * 100,
+
+
+pl.plot(np.array(callback_primal.times) - callback_primal.times[0],
         np.array(callback_primal.n_svs) * 1.0 / n_samples,
         style[0], label="L2L L1R Primal", **opt)
-pl.plot(np.arange(len(callback_dual.n_svs)) * 100,
+pl.plot(np.array(callback_dual.times) - callback_dual.times[0],
         np.array(callback_dual.n_svs) * 1.0 / n_samples,
         style[1], label="L1L L2R Dual", **opt)
 pl.ylim([0.0, 0.8])
-pl.xlabel('Iteration', size=15)
+pl.xlabel('CPU seconds', size=15)
 pl.ylabel('Percentage of components / support vectors', size=15)
 pl.legend(loc='lower right', prop=prop)
 if not opts.notitle:
@@ -107,14 +111,16 @@ if not opts.notitle:
 
 pl.figure()
 set_axes_size(pl)
-pl.plot(np.arange(len(callback_primal.n_svs)) * 100,
+
+
+pl.plot(np.array(callback_primal.times) - callback_primal.times[0],
         np.array(callback_primal.accuracies),
         style[0], label="L2L L1R Primal", **opt)
-pl.plot(np.arange(len(callback_dual.n_svs)) * 100,
+pl.plot(np.array(callback_dual.times) - callback_dual.times[0],
         np.array(callback_dual.accuracies),
         style[1], label="L1L L2R Dual", **opt)
 pl.ylim([0.97, 1.0])
-pl.xlabel('Iteration', size=15)
+pl.xlabel('CPU seconds', size=15)
 pl.ylabel('Test accuracy', size=15)
 if not opts.notitle:
     pl.title('Accuracy over time')
