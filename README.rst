@@ -15,20 +15,20 @@ and a working C/C++ compiler.
 
 To run the tests you will also need nose >= 0.10.
 
-.. Install
-  =======
+Install
+=======
 
-  First run::
+First run::
 
-    make
+  make cython
 
-  Then to install in your home directory, use::
+Then to install in your home directory, use::
 
-    python setup.py install --home
+  python setup.py install --home
 
-  To install for all users on Unix/Linux::
+To install for all users on Unix/Linux::
 
-    python setup.py build
-    sudo python setup.py install
+  python setup.py build
+  sudo python setup.py install
 
 
