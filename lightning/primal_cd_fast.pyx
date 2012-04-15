@@ -117,7 +117,8 @@ def _primal_cd_l2svm_l1r(self,
                 j = index[s]
             else:
                 j = select_sv_precomputed(index, start, search_size,
-                                          active_size, select_method, b, kcache)
+                                          active_size, select_method, b, kcache,
+                                          0)
 
             Lp = 0
             Lpp = 0

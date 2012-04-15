@@ -117,7 +117,7 @@ def _dual_cd(self,
                 i = A[s]
             else:
                 i = select_sv(A, start, search_size, active_size, select_method,
-                              alpha, 0, X, y, kcache, col)
+                              alpha, 0, X, y, kcache, col, 0)
 
             y_i = y[i]
             alpha_i = fabs(alpha[i])

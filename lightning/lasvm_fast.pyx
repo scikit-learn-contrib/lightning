@@ -339,7 +339,7 @@ def _lasvm(self,
         for i in xrange(n_samples):
             # Select a support vector candidate.
             s = select_sv(A, start, search_size, n_samples, select_method,
-                          alpha, b[0], X, y, kcache, col)
+                          alpha, b[0], X, y, kcache, col, 1)
 
             # Attempt to add it.
             _process(s, X, y, kcache, alpha, g, C, tau, col, col2)

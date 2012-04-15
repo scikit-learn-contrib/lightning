@@ -38,7 +38,8 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
                    np.ndarray[double, ndim=2, mode='c'] X,
                    np.ndarray[double, ndim=1] y,
                    KernelCache kcache,
-                   np.ndarray[double, ndim=1, mode='c'] col):
+                   np.ndarray[double, ndim=1, mode='c'] col,
+                   int check_duplicates):
 
     if select_method <= 1: # permute or random
         return A[start]
@@ -56,8 +57,7 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
     while n_visited < search_size and i < max_size:
         s = A[i]
 
-        # Only non support vectors are candidates.
-        if support_vectors[s] >= 0:
+        if check_duplicates and support_vectors[s] >= 0:
             i += 1
             continue
 
@@ -94,7 +94,8 @@ cdef int select_sv_precomputed(np.ndarray[int, ndim=1, mode='c'] A,
                                int max_size,
                                int select_method,
                                np.ndarray[double, ndim=1, mode='c'] errors,
-                               KernelCache kcache):
+                               KernelCache kcache,
+                               int check_duplicates):
 
     if select_method <= 1: # permute or random
         return A[start]
@@ -110,8 +111,7 @@ cdef int select_sv_precomputed(np.ndarray[int, ndim=1, mode='c'] A,
     while n_visited < search_size and i < max_size:
         s = A[i]
 
-        # Only non support vectors are candidates.
-        if support_vectors[s] >= 0:
+        if check_duplicates and support_vectors[s] >= 0:
             i += 1
             continue
 
