@@ -35,6 +35,11 @@ def configuration(parent_package='', top_path=None):
          include_dirs=[numpy.get_include()]
          )
 
+    config.add_extension('sgd_fast',
+         sources=['sgd_fast.cpp'],
+         include_dirs=[numpy.get_include()]
+         )
+
     # add the test directory
     config.add_subpackage('tests')
 
