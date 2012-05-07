@@ -147,6 +147,7 @@ cdef void _add(np.ndarray[double, ndim=2, mode='c'] W,
     for j in xrange(n_features):
         W[k, j] += X[i, j] * scale
 
+
 cdef double _get_eta(int learning_rate, double lmbda,
                      double eta0, double power_t, long t):
     cdef double eta = eta0
@@ -155,6 +156,7 @@ cdef double _get_eta(int learning_rate, double lmbda,
     elif learning_rate == 3: # INVERSE SCALING
         eta = eta0 / pow(t, power_t)
     return eta
+
 
 def _binary_linear_sgd(self,
                        np.ndarray[double, ndim=2, mode='c'] W,
@@ -246,6 +248,7 @@ cdef int _predict_multiclass(np.ndarray[double, ndim=2, mode='c'] W,
 
     return selected
 
+
 def _multiclass_hinge_linear_sgd(self,
                                  np.ndarray[double, ndim=2, mode='c'] W,
                                  np.ndarray[double, ndim=1] intercepts,
@@ -306,6 +309,7 @@ def _multiclass_hinge_linear_sgd(self,
         if w_scales[l] != 1.0:
             W[l] *= w_scales[l]
 
+
 cdef void _softmax(np.ndarray[double, ndim=1] scores):
     cdef Py_ssize_t size = scores.shape[0]
     cdef double sum_ = 0
@@ -326,6 +330,7 @@ cdef void _softmax(np.ndarray[double, ndim=1] scores):
     if sum_ > 0:
         for i in xrange(size):
             scores[i] /= sum_
+
 
 def _multiclass_log_linear_sgd(self,
                                np.ndarray[double, ndim=2, mode='c'] W,
