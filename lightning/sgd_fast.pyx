@@ -190,7 +190,9 @@ def _linear_sgd(self,
 
             if update != 0:
                 _add(w, X, i, update / w_scale)
-                intercept += update * intercept_decay
+
+                if fit_intercept:
+                    intercept += update * intercept_decay
 
             w_scale *= (1 - lmbda * eta)
 

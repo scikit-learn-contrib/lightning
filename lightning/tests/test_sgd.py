@@ -20,6 +20,19 @@ mult_dense, mult_target = make_classification(n_samples=300, n_features=100,
                                               n_classes=3, random_state=0)
 
 def test_binary_linear_sgd():
-    clf = SGDClassifier(random_state=0)
-    clf.fit(bin_dense, bin_target)
-    assert_greater(clf.score(bin_dense, bin_target), 0.99)
+    for clf in (SGDClassifier(random_state=0, loss="hinge", fit_intercept=True,
+                              learning_rate="pegasos"),
+                SGDClassifier(random_state=0, loss="hinge", fit_intercept=False,
+                              learning_rate="pegasos"),
+                SGDClassifier(random_state=0, loss="hinge", fit_intercept=True,
+                              learning_rate="invscaling"),
+                SGDClassifier(random_state=0, loss="hinge", fit_intercept=True,
+                              learning_rate="constant"),
+                SGDClassifier(random_state=0, loss="log", fit_intercept=True,
+                              learning_rate="constant"),
+                SGDClassifier(random_state=0, loss="modified_huber",
+                              fit_intercept=True, learning_rate="constant"),
+                ):
+
+        clf.fit(bin_dense, bin_target)
+        assert_greater(clf.score(bin_dense, bin_target), 0.94)
