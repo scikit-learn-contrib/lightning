@@ -36,3 +36,9 @@ def test_binary_linear_sgd():
 
         clf.fit(bin_dense, bin_target)
         assert_greater(clf.score(bin_dense, bin_target), 0.94)
+
+
+def test_multiclass_sgd():
+    clf = SGDClassifier()
+    clf.fit(mult_dense, mult_target)
+    assert_greater(clf.score(mult_dense, mult_target), 0.81)
