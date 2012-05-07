@@ -149,7 +149,11 @@ def _linear_sgd(self,
                 np.ndarray[double, ndim=1] y,
                 LossFunction loss,
                 double lmbda,
+                int learning_rate,
                 double eta0,
+                double power_t,
+                int fit_intercept,
+                double intercept_decay,
                 int max_iter,
                 random_state,
                 int verbose):
@@ -164,6 +168,7 @@ def _linear_sgd(self,
     cdef long t = 1
     cdef double update, pred, eta
     cdef double w_scale = 1.0
+    cdef double intercept = 0.0
 
     eta = eta0
 
@@ -172,12 +177,20 @@ def _linear_sgd(self,
 
         for i in xrange(n_samples):
 
+            if learning_rate == 2: # PEGASOS
+                eta = 1.0 / (lmbda * t)
+            elif learning_rate == 3: # INVERSE SCALING
+                eta = eta0 / pow(t, power_t)
+
             pred = _dot(w, X, i)
             pred *= w_scale
+            pred += intercept
+
             update = loss.get_update(pred, y[i]) * eta
 
             if update != 0:
                 _add(w, X, i, update / w_scale)
+                intercept += update * intercept_decay
 
             w_scale *= (1 - lmbda * eta)
 
@@ -185,3 +198,5 @@ def _linear_sgd(self,
 
     if w_scale != 1.0:
         w *= w_scale
+
+    return w, intercept

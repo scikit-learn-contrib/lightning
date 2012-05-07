@@ -19,13 +19,18 @@ from .sgd_fast import EpsilonInsensitive
 
 class SGDClassifier(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, eta0=0.03, lmbda=0.01, loss="hinge",
-                 epsilon=0.01, max_iter=10, random_state=None,
-                 verbose=0, n_jobs=1):
-        self.eta0 = eta0
-        self.lmbda = lmbda
+    def __init__(self, loss="hinge", lmbda=0.01,
+                 learning_rate="pegasos", eta0=0.03, power_t=0.5,
+                 epsilon=0.01, fit_intercept=True, intercept_decay=1.0,
+                 max_iter=10, random_state=None, verbose=0, n_jobs=1):
         self.loss = loss
+        self.lmbda = lmbda
+        self.learning_rate = learning_rate
+        self.eta0 = eta0
+        self.power_t = power_t
         self.epsilon = epsilon
+        self.fit_intercept = fit_intercept
+        self.intercept_decay = intercept_decay
         self.max_iter = max_iter
         self.random_state = random_state
         self.verbose = verbose
@@ -45,6 +50,10 @@ class SGDClassifier(BaseEstimator, ClassifierMixin):
         }
         return losses[self.loss]
 
+    def _get_learning_rate(self):
+        learning_rates = {"constant": 1, "pegasos": 2, "invscaling": 3}
+        return learning_rates[self.learning_rate]
+
     def fit(self, X, y):
         n_samples, n_features = X.shape
         rs = check_random_state(self.random_state)
@@ -54,17 +63,22 @@ class SGDClassifier(BaseEstimator, ClassifierMixin):
         n_vectors = Y.shape[1]
 
         self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
+        self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
 
         for i in xrange(n_vectors):
-            _linear_sgd(self, self.coef_[i], X, Y[:, i],
-                        self._get_loss(),
-                        self.lmbda, self.eta0, self.max_iter,
-                        rs, self.verbose)
+            _, self.intercept_[i] = _linear_sgd(self, self.coef_[i], X, Y[:, i],
+                                                self._get_loss(),
+                                                self.lmbda,
+                                                self._get_learning_rate(),
+                                                self.eta0, self.power_t,
+                                                self.fit_intercept,
+                                                self.intercept_decay,
+                                                self.max_iter, rs, self.verbose)
 
         return self
 
     def decision_function(self, X):
-        return np.dot(X, self.coef_.T)
+        return np.dot(X, self.coef_.T) + self.intercept_
 
     def predict(self, X):
         pred = self.decision_function(X)
