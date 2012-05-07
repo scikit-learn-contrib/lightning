@@ -147,6 +147,14 @@ cdef void _add(np.ndarray[double, ndim=2, mode='c'] W,
     for j in xrange(n_features):
         W[k, j] += X[i, j] * scale
 
+cdef double _get_eta(int learning_rate, double lmbda,
+                     double eta0, double power_t, long t):
+    cdef double eta = eta0
+    if learning_rate == 2: # PEGASOS
+        eta = 1.0 / (lmbda * t)
+    elif learning_rate == 3: # INVERSE SCALING
+        eta = eta0 / pow(t, power_t)
+    return eta
 
 def _binary_linear_sgd(self,
                        np.ndarray[double, ndim=2, mode='c'] W,
@@ -177,25 +185,20 @@ def _binary_linear_sgd(self,
     cdef double w_scale = 1.0
     cdef double intercept = 0.0
 
-    eta = eta0
-
     for it in xrange(max_iter):
         random_state.shuffle(indices)
 
         for i in xrange(n_samples):
-
-            if learning_rate == 2: # PEGASOS
-                eta = 1.0 / (lmbda * t)
-            elif learning_rate == 3: # INVERSE SCALING
-                eta = eta0 / pow(t, power_t)
-
             pred = _dot(W, k, X, i)
             pred *= w_scale
             pred += intercepts[k]
 
-            update = loss.get_update(pred, y[i]) * eta
+            eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
+            update = loss.get_update(pred, y[i])
 
             if update != 0:
+                update *= eta
+
                 _add(W, k, X, i, update / w_scale)
 
                 if fit_intercept:
@@ -214,6 +217,7 @@ def _binary_linear_sgd(self,
 
 
 cdef int _predict_multiclass(np.ndarray[double, ndim=2, mode='c'] W,
+                             np.ndarray[double, ndim=1] w_scales,
                              np.ndarray[double, ndim=1] intercepts,
                              np.ndarray[double, ndim=2, mode='c'] X,
                              int i):
@@ -226,10 +230,13 @@ cdef int _predict_multiclass(np.ndarray[double, ndim=2, mode='c'] W,
     cdef int selected = 0
 
     for l in xrange(n_vectors):
-        pred = intercepts[l]
+        pred = 0
 
         for j in xrange(n_features):
             pred += X[i, j] * W[l, j]
+
+        pred *= w_scales[l]
+        pred += intercepts[l]
 
         # pred += loss(y_true, y_pred)
 
@@ -263,36 +270,31 @@ def _multiclass_hinge_linear_sgd(self,
 
     cdef int it, i, l
     cdef long t = 1
-    cdef double update, pred, eta
+    cdef double update, pred, eta, scale
     cdef double intercept = 0.0
 
     cdef np.ndarray[double, ndim=1, mode='c'] w_scales
     w_scales = np.ones(n_vectors, dtype=np.float64)
 
-    eta = eta0
-
     for it in xrange(max_iter):
         random_state.shuffle(indices)
 
         for i in xrange(n_samples):
-
-            if learning_rate == 2: # PEGASOS
-                eta = 1.0 / (lmbda * t)
-            elif learning_rate == 3: # INVERSE SCALING
-                eta = eta0 / pow(t, power_t)
-
-            k = _predict_multiclass(W, intercepts, X, i)
+            eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
+            k = _predict_multiclass(W, w_scales, intercepts, X, i)
 
             if k != y[i]:
-                _add(W, k, X, i, -1 / w_scales[k])
-                _add(W, y[i], X, i, 1 / w_scales[y[i]])
+                _add(W, k, X, i, -eta / w_scales[k])
+                _add(W, y[i], X, i, eta / w_scales[y[i]])
 
                 if fit_intercept:
-                    intercepts[k] -= intercept_decay
-                    intercepts[y[i]] += intercept_decay
+                    scale = eta * intercept_decay
+                    intercepts[k] -= scale
+                    intercepts[y[i]] += scale
 
+            scale = (1 - lmbda * eta)
             for l in xrange(n_vectors):
-                w_scales[l] *= (1 - lmbda * eta)
+                w_scales[l] *= scale
 
                 if w_scales[l] < 1e-9:
                     W[l] *= w_scales[l]
