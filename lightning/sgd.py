@@ -4,10 +4,11 @@
 import numpy as np
 
 from sklearn.base import BaseEstimator, ClassifierMixin, clone
-from sklearn.preprocessing import LabelBinarizer
+from sklearn.preprocessing import LabelBinarizer, LabelNormalizer
 from sklearn.utils import check_random_state
 
-from .sgd_fast import _linear_sgd
+from .sgd_fast import _binary_linear_sgd
+from .sgd_fast import _multiclass_hinge_linear_sgd
 
 from .sgd_fast import ModifiedHuber
 from .sgd_fast import Hinge
@@ -19,11 +20,12 @@ from .sgd_fast import EpsilonInsensitive
 
 class SGDClassifier(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, loss="hinge", lmbda=0.01,
+    def __init__(self, loss="hinge", multiclass="one-vs-rest", lmbda=0.01,
                  learning_rate="pegasos", eta0=0.03, power_t=0.5,
                  epsilon=0.01, fit_intercept=True, intercept_decay=1.0,
                  max_iter=10, random_state=None, verbose=0, n_jobs=1):
         self.loss = loss
+        self.multiclass = multiclass
         self.lmbda = lmbda
         self.learning_rate = learning_rate
         self.eta0 = eta0
@@ -58,22 +60,48 @@ class SGDClassifier(BaseEstimator, ClassifierMixin):
         n_samples, n_features = X.shape
         rs = check_random_state(self.random_state)
 
+        if self.multiclass == "natural":
+            self.label_normalizer_ = LabelNormalizer()
+            y = self.label_normalizer_.fit_transform(y)
+
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
-        Y = self.label_binarizer_.fit_transform(y)
-        n_vectors = Y.shape[1]
+        self.label_binarizer_.fit(y)
+        n_classes = len(self.label_binarizer_.classes_)
+        n_vectors = 1 if n_classes <= 2 else n_classes
 
         self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
 
-        for i in xrange(n_vectors):
-            _, self.intercept_[i] = _linear_sgd(self, self.coef_[i], X, Y[:, i],
-                                                self._get_loss(),
-                                                self.lmbda,
-                                                self._get_learning_rate(),
-                                                self.eta0, self.power_t,
-                                                self.fit_intercept,
-                                                self.intercept_decay,
-                                                self.max_iter, rs, self.verbose)
+        if n_vectors == 1 or self.multiclass == "one-vs-rest":
+            Y = self.label_binarizer_.transform(y)
+            for i in xrange(n_vectors):
+                _binary_linear_sgd(self,
+                                   self.coef_, self.intercept_, i,
+                                   X, Y[:, i],
+                                   self._get_loss(),
+                                   self.lmbda,
+                                   self._get_learning_rate(),
+                                   self.eta0, self.power_t,
+                                   self.fit_intercept,
+                                   self.intercept_decay,
+                                   self.max_iter, rs, self.verbose)
+
+        elif self.multiclass == "natural":
+            if self.loss == "hinge":
+                _multiclass_hinge_linear_sgd(self,
+                                             self.coef_, self.intercept_,
+                                             X, y.astype(np.int32),
+                                             self.lmbda,
+                                             self._get_learning_rate(),
+                                             self.eta0, self.power_t,
+                                             self.fit_intercept,
+                                             self.intercept_decay,
+                                             self.max_iter, rs, self.verbose)
+            else:
+                raise ValueError("Loss not supported for multiclass!")
+
+        else:
+            raise ValueError("Wrong value for multiclass.")
 
         return self
 
@@ -82,6 +110,9 @@ class SGDClassifier(BaseEstimator, ClassifierMixin):
 
     def predict(self, X):
         pred = self.decision_function(X)
-        return self.label_binarizer_.inverse_transform(pred, threshold=0)
+        pred = self.label_binarizer_.inverse_transform(pred, threshold=0)
 
+        if hasattr(self, "label_normalizer_"):
+            pred = self.label_normalizer_.inverse_transform(pred)
 
+        return pred

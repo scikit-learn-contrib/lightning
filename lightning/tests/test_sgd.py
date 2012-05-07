@@ -42,3 +42,10 @@ def test_multiclass_sgd():
     clf = SGDClassifier()
     clf.fit(mult_dense, mult_target)
     assert_greater(clf.score(mult_dense, mult_target), 0.81)
+
+
+def test_multiclass_hinge_sgd():
+    clf = SGDClassifier(loss="hinge", multiclass="natural",
+                        learning_rate="constant")
+    clf.fit(mult_dense, mult_target)
+    assert_greater(clf.score(mult_dense, mult_target), 0.78)

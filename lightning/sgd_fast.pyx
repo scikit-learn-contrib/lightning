@@ -16,6 +16,9 @@ cdef extern from "math.h":
     cdef extern double sqrt(double x)
     cdef extern double pow(double x, double y)
 
+cdef extern from "float.h":
+   double DBL_MAX
+
 cdef class LossFunction:
 
     cpdef double get_update(self, double p, double y):
@@ -118,7 +121,8 @@ cdef class EpsilonInsensitive(LossFunction):
             return 0
 
 
-cdef double _dot(np.ndarray[double, ndim=1, mode='c'] w,
+cdef double _dot(np.ndarray[double, ndim=2, mode='c'] W,
+                 int k,
                  np.ndarray[double, ndim=2, mode='c'] X,
                  int i):
     cdef Py_ssize_t n_features = X.shape[1]
@@ -127,36 +131,39 @@ cdef double _dot(np.ndarray[double, ndim=1, mode='c'] w,
     cdef double pred = 0.0
 
     for j in xrange(n_features):
-        pred += X[i, j] * w[j]
+        pred += X[i, j] * W[k, j]
 
     return pred
 
 
-cdef void _add(np.ndarray[double, ndim=1, mode='c'] w,
-                 np.ndarray[double, ndim=2, mode='c'] X,
-                 int i,
-                 double scale):
+cdef void _add(np.ndarray[double, ndim=2, mode='c'] W,
+               int k,
+               np.ndarray[double, ndim=2, mode='c'] X,
+               int i,
+               double scale):
     cdef Py_ssize_t n_features = X.shape[1]
     cdef int j
 
     for j in xrange(n_features):
-        w[j] += X[i, j] * scale
+        W[k, j] += X[i, j] * scale
 
 
-def _linear_sgd(self,
-                np.ndarray[double, ndim=1, mode='c'] w,
-                np.ndarray[double, ndim=2, mode='c'] X,
-                np.ndarray[double, ndim=1] y,
-                LossFunction loss,
-                double lmbda,
-                int learning_rate,
-                double eta0,
-                double power_t,
-                int fit_intercept,
-                double intercept_decay,
-                int max_iter,
-                random_state,
-                int verbose):
+def _binary_linear_sgd(self,
+                       np.ndarray[double, ndim=2, mode='c'] W,
+                       np.ndarray[double, ndim=1] intercepts,
+                       int k,
+                       np.ndarray[double, ndim=2, mode='c'] X,
+                       np.ndarray[double, ndim=1] y,
+                       LossFunction loss,
+                       double lmbda,
+                       int learning_rate,
+                       double eta0,
+                       double power_t,
+                       int fit_intercept,
+                       double intercept_decay,
+                       int max_iter,
+                       random_state,
+                       int verbose):
 
     cdef Py_ssize_t n_samples = X.shape[0]
     cdef Py_ssize_t n_features = X.shape[1]
@@ -182,27 +189,118 @@ def _linear_sgd(self,
             elif learning_rate == 3: # INVERSE SCALING
                 eta = eta0 / pow(t, power_t)
 
-            pred = _dot(w, X, i)
+            pred = _dot(W, k, X, i)
             pred *= w_scale
-            pred += intercept
+            pred += intercepts[k]
 
             update = loss.get_update(pred, y[i]) * eta
 
             if update != 0:
-                _add(w, X, i, update / w_scale)
+                _add(W, k, X, i, update / w_scale)
 
                 if fit_intercept:
-                    intercept += update * intercept_decay
+                    intercepts[k] += update * intercept_decay
 
             w_scale *= (1 - lmbda * eta)
 
             if w_scale < 1e-9:
-                w *= w_scale
+                W[k] *= w_scale
                 w_scale = 1.0
 
             t += 1
 
     if w_scale != 1.0:
-        w *= w_scale
+        W[k] *= w_scale
 
-    return w, intercept
+
+cdef int _predict_multiclass(np.ndarray[double, ndim=2, mode='c'] W,
+                             np.ndarray[double, ndim=1] intercepts,
+                             np.ndarray[double, ndim=2, mode='c'] X,
+                             int i):
+    cdef Py_ssize_t n_features = X.shape[1]
+    cdef Py_ssize_t n_vectors = W.shape[0]
+    cdef int j, l
+
+    cdef double pred
+    cdef double best = -DBL_MAX
+    cdef int selected = 0
+
+    for l in xrange(n_vectors):
+        pred = intercepts[l]
+
+        for j in xrange(n_features):
+            pred += X[i, j] * W[l, j]
+
+        # pred += loss(y_true, y_pred)
+
+        if pred > best:
+            best = pred
+            selected = l
+
+    return selected
+
+def _multiclass_hinge_linear_sgd(self,
+                                 np.ndarray[double, ndim=2, mode='c'] W,
+                                 np.ndarray[double, ndim=1] intercepts,
+                                 np.ndarray[double, ndim=2, mode='c'] X,
+                                 np.ndarray[int, ndim=1] y,
+                                 double lmbda,
+                                 int learning_rate,
+                                 double eta0,
+                                 double power_t,
+                                 int fit_intercept,
+                                 double intercept_decay,
+                                 int max_iter,
+                                 random_state,
+                                 int verbose):
+
+    cdef Py_ssize_t n_samples = X.shape[0]
+    cdef Py_ssize_t n_features = X.shape[1]
+    cdef Py_ssize_t n_vectors = W.shape[0]
+
+    cdef np.ndarray[int, ndim=1, mode='c'] indices
+    indices = np.arange(n_samples, dtype=np.int32)
+
+    cdef int it, i, l
+    cdef long t = 1
+    cdef double update, pred, eta
+    cdef double intercept = 0.0
+
+    cdef np.ndarray[double, ndim=1, mode='c'] w_scales
+    w_scales = np.ones(n_vectors, dtype=np.float64)
+
+    eta = eta0
+
+    for it in xrange(max_iter):
+        random_state.shuffle(indices)
+
+        for i in xrange(n_samples):
+
+            if learning_rate == 2: # PEGASOS
+                eta = 1.0 / (lmbda * t)
+            elif learning_rate == 3: # INVERSE SCALING
+                eta = eta0 / pow(t, power_t)
+
+            k = _predict_multiclass(W, intercepts, X, i)
+
+            if k != y[i]:
+                _add(W, k, X, i, -1 / w_scales[k])
+                _add(W, y[i], X, i, 1 / w_scales[y[i]])
+
+                if fit_intercept:
+                    intercepts[k] -= intercept_decay
+                    intercepts[y[i]] += intercept_decay
+
+            for l in xrange(n_vectors):
+                w_scales[l] *= (1 - lmbda * eta)
+
+                if w_scales[l] < 1e-9:
+                    W[l] *= w_scales[l]
+                    w_scales[l] = 1.0
+
+            t += 1
+
+    for l in xrange(n_vectors):
+        if w_scales[l] != 1.0:
+            W[l] *= w_scales[l]
+
