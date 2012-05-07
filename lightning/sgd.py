@@ -9,6 +9,7 @@ from sklearn.utils import check_random_state
 
 from .sgd_fast import _binary_linear_sgd
 from .sgd_fast import _multiclass_hinge_linear_sgd
+from .sgd_fast import _multiclass_log_linear_sgd
 
 from .sgd_fast import ModifiedHuber
 from .sgd_fast import Hinge
@@ -87,16 +88,13 @@ class SGDClassifier(BaseEstimator, ClassifierMixin):
                                    self.max_iter, rs, self.verbose)
 
         elif self.multiclass == "natural":
-            if self.loss == "hinge":
-                _multiclass_hinge_linear_sgd(self,
-                                             self.coef_, self.intercept_,
-                                             X, y.astype(np.int32),
-                                             self.lmbda,
-                                             self._get_learning_rate(),
-                                             self.eta0, self.power_t,
-                                             self.fit_intercept,
-                                             self.intercept_decay,
-                                             self.max_iter, rs, self.verbose)
+            if self.loss in ("hinge", "log"):
+                func = eval("_multiclass_%s_linear_sgd" % self.loss)
+                func(self, self.coef_, self.intercept_,
+                     X, y.astype(np.int32), self.lmbda,
+                     self._get_learning_rate(), self.eta0, self.power_t,
+                     self.fit_intercept, self.intercept_decay,
+                     self.max_iter, rs, self.verbose)
             else:
                 raise ValueError("Loss not supported for multiclass!")
 

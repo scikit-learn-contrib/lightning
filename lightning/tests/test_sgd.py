@@ -45,7 +45,15 @@ def test_multiclass_sgd():
 
 
 def test_multiclass_hinge_sgd():
-    clf = SGDClassifier(loss="hinge", multiclass="natural",
-                        learning_rate="constant")
-    clf.fit(mult_dense, mult_target)
-    assert_greater(clf.score(mult_dense, mult_target), 0.78)
+    for fit_intercept in (True, False):
+        clf = SGDClassifier(loss="hinge", multiclass="natural",
+                            fit_intercept=fit_intercept)
+        clf.fit(mult_dense, mult_target)
+        assert_greater(clf.score(mult_dense, mult_target), 0.78)
+
+def test_multiclass_log_sgd():
+    for fit_intercept in (True, False):
+        clf = SGDClassifier(loss="log", multiclass="natural",
+                            fit_intercept=fit_intercept)
+        clf.fit(mult_dense, mult_target)
+        assert_greater(clf.score(mult_dense, mult_target), 0.78)

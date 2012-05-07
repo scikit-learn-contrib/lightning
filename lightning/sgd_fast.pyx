@@ -306,3 +306,96 @@ def _multiclass_hinge_linear_sgd(self,
         if w_scales[l] != 1.0:
             W[l] *= w_scales[l]
 
+cdef void _softmax(np.ndarray[double, ndim=1] scores):
+    cdef Py_ssize_t size = scores.shape[0]
+    cdef double sum_ = 0
+    cdef double max_score = -DBL_MAX
+    cdef int i
+
+    for i in xrange(size):
+        max_score = max(max_score, scores[i])
+
+    for i in xrange(size):
+        scores[i] -= max_score
+        if scores[i] < -10:
+            scores[i] = 0
+        else:
+            scores[i] = exp(scores[i])
+            sum_ += scores[i]
+
+    if sum_ > 0:
+        for i in xrange(size):
+            scores[i] /= sum_
+
+def _multiclass_log_linear_sgd(self,
+                               np.ndarray[double, ndim=2, mode='c'] W,
+                               np.ndarray[double, ndim=1] intercepts,
+                               np.ndarray[double, ndim=2, mode='c'] X,
+                               np.ndarray[int, ndim=1] y,
+                               double lmbda,
+                               int learning_rate,
+                               double eta0,
+                               double power_t,
+                               int fit_intercept,
+                               double intercept_decay,
+                               int max_iter,
+                               random_state,
+                               int verbose):
+
+    cdef Py_ssize_t n_samples = X.shape[0]
+    cdef Py_ssize_t n_features = X.shape[1]
+    cdef Py_ssize_t n_vectors = W.shape[0]
+
+    cdef np.ndarray[int, ndim=1, mode='c'] indices
+    indices = np.arange(n_samples, dtype=np.int32)
+
+    cdef int it, i, l
+    cdef long t = 1
+    cdef double update, pred, eta, scale
+    cdef double intercept = 0.0
+
+    cdef np.ndarray[double, ndim=1, mode='c'] w_scales
+    w_scales = np.ones(n_vectors, dtype=np.float64)
+
+    cdef np.ndarray[double, ndim=1, mode='c'] scores
+    scores = np.ones(n_vectors, dtype=np.float64)
+
+    for it in xrange(max_iter):
+        random_state.shuffle(indices)
+
+        for i in xrange(n_samples):
+            eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
+
+            for l in xrange(n_vectors):
+                scores[l] = _dot(W, l, X, i)
+                scores[l] *= w_scales[l]
+                scores[l] += intercepts[l]
+
+            _softmax(scores)
+
+            scale = eta * intercept_decay
+
+            _add(W, y[i], X, i, eta / w_scales[y[i]])
+            if fit_intercept:
+                intercepts[y[i]] += scale
+
+            for l in xrange(n_vectors):
+                if scores[l] != 0:
+                    _add(W, l, X, i, -eta * scores[l] / w_scales[l])
+
+                    if fit_intercept:
+                        intercepts[l] -= scale * scores[l]
+
+            scale = (1 - lmbda * eta)
+            for l in xrange(n_vectors):
+                w_scales[l] *= scale
+
+                if w_scales[l] < 1e-9:
+                    W[l] *= w_scales[l]
+                    w_scales[l] = 1.0
+
+            t += 1
+
+    for l in xrange(n_vectors):
+        if w_scales[l] != 1.0:
+            W[l] *= w_scales[l]
