@@ -163,6 +163,7 @@ def _linear_sgd(self,
     cdef int it, i
     cdef long t = 1
     cdef double update, pred, eta
+    cdef double w_scale = 1.0
 
     eta = eta0
 
@@ -172,11 +173,15 @@ def _linear_sgd(self,
         for i in xrange(n_samples):
 
             pred = _dot(w, X, i)
+            pred *= w_scale
             update = loss.get_update(pred, y[i]) * eta
 
             if update != 0:
-                _add(w, X, i, update)
+                _add(w, X, i, update / w_scale)
 
-            w *= (1 - lmbda * eta)
+            w_scale *= (1 - lmbda * eta)
 
             t += 1
+
+    if w_scale != 1.0:
+        w *= w_scale
