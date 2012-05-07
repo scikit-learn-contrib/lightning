@@ -10,6 +10,15 @@
 import numpy as np
 cimport numpy as np
 
+from cython.operator cimport dereference as deref
+from cython.operator cimport preincrement as inc
+from cython.operator cimport predecrement as dec
+
+from libcpp.list cimport list
+
+from lightning.kernel_fast cimport KernelCache
+from lightning.kernel_fast cimport Kernel
+
 cdef extern from "math.h":
     cdef extern double exp(double x)
     cdef extern double log(double x)
@@ -158,22 +167,24 @@ cdef double _get_eta(int learning_rate, double lmbda,
     return eta
 
 
-def _binary_linear_sgd(self,
-                       np.ndarray[double, ndim=2, mode='c'] W,
-                       np.ndarray[double, ndim=1] intercepts,
-                       int k,
-                       np.ndarray[double, ndim=2, mode='c'] X,
-                       np.ndarray[double, ndim=1] y,
-                       LossFunction loss,
-                       double lmbda,
-                       int learning_rate,
-                       double eta0,
-                       double power_t,
-                       int fit_intercept,
-                       double intercept_decay,
-                       int max_iter,
-                       random_state,
-                       int verbose):
+def _binary_sgd(self,
+                np.ndarray[double, ndim=2, mode='c'] W,
+                np.ndarray[double, ndim=1] intercepts,
+                int k,
+                np.ndarray[double, ndim=2, mode='c'] X,
+                np.ndarray[double, ndim=1] y,
+                LossFunction loss,
+                KernelCache kcache,
+                int linear_kernel,
+                double lmbda,
+                int learning_rate,
+                double eta0,
+                double power_t,
+                int fit_intercept,
+                double intercept_decay,
+                int max_iter,
+                random_state,
+                int verbose):
 
     cdef Py_ssize_t n_samples = X.shape[0]
     cdef Py_ssize_t n_features = X.shape[1]
@@ -181,17 +192,33 @@ def _binary_linear_sgd(self,
     cdef np.ndarray[int, ndim=1, mode='c'] indices
     indices = np.arange(n_samples, dtype=np.int32)
 
-    cdef int it, i
+    cdef int n, i, j
     cdef long t = 1
     cdef double update, pred, eta
     cdef double w_scale = 1.0
     cdef double intercept = 0.0
 
-    for it in xrange(max_iter):
+    cdef np.ndarray[double, ndim=1, mode='c'] col
+    if not linear_kernel:
+        col = np.zeros(n_samples, dtype=np.float64)
+
+    cdef list[int].iterator it
+
+    for n in xrange(max_iter):
         random_state.shuffle(indices)
 
         for i in xrange(n_samples):
-            pred = _dot(W, k, X, i)
+            if linear_kernel:
+                pred = _dot(W, k, X, i)
+            else:
+                kcache.compute_column_sv(X, X, i, col)
+                it = kcache.support_set.begin()
+                pred = 0
+                while it != kcache.support_set.end():
+                    j = deref(it)
+                    pred += col[j] * W[k, j]
+                    inc(it)
+
             pred *= w_scale
             pred += intercepts[k]
 
@@ -201,7 +228,11 @@ def _binary_linear_sgd(self,
             if update != 0:
                 update *= eta
 
-                _add(W, k, X, i, update / w_scale)
+                if linear_kernel:
+                    _add(W, k, X, i, update / w_scale)
+                else:
+                    W[k, i] += update / w_scale
+                    kcache.add_sv(i)
 
                 if fit_intercept:
                     intercepts[k] += update * intercept_decay

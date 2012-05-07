@@ -8,7 +8,7 @@ from nose.tools import assert_raises, assert_true, assert_equal, \
 from sklearn.utils.testing import assert_greater
 
 from sklearn.datasets.samples_generator import make_classification
-from lightning.sgd import SGDClassifier
+from lightning.sgd import SGDClassifier, KernelSGDClassifier
 
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
@@ -36,6 +36,27 @@ def test_binary_linear_sgd():
 
         clf.fit(bin_dense, bin_target)
         assert_greater(clf.score(bin_dense, bin_target), 0.94)
+
+
+def test_binary_sgd_equivalence():
+    clf = KernelSGDClassifier(kernel="linear",
+                              random_state=0)
+    clf.fit(bin_dense, bin_target)
+    decisions = clf.decision_function(bin_dense)
+
+    clf = SGDClassifier(random_state=0)
+    clf.fit(bin_dense, bin_target)
+    decisions2 = clf.decision_function(bin_dense)
+    assert_array_almost_equal(decisions, decisions2)
+
+
+def test_binary_kernel_sgd():
+    for fit_intercept in (True, False):
+        clf = KernelSGDClassifier(kernel="rbf", gamma=0.1,
+                                  fit_intercept=fit_intercept,
+                                  random_state=0)
+        clf.fit(bin_dense, bin_target)
+        assert_equal(clf.score(bin_dense, bin_target), 1.0)
 
 
 def test_multiclass_sgd():
