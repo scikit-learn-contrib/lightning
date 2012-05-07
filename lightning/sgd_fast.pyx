@@ -194,6 +194,10 @@ def _linear_sgd(self,
 
             w_scale *= (1 - lmbda * eta)
 
+            if w_scale < 1e-9:
+                w *= w_scale
+                w_scale = 1.0
+
             t += 1
 
     if w_scale != 1.0:
