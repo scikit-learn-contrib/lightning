@@ -42,6 +42,18 @@ class BaseSGD(BaseEstimator):
         learning_rates = {"constant": 1, "pegasos": 2, "invscaling": 3}
         return learning_rates[self.learning_rate]
 
+    def _set_label_transformers(self, y):
+        if self.multiclass == "natural":
+            self.label_normalizer_ = LabelNormalizer()
+            y = self.label_normalizer_.fit_transform(y)
+
+        self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
+        self.label_binarizer_.fit(y)
+        self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
+        n_classes = len(self.label_binarizer_.classes_)
+        n_vectors = 1 if n_classes <= 2 else n_classes
+        return n_classes, n_vectors
+
 class SGDClassifier(BaseSGD, ClassifierMixin):
 
     def __init__(self, loss="hinge", multiclass="one-vs-rest", lmbda=0.01,
@@ -67,14 +79,7 @@ class SGDClassifier(BaseSGD, ClassifierMixin):
         n_samples, n_features = X.shape
         rs = check_random_state(self.random_state)
 
-        if self.multiclass == "natural":
-            self.label_normalizer_ = LabelNormalizer()
-            y = self.label_normalizer_.fit_transform(y)
-
-        self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
-        self.label_binarizer_.fit(y)
-        n_classes = len(self.label_binarizer_.classes_)
-        n_vectors = 1 if n_classes <= 2 else n_classes
+        n_classes, n_vectors = self._set_label_transformers(y)
 
         self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
@@ -167,15 +172,7 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
         n_samples, n_features = X.shape
         rs = check_random_state(self.random_state)
 
-        if self.multiclass == "natural":
-            self.label_normalizer_ = LabelNormalizer()
-            y = self.label_normalizer_.fit_transform(y)
-
-        self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
-        self.label_binarizer_.fit(y)
-        self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
-        n_classes = len(self.label_binarizer_.classes_)
-        n_vectors = 1 if n_classes <= 2 else n_classes
+        n_classes, n_vectors = self._set_label_transformers(y)
 
         self.coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
@@ -213,17 +210,20 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
         else:
             raise ValueError("Wrong value for multiclass.")
 
+        self._post_process(X)
+
+        if self.verbose >= 1:
+            print "Number of support vectors:", np.sum(sv)
+
+        return self
+
+    def _post_process(self, X):
         # We can't know the support vectors when using precomputed kernels.
         if self.kernel != "precomputed":
             sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
             self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
             mask = safe_mask(X, sv)
             self.support_vectors_ = X[mask]
-
-        if self.verbose >= 1:
-            print "Number of support vectors:", np.sum(sv)
-
-        return self
 
     def n_support_vectors(self):
         return np.sum(np.sum(self.coef_ != 0, axis=0, dtype=bool))
