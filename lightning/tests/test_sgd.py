@@ -43,11 +43,15 @@ def test_binary_sgd_equivalence():
                               random_state=0)
     clf.fit(bin_dense, bin_target)
     decisions = clf.decision_function(bin_dense)
+    predictions = clf.predict(bin_dense)
 
     clf = SGDClassifier(random_state=0)
     clf.fit(bin_dense, bin_target)
     decisions2 = clf.decision_function(bin_dense)
+    predictions2 = clf.predict(bin_dense)
+
     assert_array_almost_equal(decisions, decisions2)
+    assert_array_almost_equal(predictions, predictions2)
 
 
 def test_binary_kernel_sgd():
@@ -63,6 +67,22 @@ def test_multiclass_sgd():
     clf = SGDClassifier()
     clf.fit(mult_dense, mult_target)
     assert_greater(clf.score(mult_dense, mult_target), 0.81)
+
+
+def test_multiclass_sgd_equivalence():
+    clf = KernelSGDClassifier(kernel="linear",
+                              random_state=0)
+    clf.fit(mult_dense, mult_target)
+    decisions = clf.decision_function(mult_dense)
+    predictions = clf.predict(mult_dense)
+
+    clf = SGDClassifier(random_state=0)
+    clf.fit(mult_dense, mult_target)
+    decisions2 = clf.decision_function(mult_dense)
+    predictions2 = clf.predict(mult_dense)
+
+    assert_array_almost_equal(decisions, decisions2)
+    assert_array_almost_equal(predictions, predictions2)
 
 
 def test_multiclass_hinge_sgd():
