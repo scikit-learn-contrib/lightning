@@ -145,6 +145,27 @@ cdef double _dot(np.ndarray[double, ndim=2, mode='c'] W,
     return pred
 
 
+cdef double _kernel_dot(np.ndarray[double, ndim=2, mode='c'] W,
+                        int k,
+                        np.ndarray[double, ndim=2, mode='c'] X,
+                        int i,
+                        KernelCache kcache,
+                        np.ndarray[double, ndim=1, mode='c'] col):
+    cdef int j
+    cdef double pred = 0
+    cdef list[int].iterator it
+
+    kcache.compute_column_sv(X, X, i, col)
+    it = kcache.support_set.begin()
+
+    while it != kcache.support_set.end():
+        j = deref(it)
+        pred += col[j] * W[k, j]
+        inc(it)
+
+    return pred
+
+
 cdef void _add(np.ndarray[double, ndim=2, mode='c'] W,
                int k,
                np.ndarray[double, ndim=2, mode='c'] X,
@@ -192,7 +213,7 @@ def _binary_sgd(self,
     cdef np.ndarray[int, ndim=1, mode='c'] indices
     indices = np.arange(n_samples, dtype=np.int32)
 
-    cdef int n, i, j
+    cdef int n, i
     cdef long t = 1
     cdef double update, pred, eta
     cdef double w_scale = 1.0
@@ -202,8 +223,6 @@ def _binary_sgd(self,
     if not linear_kernel:
         col = np.zeros(n_samples, dtype=np.float64)
 
-    cdef list[int].iterator it
-
     for n in xrange(max_iter):
         random_state.shuffle(indices)
 
@@ -211,13 +230,7 @@ def _binary_sgd(self,
             if linear_kernel:
                 pred = _dot(W, k, X, i)
             else:
-                kcache.compute_column_sv(X, X, i, col)
-                it = kcache.support_set.begin()
-                pred = 0
-                while it != kcache.support_set.end():
-                    j = deref(it)
-                    pred += col[j] * W[k, j]
-                    inc(it)
+                pred = _kernel_dot(W, k, X, i, kcache, col)
 
             pred *= w_scale
             pred += intercepts[k]
