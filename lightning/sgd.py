@@ -11,8 +11,8 @@ from .kernel_fast import get_kernel, KernelCache
 from .predict_fast import predict_alpha, decision_function_alpha
 
 from .sgd_fast import _binary_sgd
-from .sgd_fast import _multiclass_hinge_linear_sgd
-from .sgd_fast import _multiclass_log_linear_sgd
+from .sgd_fast import _multiclass_hinge_sgd
+from .sgd_fast import _multiclass_log_sgd
 
 from .sgd_fast import ModifiedHuber
 from .sgd_fast import Hinge
@@ -99,9 +99,9 @@ class SGDClassifier(BaseSGD, ClassifierMixin):
 
         elif self.multiclass == "natural":
             if self.loss in ("hinge", "log"):
-                func = eval("_multiclass_%s_linear_sgd" % self.loss)
+                func = eval("_multiclass_%s_sgd" % self.loss)
                 func(self, self.coef_, self.intercept_,
-                     X, y.astype(np.int32), self.lmbda,
+                     X, y.astype(np.int32), kcache, 1, self.lmbda,
                      self._get_learning_rate(), self.eta0, self.power_t,
                      self.fit_intercept, self.intercept_decay,
                      self.max_iter, rs, self.verbose)
@@ -197,6 +197,20 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
                             self.fit_intercept,
                             self.intercept_decay,
                             self.max_iter, rs, self.verbose)
+
+        elif self.multiclass == "natural":
+            if self.loss in ("hinge", "log"):
+                func = eval("_multiclass_%s_sgd" % self.loss)
+                func(self, self.coef_, self.intercept_,
+                     X, y.astype(np.int32), kcache, 0, self.lmbda,
+                     self._get_learning_rate(), self.eta0, self.power_t,
+                     self.fit_intercept, self.intercept_decay,
+                     self.max_iter, rs, self.verbose)
+            else:
+                raise ValueError("Loss not supported for multiclass!")
+
+        else:
+            raise ValueError("Wrong value for multiclass.")
 
         # We can't know the support vectors when using precomputed kernels.
         if self.kernel != "precomputed":

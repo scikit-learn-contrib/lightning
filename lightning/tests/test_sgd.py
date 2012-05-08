@@ -92,9 +92,48 @@ def test_multiclass_hinge_sgd():
         clf.fit(mult_dense, mult_target)
         assert_greater(clf.score(mult_dense, mult_target), 0.78)
 
+
+def test_multiclass_hinge_kernel_sgd():
+    for fit_intercept in (True, False):
+        clf = KernelSGDClassifier(kernel="rbf", gamma=0.1,
+                                  loss="hinge", multiclass="natural",
+                                  fit_intercept=fit_intercept,
+                                  random_state=0)
+        clf.fit(mult_dense, mult_target)
+        assert_greater(clf.score(mult_dense, mult_target), 0.90)
+
+
+def test_multiclass_natural_kernel_sgd_equivalence():
+    for loss in ("hinge", "log"):
+        clf = KernelSGDClassifier(kernel="linear",
+                                  loss=loss, multiclass="natural",
+                                  random_state=0)
+        clf.fit(mult_dense, mult_target)
+        decisions = clf.decision_function(mult_dense)
+        predictions = clf.predict(mult_dense)
+
+        clf = SGDClassifier(random_state=0, loss=loss, multiclass="natural")
+        clf.fit(mult_dense, mult_target)
+        decisions2 = clf.decision_function(mult_dense)
+        predictions2 = clf.predict(mult_dense)
+
+        assert_array_almost_equal(decisions, decisions2)
+        assert_array_almost_equal(predictions, predictions2)
+
+
 def test_multiclass_log_sgd():
     for fit_intercept in (True, False):
         clf = SGDClassifier(loss="log", multiclass="natural",
                             fit_intercept=fit_intercept)
         clf.fit(mult_dense, mult_target)
         assert_greater(clf.score(mult_dense, mult_target), 0.78)
+
+
+def test_multiclass_log_kernel_sgd():
+    for fit_intercept in (True, False):
+        clf = KernelSGDClassifier(kernel="rbf", gamma=0.1,
+                                  loss="log", multiclass="natural",
+                                  fit_intercept=fit_intercept,
+                                  random_state=0)
+        clf.fit(mult_dense, mult_target)
+        assert_equal(clf.score(mult_dense, mult_target), 1.0)

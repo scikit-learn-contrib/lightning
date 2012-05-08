@@ -136,7 +136,6 @@ cdef double _dot(np.ndarray[double, ndim=2, mode='c'] W,
                  int i):
     cdef Py_ssize_t n_features = X.shape[1]
     cdef int j
-
     cdef double pred = 0.0
 
     for j in xrange(n_features):
@@ -293,20 +292,60 @@ cdef int _predict_multiclass(np.ndarray[double, ndim=2, mode='c'] W,
     return selected
 
 
-def _multiclass_hinge_linear_sgd(self,
-                                 np.ndarray[double, ndim=2, mode='c'] W,
-                                 np.ndarray[double, ndim=1] intercepts,
-                                 np.ndarray[double, ndim=2, mode='c'] X,
-                                 np.ndarray[int, ndim=1] y,
-                                 double lmbda,
-                                 int learning_rate,
-                                 double eta0,
-                                 double power_t,
-                                 int fit_intercept,
-                                 double intercept_decay,
-                                 int max_iter,
-                                 random_state,
-                                 int verbose):
+cdef int _kernel_predict_multiclass(np.ndarray[double, ndim=2, mode='c'] W,
+                                    np.ndarray[double, ndim=1] w_scales,
+                                    np.ndarray[double, ndim=1] intercepts,
+                                    np.ndarray[double, ndim=2, mode='c'] X,
+                                    int i,
+                                    KernelCache kcache,
+                                    np.ndarray[double, ndim=1] col):
+    cdef Py_ssize_t n_features = X.shape[1]
+    cdef Py_ssize_t n_vectors = W.shape[0]
+    cdef int j, l
+    cdef double pred
+    cdef double best = -DBL_MAX
+    cdef int selected = 0
+    cdef list[int].iterator it
+
+    kcache.compute_column_sv(X, X, i, col)
+
+    for l in xrange(n_vectors):
+        pred = 0
+
+        it = kcache.support_set.begin()
+        while it != kcache.support_set.end():
+            j = deref(it)
+            pred += col[j] * W[l, j]
+            inc(it)
+
+        pred *= w_scales[l]
+        pred += intercepts[l]
+
+        # pred += loss(y_true, y_pred)
+
+        if pred > best:
+            best = pred
+            selected = l
+
+    return selected
+
+
+def _multiclass_hinge_sgd(self,
+                          np.ndarray[double, ndim=2, mode='c'] W,
+                          np.ndarray[double, ndim=1] intercepts,
+                          np.ndarray[double, ndim=2, mode='c'] X,
+                          np.ndarray[int, ndim=1] y,
+                          KernelCache kcache,
+                          int linear_kernel,
+                          double lmbda,
+                          int learning_rate,
+                          double eta0,
+                          double power_t,
+                          int fit_intercept,
+                          double intercept_decay,
+                          int max_iter,
+                          random_state,
+                          int verbose):
 
     cdef Py_ssize_t n_samples = X.shape[0]
     cdef Py_ssize_t n_features = X.shape[1]
@@ -323,16 +362,30 @@ def _multiclass_hinge_linear_sgd(self,
     cdef np.ndarray[double, ndim=1, mode='c'] w_scales
     w_scales = np.ones(n_vectors, dtype=np.float64)
 
+    cdef np.ndarray[double, ndim=1, mode='c'] col
+    if not linear_kernel:
+        col = np.zeros(n_samples, dtype=np.float64)
+
     for it in xrange(max_iter):
         random_state.shuffle(indices)
 
         for i in xrange(n_samples):
             eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
-            k = _predict_multiclass(W, w_scales, intercepts, X, i)
+
+            if linear_kernel:
+                k = _predict_multiclass(W, w_scales, intercepts, X, i)
+            else:
+                k = _kernel_predict_multiclass(W, w_scales, intercepts, X, i,
+                                               kcache, col)
 
             if k != y[i]:
-                _add(W, k, X, i, -eta / w_scales[k])
-                _add(W, y[i], X, i, eta / w_scales[y[i]])
+                if linear_kernel:
+                    _add(W, k, X, i, -eta / w_scales[k])
+                    _add(W, y[i], X, i, eta / w_scales[y[i]])
+                else:
+                    W[k, i] -= eta / w_scales[k]
+                    W[y[i], i] += eta / w_scales[y[i]]
+                    kcache.add_sv(i)
 
                 if fit_intercept:
                     scale = eta * intercept_decay
@@ -376,20 +429,22 @@ cdef void _softmax(np.ndarray[double, ndim=1] scores):
             scores[i] /= sum_
 
 
-def _multiclass_log_linear_sgd(self,
-                               np.ndarray[double, ndim=2, mode='c'] W,
-                               np.ndarray[double, ndim=1] intercepts,
-                               np.ndarray[double, ndim=2, mode='c'] X,
-                               np.ndarray[int, ndim=1] y,
-                               double lmbda,
-                               int learning_rate,
-                               double eta0,
-                               double power_t,
-                               int fit_intercept,
-                               double intercept_decay,
-                               int max_iter,
-                               random_state,
-                               int verbose):
+def _multiclass_log_sgd(self,
+                        np.ndarray[double, ndim=2, mode='c'] W,
+                        np.ndarray[double, ndim=1] intercepts,
+                        np.ndarray[double, ndim=2, mode='c'] X,
+                        np.ndarray[int, ndim=1] y,
+                        KernelCache kcache,
+                        int linear_kernel,
+                        double lmbda,
+                        int learning_rate,
+                        double eta0,
+                        double power_t,
+                        int fit_intercept,
+                        double intercept_decay,
+                        int max_iter,
+                        random_state,
+                        int verbose):
 
     cdef Py_ssize_t n_samples = X.shape[0]
     cdef Py_ssize_t n_features = X.shape[1]
@@ -409,6 +464,10 @@ def _multiclass_log_linear_sgd(self,
     cdef np.ndarray[double, ndim=1, mode='c'] scores
     scores = np.ones(n_vectors, dtype=np.float64)
 
+    cdef np.ndarray[double, ndim=1, mode='c'] col
+    if not linear_kernel:
+        col = np.zeros(n_samples, dtype=np.float64)
+
     for it in xrange(max_iter):
         random_state.shuffle(indices)
 
@@ -416,7 +475,11 @@ def _multiclass_log_linear_sgd(self,
             eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
 
             for l in xrange(n_vectors):
-                scores[l] = _dot(W, l, X, i)
+                if linear_kernel:
+                    scores[l] = _dot(W, l, X, i)
+                else:
+                    scores[l] = _kernel_dot(W, l, X, i, kcache, col)
+
                 scores[l] *= w_scales[l]
                 scores[l] += intercepts[l]
 
@@ -424,13 +487,23 @@ def _multiclass_log_linear_sgd(self,
 
             scale = eta * intercept_decay
 
-            _add(W, y[i], X, i, eta / w_scales[y[i]])
+            # Update wrt correct label.
+            if linear_kernel:
+                _add(W, y[i], X, i, eta / w_scales[y[i]])
+            else:
+                W[y[i], i] += eta / w_scales[y[i]]
+                kcache.add_sv(i)
+
             if fit_intercept:
                 intercepts[y[i]] += scale
 
+            # Update wrt predicted labels (weighted by probability).
             for l in xrange(n_vectors):
                 if scores[l] != 0:
-                    _add(W, l, X, i, -eta * scores[l] / w_scales[l])
+                    if linear_kernel:
+                        _add(W, l, X, i, -eta * scores[l] / w_scales[l])
+                    else:
+                        W[l, i] -= eta * scores[l] / w_scales[l]
 
                     if fit_intercept:
                         intercepts[l] -= scale * scores[l]
