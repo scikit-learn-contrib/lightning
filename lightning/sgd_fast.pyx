@@ -196,6 +196,7 @@ def _binary_sgd(self,
                 LossFunction loss,
                 KernelCache kcache,
                 int linear_kernel,
+                int model_size,
                 double lmbda,
                 int learning_rate,
                 double eta0,
@@ -222,6 +223,8 @@ def _binary_sgd(self,
     if not linear_kernel:
         col = np.zeros(n_samples, dtype=np.float64)
 
+    cdef int stop = 0
+
     for n in xrange(max_iter):
         random_state.shuffle(indices)
 
@@ -244,7 +247,6 @@ def _binary_sgd(self,
                     _add(W, k, X, i, update / w_scale)
                 else:
                     W[k, i] += update / w_scale
-                    kcache.add_sv(i)
 
                 if fit_intercept:
                     intercepts[k] += update * intercept_decay
@@ -255,7 +257,26 @@ def _binary_sgd(self,
                 W[k] *= w_scale
                 w_scale = 1.0
 
+            # Update support vector set.
+            if not linear_kernel:
+                if W[k, i] == 0:
+                    kcache.remove_sv(i)
+                else:
+                    kcache.add_sv(i)
+
+            # Stop if necessary.
+            if model_size > 0 and kcache.n_sv() >= model_size:
+                stop = 1
+                break
+
             t += 1
+
+        # end for i in xrange(n_samples)
+
+        if stop:
+            break
+
+    # end for it in xrange(max_iter)
 
     if w_scale != 1.0:
         W[k] *= w_scale
@@ -337,6 +358,7 @@ def _multiclass_hinge_sgd(self,
                           np.ndarray[int, ndim=1] y,
                           KernelCache kcache,
                           int linear_kernel,
+                          int model_size,
                           double lmbda,
                           int learning_rate,
                           double eta0,
@@ -366,6 +388,8 @@ def _multiclass_hinge_sgd(self,
     if not linear_kernel:
         col = np.zeros(n_samples, dtype=np.float64)
 
+    cdef int stop = 0
+
     for it in xrange(max_iter):
         random_state.shuffle(indices)
 
@@ -385,12 +409,12 @@ def _multiclass_hinge_sgd(self,
                 else:
                     W[k, i] -= eta / w_scales[k]
                     W[y[i], i] += eta / w_scales[y[i]]
-                    kcache.add_sv(i)
 
                 if fit_intercept:
                     scale = eta * intercept_decay
                     intercepts[k] -= scale
                     intercepts[y[i]] += scale
+
 
             scale = (1 - lmbda * eta)
             for l in xrange(n_vectors):
@@ -400,7 +424,26 @@ def _multiclass_hinge_sgd(self,
                     W[l] *= w_scales[l]
                     w_scales[l] = 1.0
 
+            # Update support vector set.
+            if not linear_kernel:
+                if W[k, i] == 0 and W[y[i], i] == 0:
+                    kcache.remove_sv(i)
+                else:
+                    kcache.add_sv(i)
+
+            # Stop if necessary.
+            if model_size > 0 and kcache.n_sv() >= model_size:
+                stop = 1
+                break
+
             t += 1
+
+        # end for i in xrange(n_samples)
+
+        if stop:
+            break
+
+    # end for it in xrange(max_iter)
 
     for l in xrange(n_vectors):
         if w_scales[l] != 1.0:
@@ -436,6 +479,7 @@ def _multiclass_log_sgd(self,
                         np.ndarray[int, ndim=1] y,
                         KernelCache kcache,
                         int linear_kernel,
+                        int model_size,
                         double lmbda,
                         int learning_rate,
                         double eta0,
@@ -468,6 +512,9 @@ def _multiclass_log_sgd(self,
     if not linear_kernel:
         col = np.zeros(n_samples, dtype=np.float64)
 
+    cdef int stop = 0
+    cdef int all_zero
+
     for it in xrange(max_iter):
         random_state.shuffle(indices)
 
@@ -492,7 +539,6 @@ def _multiclass_log_sgd(self,
                 _add(W, y[i], X, i, eta / w_scales[y[i]])
             else:
                 W[y[i], i] += eta / w_scales[y[i]]
-                kcache.add_sv(i)
 
             if fit_intercept:
                 intercepts[y[i]] += scale
@@ -516,7 +562,31 @@ def _multiclass_log_sgd(self,
                     W[l] *= w_scales[l]
                     w_scales[l] = 1.0
 
+            # Update support vector set.
+            if not linear_kernel:
+                all_zero = 1
+                for l in xrange(n_vectors):
+                    if W[l, i] != 0:
+                        all_zero = 0
+                        break
+                if all_zero:
+                    kcache.remove_sv(i)
+                else:
+                    kcache.add_sv(i)
+
+            # Stop if necessary.
+            if model_size > 0 and kcache.n_sv() >= model_size:
+                stop = 1
+                break
+
             t += 1
+
+        # end for i in xrange(n_samples)
+
+        if stop:
+            break
+
+    # end for it in xrange(max_iter)
 
     for l in xrange(n_vectors):
         if w_scales[l] != 1.0:

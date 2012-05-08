@@ -89,7 +89,7 @@ class SGDClassifier(BaseSGD, ClassifierMixin):
                             self.coef_, self.intercept_, i,
                             X, Y[:, i],
                             self._get_loss(),
-                            kcache, 1,
+                            kcache, 1, 0,
                             self.lmbda,
                             self._get_learning_rate(),
                             self.eta0, self.power_t,
@@ -101,7 +101,7 @@ class SGDClassifier(BaseSGD, ClassifierMixin):
             if self.loss in ("hinge", "log"):
                 func = eval("_multiclass_%s_sgd" % self.loss)
                 func(self, self.coef_, self.intercept_,
-                     X, y.astype(np.int32), kcache, 1, self.lmbda,
+                     X, y.astype(np.int32), kcache, 1, 0, self.lmbda,
                      self._get_learning_rate(), self.eta0, self.power_t,
                      self.fit_intercept, self.intercept_decay,
                      self.max_iter, rs, self.verbose)
@@ -132,7 +132,7 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  learning_rate="pegasos", eta0=0.03, power_t=0.5,
                  epsilon=0.01, fit_intercept=True, intercept_decay=1.0,
-                 max_iter=10, random_state=None,
+                 model_size=0, max_iter=10, random_state=None,
                  cache_mb=500, verbose=0, n_jobs=1):
         self.loss = loss
         self.multiclass = multiclass
@@ -147,6 +147,7 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
         self.epsilon = epsilon
         self.fit_intercept = fit_intercept
         self.intercept_decay = intercept_decay
+        self.model_size = model_size
         self.max_iter = max_iter
         self.random_state = random_state
         self.cache_mb = cache_mb
@@ -190,7 +191,7 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
                             self.coef_, self.intercept_, i,
                             X, Y[:, i],
                             self._get_loss(),
-                            kcache, 0,
+                            kcache, 0, self.model_size,
                             self.lmbda,
                             self._get_learning_rate(),
                             self.eta0, self.power_t,
@@ -202,9 +203,9 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
             if self.loss in ("hinge", "log"):
                 func = eval("_multiclass_%s_sgd" % self.loss)
                 func(self, self.coef_, self.intercept_,
-                     X, y.astype(np.int32), kcache, 0, self.lmbda,
-                     self._get_learning_rate(), self.eta0, self.power_t,
-                     self.fit_intercept, self.intercept_decay,
+                     X, y.astype(np.int32), kcache, 0, self.model_size,
+                     self.lmbda, self._get_learning_rate(), self.eta0,
+                     self.power_t, self.fit_intercept, self.intercept_decay,
                      self.max_iter, rs, self.verbose)
             else:
                 raise ValueError("Loss not supported for multiclass!")
@@ -225,22 +226,20 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
         return self
 
     def n_support_vectors(self):
-        return 0 if self.coef_ is None else np.sum(self.coef_ != 0)
+        return np.sum(np.sum(self.coef_ != 0, axis=0, dtype=bool))
 
     def decision_function(self, X):
         out = np.zeros((X.shape[0], self.coef_.shape[0]), dtype=np.float64)
-        if self.coef_ is not None:
-            sv = self.support_vectors_ if self.kernel != "precomputed" else X
-            decision_function_alpha(X, sv, self.coef_, self.intercept_,
-                                    self._get_kernel(), out)
+        sv = self.support_vectors_ if self.kernel != "precomputed" else X
+        decision_function_alpha(X, sv, self.coef_, self.intercept_,
+                                self._get_kernel(), out)
         return out
 
     def predict(self, X):
         out = np.zeros(X.shape[0], dtype=np.float64)
-        if self.coef_ is not None:
-            sv = self.support_vectors_ if self.kernel != "precomputed" else X
-            predict_alpha(X, sv, self.coef_, self.intercept_,
-                          self.classes_, self._get_kernel(), out)
+        sv = self.support_vectors_ if self.kernel != "precomputed" else X
+        predict_alpha(X, sv, self.coef_, self.intercept_,
+                      self.classes_, self._get_kernel(), out)
 
         if hasattr(self, "label_normalizer_"):
             out = self.label_normalizer_.inverse_transform(out)
