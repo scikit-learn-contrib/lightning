@@ -4,7 +4,7 @@
 import numpy as np
 
 from sklearn.base import BaseEstimator, ClassifierMixin, clone
-from sklearn.preprocessing import LabelBinarizer, LabelNormalizer
+from sklearn.preprocessing import LabelBinarizer, LabelEncoder
 from sklearn.utils import check_random_state, safe_mask
 
 from .kernel_fast import get_kernel, KernelCache
@@ -44,8 +44,8 @@ class BaseSGD(BaseEstimator):
 
     def _set_label_transformers(self, y):
         if self.multiclass == "natural":
-            self.label_normalizer_ = LabelNormalizer()
-            y = self.label_normalizer_.fit_transform(y)
+            self.label_encoder_ = LabelEncoder()
+            y = self.label_encoder_.fit_transform(y)
 
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         self.label_binarizer_.fit(y)
@@ -125,8 +125,8 @@ class SGDClassifier(BaseSGD, ClassifierMixin):
         pred = self.decision_function(X)
         pred = self.label_binarizer_.inverse_transform(pred, threshold=0)
 
-        if hasattr(self, "label_normalizer_"):
-            pred = self.label_normalizer_.inverse_transform(pred)
+        if hasattr(self, "label_encoder_"):
+            pred = self.label_encoder_.inverse_transform(pred)
 
         return pred
 
@@ -241,7 +241,7 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
         predict_alpha(X, sv, self.coef_, self.intercept_,
                       self.classes_, self._get_kernel(), out)
 
-        if hasattr(self, "label_normalizer_"):
-            out = self.label_normalizer_.inverse_transform(out)
+        if hasattr(self, "label_encoder_"):
+            out = self.label_encoder_.inverse_transform(out)
 
         return out
