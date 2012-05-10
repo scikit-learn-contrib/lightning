@@ -10,7 +10,7 @@ Dependencies
 ============
 
 The required dependencies to build the software are Python >= 2.6,
-setuptools, Numpy >= 1.3, SciPy >= 0.7, scikit-learn >= 0.9, Cython >= 0.15.1
+setuptools, Numpy >= 1.3, SciPy >= 0.7, scikit-learn (git version), Cython >= 0.15.1
 and a working C/C++ compiler.
 
 To run the tests you will also need nose >= 0.10.
