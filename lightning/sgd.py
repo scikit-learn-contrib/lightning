@@ -100,7 +100,8 @@ class SGDClassifier(BaseSGD, ClassifierMixin):
                             self.eta0, self.power_t,
                             self.fit_intercept,
                             self.intercept_decay,
-                            self.max_iter, rs, self.verbose)
+                            self.max_iter * n_samples,
+                            rs, self.verbose)
 
         elif self.multiclass == "natural":
             if self.loss in ("hinge", "log"):
@@ -109,7 +110,7 @@ class SGDClassifier(BaseSGD, ClassifierMixin):
                      X, y.astype(np.int32), kcache, 1, 0, self.lmbda,
                      self._get_learning_rate(), self.eta0, self.power_t,
                      self.fit_intercept, self.intercept_decay,
-                     self.max_iter, rs, self.verbose)
+                     self.max_iter * n_samples, rs, self.verbose)
             else:
                 raise ValueError("Loss not supported for multiclass!")
 
@@ -194,7 +195,8 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
                             self.eta0, self.power_t,
                             self.fit_intercept,
                             self.intercept_decay,
-                            self.max_iter, rs, self.verbose)
+                            self.max_iter * n_samples,
+                            rs, self.verbose)
 
         elif self.multiclass == "natural":
             if self.loss in ("hinge", "log"):
@@ -203,7 +205,7 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
                      X, y.astype(np.int32), kcache, 0, self.model_size,
                      self.lmbda, self._get_learning_rate(), self.eta0,
                      self.power_t, self.fit_intercept, self.intercept_decay,
-                     self.max_iter, rs, self.verbose)
+                     self.max_iter * n_samples, rs, self.verbose)
             else:
                 raise ValueError("Loss not supported for multiclass!")
 

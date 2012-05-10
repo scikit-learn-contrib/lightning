@@ -223,61 +223,50 @@ def _binary_sgd(self,
     if not linear_kernel:
         col = np.zeros(n_samples, dtype=np.float64)
 
-    cdef int stop = 0
+    random_state.shuffle(indices)
 
-    for n in xrange(max_iter):
-        random_state.shuffle(indices)
+    for t in xrange(1, max_iter + 1):
+        i = indices[(t-1) % n_samples]
 
-        for i in xrange(n_samples):
+        if linear_kernel:
+            pred = _dot(W, k, X, i)
+        else:
+            pred = _kernel_dot(W, k, X, i, kcache, col)
+
+        pred *= w_scale
+        pred += intercepts[k]
+
+        eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
+        update = loss.get_update(pred, y[i])
+
+        if update != 0:
+            update_eta = update * eta
+            update_eta_scaled = update_eta / w_scale
+
             if linear_kernel:
-                pred = _dot(W, k, X, i)
+                _add(W, k, X, i, update_eta_scaled)
             else:
-                pred = _kernel_dot(W, k, X, i, kcache, col)
+                W[k, i] += update_eta_scaled
 
-            pred *= w_scale
-            pred += intercepts[k]
+            if fit_intercept:
+                intercepts[k] += update_eta * intercept_decay
 
-            eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
-            update = loss.get_update(pred, y[i])
+        w_scale *= (1 - lmbda * eta)
 
-            if update != 0:
-                update_eta = update * eta
-                update_eta_scaled = update_eta / w_scale
+        if w_scale < 1e-9:
+            W[k] *= w_scale
+            w_scale = 1.0
 
-                if linear_kernel:
-                    _add(W, k, X, i, update_eta_scaled)
-                else:
-                    W[k, i] += update_eta_scaled
+        # Update support vector set.
+        if not linear_kernel:
+            if W[k, i] == 0:
+                kcache.remove_sv(i)
+            else:
+                kcache.add_sv(i)
 
-                if fit_intercept:
-                    intercepts[k] += update_eta * intercept_decay
-
-            w_scale *= (1 - lmbda * eta)
-
-            if w_scale < 1e-9:
-                W[k] *= w_scale
-                w_scale = 1.0
-
-            # Update support vector set.
-            if not linear_kernel:
-                if W[k, i] == 0:
-                    kcache.remove_sv(i)
-                else:
-                    kcache.add_sv(i)
-
-            # Stop if necessary.
-            if model_size > 0 and kcache.n_sv() >= model_size:
-                stop = 1
-                break
-
-            t += 1
-
-        # end for i in xrange(n_samples)
-
-        if stop:
+        # Stop if necessary.
+        if model_size > 0 and kcache.n_sv() >= model_size:
             break
-
-    # end for it in xrange(max_iter)
 
     if w_scale != 1.0:
         W[k] *= w_scale
@@ -389,62 +378,51 @@ def _multiclass_hinge_sgd(self,
     if not linear_kernel:
         col = np.zeros(n_samples, dtype=np.float64)
 
-    cdef int stop = 0
+    random_state.shuffle(indices)
 
-    for it in xrange(max_iter):
-        random_state.shuffle(indices)
+    for t in xrange(t, max_iter + 1):
+        i = indices[(t-1) % n_samples]
 
-        for i in xrange(n_samples):
-            eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
+        eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
 
+        if linear_kernel:
+            k = _predict_multiclass(W, w_scales, intercepts, X, i)
+        else:
+            k = _kernel_predict_multiclass(W, w_scales, intercepts, X, i,
+                                           kcache, col)
+
+        if k != y[i]:
             if linear_kernel:
-                k = _predict_multiclass(W, w_scales, intercepts, X, i)
+                _add(W, k, X, i, -eta / w_scales[k])
+                _add(W, y[i], X, i, eta / w_scales[y[i]])
             else:
-                k = _kernel_predict_multiclass(W, w_scales, intercepts, X, i,
-                                               kcache, col)
+                W[k, i] -= eta / w_scales[k]
+                W[y[i], i] += eta / w_scales[y[i]]
 
-            if k != y[i]:
-                if linear_kernel:
-                    _add(W, k, X, i, -eta / w_scales[k])
-                    _add(W, y[i], X, i, eta / w_scales[y[i]])
-                else:
-                    W[k, i] -= eta / w_scales[k]
-                    W[y[i], i] += eta / w_scales[y[i]]
-
-                if fit_intercept:
-                    scale = eta * intercept_decay
-                    intercepts[k] -= scale
-                    intercepts[y[i]] += scale
+            if fit_intercept:
+                scale = eta * intercept_decay
+                intercepts[k] -= scale
+                intercepts[y[i]] += scale
 
 
-            scale = (1 - lmbda * eta)
-            for l in xrange(n_vectors):
-                w_scales[l] *= scale
+        scale = (1 - lmbda * eta)
+        for l in xrange(n_vectors):
+            w_scales[l] *= scale
 
-                if w_scales[l] < 1e-9:
-                    W[l] *= w_scales[l]
-                    w_scales[l] = 1.0
+            if w_scales[l] < 1e-9:
+                W[l] *= w_scales[l]
+                w_scales[l] = 1.0
 
-            # Update support vector set.
-            if not linear_kernel:
-                if W[k, i] == 0 and W[y[i], i] == 0:
-                    kcache.remove_sv(i)
-                else:
-                    kcache.add_sv(i)
+        # Update support vector set.
+        if not linear_kernel:
+            if W[k, i] == 0 and W[y[i], i] == 0:
+                kcache.remove_sv(i)
+            else:
+                kcache.add_sv(i)
 
-            # Stop if necessary.
-            if model_size > 0 and kcache.n_sv() >= model_size:
-                stop = 1
-                break
-
-            t += 1
-
-        # end for i in xrange(n_samples)
-
-        if stop:
+        # Stop if necessary.
+        if model_size > 0 and kcache.n_sv() >= model_size:
             break
-
-    # end for it in xrange(max_iter)
 
     for l in xrange(n_vectors):
         if w_scales[l] != 1.0:
@@ -513,81 +491,71 @@ def _multiclass_log_sgd(self,
     if not linear_kernel:
         col = np.zeros(n_samples, dtype=np.float64)
 
-    cdef int stop = 0
     cdef int all_zero
 
-    for it in xrange(max_iter):
-        random_state.shuffle(indices)
+    random_state.shuffle(indices)
 
-        for i in xrange(n_samples):
-            eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
+    for t in xrange(t, max_iter + 1):
+        i = indices[(t-1) % n_samples]
 
-            for l in xrange(n_vectors):
-                if linear_kernel:
-                    scores[l] = _dot(W, l, X, i)
-                else:
-                    scores[l] = _kernel_dot(W, l, X, i, kcache, col)
+        eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
 
-                scores[l] *= w_scales[l]
-                scores[l] += intercepts[l]
-
-            _softmax(scores)
-
-            scale = eta * intercept_decay
-
-            # Update wrt correct label.
+        for l in xrange(n_vectors):
             if linear_kernel:
-                _add(W, y[i], X, i, eta / w_scales[y[i]])
+                scores[l] = _dot(W, l, X, i)
             else:
-                W[y[i], i] += eta / w_scales[y[i]]
+                scores[l] = _kernel_dot(W, l, X, i, kcache, col)
 
-            if fit_intercept:
-                intercepts[y[i]] += scale
+            scores[l] *= w_scales[l]
+            scores[l] += intercepts[l]
 
-            # Update wrt predicted labels (weighted by probability).
-            for l in xrange(n_vectors):
-                if scores[l] != 0:
-                    if linear_kernel:
-                        _add(W, l, X, i, -eta * scores[l] / w_scales[l])
-                    else:
-                        W[l, i] -= eta * scores[l] / w_scales[l]
+        _softmax(scores)
 
-                    if fit_intercept:
-                        intercepts[l] -= scale * scores[l]
+        scale = eta * intercept_decay
 
-            scale = (1 - lmbda * eta)
-            for l in xrange(n_vectors):
-                w_scales[l] *= scale
+        # Update wrt correct label.
+        if linear_kernel:
+            _add(W, y[i], X, i, eta / w_scales[y[i]])
+        else:
+            W[y[i], i] += eta / w_scales[y[i]]
 
-                if w_scales[l] < 1e-9:
-                    W[l] *= w_scales[l]
-                    w_scales[l] = 1.0
+        if fit_intercept:
+            intercepts[y[i]] += scale
 
-            # Update support vector set.
-            if not linear_kernel:
-                all_zero = 1
-                for l in xrange(n_vectors):
-                    if W[l, i] != 0:
-                        all_zero = 0
-                        break
-                if all_zero:
-                    kcache.remove_sv(i)
+        # Update wrt predicted labels (weighted by probability).
+        for l in xrange(n_vectors):
+            if scores[l] != 0:
+                if linear_kernel:
+                    _add(W, l, X, i, -eta * scores[l] / w_scales[l])
                 else:
-                    kcache.add_sv(i)
+                    W[l, i] -= eta * scores[l] / w_scales[l]
 
-            # Stop if necessary.
-            if model_size > 0 and kcache.n_sv() >= model_size:
-                stop = 1
-                break
+                if fit_intercept:
+                    intercepts[l] -= scale * scores[l]
 
-            t += 1
+        scale = (1 - lmbda * eta)
+        for l in xrange(n_vectors):
+            w_scales[l] *= scale
 
-        # end for i in xrange(n_samples)
+            if w_scales[l] < 1e-9:
+                W[l] *= w_scales[l]
+                w_scales[l] = 1.0
 
-        if stop:
+        # Update support vector set.
+        if not linear_kernel:
+            all_zero = 1
+            for l in xrange(n_vectors):
+                if W[l, i] != 0:
+                    all_zero = 0
+                    break
+            if all_zero:
+                kcache.remove_sv(i)
+            else:
+                kcache.add_sv(i)
+
+        # Stop if necessary.
+        if model_size > 0 and kcache.n_sv() >= model_size:
             break
-
-    # end for it in xrange(max_iter)
 
     for l in xrange(n_vectors):
         if w_scales[l] != 1.0:
