@@ -211,7 +211,7 @@ def test_kmp_precomputed_dictionary():
     n_samples = mult_dense.shape[0]
     cv = ShuffleSplit(n_samples,
                       n_iterations=1,
-                      test_fraction=0.2,
+                      test_size=0.2,
                       random_state=0)
     train, test = list(cv)[0]
     X_train, y_train = mult_dense[train], mult_target[train]
