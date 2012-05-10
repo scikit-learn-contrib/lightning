@@ -215,7 +215,7 @@ def _binary_sgd(self,
 
     cdef int n, i
     cdef long t = 1
-    cdef double update, pred, eta
+    cdef double update, update_eta, update_eta_scaled, pred, eta
     cdef double w_scale = 1.0
     cdef double intercept = 0.0
 
@@ -241,15 +241,16 @@ def _binary_sgd(self,
             update = loss.get_update(pred, y[i])
 
             if update != 0:
-                update *= eta
+                update_eta = update * eta
+                update_eta_scaled = update_eta / w_scale
 
                 if linear_kernel:
-                    _add(W, k, X, i, update / w_scale)
+                    _add(W, k, X, i, update_eta_scaled)
                 else:
-                    W[k, i] += update / w_scale
+                    W[k, i] += update_eta_scaled
 
                 if fit_intercept:
-                    intercepts[k] += update * intercept_decay
+                    intercepts[k] += update_eta * intercept_decay
 
             w_scale *= (1 - lmbda * eta)
 
