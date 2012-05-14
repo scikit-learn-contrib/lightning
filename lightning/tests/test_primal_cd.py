@@ -9,7 +9,7 @@ from nose.tools import assert_raises, assert_true, assert_equal, \
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.metrics.pairwise import pairwise_kernels
 
-from lightning.primal_cd import PrimalLinearSVC, PrimalSVC
+from lightning.primal_cd import PrimalLinearSVC, PrimalSVC, PrimalKernelSVC
 from lightning.primal_cd import C_lower_bound, C_upper_bound
 
 from lightning.kernel_fast import get_kernel, KernelCache
@@ -314,3 +314,11 @@ def test_shared_kcache():
     n_nz2 = np.sum(clf.coef_ != 0)
 
     assert_true(n_nz < n_nz2)
+
+
+def test_primal_kernel_hinge():
+    clf = PrimalKernelSVC(max_iter=1, kernel="rbf", gamma=0.01, C=0.1,
+                          random_state=0)
+    clf.fit(bin_dense, bin_target)
+    assert_almost_equal(clf.score(bin_dense, bin_target), 0.94)
+    assert_equal(clf.n_support_vectors(), 200)
