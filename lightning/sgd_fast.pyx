@@ -511,27 +511,23 @@ def _multiclass_log_sgd(self,
 
         _softmax(scores)
 
-        scale = eta * intercept_decay
-
-        # Update wrt correct label.
-        if linear_kernel:
-            _add(W, y[i], X, i, eta / w_scales[y[i]])
-        else:
-            W[y[i], i] += eta / w_scales[y[i]]
-
-        if fit_intercept:
-            intercepts[y[i]] += scale
-
-        # Update wrt predicted labels (weighted by probability).
         for l in xrange(n_vectors):
             if scores[l] != 0:
-                if linear_kernel:
-                    _add(W, l, X, i, -eta * scores[l] / w_scales[l])
+                if l == y[i]:
+                    # Need to update the correct label minus the prediction.
+                    update = eta * (1 - scores[l])
                 else:
-                    W[l, i] -= eta * scores[l] / w_scales[l]
+                    # Need to update the incorrect label weighted by the
+                    # prediction.
+                    update = -eta * scores[l]
+
+                if linear_kernel:
+                    _add(W, l, X, i, update / w_scales[l])
+                else:
+                    W[l, i] += update / w_scales[l]
 
                 if fit_intercept:
-                    intercepts[l] -= scale * scores[l]
+                    intercepts[l] += update * intercept_decay
 
         scale = (1 - lmbda * eta)
         for l in xrange(n_vectors):
