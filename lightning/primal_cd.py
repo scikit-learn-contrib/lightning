@@ -6,7 +6,6 @@ import numpy as np
 from sklearn.base import ClassifierMixin, clone
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
-from sklearn.metrics.pairwise import pairwise_kernels
 
 from .base import BaseLinearClassifier, BaseKernelClassifier
 from .primal_cd_fast import _primal_cd_l2svm_l1r
