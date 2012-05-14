@@ -318,7 +318,15 @@ def test_shared_kcache():
 
 def test_primal_kernel_hinge():
     clf = PrimalKernelSVC(max_iter=1, kernel="rbf", gamma=0.01, C=0.1,
-                          random_state=0)
+                          random_state=0, loss="hinge")
     clf.fit(bin_dense, bin_target)
     assert_almost_equal(clf.score(bin_dense, bin_target), 0.94)
+    assert_equal(clf.n_support_vectors(), 200)
+
+
+def test_primal_kernel_log():
+    clf = PrimalKernelSVC(max_iter=1, kernel="rbf", gamma=0.01, C=0.1,
+                          random_state=0, loss="log")
+    clf.fit(bin_dense, bin_target)
+    assert_almost_equal(clf.score(bin_dense, bin_target), 0.95)
     assert_equal(clf.n_support_vectors(), 200)

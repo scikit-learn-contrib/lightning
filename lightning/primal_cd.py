@@ -180,6 +180,49 @@ class PrimalSVC(BaseKernelClassifier, ClassifierMixin):
 
         return self
 
+
+class HingeLoss(object):
+
+    def objective(self, K, y, coef, C):
+        value = 0.5 * np.dot(np.dot(K, coef), coef)
+        losses = np.maximum(1 - y * np.dot(K, coef), 0) ** 2
+        value += C * np.sum(losses)
+        return value
+
+    def derivative(self, K, y, coef, j, C):
+        value = np.dot(coef, K[j])
+        losses = np.maximum(1 - y * np.dot(K, coef), 0) ** 2
+        value += -2 * C * np.sum(y * K[j] * losses)
+        return value
+
+    def second_derivative(self, K, y, coef, j, C):
+        value = K[j, j]
+        value += 2 * C * np.sum(K[j] ** 2)
+        return value
+
+class LogLoss(object):
+
+    def objective(self, K, y, coef, C):
+        value = 0.5 * np.dot(np.dot(K, coef), coef)
+        losses = np.log(1 + np.exp(-y * np.dot(K, coef)))
+        value += C * np.sum(losses)
+        return value
+
+    def derivative(self, K, y, coef, j, C):
+        value = np.dot(coef, K[j])
+        losses = y * np.dot(K, coef)
+        losses = 1 / (1 + np.exp(-losses))
+        value += C * np.sum(y * K[j] * (losses - 1))
+        return value
+
+    def second_derivative(self, K, y, coef, j, C):
+        value = K[j, j]
+        losses = y * np.dot(K, coef)
+        losses = 1 / (1 + np.exp(-losses))
+        value += C * np.sum(K[j] ** 2 * losses * (1- losses))
+        return value
+
+
 class PrimalKernelSVC(BaseKernelClassifier, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="hinge", max_iter=10, tol=1e-3,
@@ -209,46 +252,35 @@ class PrimalKernelSVC(BaseKernelClassifier, ClassifierMixin):
         self.support_vectors_ = None
         self.coef_ = None
 
-    def _L(self, K, y, coef):
-        value = 0.5 * np.dot(np.dot(K, coef), coef)
-        losses = np.maximum(1 - y * np.dot(K, coef), 0) ** 2
-        value += self.C * np.sum(losses)
-        return value
+    def _get_loss(self):
+        losses = {"hinge" : HingeLoss(),
+                  "log" : LogLoss() }
+        return losses[self.loss]
 
-    def _Lp(self, K, y, coef, j):
-        value = np.dot(coef, K[j])
-        losses = np.maximum(1 - y * np.dot(K, coef), 0) ** 2
-        value += -2 * self.C * np.sum(y * K[j] * losses)
-        return value
-
-    def _Lpp(self, K, y, coef, j):
-        value = K[j, j]
-        value += 2 * self.C * np.sum(K[j] ** 2)
-        return value
-
-    def _solve_one(self, K, y, coef, j):
+    def _solve_one(self, K, y, coef, j, loss):
         sigma = 0.01
         beta = 0.5
-        L0 = self._L(K, y, coef)
-        d = -self._Lp(K, y, coef, j) / self._Lpp(K, y, coef, j)
+        L0 = loss.objective(K, y, coef, self.C)
+        d = -loss.derivative(K, y, coef, j, self.C)
+        d /= loss.second_derivative(K, y, coef, j, self.C)
         old_coef = coef[j]
         z = d
 
         for i in xrange(100):
             coef[j] = old_coef + z
-            Li = self._L(K, y, coef)
+            Li = loss.objective(K, y, coef, self.C)
             if Li - L0 <= -sigma * (z ** 2):
                 break
             z *= beta
 
-    def _fit_binary(self, K, y, coef, rs):
+    def _fit_binary(self, K, y, coef, loss, rs):
         n_samples = K.shape[0]
         indices = np.arange(n_samples)
         rs.shuffle(indices)
 
         for t in xrange(self.max_iter * n_samples):
             j = indices[(t-1) % n_samples]
-            self._solve_one(K, y, coef, j)
+            self._solve_one(K, y, coef, j, loss)
 
         #good = y * np.dot(K, coef) > 1
         #indices = np.arange(n_samples)
@@ -275,9 +307,10 @@ class PrimalKernelSVC(BaseKernelClassifier, ClassifierMixin):
 
         K = pairwise_kernels(X, metric=self.kernel, filter_params=True,
                              **self._kernel_params())
+        loss = self._get_loss()
 
         for i in xrange(n_vectors):
-            self._fit_binary(K, Y[:, i], self.coef_[i], rs)
+            self._fit_binary(K, Y[:, i], self.coef_[i], loss, rs)
 
         self._post_process(X)
 
