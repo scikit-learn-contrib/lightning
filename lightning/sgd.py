@@ -3,12 +3,12 @@
 
 import numpy as np
 
-from sklearn.base import BaseEstimator, ClassifierMixin, clone
+from sklearn.base import ClassifierMixin, clone
 from sklearn.preprocessing import LabelBinarizer, LabelEncoder
-from sklearn.utils import check_random_state, safe_mask
+from sklearn.utils import check_random_state
 
+from .base import BaseLinearClassifier, BaseKernelClassifier
 from .kernel_fast import get_kernel, KernelCache
-from .predict_fast import predict_alpha, decision_function_alpha
 
 from .sgd_fast import _binary_sgd
 from .sgd_fast import _multiclass_hinge_sgd
@@ -23,7 +23,7 @@ from .sgd_fast import Huber
 from .sgd_fast import EpsilonInsensitive
 
 
-class BaseSGD(BaseEstimator):
+class BaseSGD(object):
 
     def _get_loss(self):
         losses = {
@@ -54,7 +54,7 @@ class BaseSGD(BaseEstimator):
         n_vectors = 1 if n_classes <= 2 else n_classes
         return n_classes, n_vectors
 
-class SGDClassifier(BaseSGD, ClassifierMixin):
+class SGDClassifier(BaseLinearClassifier, BaseSGD, ClassifierMixin):
 
     def __init__(self, loss="hinge", multiclass="one-vs-rest", lmbda=0.01,
                  learning_rate="pegasos", eta0=0.03, power_t=0.5,
@@ -119,20 +119,8 @@ class SGDClassifier(BaseSGD, ClassifierMixin):
 
         return self
 
-    def decision_function(self, X):
-        return np.dot(X, self.coef_.T) + self.intercept_
 
-    def predict(self, X):
-        pred = self.decision_function(X)
-        pred = self.label_binarizer_.inverse_transform(pred, threshold=0)
-
-        if hasattr(self, "label_encoder_"):
-            pred = self.label_encoder_.inverse_transform(pred)
-
-        return pred
-
-
-class KernelSGDClassifier(BaseSGD, ClassifierMixin):
+class KernelSGDClassifier(BaseKernelClassifier, BaseSGD, ClassifierMixin):
 
     def __init__(self, loss="hinge", multiclass="one-vs-rest", lmbda=0.01,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
@@ -160,14 +148,6 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.coef_ = None
-
-    def _kernel_params(self):
-        return {"gamma" : self.gamma,
-                "degree" : self.degree,
-                "coef0" : self.coef0}
-
-    def _get_kernel(self):
-        return get_kernel(self.kernel, **self._kernel_params())
 
     def fit(self, X, y):
         n_samples, n_features = X.shape
@@ -214,36 +194,4 @@ class KernelSGDClassifier(BaseSGD, ClassifierMixin):
 
         self._post_process(X)
 
-        if self.verbose >= 1:
-            print "Number of support vectors:", np.sum(sv)
-
         return self
-
-    def _post_process(self, X):
-        # We can't know the support vectors when using precomputed kernels.
-        if self.kernel != "precomputed":
-            sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
-            self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
-            mask = safe_mask(X, sv)
-            self.support_vectors_ = X[mask]
-
-    def n_support_vectors(self):
-        return np.sum(np.sum(self.coef_ != 0, axis=0, dtype=bool))
-
-    def decision_function(self, X):
-        out = np.zeros((X.shape[0], self.coef_.shape[0]), dtype=np.float64)
-        sv = self.support_vectors_ if self.kernel != "precomputed" else X
-        decision_function_alpha(X, sv, self.coef_, self.intercept_,
-                                self._get_kernel(), out)
-        return out
-
-    def predict(self, X):
-        out = np.zeros(X.shape[0], dtype=np.float64)
-        sv = self.support_vectors_ if self.kernel != "precomputed" else X
-        predict_alpha(X, sv, self.coef_, self.intercept_,
-                      self.classes_, self._get_kernel(), out)
-
-        if hasattr(self, "label_encoder_"):
-            out = self.label_encoder_.inverse_transform(out)
-
-        return out

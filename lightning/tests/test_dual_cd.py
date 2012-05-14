@@ -59,7 +59,7 @@ def test_fit_rbf_binary_early_stopping():
                   termination="n_sv", sv_upper_bound=30)
     clf.fit(bin_dense, bin_target)
     y_pred = clf.predict(bin_dense)
-    assert_equal(clf.dual_coef_.shape[1], 30)
+    assert_equal(clf.coef_.shape[1], 30)
 
 
 def test_precomputed_kernel():

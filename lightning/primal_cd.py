@@ -3,18 +3,19 @@
 
 import numpy as np
 
-from sklearn.base import BaseEstimator, ClassifierMixin, clone
+from sklearn.base import ClassifierMixin, clone
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.utils import check_random_state, safe_mask
+from sklearn.utils import check_random_state
 from sklearn.metrics.pairwise import pairwise_kernels
 
+from .base import BaseLinearClassifier, BaseKernelClassifier
 from .primal_cd_fast import _primal_cd_l2svm_l1r
 from .primal_cd_fast import _primal_cd_l2svm_l2r
 from .primal_cd_fast import _C_lower_bound_kernel
 from .kernel_fast import get_kernel, KernelCache
-from .predict_fast import predict_alpha, decision_function_alpha
 
-class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
+
+class PrimalLinearSVC(BaseLinearClassifier, ClassifierMixin):
 
     def __init__(self, C=1.0, penalty="l2", max_iter=1000, tol=1e-3,
                  termination="convergence", nz_coef_upper_bound=1000,
@@ -49,6 +50,7 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
         if not self.warm_start or self.coef_ is None:
             self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
             self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
+        self.intercept_ = 0
 
         indices = np.arange(n_features, dtype=np.int32)
 
@@ -69,15 +71,8 @@ class PrimalLinearSVC(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def decision_function(self, X):
-        return np.dot(X, self.coef_.T)
 
-    def predict(self, X):
-        pred = self.decision_function(X)
-        return self.label_binarizer_.inverse_transform(pred, threshold=0)
-
-
-class PrimalSVC(BaseEstimator, ClassifierMixin):
+class PrimalSVC(BaseKernelClassifier, ClassifierMixin):
 
     def __init__(self, C=1.0, penalty="l1", max_iter=10, tol=1e-3,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
@@ -109,14 +104,6 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
         self.n_jobs = n_jobs
         self.support_vectors_ = None
         self.coef_ = None
-
-    def _kernel_params(self):
-        return {"gamma" : self.gamma,
-                "degree" : self.degree,
-                "coef0" : self.coef0}
-
-    def _get_kernel(self):
-        return get_kernel(self.kernel, **self._kernel_params())
 
     def fit(self, X, y, kcache=None):
         n_samples = X.shape[0]
@@ -189,35 +176,9 @@ class PrimalSVC(BaseEstimator, ClassifierMixin):
             self.coef_ = None
             return self
 
-        # We can't know the support vectors when using precomputed kernels.
-        if self.kernel != "precomputed":
-            self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
-            mask = safe_mask(X, sv)
-            self.support_vectors_ = A[mask]
-
-        if self.verbose >= 1:
-            print "Number of support vectors:", np.sum(sv)
+        self._post_process(A)
 
         return self
-
-    def n_support_vectors(self):
-        return 0 if self.coef_ is None else np.sum(self.coef_ != 0)
-
-    def decision_function(self, X):
-        out = np.zeros((X.shape[0], self.coef_.shape[0]), dtype=np.float64)
-        if self.coef_ is not None:
-            sv = self.support_vectors_ if self.kernel != "precomputed" else X
-            decision_function_alpha(X, sv, self.coef_, self.intercept_,
-                                    self._get_kernel(), out)
-        return out
-
-    def predict(self, X):
-        out = np.zeros(X.shape[0], dtype=np.float64)
-        if self.coef_ is not None:
-            sv = self.support_vectors_ if self.kernel != "precomputed" else X
-            predict_alpha(X, sv, self.coef_, self.intercept_,
-                          self.classes_, self._get_kernel(), out)
-        return out
 
 
 def C_lower_bound(X, y, kernel=None, search_size=None, random_state=None,

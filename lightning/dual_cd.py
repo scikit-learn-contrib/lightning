@@ -5,14 +5,14 @@ import numpy as np
 
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.utils import check_random_state, safe_mask
+from sklearn.utils import check_random_state
 from sklearn.metrics.pairwise import pairwise_kernels
 
-from dual_cd_fast import _dual_cd
+from .base import BaseLinearClassifier, BaseKernelClassifier
+from .dual_cd_fast import _dual_cd
 from .kernel_fast import get_kernel, KernelCache
-from .predict_fast import predict_alpha, decision_function_alpha
 
-class DualLinearSVC(BaseEstimator, ClassifierMixin):
+class DualLinearSVC(BaseLinearClassifier, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-3,
                  termination="convergence", sv_upper_bound=1000,
@@ -45,6 +45,7 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
                                   dtype=np.float64)
             self.dual_coef_ = np.zeros((n_vectors, n_samples),
                                        dtype=np.float64)
+        self.intercept_ = 0
 
         kernel = get_kernel("linear")
         kcache = KernelCache(kernel, n_samples, 0, 0, self.verbose)
@@ -58,15 +59,8 @@ class DualLinearSVC(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def decision_function(self, X):
-        return np.dot(X, self.coef_.T)
 
-    def predict(self, X):
-        pred = self.decision_function(X)
-        return self.label_binarizer_.inverse_transform(pred, threshold=0)
-
-
-class DualSVC(BaseEstimator, ClassifierMixin):
+class DualSVC(BaseKernelClassifier, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="l1", max_iter=10, tol=1e-3,
                  shrinking=True, kernel="linear", gamma=0.1, coef0=1, degree=4,
@@ -95,15 +89,7 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.support_vectors_ = None
-        self.dual_coef_ = None
-
-    def _kernel_params(self):
-        return {"gamma" : self.gamma,
-                "degree" : self.degree,
-                "coef0" : self.coef0}
-
-    def _get_kernel(self):
-        return get_kernel(self.kernel, **self._kernel_params())
+        self.coef_ = None
 
     def fit(self, X, y):
         n_samples = X.shape[0]
@@ -114,12 +100,12 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
         n_vectors = Y.shape[1]
 
-        dual_coef = np.zeros((n_vectors, n_samples), dtype=np.float64)
+        coef = np.zeros((n_vectors, n_samples), dtype=np.float64)
 
-        if self.warm_start and self.dual_coef_ is not None:
-            dual_coef[:, self.support_indices_] = self.dual_coef_
+        if self.warm_start and self.coef_ is not None:
+            coef[:, self.support_indices_] = self.coef_
 
-        self.dual_coef_ = dual_coef
+        self.coef_ = coef
 
         coef = np.empty(0, dtype=np.float64)
 
@@ -130,39 +116,16 @@ class DualSVC(BaseEstimator, ClassifierMixin):
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
 
         for i in xrange(n_vectors):
-            _dual_cd(self, coef, self.dual_coef_[i],
+            _dual_cd(self, coef, self.coef_[i],
                      X, Y[:, i], kcache, False,
                      self.selection, self.search_size,
                      self.termination, self.sv_upper_bound,
                      self.C, self.loss, self.max_iter, rs, self.tol,
                      self.shrinking, self.callback, verbose=self.verbose)
 
-        sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)
+        sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
         self.support_indices_ = np.arange(n_samples)[sv]
 
-        if self.kernel != "precomputed":
-            self.dual_coef_ = np.ascontiguousarray(self.dual_coef_[:, sv])
-            mask = safe_mask(X, sv)
-            self.support_vectors_ = X[mask]
-
-        if self.verbose >= 1:
-            print "Number of support vectors:", np.sum(sv)
+        self._post_process(X)
 
         return self
-
-    def n_support_vectors(self):
-        return np.sum(self.dual_coef_ != 0)
-
-    def decision_function(self, X):
-        out = np.zeros((X.shape[0], self.dual_coef_.shape[0]), dtype=np.float64)
-        sv = self.support_vectors_ if self.kernel != "precomputed" else X
-        decision_function_alpha(X, sv, self.dual_coef_, self.intercept_,
-                                self._get_kernel(), out)
-        return out
-
-    def predict(self, X):
-        out = np.zeros(X.shape[0], dtype=np.float64)
-        sv = self.support_vectors_ if self.kernel != "precomputed" else X
-        predict_alpha(X, sv, self.dual_coef_, self.intercept_,
-                      self.classes_, self._get_kernel(), out)
-        return out
