@@ -330,3 +330,11 @@ def test_primal_kernel_log():
     clf.fit(bin_dense, bin_target)
     assert_almost_equal(clf.score(bin_dense, bin_target), 0.95)
     assert_equal(clf.n_support_vectors(), 200)
+
+
+def test_primal_kernel_modified_huber():
+    clf = PrimalKernelSVC(max_iter=1, kernel="rbf", gamma=0.01, C=0.1,
+                          random_state=0, loss="modified_huber")
+    clf.fit(bin_dense, bin_target)
+    assert_almost_equal(clf.score(bin_dense, bin_target), 0.94)
+    assert_equal(clf.n_support_vectors(), 200)

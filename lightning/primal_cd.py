@@ -223,6 +223,36 @@ class LogLoss(object):
         return value
 
 
+class ModifiedHuberLoss(object):
+
+    def objective(self, K, y, coef, C):
+        value = 0.5 * np.dot(np.dot(K, coef), coef)
+        losses = y * np.dot(K, coef)
+        cond = losses < -1
+        not_cond = ~cond
+        losses[cond] *= -4
+        losses[not_cond] = np.maximum(1-losses[not_cond], 0) ** 2
+        value += C * np.sum(losses)
+        return value
+
+    def derivative(self, K, y, coef, j, C):
+        value = np.dot(coef, K[j])
+        losses = y * np.dot(K, coef)
+        cond = losses < -1
+        not_cond = ~cond
+        losses[cond] = -4
+        losses[not_cond] = -2 * np.maximum(1 - losses[not_cond], 0)
+        value += C * np.sum(y * K[j] * losses)
+        return value
+
+    def second_derivative(self, K, y, coef, j, C):
+        value = K[j, j]
+        losses = y * np.dot(K, coef)
+        cond = np.logical_and(-1 <= losses, losses <= 1)
+        value += 2 * C * np.sum(K[j, cond] ** 2)
+        return value
+
+
 class PrimalKernelSVC(BaseKernelClassifier, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="hinge", max_iter=10, tol=1e-3,
@@ -254,7 +284,8 @@ class PrimalKernelSVC(BaseKernelClassifier, ClassifierMixin):
 
     def _get_loss(self):
         losses = {"hinge" : HingeLoss(),
-                  "log" : LogLoss() }
+                  "log" : LogLoss(),
+                  "modified_huber" : ModifiedHuberLoss()}
         return losses[self.loss]
 
     def _solve_one(self, K, y, coef, j, loss):
