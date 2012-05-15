@@ -15,9 +15,9 @@ bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_classes=2, random_state=0)
 
 
-def test_primal_kernel_hinge():
+def test_primal_kernel_squared_hinge():
     clf = PrimalKernelSVC(max_iter=1, kernel="rbf", gamma=0.01, C=0.1,
-                          random_state=0, loss="hinge")
+                          random_state=0, loss="squared_hinge")
     clf.fit(bin_dense, bin_target)
     assert_almost_equal(clf.score(bin_dense, bin_target), 0.94)
     assert_equal(clf.n_support_vectors(), 200)

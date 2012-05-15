@@ -10,7 +10,7 @@ from sklearn.metrics.pairwise import pairwise_kernels
 
 from .base import BaseLinearClassifier, BaseKernelClassifier
 
-class HingeLoss(object):
+class SquaredHingeLoss(object):
 
     def objective(self, K, y, coef, C):
         value = 0.5 * np.dot(np.dot(K, coef), coef)
@@ -84,7 +84,7 @@ class ModifiedHuberLoss(object):
 
 class PrimalKernelSVC(BaseKernelClassifier, ClassifierMixin):
 
-    def __init__(self, C=1.0, loss="hinge", max_iter=10, tol=1e-3,
+    def __init__(self, C=1.0, loss="squared_hinge", max_iter=10, tol=1e-3,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  selection="permute", search_size=60,
                  termination="convergence", sv_upper_bound=1000,
@@ -112,7 +112,7 @@ class PrimalKernelSVC(BaseKernelClassifier, ClassifierMixin):
         self.coef_ = None
 
     def _get_loss(self):
-        losses = {"hinge" : HingeLoss(),
+        losses = {"squared_hinge" : SquaredHingeLoss(),
                   "log" : LogLoss(),
                   "modified_huber" : ModifiedHuberLoss()}
         return losses[self.loss]
