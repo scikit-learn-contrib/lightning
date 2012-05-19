@@ -129,6 +129,7 @@ cdef class SquaredHinge(LossFunction):
         for step in xrange(100):
             z_diff = z_old - z
 
+            # lambda <= Dpp/bound is equivalent to Dp/z <= -bound
             if Dp/z + bound <= 0:
                 for i in xrange(n_samples):
                     b[i] += z_diff * col[i]
@@ -146,6 +147,8 @@ cdef class SquaredHinge(LossFunction):
 
             z_old = z
 
+            #   0.5 * (w + z e_j)^T (w + z e_j)
+            # = 0.5 * w^T w + w_j z + 0.5 z^2
             if w[j] * z + (0.5 + sigma) * z * z + Dj_z - Dj_zero <= 0:
                 break
             else:
