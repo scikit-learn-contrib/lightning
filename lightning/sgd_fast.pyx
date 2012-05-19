@@ -30,11 +30,23 @@ cdef extern from "float.h":
 
 cdef class LossFunction:
 
+    cpdef double loss(self, double p, double y):
+        raise NotImplementedError()
+
     cpdef double get_update(self, double p, double y):
         raise NotImplementedError()
 
 
 cdef class ModifiedHuber(LossFunction):
+
+    cpdef double loss(self, double p, double y):
+        cdef double z = p * y
+        if z >= 1.0:
+            return 0.0
+        elif z >= -1.0:
+            return (1.0 - z) * (1.0 - z)
+        else:
+            return -4.0 * z
 
     cpdef double get_update(self, double p, double y):
         cdef double z = p * y
@@ -53,6 +65,12 @@ cdef class Hinge(LossFunction):
     def __init__(self, double threshold=1.0):
         self.threshold = threshold
 
+    cpdef double loss(self, double p, double y):
+        cdef double z = p * y
+        if z <= self.threshold:
+            return (self.threshold - z)
+        return 0.0
+
     cpdef double get_update(self, double p, double y):
         cdef double z = p * y
         if z <= self.threshold:
@@ -61,6 +79,15 @@ cdef class Hinge(LossFunction):
 
 
 cdef class Log(LossFunction):
+
+    cpdef double loss(self, double p, double y):
+        cdef double z = p * y
+        # approximately equal and saves the computation of the log
+        if z > 18:
+            return exp(-z)
+        if z < -18:
+            return -z
+        return log(1.0 + exp(-z))
 
     cpdef double get_update(self, double p, double y):
         cdef double z = p * y
@@ -80,6 +107,14 @@ cdef class SparseLog(LossFunction):
         self.threshold = threshold
         self.gamma = -log((1 - threshold)/threshold)
 
+    cpdef double loss(self, double p, double y):
+        cdef double z = p * y
+        # approximately equal and saves the computation of the log
+        if z > self.threshold:
+            return 0
+        else:
+            return log(1.0 + exp(-self.gamma * z))
+
     cpdef double get_update(self, double p, double y):
         cdef double z = p * y
         if z > self.threshold:
@@ -92,6 +127,9 @@ cdef class SparseLog(LossFunction):
 
 cdef class SquaredLoss(LossFunction):
 
+    cpdef double loss(self, double p, double y):
+        return 0.5 * (p - y) * (p - y)
+
     cpdef double get_update(self, double p, double y):
         return y - p
 
@@ -99,6 +137,14 @@ cdef class SquaredLoss(LossFunction):
 cdef class Huber(LossFunction):
 
     cdef double c
+
+    cpdef double loss(self, double p, double y):
+        cdef double r = p - y
+        cdef double abs_r = abs(r)
+        if abs_r <= self.c:
+            return 0.5 * r * r
+        else:
+            return self.c * abs_r - (0.5 * self.c * self.c)
 
     def __init__(self, double c):
         self.c = c
@@ -120,6 +166,10 @@ cdef class EpsilonInsensitive(LossFunction):
 
     def __init__(self, double epsilon):
         self.epsilon = epsilon
+
+    cpdef double loss(self, double p, double y):
+        cdef double ret = abs(y - p) - self.epsilon
+        return ret if ret > 0 else 0
 
     cpdef double get_update(self, double p, double y):
         if y - p > self.epsilon:
