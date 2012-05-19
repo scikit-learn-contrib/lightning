@@ -26,6 +26,8 @@ from lightning.select_fast cimport update_start
 
 cdef extern from "math.h":
    double fabs(double)
+   double exp(double x)
+   double log(double x)
 
 cdef extern from "float.h":
    double DBL_MAX
@@ -156,6 +158,85 @@ cdef class SquaredHinge(LossFunction):
 
         return z
 
+
+cdef class Log(LossFunction):
+
+    cdef void compute_derivatives(self,
+                                  int j,
+                                  int n_samples,
+                                  double C,
+                                  double sigma,
+                                  double *w,
+                                  double *col_ro,
+                                  double *col,
+                                  double *y,
+                                  double *b,
+                                  double *Dp,
+                                  double *Dpp,
+                                  double *Dj_zero,
+                                  double *bound):
+        cdef int i
+        cdef double xj_sq = 0
+        cdef double val, tau, exppred
+
+        Dp[0] = 0
+        Dpp[0] = 0
+        Dj_zero[0] = 0
+
+        for i in xrange(n_samples):
+            val = col_ro[i] * y[i]
+            col[i] = val
+
+            exppred = 1 + 1 / b[i]
+            tau = 1 / exppred
+            Dp[0] += val * (tau - 1)
+            Dpp[0] += val * val * tau * (1 - tau)
+            Dj_zero[0] += log(exppred)
+
+        Dp[0] = w[j] + 2 * C * Dp[0]
+        Dpp[0] = 1 + 2 * C * Dpp[0]
+        Dj_zero[0] *= C
+
+
+    cdef double line_search(self,
+                            int j,
+                            int n_samples,
+                            double d,
+                            double C,
+                            double sigma,
+                            double *w,
+                            double *col,
+                            double *y,
+                            double *b,
+                            double Dp,
+                            double Dpp,
+                            double Dj_zero,
+                            double bound):
+        cdef int step
+        cdef double z_diff, z_old, z, Dj_z, exppred
+
+        z_old = 0
+        z = d
+
+        for step in xrange(100):
+            z_diff = z - z_old
+            Dj_z = 0
+
+            for i in xrange(n_samples):
+                b[i] *= exp(z_diff * col[i])
+                exppred = 1 + 1 / b[i]
+                Dj_z += log(exppred)
+
+            Dj_z *= C
+
+            z_old = z
+
+            if w[j] * z + (0.5 + sigma) * z * z + Dj_z - Dj_zero <= 0:
+                break
+            else:
+                z /= 2
+
+        return z
 
 def _primal_cd_l2svm_l1r(self,
                          np.ndarray[double, ndim=1, mode='c'] w,

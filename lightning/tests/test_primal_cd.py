@@ -132,6 +132,22 @@ def test_fit_linear_binary_l2r():
     assert_equal(n_nz, 200)
 
 
+def test_fit_linear_binary_l2r_log():
+    clf = PrimalLinearSVC(C=1.0, random_state=0, penalty="l2", loss="log",
+                          max_iter=10)
+    clf.fit(bin_dense, bin_target)
+    acc = clf.score(bin_dense, bin_target)
+    assert_almost_equal(acc, 1.0)
+
+
+def test_fit_rbf_binary_l2r_log():
+    clf = PrimalSVC(C=1.0, random_state=0, penalty="l2", loss="log",
+                          max_iter=10, kernel="rbf")
+    clf.fit(bin_dense, bin_target)
+    acc = clf.score(bin_dense, bin_target)
+    assert_almost_equal(acc, 1.0)
+
+
 def test_fit_rbf_binary_l2r():
     clf = PrimalSVC(C=0.5, kernel="rbf", gamma=0.1, random_state=0, penalty="l2")
     clf.fit(bin_dense, bin_target)
