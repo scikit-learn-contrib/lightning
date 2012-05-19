@@ -30,6 +30,129 @@ cdef extern from "math.h":
 cdef extern from "float.h":
    double DBL_MAX
 
+cdef class LossFunction:
+
+    cdef void compute_derivatives(self,
+                                  int j,
+                                  int n_samples,
+                                  double C,
+                                  double sigma,
+                                  double *w,
+                                  double *col_ro,
+                                  double *col,
+                                  double *y,
+                                  double *b,
+                                  double *Dp,
+                                  double *Dpp,
+                                  double *Dj_zero,
+                                  double *bound):
+        raise NotImplementedError()
+
+    cdef double line_search(self,
+                            int j,
+                            int n_samples,
+                            double d,
+                            double C,
+                            double sigma,
+                            double *w,
+                            double *col,
+                            double *y,
+                            double *b,
+                            double Dp,
+                            double Dpp,
+                            double Dj_zero,
+                            double bound):
+        raise NotImplementedError()
+
+
+cdef class SquaredHinge(LossFunction):
+
+    cdef void compute_derivatives(self,
+                                  int j,
+                                  int n_samples,
+                                  double C,
+                                  double sigma,
+                                  double *w,
+                                  double *col_ro,
+                                  double *col,
+                                  double *y,
+                                  double *b,
+                                  double *Dp,
+                                  double *Dpp,
+                                  double *Dj_zero,
+                                  double *bound):
+        cdef int i
+        cdef double xj_sq = 0
+        cdef double val
+
+        Dp[0] = 0
+        Dpp[0] = 0
+        Dj_zero[0] = 0
+
+        for i in xrange(n_samples):
+            val = col_ro[i] * y[i]
+            col[i] = val
+            xj_sq += val * val
+
+            if b[i] > 0:
+                Dp[0] -= b[i] * val
+                Dpp[0] += val * val
+                Dj_zero[0] += b[i] * b[i]
+
+        bound[0] = (2 * C * xj_sq + 1) / 2.0 + sigma
+
+        Dp[0] = w[j] + 2 * C * Dp[0]
+        Dpp[0] = 1 + 2 * C * Dpp[0]
+        Dj_zero[0] *= C
+
+
+    cdef double line_search(self,
+                            int j,
+                            int n_samples,
+                            double d,
+                            double C,
+                            double sigma,
+                            double *w,
+                            double *col,
+                            double *y,
+                            double *b,
+                            double Dp,
+                            double Dpp,
+                            double Dj_zero,
+                            double bound):
+        cdef int step
+        cdef double z_diff, z_old, z, Dj_z, b_new
+
+        z_old = 0
+        z = d
+
+        for step in xrange(100):
+            z_diff = z_old - z
+
+            if Dp/z + bound <= 0:
+                for i in xrange(n_samples):
+                    b[i] += z_diff * col[i]
+                break
+
+            Dj_z = 0
+
+            for i in xrange(n_samples):
+                b_new = b[i] + z_diff * col[i]
+                b[i] = b_new
+                if b_new > 0:
+                    Dj_z += b_new * b_new
+
+            Dj_z *= C
+
+            z_old = z
+
+            if w[j] * z + (0.5 + sigma) * z * z + Dj_z - Dj_zero <= 0:
+                break
+            else:
+                z /= 2
+
+        return z
+
 
 def _primal_cd_l2svm_l1r(self,
                          np.ndarray[double, ndim=1, mode='c'] w,
@@ -308,6 +431,7 @@ def _primal_cd_l2svm_l2r(self,
                          A,
                          np.ndarray[double, ndim=1] y,
                          np.ndarray[int, ndim=1, mode='c'] index,
+                         LossFunction loss,
                          KernelCache kcache,
                          int linear_kernel,
                          termination,
@@ -334,10 +458,8 @@ def _primal_cd_l2svm_l2r(self,
         n_features = index.shape[0]
 
     cdef int i, j, s, step, t
-    cdef double z, z_old, z_diff,
-    cdef double Dp, Dpmax, Dpp, Dj_zero, Dj_z
+    cdef double Dp, Dpmax, Dpp, Dj_zero, z, bound
     cdef double sigma = 0.01
-    cdef double xj_sq, val, b_new, bound
 
     cdef double* col_data
     cdef double* col_ro
@@ -362,9 +484,6 @@ def _primal_cd_l2svm_l2r(self,
 
         for s in xrange(n_features):
             j = index[s]
-            Dp = 0
-            Dpp = 0
-            Dj_zero = 0
 
             if linear_kernel:
                 col_ro = (<double*>Xf.data) + j * n_samples
@@ -372,23 +491,19 @@ def _primal_cd_l2svm_l2r(self,
                 kcache.compute_column(Xc, Ac, j, col)
                 col_ro = col_data
 
-            # Iterate over samples that have the feature
-            xj_sq = 0
-            for i in xrange(n_samples):
-                val = col_ro[i] * y[i]
-                col[i] = val
-                xj_sq += val * val
-
-                if b[i] > 0:
-                    Dp -= b[i] * val
-                    Dpp += val * val
-                    Dj_zero += b[i] * b[i]
-
-            bound = (2 * C * xj_sq + 1) / 2.0 + sigma
-
-            Dp = w[j] + 2 * C * Dp
-            Dpp = 1 + 2 * C * Dpp
-            Dj_zero *= C
+            loss.compute_derivatives(j,
+                                     n_samples,
+                                     C,
+                                     sigma,
+                                     <double*>w.data,
+                                     col_ro,
+                                     col_data,
+                                     <double*>y.data,
+                                     <double*>b.data,
+                                     &Dp,
+                                     &Dpp,
+                                     &Dj_zero,
+                                     &bound)
 
             if fabs(Dp) > Dpmax:
                 Dpmax = fabs(Dp)
@@ -397,35 +512,20 @@ def _primal_cd_l2svm_l2r(self,
                 continue
 
             d = -Dp / Dpp
-            z_old = 0
-            z = d
 
-            for step in xrange(100):
-                z_diff = z_old - z
-
-                if Dp/z + bound <= 0:
-                    for i in xrange(n_samples):
-                        b[i] += z_diff * col[i]
-                    break
-
-                Dj_z = 0
-
-                for i in xrange(n_samples):
-                    b_new = b[i] + z_diff * col[i]
-                    b[i] = b_new
-                    if b_new > 0:
-                        Dj_z += b_new * b_new
-
-                Dj_z *= C
-
-                z_old = z
-
-                if w[j] * z + (0.5 + sigma) * z * z + Dj_z - Dj_zero <= 0:
-                    break
-                else:
-                    z /= 2
-
-            # end while (line search)
+            z = loss.line_search(j,
+                                 n_samples,
+                                 d,
+                                 C,
+                                 sigma,
+                                 <double*>w.data,
+                                 col_data,
+                                 <double*>y.data,
+                                 <double*>b.data,
+                                 Dp,
+                                 Dpp,
+                                 Dj_zero,
+                                 bound)
 
             w[j] += z
 

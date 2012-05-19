@@ -11,16 +11,28 @@ from .base import BaseLinearClassifier, BaseKernelClassifier
 from .primal_cd_fast import _primal_cd_l2svm_l1r
 from .primal_cd_fast import _primal_cd_l2svm_l2r
 from .primal_cd_fast import _C_lower_bound_kernel
+from .primal_cd_fast import SquaredHinge
 from .kernel_fast import get_kernel, KernelCache
 
 
-class PrimalLinearSVC(BaseLinearClassifier, ClassifierMixin):
+class BaseSVC(object):
 
-    def __init__(self, C=1.0, penalty="l2", max_iter=1000, tol=1e-3,
+    def _get_loss(self):
+        losses = {
+            "squared_hinge" : SquaredHinge(),
+        }
+        return losses[self.loss]
+
+
+class PrimalLinearSVC(BaseSVC, BaseLinearClassifier, ClassifierMixin):
+
+    def __init__(self, C=1.0, loss="squared_hinge", penalty="l2",
+                 max_iter=1000, tol=1e-3,
                  termination="convergence", nz_coef_upper_bound=1000,
                  warm_start=False, random_state=None,
                  callback=None, verbose=0, n_jobs=1):
         self.C = C
+        self.loss = loss
         self.penalty = penalty
         self.max_iter = max_iter
         self.tol = tol
@@ -63,7 +75,8 @@ class PrimalLinearSVC(BaseLinearClassifier, ClassifierMixin):
                                      self.callback, verbose=self.verbose)
             else:
                 _primal_cd_l2svm_l2r(self, self.coef_[i], self.errors_[i],
-                                     X, None, Y[:, i], indices, kcache, True,
+                                     X, None, Y[:, i], indices,
+                                     self._get_loss(), kcache, True,
                                      self.termination, self.nz_coef_upper_bound,
                                      self.C, self.max_iter, rs, self.tol,
                                      self.callback, verbose=self.verbose)
@@ -71,9 +84,10 @@ class PrimalLinearSVC(BaseLinearClassifier, ClassifierMixin):
         return self
 
 
-class PrimalSVC(BaseKernelClassifier, ClassifierMixin):
+class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
 
-    def __init__(self, C=1.0, penalty="l1", max_iter=10, tol=1e-3,
+    def __init__(self, C=1.0, loss="squared_hinge", penalty="l1",
+                 max_iter=10, tol=1e-3,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  Cd=1.0, warm_debiasing=False,
                  selection="permute", search_size=60,
@@ -81,6 +95,7 @@ class PrimalSVC(BaseKernelClassifier, ClassifierMixin):
                  cache_mb=500, warm_start=False, random_state=None,
                  components=None, callback=None, verbose=0, n_jobs=1):
         self.C = C
+        self.loss = loss
         self.penalty = penalty
         self.max_iter = max_iter
         self.tol = tol
@@ -162,7 +177,8 @@ class PrimalSVC(BaseKernelClassifier, ClassifierMixin):
         if self.penalty in ("l2", "l1l2"):
             for i in xrange(n_vectors):
                 _primal_cd_l2svm_l2r(self, self.coef_[i], self.errors_[i],
-                                     X, A, Y[:, i], indices, kcache, False,
+                                     X, A, Y[:, i], indices,
+                                     self._get_loss(), kcache, False,
                                      termination, self.sv_upper_bound,
                                      C, self.max_iter, rs, self.tol,
                                      self.callback, verbose=self.verbose)
