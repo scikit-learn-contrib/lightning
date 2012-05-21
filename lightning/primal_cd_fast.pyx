@@ -159,6 +159,105 @@ cdef class SquaredHinge(LossFunction):
         return z
 
 
+cdef class ModifiedHuber(LossFunction):
+
+    cdef void compute_derivatives(self,
+                                  int j,
+                                  int n_samples,
+                                  double C,
+                                  double sigma,
+                                  double *w,
+                                  double *col_ro,
+                                  double *col,
+                                  double *y,
+                                  double *b,
+                                  double *Dp,
+                                  double *Dpp,
+                                  double *Dj_zero,
+                                  double *bound):
+        cdef int i
+        cdef double xj_sq = 0
+        cdef double val
+
+        Dp[0] = 0
+        Dpp[0] = 0
+        Dj_zero[0] = 0
+
+        for i in xrange(n_samples):
+            val = col_ro[i] * y[i]
+            col[i] = val
+            xj_sq += val * val
+
+            if b[i] > 2:
+                Dp[0] -= 2 * val
+                # -4 yp = 4 (b[i] - 1)
+                Dj_zero[0] += 4 * (b[i] - 1)
+            elif b[i] > 0:
+                Dp[0] -= b[i] * val
+                Dpp[0] += val * val
+                Dj_zero[0] += b[i] * b[i]
+
+        bound[0] = (2 * C * xj_sq + 1) / 2.0 + sigma
+
+        Dp[0] = w[j] + 2 * C * Dp[0]
+        Dpp[0] = 1 + 2 * C * Dpp[0]
+        Dj_zero[0] *= C
+
+
+    cdef double line_search(self,
+                            int j,
+                            int n_samples,
+                            double d,
+                            double C,
+                            double sigma,
+                            double *w,
+                            double *col,
+                            double *y,
+                            double *b,
+                            double Dp,
+                            double Dpp,
+                            double Dj_zero,
+                            double bound):
+        cdef int step
+        cdef double z_diff, z_old, z, Dj_z, b_new
+
+        z_old = 0
+        z = d
+
+        for step in xrange(100):
+            z_diff = z_old - z
+
+            # lambda <= Dpp/bound is equivalent to Dp/z <= -bound
+            if Dp/z + bound <= 0:
+                for i in xrange(n_samples):
+                    b[i] += z_diff * col[i]
+                break
+
+            Dj_z = 0
+
+            for i in xrange(n_samples):
+                b_new = b[i] + z_diff * col[i]
+                b[i] = b_new
+
+                if b_new > 2:
+                    Dj_z += 4 * (b[i] - 1)
+                elif b_new > 0:
+                    Dj_z += b_new * b_new
+
+            Dj_z *= C
+
+            z_old = z
+
+            #   0.5 * (w + z e_j)^T (w + z e_j)
+            # = 0.5 * w^T w + w_j z + 0.5 z^2
+            if w[j] * z + (0.5 + sigma) * z * z + Dj_z - Dj_zero <= 0:
+                break
+            else:
+                z /= 2
+
+        return z
+
+
 cdef class Log(LossFunction):
 
     cdef void compute_derivatives(self,

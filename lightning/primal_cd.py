@@ -8,12 +8,15 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
 
 from .base import BaseLinearClassifier, BaseKernelClassifier
+
+from .kernel_fast import get_kernel, KernelCache
 from .primal_cd_fast import _primal_cd_l2svm_l1r
 from .primal_cd_fast import _primal_cd_l2svm_l2r
 from .primal_cd_fast import _C_lower_bound_kernel
+
 from .primal_cd_fast import SquaredHinge
+from .primal_cd_fast import ModifiedHuber
 from .primal_cd_fast import Log
-from .kernel_fast import get_kernel, KernelCache
 
 
 class BaseSVC(object):
@@ -21,6 +24,7 @@ class BaseSVC(object):
     def _get_loss(self):
         losses = {
             "squared_hinge" : SquaredHinge(),
+            "modified_huber" : ModifiedHuber(),
             "log" : Log(),
         }
         return losses[self.loss]

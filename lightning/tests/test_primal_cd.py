@@ -148,6 +148,22 @@ def test_fit_rbf_binary_l2r_log():
     assert_almost_equal(acc, 1.0)
 
 
+def test_fit_linear_binary_l2r_modified_huber():
+    clf = PrimalLinearSVC(C=1.0, random_state=0, penalty="l2",
+                          loss="modified_huber")
+    clf.fit(bin_dense, bin_target)
+    acc = clf.score(bin_dense, bin_target)
+    assert_almost_equal(acc, 1.0)
+
+
+def test_fit_rbf_binary_l2r_modified_huber():
+    clf = PrimalSVC(C=1.0, random_state=0, penalty="l2",
+                    kernel="rbf", loss="modified_huber")
+    clf.fit(bin_dense, bin_target)
+    acc = clf.score(bin_dense, bin_target)
+    assert_almost_equal(acc, 1.0)
+
+
 def test_fit_rbf_binary_l2r():
     clf = PrimalSVC(C=0.5, kernel="rbf", gamma=0.1, random_state=0, penalty="l2")
     clf.fit(bin_dense, bin_target)
