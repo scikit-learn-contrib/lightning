@@ -34,55 +34,107 @@ cdef extern from "float.h":
 
 cdef class LossFunction:
 
-    cdef void compute_derivatives(self,
-                                  int j,
-                                  int n_samples,
-                                  double C,
-                                  double sigma,
-                                  double *w,
-                                  double *col_ro,
-                                  double *col,
-                                  double *y,
-                                  double *b,
-                                  double *Dp,
-                                  double *Dpp,
-                                  double *Dj_zero,
-                                  double *bound):
+    cdef void solve_l2(self,
+                       int j,
+                       int n_samples,
+                       double C,
+                       double *w,
+                       double *col_ro,
+                       double *col,
+                       double *y,
+                       double *b,
+                       double *Dp):
+
+        cdef double sigma = 0.01
+        cdef double beta = 0.5
+        cdef double bound, Dpp, Dj_zero, z, d
+
+        self.derivatives_l2(j,
+                            n_samples,
+                            C,
+                            sigma,
+                            w,
+                            col_ro,
+                            col,
+                            y,
+                            b,
+                            Dp,
+                            &Dpp,
+                            &Dj_zero,
+                            &bound)
+
+        if fabs(Dp[0]/Dpp) <= 1e-12:
+            return
+
+        d = -Dp[0] / Dpp
+
+        z = self.line_search_l2(j,
+                                n_samples,
+                                d,
+                                C,
+                                sigma,
+                                beta,
+                                w,
+                                col,
+                                y,
+                                b,
+                                Dp[0],
+                                Dpp,
+                                Dj_zero,
+                                bound)
+
+        w[j] += z
+
+    cdef void derivatives_l2(self,
+                             int j,
+                             int n_samples,
+                             double C,
+                             double sigma,
+                             double *w,
+                             double *col_ro,
+                             double *col,
+                             double *y,
+                             double *b,
+                             double *Dp,
+                             double *Dpp,
+                             double *Dj_zero,
+                             double *bound):
         raise NotImplementedError()
 
-    cdef double line_search(self,
-                            int j,
-                            int n_samples,
-                            double d,
-                            double C,
-                            double sigma,
-                            double *w,
-                            double *col,
-                            double *y,
-                            double *b,
-                            double Dp,
-                            double Dpp,
-                            double Dj_zero,
-                            double bound):
+    cdef double line_search_l2(self,
+                               int j,
+                               int n_samples,
+                               double d,
+                               double C,
+                               double sigma,
+                               double beta,
+                               double *w,
+                               double *col,
+                               double *y,
+                               double *b,
+                               double Dp,
+                               double Dpp,
+                               double Dj_zero,
+                               double bound):
         raise NotImplementedError()
 
 
 cdef class SquaredHinge(LossFunction):
 
-    cdef void compute_derivatives(self,
-                                  int j,
-                                  int n_samples,
-                                  double C,
-                                  double sigma,
-                                  double *w,
-                                  double *col_ro,
-                                  double *col,
-                                  double *y,
-                                  double *b,
-                                  double *Dp,
-                                  double *Dpp,
-                                  double *Dj_zero,
-                                  double *bound):
+    cdef void derivatives_l2(self,
+                             int j,
+                             int n_samples,
+                             double C,
+                             double sigma,
+                             double *w,
+                             double *col_ro,
+                             double *col,
+                             double *y,
+                             double *b,
+                             double *Dp,
+                             double *Dpp,
+                             double *Dj_zero,
+                             double *bound):
         cdef int i
         cdef double xj_sq = 0
         cdef double val
@@ -107,21 +159,21 @@ cdef class SquaredHinge(LossFunction):
         Dpp[0] = 1 + 2 * C * Dpp[0]
         Dj_zero[0] *= C
 
-
-    cdef double line_search(self,
-                            int j,
-                            int n_samples,
-                            double d,
-                            double C,
-                            double sigma,
-                            double *w,
-                            double *col,
-                            double *y,
-                            double *b,
-                            double Dp,
-                            double Dpp,
-                            double Dj_zero,
-                            double bound):
+    cdef double line_search_l2(self,
+                               int j,
+                               int n_samples,
+                               double d,
+                               double C,
+                               double sigma,
+                               double beta,
+                               double *w,
+                               double *col,
+                               double *y,
+                               double *b,
+                               double Dp,
+                               double Dpp,
+                               double Dj_zero,
+                               double bound):
         cdef int step
         cdef double z_diff, z_old, z, Dj_z, b_new
 
@@ -154,27 +206,27 @@ cdef class SquaredHinge(LossFunction):
             if w[j] * z + (0.5 + sigma) * z * z + Dj_z - Dj_zero <= 0:
                 break
             else:
-                z /= 2
+                z *= beta
 
         return z
 
 
 cdef class ModifiedHuber(LossFunction):
 
-    cdef void compute_derivatives(self,
-                                  int j,
-                                  int n_samples,
-                                  double C,
-                                  double sigma,
-                                  double *w,
-                                  double *col_ro,
-                                  double *col,
-                                  double *y,
-                                  double *b,
-                                  double *Dp,
-                                  double *Dpp,
-                                  double *Dj_zero,
-                                  double *bound):
+    cdef void derivatives_l2(self,
+                             int j,
+                             int n_samples,
+                             double C,
+                             double sigma,
+                             double *w,
+                             double *col_ro,
+                             double *col,
+                             double *y,
+                             double *b,
+                             double *Dp,
+                             double *Dpp,
+                             double *Dj_zero,
+                             double *bound):
         cdef int i
         cdef double xj_sq = 0
         cdef double val
@@ -204,20 +256,21 @@ cdef class ModifiedHuber(LossFunction):
         Dj_zero[0] *= C
 
 
-    cdef double line_search(self,
-                            int j,
-                            int n_samples,
-                            double d,
-                            double C,
-                            double sigma,
-                            double *w,
-                            double *col,
-                            double *y,
-                            double *b,
-                            double Dp,
-                            double Dpp,
-                            double Dj_zero,
-                            double bound):
+    cdef double line_search_l2(self,
+                               int j,
+                               int n_samples,
+                               double d,
+                               double C,
+                               double sigma,
+                               double beta,
+                               double *w,
+                               double *col,
+                               double *y,
+                               double *b,
+                               double Dp,
+                               double Dpp,
+                               double Dj_zero,
+                               double bound):
         cdef int step
         cdef double z_diff, z_old, z, Dj_z, b_new
 
@@ -260,20 +313,20 @@ cdef class ModifiedHuber(LossFunction):
 
 cdef class Log(LossFunction):
 
-    cdef void compute_derivatives(self,
-                                  int j,
-                                  int n_samples,
-                                  double C,
-                                  double sigma,
-                                  double *w,
-                                  double *col_ro,
-                                  double *col,
-                                  double *y,
-                                  double *b,
-                                  double *Dp,
-                                  double *Dpp,
-                                  double *Dj_zero,
-                                  double *bound):
+    cdef void derivatives_l2(self,
+                             int j,
+                             int n_samples,
+                             double C,
+                             double sigma,
+                             double *w,
+                             double *col_ro,
+                             double *col,
+                             double *y,
+                             double *b,
+                             double *Dp,
+                             double *Dpp,
+                             double *Dj_zero,
+                             double *bound):
         cdef int i
         cdef double xj_sq = 0
         cdef double val, tau, exppred
@@ -297,20 +350,21 @@ cdef class Log(LossFunction):
         Dj_zero[0] *= C
 
 
-    cdef double line_search(self,
-                            int j,
-                            int n_samples,
-                            double d,
-                            double C,
-                            double sigma,
-                            double *w,
-                            double *col,
-                            double *y,
-                            double *b,
-                            double Dp,
-                            double Dpp,
-                            double Dj_zero,
-                            double bound):
+    cdef double line_search_l2(self,
+                               int j,
+                               int n_samples,
+                               double d,
+                               double C,
+                               double sigma,
+                               double beta,
+                               double *w,
+                               double *col,
+                               double *y,
+                               double *b,
+                               double Dp,
+                               double Dpp,
+                               double Dj_zero,
+                               double bound):
         cdef int step
         cdef double z_diff, z_old, z, Dj_z, exppred
 
@@ -640,9 +694,8 @@ def _primal_cd_l2svm_l2r(self,
         Ac = A
         n_features = index.shape[0]
 
-    cdef int i, j, s, step, t
-    cdef double Dp, Dpmax, Dpp, Dj_zero, z, bound
-    cdef double sigma = 0.01
+    cdef int i, j, s, t
+    cdef double Dp, Dpmax
 
     cdef double* col_data
     cdef double* col_ro
@@ -674,43 +727,18 @@ def _primal_cd_l2svm_l2r(self,
                 kcache.compute_column(Xc, Ac, j, col)
                 col_ro = col_data
 
-            loss.compute_derivatives(j,
-                                     n_samples,
-                                     C,
-                                     sigma,
-                                     <double*>w.data,
-                                     col_ro,
-                                     col_data,
-                                     <double*>y.data,
-                                     <double*>b.data,
-                                     &Dp,
-                                     &Dpp,
-                                     &Dj_zero,
-                                     &bound)
+            loss.solve_l2(j,
+                          n_samples,
+                          C,
+                          <double*>w.data,
+                          col_ro,
+                          col_data,
+                          <double*>y.data,
+                          <double*>b.data,
+                          &Dp)
 
             if fabs(Dp) > Dpmax:
                 Dpmax = fabs(Dp)
-
-            if fabs(Dp/Dpp) <= 1e-12:
-                continue
-
-            d = -Dp / Dpp
-
-            z = loss.line_search(j,
-                                 n_samples,
-                                 d,
-                                 C,
-                                 sigma,
-                                 <double*>w.data,
-                                 col_data,
-                                 <double*>y.data,
-                                 <double*>b.data,
-                                 Dp,
-                                 Dpp,
-                                 Dj_zero,
-                                 bound)
-
-            w[j] += z
 
             if w[j] != 0:
                 n_sv += 1
