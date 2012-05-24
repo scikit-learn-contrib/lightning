@@ -388,3 +388,21 @@ def test_fit_rbf_binary_l2r_correctness_kernelized():
         clf2.fit(bin_dense, bin_target)
         assert_array_almost_equal(clf.coef_, clf2.coef_, decimal=5)
 
+
+def test_fit_rbf_binary_l2r_kernelized_upper_bound():
+    clf = PrimalSVC(C=1.0, random_state=0, penalty="l2", loss="squared_hinge",
+                    max_iter=20, kernel="rbf", kernel_regularizer=True,
+                    selection="loss", termination="n_sv", sv_upper_bound=30)
+    clf.fit(bin_dense, bin_target)
+    acc = clf.score(bin_dense, bin_target)
+    assert_almost_equal(acc, 0.88)
+    assert_equal(clf.n_support_vectors(), 30)
+
+    clf = PrimalSVC(C=1.0, random_state=0, penalty="l2l2", loss="squared_hinge",
+                    max_iter=20, kernel="rbf", kernel_regularizer=True,
+                    selection="loss", termination="n_sv", sv_upper_bound=30,
+                    warm_debiasing=True)
+    clf.fit(bin_dense, bin_target)
+    acc = clf.score(bin_dense, bin_target)
+    assert_almost_equal(acc, 0.88)
+    assert_equal(clf.n_support_vectors(), 30)

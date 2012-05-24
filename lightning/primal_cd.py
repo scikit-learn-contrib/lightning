@@ -139,6 +139,7 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
         A = X
         C = self.C
         termination = self.termination
+        selection = self.selection
 
         if self.penalty == "l2" and self.components is not None:
             A = self.components
@@ -170,7 +171,18 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
                                          self.C, self.max_iter, rs, self.tol,
                                          self.callback, verbose=self.verbose)
 
-        if self.penalty == "l1l2":
+        if self.penalty in ("l2", "l2l2"):
+            for i in xrange(n_vectors):
+                _primal_cd_l2svm_l2r(self, self.coef_[i], self.errors_[i],
+                                     X, A, Y[:, i], indices,
+                                     self._get_loss(), kcache, False,
+                                     self.kernel_regularizer,
+                                     self.selection, self.search_size,
+                                     termination, self.sv_upper_bound,
+                                     C, self.max_iter, rs, self.tol,
+                                     self.callback, verbose=self.verbose)
+
+        if self.penalty in ("l1l2", "l2l2"):
             sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
             self.support_indices_ = np.arange(n_samples, dtype=np.int32)[sv]
             indices = self.support_indices_.copy()
@@ -181,14 +193,14 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
                 self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
             C = self.Cd
             termination = "convergence"
+            selection = "permute"
 
-        if self.penalty in ("l2", "l1l2"):
             for i in xrange(n_vectors):
                 _primal_cd_l2svm_l2r(self, self.coef_[i], self.errors_[i],
                                      X, A, Y[:, i], indices,
                                      self._get_loss(), kcache, False,
                                      self.kernel_regularizer,
-                                     self.selection, self.search_size,
+                                     selection, self.search_size,
                                      termination, self.sv_upper_bound,
                                      C, self.max_iter, rs, self.tol,
                                      self.callback, verbose=self.verbose)
