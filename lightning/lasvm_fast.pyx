@@ -282,7 +282,7 @@ def _lasvm(self,
            selection,
            int search_size,
            termination,
-           int sv_upper_bound,
+           int n_components,
            double tau,
            int finish_step,
            double C,
@@ -315,7 +315,7 @@ def _lasvm(self,
     cdef np.ndarray[double, ndim=1, mode='c'] col2
     col2 = np.zeros(n_samples, dtype=np.float64)
 
-    cdef int check_n_sv = termination == "n_sv"
+    cdef int check_n_sv = termination == "n_components"
     cdef int has_callback = callback is not None
 
     cdef int it, i, j, s, k, start
@@ -348,7 +348,7 @@ def _lasvm(self,
             _reprocess(X, y, kcache, alpha, g, b, delta, C, tau, col, col2)
 
             # Exit if necessary.
-            if check_n_sv and kcache.n_sv() >= sv_upper_bound:
+            if check_n_sv and kcache.n_sv() >= n_components:
                 stop = 1
                 break
 

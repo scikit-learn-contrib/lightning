@@ -56,7 +56,7 @@ def test_fit_rbf_multi():
 def test_fit_rbf_binary_early_stopping():
     clf = DualSVC(loss="l1", kernel="rbf", gamma=0.5, random_state=0,
                   shrinking=True, selection="loss",
-                  termination="n_sv", sv_upper_bound=30)
+                  termination="n_components", n_components=30)
     clf.fit(bin_dense, bin_target)
     y_pred = clf.predict(bin_dense)
     assert_equal(clf.coef_.shape[1], 30)

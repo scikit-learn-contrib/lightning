@@ -38,7 +38,7 @@ def _dual_cd(self,
              selection,
              int search_size,
              termination,
-             int sv_upper_bound,
+             int n_components,
              double C,
              loss,
              int max_iter,
@@ -89,7 +89,7 @@ def _dual_cd(self,
     cdef list[int].iterator it
 
     cdef int select_method = get_select_method(selection)
-    cdef int check_n_sv = termination == "n_sv"
+    cdef int check_n_sv = termination == "n_components"
     cdef int check_convergence = termination == "convergence"
     cdef int permute = selection == "permute" or linear_kernel
     cdef int has_callback = callback is not None
@@ -188,7 +188,7 @@ def _dual_cd(self,
                     w += step * X[i]
 
             # Exit if necessary.
-            if check_n_sv and kcache.n_sv() >= sv_upper_bound:
+            if check_n_sv and kcache.n_sv() >= n_components:
                 stop = 1
                 break
 

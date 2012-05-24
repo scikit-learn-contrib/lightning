@@ -126,7 +126,7 @@ class KernelSGDClassifier(BaseKernelClassifier, BaseSGD, ClassifierMixin):
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  learning_rate="pegasos", eta0=0.03, power_t=0.5,
                  epsilon=0.01, fit_intercept=True, intercept_decay=1.0,
-                 model_size=0, max_iter=10, random_state=None,
+                 n_components=0, max_iter=10, random_state=None,
                  cache_mb=500, verbose=0, n_jobs=1):
         self.loss = loss
         self.multiclass = multiclass
@@ -141,7 +141,7 @@ class KernelSGDClassifier(BaseKernelClassifier, BaseSGD, ClassifierMixin):
         self.epsilon = epsilon
         self.fit_intercept = fit_intercept
         self.intercept_decay = intercept_decay
-        self.model_size = model_size
+        self.n_components = n_components
         self.max_iter = max_iter
         self.random_state = random_state
         self.cache_mb = cache_mb
@@ -169,7 +169,7 @@ class KernelSGDClassifier(BaseKernelClassifier, BaseSGD, ClassifierMixin):
                             self.coef_, self.intercept_, i,
                             X, Y[:, i],
                             self._get_loss(),
-                            kcache, 0, self.model_size,
+                            kcache, 0, self.n_components,
                             self.lmbda,
                             self._get_learning_rate(),
                             self.eta0, self.power_t,
@@ -182,7 +182,7 @@ class KernelSGDClassifier(BaseKernelClassifier, BaseSGD, ClassifierMixin):
             if self.loss in ("hinge", "log"):
                 func = eval("_multiclass_%s_sgd" % self.loss)
                 func(self, self.coef_, self.intercept_,
-                     X, y.astype(np.int32), kcache, 0, self.model_size,
+                     X, y.astype(np.int32), kcache, 0, self.n_components,
                      self.lmbda, self._get_learning_rate(), self.eta0,
                      self.power_t, self.fit_intercept, self.intercept_decay,
                      self.max_iter * n_samples, rs, self.verbose)

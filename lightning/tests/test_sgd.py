@@ -149,26 +149,26 @@ def test_multiclass_log_kernel_sgd():
         assert_equal(clf.score(mult_dense, mult_target), 1.0)
 
 
-def test_model_size_binary():
+def test_n_components_binary():
     clf = KernelSGDClassifier(kernel="rbf", gamma=0.1, loss="hinge",
-                              random_state=0, model_size=50)
+                              random_state=0, n_components=50)
     clf.fit(bin_dense, bin_target)
     assert_equal(clf.n_support_vectors(), 50)
     assert_greater(clf.score(bin_dense, bin_target), 0.6)
 
 
-def test_model_size_multiclass():
+def test_n_components_multiclass():
     clf = KernelSGDClassifier(kernel="rbf", gamma=1.0, loss="hinge",
-                              random_state=0, model_size=50)
+                              random_state=0, n_components=50)
     clf.fit(mult_dense, mult_target)
     assert_equal(clf.n_support_vectors(), 55)
     assert_greater(clf.score(mult_dense, mult_target), 0.3)
 
 
-def test_model_size_multiclass_natural():
+def test_n_components_multiclass_natural():
     for loss in ("hinge", "log"):
         clf = KernelSGDClassifier(loss=loss, multiclass="natural",
-                                  kernel="rbf", gamma=0.1, model_size=50,
+                                  kernel="rbf", gamma=0.1, n_components=50,
                                   random_state=0)
         clf.fit(mult_dense, mult_target)
         assert_equal(clf.n_support_vectors(), 50)

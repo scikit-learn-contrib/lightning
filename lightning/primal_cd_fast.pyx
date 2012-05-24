@@ -486,7 +486,7 @@ def _primal_cd_l2svm_l1r(self,
                          selection,
                          int search_size,
                          termination,
-                         int sv_upper_bound,
+                         int n_components,
                          double C,
                          int max_iter,
                          rs,
@@ -533,7 +533,7 @@ def _primal_cd_l2svm_l1r(self,
 
     cdef list[int].iterator it
 
-    cdef int check_n_sv = termination in ("n_sv", "n_nz_coef")
+    cdef int check_n_sv = termination == "n_components"
     cdef int check_convergence = termination == "convergence"
     cdef int stop = 0
     cdef int select_method = get_select_method(selection)
@@ -698,7 +698,7 @@ def _primal_cd_l2svm_l1r(self,
                     kcache.remove_sv(j)
 
             # Exit if necessary.
-            if check_n_sv and kcache.n_sv() >= sv_upper_bound:
+            if check_n_sv and kcache.n_sv() >= n_components:
                 stop = 1
                 break
 
@@ -759,7 +759,7 @@ def _primal_cd_l2svm_l2r(self,
                          selection,
                          int search_size,
                          termination,
-                         int sv_upper_bound,
+                         int n_components,
                          double C,
                          int max_iter,
                          rs,
@@ -794,7 +794,7 @@ def _primal_cd_l2svm_l2r(self,
     # Pointer to X[i, j] for all i (read-only).
     cdef double *col_ro_ptr = <double*>col_ro.data
 
-    cdef int check_n_sv = termination in ("n_sv", "n_nz_coef")
+    cdef int check_n_sv = termination == "n_components"
     cdef int check_convergence = termination == "convergence"
     cdef int has_callback = callback is not None
     cdef int select_method = get_select_method(selection)
@@ -843,7 +843,7 @@ def _primal_cd_l2svm_l2r(self,
                 n_sv += 1
 
             # Exit if necessary.
-            if check_n_sv and n_sv == sv_upper_bound:
+            if check_n_sv and n_sv == n_components:
                 stop = 1
                 break
 

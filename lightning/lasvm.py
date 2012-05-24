@@ -17,7 +17,7 @@ class LaSVM(BaseKernelClassifier, ClassifierMixin):
     def __init__(self, C=1.0, max_iter=10,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  selection="permute", search_size=60,
-                 termination="n_iter", sv_upper_bound=1000,
+                 termination="n_iter", n_components=1000,
                  tau=1e-3, finish_step=True,
                  warm_start=False, cache_mb=500,
                  random_state=None, callback=None, verbose=0, n_jobs=1):
@@ -30,7 +30,7 @@ class LaSVM(BaseKernelClassifier, ClassifierMixin):
         self.selection = selection
         self.search_size = search_size
         self.termination = termination
-        self.sv_upper_bound = sv_upper_bound
+        self.n_components = n_components
         self.tau = tau
         self.finish_step = finish_step
         self.warm_start = warm_start
@@ -69,7 +69,7 @@ class LaSVM(BaseKernelClassifier, ClassifierMixin):
         for i in xrange(n_vectors):
             b = _lasvm(self, self.coef_[i],
                        X, Y[:, i], kcache, self.selection, self.search_size,
-                       self.termination, self.sv_upper_bound, self.tau,
+                       self.termination, self.n_components, self.tau,
                        self.finish_step, self.C, self.max_iter, rs,
                        self.callback,
                        verbose=self.verbose, warm_start=warm_start)

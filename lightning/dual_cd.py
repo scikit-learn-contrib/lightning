@@ -15,7 +15,7 @@ from .kernel_fast import get_kernel, KernelCache
 class DualLinearSVC(BaseLinearClassifier, ClassifierMixin):
 
     def __init__(self, C=1.0, loss="l1", max_iter=1000, tol=1e-3,
-                 termination="convergence", sv_upper_bound=1000,
+                 termination="convergence", n_components=1000,
                  shrinking=True, warm_start=False, random_state=None,
                  callback=None,
                  verbose=0, n_jobs=1):
@@ -24,7 +24,7 @@ class DualLinearSVC(BaseLinearClassifier, ClassifierMixin):
         self.max_iter = max_iter
         self.tol = tol
         self.termination = termination
-        self.sv_upper_bound = sv_upper_bound
+        self.n_components = n_components
         self.shrinking = shrinking
         self.warm_start = warm_start
         self.random_state = random_state
@@ -53,7 +53,7 @@ class DualLinearSVC(BaseLinearClassifier, ClassifierMixin):
         for i in xrange(n_vectors):
             _dual_cd(self, self.coef_[i], self.dual_coef_[i],
                      X, Y[:, i], kcache, True,
-                     "permute", 60, self.termination, self.sv_upper_bound,
+                     "permute", 60, self.termination, self.n_components,
                      self.C, self.loss, self.max_iter, rs, self.tol,
                      self.shrinking, self.callback, verbose=self.verbose)
 
@@ -65,7 +65,7 @@ class DualSVC(BaseKernelClassifier, ClassifierMixin):
     def __init__(self, C=1.0, loss="l1", max_iter=10, tol=1e-3,
                  shrinking=True, kernel="linear", gamma=0.1, coef0=1, degree=4,
                  selection="permute", search_size=60,
-                 termination="convergence", sv_upper_bound=1000,
+                 termination="convergence", n_components=1000,
                  warm_start=False, random_state=None, cache_mb=500,
                  callback=None,
                  verbose=0, n_jobs=1):
@@ -81,7 +81,7 @@ class DualSVC(BaseKernelClassifier, ClassifierMixin):
         self.selection = selection
         self.search_size = search_size
         self.termination = termination
-        self.sv_upper_bound = sv_upper_bound
+        self.n_components = n_components
         self.warm_start = warm_start
         self.random_state = random_state
         self.cache_mb = cache_mb
@@ -119,7 +119,7 @@ class DualSVC(BaseKernelClassifier, ClassifierMixin):
             _dual_cd(self, coef, self.coef_[i],
                      X, Y[:, i], kcache, False,
                      self.selection, self.search_size,
-                     self.termination, self.sv_upper_bound,
+                     self.termination, self.n_components,
                      self.C, self.loss, self.max_iter, rs, self.tol,
                      self.shrinking, self.callback, verbose=self.verbose)
 

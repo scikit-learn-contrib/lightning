@@ -246,7 +246,7 @@ def _binary_sgd(self,
                 LossFunction loss,
                 KernelCache kcache,
                 int linear_kernel,
-                int model_size,
+                int n_components,
                 double lmbda,
                 int learning_rate,
                 double eta0,
@@ -315,7 +315,7 @@ def _binary_sgd(self,
                 kcache.add_sv(i)
 
         # Stop if necessary.
-        if model_size > 0 and kcache.n_sv() >= model_size:
+        if n_components > 0 and kcache.n_sv() >= n_components:
             break
 
     if w_scale != 1.0:
@@ -398,7 +398,7 @@ def _multiclass_hinge_sgd(self,
                           np.ndarray[int, ndim=1] y,
                           KernelCache kcache,
                           int linear_kernel,
-                          int model_size,
+                          int n_components,
                           double lmbda,
                           int learning_rate,
                           double eta0,
@@ -471,7 +471,7 @@ def _multiclass_hinge_sgd(self,
                 kcache.add_sv(i)
 
         # Stop if necessary.
-        if model_size > 0 and kcache.n_sv() >= model_size:
+        if n_components > 0 and kcache.n_sv() >= n_components:
             break
 
     for l in xrange(n_vectors):
@@ -508,7 +508,7 @@ def _multiclass_log_sgd(self,
                         np.ndarray[int, ndim=1] y,
                         KernelCache kcache,
                         int linear_kernel,
-                        int model_size,
+                        int n_components,
                         double lmbda,
                         int learning_rate,
                         double eta0,
@@ -600,7 +600,7 @@ def _multiclass_log_sgd(self,
                 kcache.add_sv(i)
 
         # Stop if necessary.
-        if model_size > 0 and kcache.n_sv() >= model_size:
+        if n_components > 0 and kcache.n_sv() >= n_components:
             break
 
     for l in xrange(n_vectors):

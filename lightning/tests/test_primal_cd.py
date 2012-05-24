@@ -110,7 +110,7 @@ def test_warm_start_l1r_rbf():
 
 def test_early_stopping_l1r_rbf():
     clf = PrimalSVC(kernel="rbf", gamma=0.1,
-                    termination="n_sv", sv_upper_bound=30,
+                    termination="n_components", n_components=30,
                     random_state=0, penalty="l1")
 
     clf.fit(bin_dense, bin_target)
@@ -249,7 +249,7 @@ def test_debiasing_warm_start():
 
 def test_early_stopping_l2r_rbf():
     clf = PrimalSVC(kernel="rbf", gamma=0.1,
-                    termination="n_sv", sv_upper_bound=30,
+                    termination="n_components", n_components=30,
                     random_state=0, penalty="l2")
 
     clf.fit(bin_dense, bin_target)
@@ -392,7 +392,7 @@ def test_fit_rbf_binary_l2r_correctness_kernelized():
 def test_fit_rbf_binary_l2r_kernelized_upper_bound():
     clf = PrimalSVC(C=1.0, random_state=0, penalty="l2", loss="squared_hinge",
                     max_iter=20, kernel="rbf", kernel_regularizer=True,
-                    selection="loss", termination="n_sv", sv_upper_bound=30)
+                    selection="loss", termination="n_components", n_components=30)
     clf.fit(bin_dense, bin_target)
     acc = clf.score(bin_dense, bin_target)
     assert_almost_equal(acc, 0.88)
@@ -400,7 +400,7 @@ def test_fit_rbf_binary_l2r_kernelized_upper_bound():
 
     clf = PrimalSVC(C=1.0, random_state=0, penalty="l2l2", loss="squared_hinge",
                     max_iter=20, kernel="rbf", kernel_regularizer=True,
-                    selection="loss", termination="n_sv", sv_upper_bound=30,
+                    selection="loss", termination="n_components", n_components=30,
                     warm_debiasing=True)
     clf.fit(bin_dense, bin_target)
     acc = clf.score(bin_dense, bin_target)

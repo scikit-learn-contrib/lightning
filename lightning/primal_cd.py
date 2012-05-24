@@ -98,7 +98,7 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  Cd=1.0, warm_debiasing=False,
                  selection="permute", search_size=60,
-                 termination="convergence", sv_upper_bound=1000,
+                 termination="convergence", n_components=1000,
                  cache_mb=500, warm_start=False, random_state=None,
                  components=None, callback=None, verbose=0, n_jobs=1):
         self.C = C
@@ -116,7 +116,7 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
         self.selection = selection
         self.search_size = search_size
         self.termination = termination
-        self.sv_upper_bound = sv_upper_bound
+        self.n_components = n_components
         self.cache_mb = cache_mb
         self.warm_start = warm_start
         self.random_state = random_state
@@ -167,7 +167,7 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
                     _primal_cd_l2svm_l1r(self, self.coef_[i], self.errors_[i],
                                          X, Y[:, i], indices, kcache, False,
                                          self.selection, self.search_size,
-                                         self.termination, self.sv_upper_bound,
+                                         self.termination, self.n_components,
                                          self.C, self.max_iter, rs, self.tol,
                                          self.callback, verbose=self.verbose)
 
@@ -178,7 +178,7 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
                                      self._get_loss(), kcache, False,
                                      self.kernel_regularizer,
                                      self.selection, self.search_size,
-                                     termination, self.sv_upper_bound,
+                                     termination, self.n_components,
                                      C, self.max_iter, rs, self.tol,
                                      self.callback, verbose=self.verbose)
 
@@ -201,7 +201,7 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
                                      self._get_loss(), kcache, False,
                                      self.kernel_regularizer,
                                      selection, self.search_size,
-                                     termination, self.sv_upper_bound,
+                                     termination, self.n_components,
                                      C, self.max_iter, rs, self.tol,
                                      self.callback, verbose=self.verbose)
 
@@ -235,11 +235,11 @@ def C_lower_bound(X, y, kernel=None, search_size=None, random_state=None,
     return 0.5 / den
 
 
-def C_upper_bound(X, y, clf, Cmin, Cmax, sv_upper_bound, epsilon, verbose=0):
+def C_upper_bound(X, y, clf, Cmin, Cmax, n_components, epsilon, verbose=0):
     Nmax = np.inf
     clf = clone(clf)
 
-    while Nmax - sv_upper_bound > epsilon:
+    while Nmax - n_components > epsilon:
         Cmid = (Cmin + Cmax) / 2
 
         if verbose:
@@ -252,11 +252,11 @@ def C_upper_bound(X, y, clf, Cmin, Cmax, sv_upper_bound, epsilon, verbose=0):
         if verbose:
             print "#SV", clf.n_support_vectors()
 
-        if n_sv < sv_upper_bound:
+        if n_sv < n_components:
             # Regularization is too strong
             Cmin = Cmid
 
-        elif n_sv > sv_upper_bound:
+        elif n_sv > n_components:
             # Regularization is too light
             Cmax = Cmid
             Nmax = n_sv

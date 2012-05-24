@@ -63,9 +63,9 @@ def test_warm_start():
         assert_almost_equal(acc, 1.0)
 
 
-def test_sv_upper_bound():
+def test_n_components():
     clf = LaSVM(random_state=0, max_iter=2, kernel="rbf", finish_step=True,
-                termination="n_sv", sv_upper_bound=30)
+                termination="n_components", n_components=30)
     clf.fit(bin_dense, bin_target)
     n_sv = np.sum(clf.coef_ != 0)
     assert_equal(n_sv, 30)
