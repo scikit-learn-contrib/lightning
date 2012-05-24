@@ -83,6 +83,7 @@ class PrimalLinearSVC(BaseSVC, BaseLinearClassifier, ClassifierMixin):
                 _primal_cd_l2svm_l2r(self, self.coef_[i], self.errors_[i],
                                      X, None, Y[:, i], indices,
                                      self._get_loss(), kcache, True, False,
+                                     "permute", 60,
                                      self.termination, self.nz_coef_upper_bound,
                                      self.C, self.max_iter, rs, self.tol,
                                      self.callback, verbose=self.verbose)
@@ -187,6 +188,7 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
                                      X, A, Y[:, i], indices,
                                      self._get_loss(), kcache, False,
                                      self.kernel_regularizer,
+                                     self.selection, self.search_size,
                                      termination, self.sv_upper_bound,
                                      C, self.max_iter, rs, self.tol,
                                      self.callback, verbose=self.verbose)

@@ -756,6 +756,8 @@ def _primal_cd_l2svm_l2r(self,
                          KernelCache kcache,
                          int linear_kernel,
                          int kernel_regularizer,
+                         selection,
+                         int search_size,
                          termination,
                          int sv_upper_bound,
                          double C,
@@ -795,6 +797,8 @@ def _primal_cd_l2svm_l2r(self,
     cdef int check_n_sv = termination in ("n_sv", "n_nz_coef")
     cdef int check_convergence = termination == "convergence"
     cdef int has_callback = callback is not None
+    cdef int select_method = get_select_method(selection)
+    cdef int permute = selection == "permute" or linear_kernel
     cdef int stop = 0
     cdef int n_sv = 0
 
@@ -806,9 +810,15 @@ def _primal_cd_l2svm_l2r(self,
         Dpmax = 0
 
         rs.shuffle(index)
+        start = 0
 
         for s in xrange(n_features):
-            j = index[s]
+            if permute:
+                j = index[s]
+            else:
+                j = select_sv_precomputed(index, start, search_size,
+                                          n_features, select_method, b, kcache,
+                                          0)
 
             if linear_kernel:
                 col_ro_ptr = (<double*>Xf.data) + j * n_samples
@@ -832,9 +842,13 @@ def _primal_cd_l2svm_l2r(self,
             if w[j] != 0:
                 n_sv += 1
 
+            # Exit if necessary.
             if check_n_sv and n_sv == sv_upper_bound:
                 stop = 1
                 break
+
+            start = update_start(start, select_method, search_size,
+                                 n_features, index, rs)
 
             # Callback
             if has_callback and s % 100 == 0:

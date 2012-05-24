@@ -350,6 +350,15 @@ def test_shared_kcache():
     assert_true(n_nz < n_nz2)
 
 
+def test_fit_rbf_binary_l2r_kernelized_selection():
+    clf = PrimalSVC(C=1.0, random_state=0, penalty="l2", loss="squared_hinge",
+                    max_iter=1, kernel="rbf", kernel_regularizer=True,
+                    selection="loss")
+    clf.fit(bin_dense, bin_target)
+    acc = clf.score(bin_dense, bin_target)
+    assert_almost_equal(acc, 1.0)
+
+
 def test_fit_rbf_binary_l2r_correctness():
     for loss in ("squared_hinge", "modified_huber", "log"):
         clf = PrimalSVC(C=1.0, random_state=0, penalty="l2", loss=loss,
