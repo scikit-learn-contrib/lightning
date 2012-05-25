@@ -564,6 +564,7 @@ def _primal_cd_l2svm_l1r(self,
                                           active_size, select_method, b, kcache,
                                           0)
 
+            Lj_zero = 0
             Lp = 0
             Lpp = 0
             xj_sq = 0
@@ -581,10 +582,12 @@ def _primal_cd_l2svm_l1r(self,
                 if b[i] > 0:
                     Lp -= val * b[i]
                     Lpp += val_sq
+                    Lj_zero += b[i] * b[i]
                 xj_sq += val_sq
             # end for
 
             xj_sq *= C
+            Lj_zero *= C
             Lp *= 2 * C
 
             Lpp *= 2 * C
@@ -650,34 +653,18 @@ def _primal_cd_l2svm_l1r(self,
                         b[i] += z_diff * col[i]
                     break
 
-                if num_linesearch == 0:
-                    Lj_zero = 0
-                    Lj_z = 0
+                # Compute objective function value.
+                Lj_z = 0
 
-                    # L_j = \sum_{b_i > 0} b_i ^2
-                    for i in xrange(n_samples):
-                        if b[i] > 0:
-                            Lj_zero += b[i] * b[i]
+                for i in xrange(n_samples):
+                    b_new = b[i] + z_diff * col[i]
+                    b[i] = b_new
+                    if b_new > 0:
+                        Lj_z += b_new * b_new
 
-                        b_new = b[i] + z_diff * col[i]
-                        b[i] = b_new
+                Lj_z *= C
 
-                        if b_new > 0:
-                            Lj_z += b_new * b_new
-
-                    Lj_zero *= C
-                    Lj_z *= C
-                else:
-                    Lj_z = 0
-
-                    for i in xrange(n_samples):
-                        b_new = b[i] + z_diff * col[i]
-                        b[i] = b_new
-                        if b_new > 0:
-                            Lj_z += b_new * b_new
-
-                    Lj_z *= C
-
+                # Check stopping condition.
                 cond = cond + Lj_z - Lj_zero
                 if cond <= 0:
                     break
