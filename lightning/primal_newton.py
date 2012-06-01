@@ -4,6 +4,7 @@
 import numpy as np
 
 from scipy.sparse.linalg import cg
+from scipy.linalg import solve
 
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.preprocessing import LabelBinarizer
@@ -14,13 +15,13 @@ from .base import BaseKernelClassifier
 
 class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
 
-    def __init__(self, lmbda=1.0, max_iter=50, tol=1e-3, preconditioning=True,
+    def __init__(self, lmbda=1.0, max_iter=50, tol=1e-3, solver="cg",
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  random_state=0, verbose=0, n_jobs=1):
         self.lmbda = lmbda
         self.tol = tol
+        self.solver = solver
         self.max_iter = max_iter
-        self.preconditioning = preconditioning
         self.kernel = kernel
         self.gamma = gamma
         self.coef0 = coef0
@@ -29,9 +30,15 @@ class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
         self.verbose = verbose
         self.n_jobs = n_jobs
 
-    def _fit_binary(self, K, y):
-        coef = np.zeros(K.shape[0])
-        sv = np.ones(K.shape[0], dtype=bool)
+    def _fit_binary(self, K, y, rs):
+        n_samples = K.shape[0]
+        coef = np.zeros(n_samples)
+        if n_samples < 1000:
+            sv = np.ones(n_samples, dtype=bool)
+        else:
+            sv = np.zeros(n_samples, dtype=bool)
+            sv[:1000] = True
+            rs.shuffle(sv)
 
         for t in xrange(1, self.max_iter + 1):
             if self.verbose:
@@ -40,10 +47,10 @@ class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
             K_sv = K[sv][:, sv]
             I = np.diag(self.lmbda * np.ones(K_sv.shape[0]))
 
-            if self.preconditioning:
-                coef_sv, info = cg(K_sv + I, y[sv], tol=self.tol, M=K_sv)
-            else:
+            if self.solver == "cg":
                 coef_sv, info = cg(K_sv + I, y[sv], tol=self.tol)
+            elif self.solver == "dense":
+                coef_sv = solve(K_sv + I, y[sv], sym_pos=True)
 
             coef *= 0
             coef[sv] = coef_sv
@@ -70,9 +77,13 @@ class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
         self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
         n_vectors = Y.shape[1]
 
-        K = pairwise_kernels(X, filter_params=True, **self._kernel_params())
+        if self.verbose:
+            print "Pre-computing kernel matrix..."
 
-        coef = [self._fit_binary(K, Y[:, i]) for i in xrange(n_vectors)]
+        K = pairwise_kernels(X, filter_params=True, n_jobs=self.n_jobs,
+                             **self._kernel_params())
+
+        coef = [self._fit_binary(K, Y[:, i], rs) for i in xrange(n_vectors)]
         self.coef_ = np.array(coef)
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
 
