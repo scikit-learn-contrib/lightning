@@ -140,6 +140,43 @@ cdef class LossFunction:
         raise NotImplementedError()
 
 
+cdef class Squared(LossFunction):
+
+
+    cdef void solve_l2(self,
+                       int j,
+                       int n_samples,
+                       double C,
+                       double *w,
+                       double *col_ro,
+                       double *col,
+                       double *y,
+                       double *b,
+                       double *Dp,
+                       int kernel_regularizer):
+        cdef int i
+        cdef double pred, num, denom, old_w, diff
+
+        num = 0
+        denom = 0
+
+        for i in xrange(n_samples):
+            pred = (1 - b[i]) * y[i] - w[j] * col_ro[i]
+            denom += col_ro[i] * col_ro[i]
+            num += (y[i] - pred) * col_ro[i]
+
+        denom *= 2 * C
+        denom += 1
+        num *= 2 * C
+
+        old_w = w[j]
+        w[j] = num / denom
+        diff = old_w - w[j]
+
+        for i in xrange(n_samples):
+            b[i] += diff * col_ro[i] * y[i]
+
+
 cdef class SquaredHinge(LossFunction):
 
     cdef void derivatives_l2(self,

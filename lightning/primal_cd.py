@@ -14,6 +14,7 @@ from .primal_cd_fast import _primal_cd_l2svm_l1r
 from .primal_cd_fast import _primal_cd_l2svm_l2r
 from .primal_cd_fast import _C_lower_bound_kernel
 
+from .primal_cd_fast import Squared
 from .primal_cd_fast import SquaredHinge
 from .primal_cd_fast import ModifiedHuber
 from .primal_cd_fast import Log
@@ -23,6 +24,7 @@ class BaseSVC(object):
 
     def _get_loss(self):
         losses = {
+            "squared" : Squared(),
             "squared_hinge" : SquaredHinge(),
             "modified_huber" : ModifiedHuber(),
             "log" : Log(),
