@@ -15,7 +15,7 @@ bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_classes=2, random_state=0)
 
 def test_primal_newton():
-    clf = PrimalNewton(kernel="rbf", gamma=0.1, random_state=0)
+    clf = PrimalNewton(kernel="rbf", gamma=0.1, random_state=0, verbose=0)
     clf.fit(bin_dense, bin_target)
-    assert_almost_equal(clf.score(bin_dense, bin_target), 0.865)
+    assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
 

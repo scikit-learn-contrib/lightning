@@ -81,7 +81,7 @@ class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
             print "Pre-computing kernel matrix..."
 
         K = pairwise_kernels(X, filter_params=True, n_jobs=self.n_jobs,
-                             **self._kernel_params())
+                             metric=self.kernel, **self._kernel_params())
 
         coef = [self._fit_binary(K, Y[:, i], rs) for i in xrange(n_vectors)]
         self.coef_ = np.array(coef)
@@ -90,5 +90,3 @@ class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
         self._post_process(X)
 
         return self
-
-
