@@ -155,12 +155,17 @@ cdef class Squared(LossFunction):
                        double *Dp,
                        int kernel_regularizer):
         cdef int i
-        cdef double pred, num, denom, old_w, diff
+        cdef double pred, num, denom, old_w, diff, val
 
         num = 0
         denom = 0
+        Dp[0] = 0
 
         for i in xrange(n_samples):
+            val = col_ro[i] * y[i]
+            col[i] = val
+
+            Dp[0] -= b[i] * val
             pred = (1 - b[i]) * y[i] - w[j] * col_ro[i]
             denom += col_ro[i] * col_ro[i]
             num += (y[i] - pred) * col_ro[i]
@@ -168,13 +173,14 @@ cdef class Squared(LossFunction):
         denom *= 2 * C
         denom += 1
         num *= 2 * C
+        Dp[0] = w[j] + 2 * C * Dp[0]
 
         old_w = w[j]
         w[j] = num / denom
         diff = old_w - w[j]
 
         for i in xrange(n_samples):
-            b[i] += diff * col_ro[i] * y[i]
+            b[i] += diff * col[i]
 
 
 cdef class SquaredHinge(LossFunction):

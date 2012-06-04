@@ -412,7 +412,7 @@ def test_fit_squared_loss():
     clf = PrimalLinearSVC(C=1.0, random_state=0, penalty="l2",
                           loss="squared", max_iter=100)
     clf.fit(bin_dense, bin_target)
-    assert_almost_equal(clf.score(bin_dense, bin_target), 0.92)
+    assert_almost_equal(clf.score(bin_dense, bin_target), 0.99)
 
     clf = PrimalSVC(C=1.0, random_state=0, penalty="l2",
                     kernel="rbf", gamma=0.1,
