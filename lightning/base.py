@@ -19,6 +19,30 @@ class BaseLinearClassifier(BaseEstimator):
         pred = self.decision_function(X)
         return self.label_binarizer_.inverse_transform(pred, threshold=0)
 
+    def predict_proba(self, X):
+        if len(self.classes_) != 2:
+            raise NotImplementedError("predict_(log_)proba only supported"
+                                      " for binary classification")
+
+        if self.loss == "log":
+            df = self.decision_function(X).ravel()
+            prob = 1.0 / (1.0 + np.exp(-df))
+        elif self.loss == "modified_huber":
+            df = self.decision_function(X).ravel()
+            prob = np.minimum(1, np.maximum(-1, df))
+            prob += 1
+            prob /= 2
+        else:
+            raise NotImplementedError("predict_(log_)proba only supported when"
+                                      " loss='log' or loss='modified_huber' "
+                                      "(%s given)" % self.loss)
+
+        out = np.zeros((X.shape[0], 2), dtype=np.float64)
+        out[:, 1] = prob
+        out[:, 0] = 1 - prob
+
+        return out
+
 
 class BaseKernelClassifier(BaseEstimator):
 

@@ -61,6 +61,7 @@ class PrimalLinearSVC(BaseSVC, BaseLinearClassifier, ClassifierMixin):
 
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = self.label_binarizer_.fit_transform(y)
+        self.classes_ = self.label_binarizer_.classes_
         n_vectors = Y.shape[1]
 
         kernel = get_kernel("linear")
