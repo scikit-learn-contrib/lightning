@@ -173,13 +173,14 @@ cdef class Squared(LossFunction):
         denom *= 2 * C
         denom += 1
         num *= 2 * C
-        num -= w[j]
 
         if kernel_regularizer:
             val = self.regularizer_derivative(n_samples, w, col_ro)
             Dp[0] = val + 2 * C * Dp[0]
+            num -= val
         else:
             Dp[0] = w[j] + 2 * C * Dp[0]
+            num -= w[j]
 
         old_w = w[j]
         z = num/denom
