@@ -11,7 +11,7 @@ from .base import BaseLinearClassifier, BaseKernelClassifier
 
 from .kernel_fast import get_kernel, KernelCache
 from .primal_cd_fast import _primal_cd_l2svm_l1r
-from .primal_cd_fast import _primal_cd_l2svm_l2r
+from .primal_cd_fast import _primal_cd_l2r
 from .primal_cd_fast import _C_lower_bound_kernel
 
 from .primal_cd_fast import Squared
@@ -83,13 +83,13 @@ class PrimalLinearSVC(BaseSVC, BaseLinearClassifier, ClassifierMixin):
                                      self.C, self.max_iter, rs, self.tol,
                                      self.callback, verbose=self.verbose)
             else:
-                _primal_cd_l2svm_l2r(self, self.coef_[i], self.errors_[i],
-                                     X, None, Y[:, i], indices,
-                                     self._get_loss(), kcache, True, False,
-                                     "permute", 60,
-                                     self.termination, self.nz_coef_upper_bound,
-                                     self.C, self.max_iter, rs, self.tol,
-                                     self.callback, verbose=self.verbose)
+                _primal_cd_l2r(self, self.coef_[i], self.errors_[i],
+                               X, None, Y[:, i], indices,
+                               self._get_loss(), kcache, True, False,
+                               "permute", 60,
+                               self.termination, self.nz_coef_upper_bound,
+                               self.C, self.max_iter, rs, self.tol,
+                               self.callback, verbose=self.verbose)
 
         return self
 
@@ -176,14 +176,14 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
 
         if self.penalty in ("l2", "l2l2"):
             for i in xrange(n_vectors):
-                _primal_cd_l2svm_l2r(self, self.coef_[i], self.errors_[i],
-                                     X, A, Y[:, i], indices,
-                                     self._get_loss(), kcache, False,
-                                     self.kernel_regularizer,
-                                     self.selection, self.search_size,
-                                     termination, self.n_components,
-                                     C, self.max_iter, rs, self.tol,
-                                     self.callback, verbose=self.verbose)
+                _primal_cd_l2r(self, self.coef_[i], self.errors_[i],
+                               X, A, Y[:, i], indices,
+                               self._get_loss(), kcache, False,
+                               self.kernel_regularizer,
+                               self.selection, self.search_size,
+                               termination, self.n_components,
+                               C, self.max_iter, rs, self.tol,
+                               self.callback, verbose=self.verbose)
 
         if self.penalty in ("l1l2", "l2l2"):
             sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
@@ -199,14 +199,14 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
             selection = "permute"
 
             for i in xrange(n_vectors):
-                _primal_cd_l2svm_l2r(self, self.coef_[i], self.errors_[i],
-                                     X, A, Y[:, i], indices,
-                                     self._get_loss(), kcache, False,
-                                     self.kernel_regularizer,
-                                     selection, self.search_size,
-                                     termination, self.n_components,
-                                     C, self.max_iter, rs, self.tol,
-                                     self.callback, verbose=self.verbose)
+                _primal_cd_l2r(self, self.coef_[i], self.errors_[i],
+                               X, A, Y[:, i], indices,
+                               self._get_loss(), kcache, False,
+                               self.kernel_regularizer,
+                               selection, self.search_size,
+                               termination, self.n_components,
+                               C, self.max_iter, rs, self.tol,
+                               self.callback, verbose=self.verbose)
 
         sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
         self.support_indices_ = np.arange(A.shape[0], dtype=np.int32)[sv]
