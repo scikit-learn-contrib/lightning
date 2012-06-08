@@ -32,7 +32,8 @@ def create_components(X, y=None, n_components=None,
     start = time.time()
 
     if class_distrib == "global":
-        kmeans = KMeans(k=n_components, n_init=1, random_state=random_state)
+        kmeans = KMeans(n_clusters=n_components, n_init=1,
+                        random_state=random_state)
         kmeans.fit(X)
         components = kmeans.cluster_centers_
 
@@ -48,7 +49,8 @@ def create_components(X, y=None, n_components=None,
             if k >= X_mask.shape[0]:
                 components.append(X_mask)
             else:
-                kmeans = KMeans(k=k, n_init=1, random_state=random_state)
+                kmeans = KMeans(n_clusters=k, n_init=1,
+                                random_state=random_state)
                 kmeans.fit(X_mask)
                 components.append(kmeans.cluster_centers_)
 
@@ -63,7 +65,8 @@ def create_components(X, y=None, n_components=None,
             n_c = np.sum(mask)
             k = n_components * n_c / n_samples
             mask = safe_mask(X, mask)
-            kmeans = KMeans(k=k, n_init=1, random_state=random_state)
+            kmeans = KMeans(n_clusters=k, n_init=1,
+                            random_state=random_state)
             kmeans.fit(X[mask])
             components.append(kmeans.cluster_centers_)
 
