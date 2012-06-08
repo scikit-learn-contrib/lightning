@@ -92,6 +92,7 @@ class BaseKernelClassifier(BaseEstimator):
             self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
             mask = safe_mask(X, sv)
             self.support_vectors_ = np.ascontiguousarray(X[mask])
+            self.support_indices_ = np.arange(X.shape[0], dtype=np.int32)[sv]
 
         if self.verbose >= 1:
             print "Number of support vectors:", np.sum(sv)
