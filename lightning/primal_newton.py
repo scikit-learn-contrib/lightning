@@ -70,8 +70,6 @@ class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
         n_samples, n_features = X.shape
         rs = check_random_state(self.random_state)
 
-        X = np.asfortranarray(X, dtype=np.float64)
-
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = self.label_binarizer_.fit_transform(y)
         self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
