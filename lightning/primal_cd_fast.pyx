@@ -525,6 +525,7 @@ cdef class Log(LossFunction):
 
         return z
 
+
 def _primal_cd_l2svm_l1r(self,
                          np.ndarray[double, ndim=1, mode='c'] w,
                          np.ndarray[double, ndim=1, mode='c'] b,
@@ -909,6 +910,127 @@ def _primal_cd_l2r(self,
             break
 
     # for iterations
+
+    if verbose >= 1:
+        print
+
+    return w
+
+
+def _primal_cd_l2svm_l2r(self,
+                         np.ndarray[double, ndim=1, mode='c'] w,
+                         np.ndarray[double, ndim=1, mode='c'] b,
+                         np.ndarray[double, ndim=2, mode='c'] X,
+                         np.ndarray[double, ndim=1] y,
+                         KernelCache kcache,
+                         int kernel_regularizer,
+                         double C,
+                         int max_outer,
+                         int max_inner,
+                         rs,
+                         double tol,
+                         int verbose):
+
+    cdef Py_ssize_t n_samples = X.shape[0]
+    cdef Py_ssize_t n_features = X.shape[1]
+
+
+    cdef int i, j, s, t, k, r
+    cdef double Dp, Dpmax
+    cdef double pred, num, denom, old_w, val, z, regul
+
+    cdef np.ndarray[double, ndim=1, mode='c'] col_ro
+    col_ro = np.zeros(n_samples, dtype=np.float64)
+
+    cdef np.ndarray[int, ndim=1, mode='c'] active_set
+    active_set = np.arange(n_samples, dtype=np.int32)
+    cdef int active_size = n_samples
+    cdef int new_active_size
+
+    if active_size > 1000:
+        rs.shuffle(active_set)
+        active_size = 1000
+
+    for t in xrange(max_outer):
+        if verbose >= 1:
+            print "\nIteration", t
+
+        Dpmax = 0
+
+        rs.shuffle(active_set[:active_size])
+        start = 0
+
+        for s in xrange(max_inner * n_samples):
+            j = active_set[s % active_size]
+
+            kcache.compute_column(X, X, j, col_ro)
+
+            # Solve one-variable sub-problem.
+            num = 0
+            denom = 0
+            Dp = 0
+            regul = 0
+
+            for k in xrange(active_size):
+                i = active_set[k]
+                val = col_ro[i] * y[i]
+
+                Dp -= b[i] * val
+                pred = (1 - b[i]) * y[i]
+                denom += col_ro[i] * col_ro[i]
+                num += (y[i] - pred) * col_ro[i]
+                regul += w[i] * col_ro[i]
+
+            denom *= 2 * C
+            denom += 1
+            num *= 2 * C
+
+            if kernel_regularizer:
+                Dp = regul + 2 * C * Dp
+                num -= regul
+            else:
+                Dp = w[j] + 2 * C * Dp
+                num -= w[j]
+
+            old_w = w[j]
+            z = num/denom
+            w[j] += z
+
+            # Update errors.
+            for i in xrange(n_samples):
+                b[i] -= z * col_ro[i] * y[i]
+
+            if fabs(Dp) > Dpmax:
+                Dpmax = fabs(Dp)
+
+            if verbose >= 1 and s % 100 == 0:
+                sys.stdout.write(".")
+                sys.stdout.flush()
+
+            if Dpmax < tol:
+                if verbose >= 1:
+                    print "\nConverged at iteration", t
+                break
+
+        # end inner iterations
+
+        # Update active set
+        new_active_size = 0
+        for i in xrange(n_samples):
+            if b[i] > 0:
+                active_set[new_active_size] = i
+                new_active_size += 1
+
+        if new_active_size != active_size and t != max_outer - 1:
+            if verbose:
+                print "New active size:", new_active_size
+            active_size = new_active_size
+            for i in xrange(n_samples):
+                w[i] = 0
+                b[i] = 1
+
+
+    # end outer iterations
 
     if verbose >= 1:
         print

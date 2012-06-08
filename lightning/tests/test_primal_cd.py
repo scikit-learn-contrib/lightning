@@ -9,7 +9,7 @@ from nose.tools import assert_raises, assert_true, assert_equal, \
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.metrics.pairwise import pairwise_kernels
 
-from lightning.primal_cd import PrimalLinearSVC, PrimalSVC
+from lightning.primal_cd import PrimalLinearSVC, PrimalSVC, PrimalL2SVC
 from lightning.primal_cd import C_lower_bound, C_upper_bound
 
 from lightning.kernel_fast import get_kernel, KernelCache
@@ -430,3 +430,12 @@ def test_fit_squared_loss():
         assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
         assert_array_almost_equal(1 - y * np.dot(K, clf.coef_.ravel()),
                                   clf.errors_.ravel())
+
+
+def test_primal_l2_svc():
+    for kernel_regularizer in (True, False):
+        clf = PrimalL2SVC(C=1000.0, random_state=0, kernel="rbf", gamma=0.01,
+                          kernel_regularizer=kernel_regularizer)
+        clf.fit(bin_dense, bin_target)
+        assert_almost_equal(clf.score(bin_dense, bin_target), 0.97)
+        assert_equal(clf.n_support_vectors(), 135)

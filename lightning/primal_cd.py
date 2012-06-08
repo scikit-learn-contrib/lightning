@@ -10,8 +10,9 @@ from sklearn.utils import check_random_state
 from .base import BaseLinearClassifier, BaseKernelClassifier
 
 from .kernel_fast import get_kernel, KernelCache
-from .primal_cd_fast import _primal_cd_l2svm_l1r
 from .primal_cd_fast import _primal_cd_l2r
+from .primal_cd_fast import _primal_cd_l2svm_l2r
+from .primal_cd_fast import _primal_cd_l2svm_l1r
 from .primal_cd_fast import _C_lower_bound_kernel
 
 from .primal_cd_fast import Squared
@@ -217,6 +218,61 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
             return self
 
         self._post_process(A)
+
+        return self
+
+
+class PrimalL2SVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
+
+    def __init__(self, C=1.0,
+                 max_outer=10, max_inner=20, tol=1e-3, kernel_regularizer=False,
+                 kernel="linear", gamma=0.1, coef0=1, degree=4,
+                 cache_mb=500, random_state=None,
+                 verbose=0, n_jobs=1):
+        self.C = C
+        self.max_outer = max_outer
+        self.max_inner = max_inner
+        self.tol = tol
+        self.kernel_regularizer = kernel_regularizer
+        self.kernel = kernel
+        self.gamma = gamma
+        self.coef0 = coef0
+        self.degree = degree
+        self.cache_mb = cache_mb
+        self.random_state = random_state
+        self.verbose = verbose
+        self.n_jobs = n_jobs
+        self.support_vectors_ = None
+        self.coef_ = None
+
+    def fit(self, X, y, kcache=None):
+        n_samples = X.shape[0]
+        rs = check_random_state(self.random_state)
+        X = np.ascontiguousarray(X, dtype=np.float64)
+
+        self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
+        Y = self.label_binarizer_.fit_transform(y)
+        self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
+        n_vectors = Y.shape[1]
+
+        self.coef_ = np.zeros((n_vectors, X.shape[0]), dtype=np.float64)
+        self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
+        self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
+
+        if kcache is None:
+            kernel = self._get_kernel()
+            kcache = KernelCache(kernel, n_samples,
+                                 self.cache_mb, 1, self.verbose)
+
+        for i in xrange(n_vectors):
+            _primal_cd_l2svm_l2r(self, self.coef_[i], self.errors_[i],
+                                 X, Y[:, i],
+                                 kcache,
+                                 self.kernel_regularizer,
+                                 self.C, self.max_outer, self.max_inner, rs,
+                                 self.tol, verbose=self.verbose)
+
+        self._post_process(X)
 
         return self
 
