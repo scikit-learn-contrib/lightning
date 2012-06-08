@@ -47,15 +47,16 @@ class BaseLinearClassifier(BaseEstimator):
 class BaseKernelClassifier(BaseEstimator):
 
     def n_support_vectors(self):
-        if self.coef_ is None:
+        if self.support_indices_.shape[0] == 0:
             return 0
         else:
             return np.sum(np.sum(self.coef_ != 0, axis=0, dtype=bool))
 
     def decision_function(self, X):
+        X = np.ascontiguousarray(X, dtype=np.float64)
         out = np.zeros((X.shape[0], self.coef_.shape[0]), dtype=np.float64)
 
-        if self.coef_ is not None:
+        if self.support_indices_.shape[0] != 0:
             sv = self.support_vectors_ if self.kernel != "precomputed" else X
             decision_function_alpha(X, sv, self.coef_, self.intercept_,
                                     self._get_kernel(), out)
@@ -63,9 +64,10 @@ class BaseKernelClassifier(BaseEstimator):
         return out
 
     def predict(self, X):
+        X = np.ascontiguousarray(X, dtype=np.float64)
         out = np.zeros(X.shape[0], dtype=np.float64)
 
-        if self.coef_ is not None:
+        if self.support_indices_.shape[0] != 0:
             sv = self.support_vectors_ if self.kernel != "precomputed" else X
             predict_alpha(X, sv, self.coef_, self.intercept_,
                           self.classes_, self._get_kernel(), out)
