@@ -413,6 +413,12 @@ def test_fit_squared_loss():
                           loss="squared", max_iter=100)
     clf.fit(bin_dense, bin_target)
     assert_almost_equal(clf.score(bin_dense, bin_target), 0.99)
+    y = bin_target.copy()
+    y[y == 0] = -1
+    assert_array_almost_equal(1 - y * np.dot(bin_dense, clf.coef_.ravel()),
+                              clf.errors_.ravel())
+
+    K = pairwise_kernels(bin_dense, metric="rbf", gamma=0.1)
 
     for kernel_regularizer in (True, False):
         clf = PrimalSVC(C=1.0, random_state=0, penalty="l2",
@@ -422,3 +428,5 @@ def test_fit_squared_loss():
                         kernel_regularizer=kernel_regularizer)
         clf.fit(bin_dense, bin_target)
         assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
+        assert_array_almost_equal(1 - y * np.dot(K, clf.coef_.ravel()),
+                                  clf.errors_.ravel())
