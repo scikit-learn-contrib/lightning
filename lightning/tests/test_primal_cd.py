@@ -437,5 +437,5 @@ def test_primal_l2_svc():
         clf = PrimalL2SVC(C=1000.0, random_state=0, kernel="rbf", gamma=0.01,
                           kernel_regularizer=kernel_regularizer)
         clf.fit(bin_dense, bin_target)
-        assert_almost_equal(clf.score(bin_dense, bin_target), 0.97)
-        assert_equal(clf.n_support_vectors(), 135)
+        assert_almost_equal(clf.score(bin_dense, bin_target), 0.945)
+        assert_equal(clf.n_support_vectors(), 131)
