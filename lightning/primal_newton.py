@@ -15,13 +15,15 @@ from .base import BaseKernelClassifier
 
 class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
 
-    def __init__(self, lmbda=1.0, max_iter=50, tol=1e-3, solver="cg",
+    def __init__(self, lmbda=1.0, solver="cg",
+                 max_iter=50, tol=1e-3, model_size=None,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  random_state=0, verbose=0, n_jobs=1):
         self.lmbda = lmbda
-        self.tol = tol
         self.solver = solver
         self.max_iter = max_iter
+        self.tol = tol
+        self.model_size = model_size
         self.kernel = kernel
         self.gamma = gamma
         self.coef0 = coef0
@@ -29,6 +31,13 @@ class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
         self.random_state = random_state
         self.verbose = verbose
         self.n_jobs = n_jobs
+
+    def _solve(self, A, b):
+        if self.solver == "cg":
+            x, info = cg(A, b, tol=self.tol)
+        elif self.solver == "dense":
+            x = solve(A, b, sym_pos=True)
+        return x
 
     def _fit_binary(self, K, y, rs):
         n_samples = K.shape[0]
@@ -47,10 +56,7 @@ class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
             K_sv = K[sv][:, sv]
             I = np.diag(self.lmbda * np.ones(K_sv.shape[0]))
 
-            if self.solver == "cg":
-                coef_sv, info = cg(K_sv + I, y[sv], tol=self.tol)
-            elif self.solver == "dense":
-                coef_sv = solve(K_sv + I, y[sv], sym_pos=True)
+            coef_sv = self._solve(K_sv + I, y[sv])
 
             coef *= 0
             coef[sv] = coef_sv
@@ -63,6 +69,35 @@ class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
                 if self.verbose:
                     print "Converged at iteration", t
                 break
+
+        return coef
+
+    def _fit_binary_inc(self, K, y, rs):
+        n_samples = K.shape[0]
+        coef = np.zeros(n_samples)
+
+        is_sel = {rs.randint(n_samples) : 1}
+        for t in xrange(self.model_size):
+            J = np.array(is_sel.keys())
+            K_J = K[J]
+            coef_J = coef[J]
+            pred = np.dot(K_J.T, coef_J)
+            errors = 1 - y * pred
+            I = errors > 0
+            K_JI = K_J[:, I]
+            K_JJ = K_J[:, J]
+            P = self.lmbda * K_JJ + np.dot(K_JI, K_JI.T)
+            g = np.dot(self.lmbda * K_JJ, coef_J)
+            g -= np.dot(K_JI, y[I] - pred[I])
+
+            sol = self._solve(P, g)
+            coef[J] = coef_J - sol
+
+            ind = errors.argsort()[::-1]
+            for i in ind:
+                if not i in is_sel:
+                    is_sel[i] = 1
+                    break
 
         return coef
 
@@ -81,7 +116,11 @@ class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
         K = pairwise_kernels(X, filter_params=True, n_jobs=self.n_jobs,
                              metric=self.kernel, **self._kernel_params())
 
-        coef = [self._fit_binary(K, Y[:, i], rs) for i in xrange(n_vectors)]
+
+        func = self._fit_binary if self.model_size is None \
+                                else self._fit_binary_inc
+
+        coef = [func(K, Y[:, i], rs) for i in xrange(n_vectors)]
         self.coef_ = np.array(coef)
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
 

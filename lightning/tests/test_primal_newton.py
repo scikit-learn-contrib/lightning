@@ -19,3 +19,10 @@ def test_primal_newton():
     clf.fit(bin_dense, bin_target)
     assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
 
+
+def test_primal_newton_incremental():
+    clf = PrimalNewton(kernel="rbf", gamma=0.1, random_state=0, verbose=0,
+                       model_size=70)
+    clf.fit(bin_dense, bin_target)
+    assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
+    assert_equal(clf.n_support_vectors(), 70)
