@@ -16,14 +16,14 @@ from .base import BaseKernelClassifier
 class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
 
     def __init__(self, lmbda=1.0, solver="cg",
-                 max_iter=50, tol=1e-3, model_size=None,
+                 max_iter=50, tol=1e-3, n_components=None,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  random_state=0, verbose=0, n_jobs=1):
         self.lmbda = lmbda
         self.solver = solver
         self.max_iter = max_iter
         self.tol = tol
-        self.model_size = model_size
+        self.n_components = n_components
         self.kernel = kernel
         self.gamma = gamma
         self.coef0 = coef0
@@ -77,7 +77,10 @@ class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
         coef = np.zeros(n_samples)
 
         is_sel = {rs.randint(n_samples) : 1}
-        for t in xrange(self.model_size):
+        for t in xrange(1, self.n_components + 1):
+            if self.verbose:
+                print "#SV", t
+
             J = np.array(is_sel.keys())
             K_J = K[J]
             coef_J = coef[J]
@@ -117,7 +120,7 @@ class PrimalNewton(BaseKernelClassifier, ClassifierMixin):
                              metric=self.kernel, **self._kernel_params())
 
 
-        func = self._fit_binary if self.model_size is None \
+        func = self._fit_binary if self.n_components is None \
                                 else self._fit_binary_inc
 
         coef = [func(K, Y[:, i], rs) for i in xrange(n_vectors)]
