@@ -5,7 +5,7 @@ DATADIR=$(HOME)/lightning_data
 
 # Compilation...
 
-CYTHONSRC= $(wildcard lightning/*.pyx)
+CYTHONSRC= $(wildcard lightning/*.pyx lightning/random/*.pyx)
 CSRC= $(CYTHONSRC:.pyx=.cpp)
 
 inplace: cython
