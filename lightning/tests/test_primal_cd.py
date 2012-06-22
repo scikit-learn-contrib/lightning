@@ -68,7 +68,7 @@ def test_fit_rbf_binary_l1r_selection():
         acc = clf.score(bin_dense, bin_target)
         assert_true(acc >= 0.74)
         n_nz = np.sum(clf.coef_ != 0)
-        assert_true(n_nz <= 85)
+        assert_true(n_nz <= 86)
 
 
 def test_fit_rbf_multi():
@@ -395,7 +395,7 @@ def test_fit_rbf_binary_l2r_kernelized_upper_bound():
                     selection="loss", termination="n_components", n_components=30)
     clf.fit(bin_dense, bin_target)
     acc = clf.score(bin_dense, bin_target)
-    assert_almost_equal(acc, 0.88)
+    assert_almost_equal(acc, 0.80)
     assert_equal(clf.n_support_vectors(), 30)
 
     clf = PrimalSVC(C=1.0, random_state=0, penalty="l2l2", loss="squared_hinge",
@@ -404,7 +404,7 @@ def test_fit_rbf_binary_l2r_kernelized_upper_bound():
                     warm_debiasing=True)
     clf.fit(bin_dense, bin_target)
     acc = clf.score(bin_dense, bin_target)
-    assert_almost_equal(acc, 0.88)
+    assert_almost_equal(acc, 0.80)
     assert_equal(clf.n_support_vectors(), 30)
 
 

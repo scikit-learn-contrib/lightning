@@ -15,7 +15,8 @@ import numpy as np
 cimport numpy as np
 
 from lightning.kernel_fast cimport KernelCache
-from lightning.select_fast cimport get_select_method, select_sv, update_start
+from lightning.select_fast cimport get_select_method, select_sv
+from lightning.random.random_fast cimport RandomState
 
 cdef extern from "float.h":
    double DBL_MAX
@@ -287,7 +288,7 @@ def _lasvm(self,
            int finish_step,
            double C,
            int max_iter,
-           rs,
+           RandomState rs,
            callback,
            int verbose,
            int warm_start):
@@ -318,10 +319,11 @@ def _lasvm(self,
     cdef int check_n_sv = termination == "n_components"
     cdef int has_callback = callback is not None
 
-    cdef int it, i, j, s, k, start
+    cdef int it, i, j, s, k
     cdef int n_pos, n_neg
     cdef int stop = 0
 
+    cdef int permute = selection == "permute"
     cdef int select_method = get_select_method(selection)
     if warm_start:
         _boostrap_warm_start(A, X, y, kcache, alpha, g, col)
@@ -333,13 +335,13 @@ def _lasvm(self,
         if verbose >= 1:
             print "\nIteration", it
 
-        start = 0
-        rs.shuffle(A)
+        if permute:
+            rs.shuffle(A)
 
         for i in xrange(n_samples):
             # Select a support vector candidate.
-            s = select_sv(A, start, search_size, n_samples, select_method,
-                          alpha, b[0], X, y, kcache, col, 1)
+            s = select_sv(A, search_size, n_samples, select_method,
+                          alpha, b[0], X, y, kcache, col, 1, rs)
 
             # Attempt to add it.
             _process(s, X, y, kcache, alpha, g, C, tau, col, col2)
@@ -351,9 +353,6 @@ def _lasvm(self,
             if check_n_sv and kcache.n_sv() >= n_components:
                 stop = 1
                 break
-
-            start = update_start(start, select_method, search_size,
-                                 n_samples, A, rs)
 
             # Callback
             if has_callback and i % 100 == 0:

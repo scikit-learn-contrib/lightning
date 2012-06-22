@@ -8,16 +8,10 @@ from sklearn.utils import safe_mask
 
 from .predict_fast import predict_alpha, decision_function_alpha
 from .kernel_fast import get_kernel
+from .random import RandomState
 
 
-class BaseLinearClassifier(BaseEstimator):
-
-    def decision_function(self, X):
-        return np.dot(X, self.coef_.T) + self.intercept_
-
-    def predict(self, X):
-        pred = self.decision_function(X)
-        return self.label_binarizer_.inverse_transform(pred, threshold=0)
+class BaseClassifier(BaseEstimator):
 
     def predict_proba(self, X):
         if len(self.classes_) != 2:
@@ -43,8 +37,21 @@ class BaseLinearClassifier(BaseEstimator):
 
         return out
 
+    def _get_random_state(self):
+        return RandomState(seed=self.random_state)
 
-class BaseKernelClassifier(BaseEstimator):
+
+class BaseLinearClassifier(BaseClassifier):
+
+    def decision_function(self, X):
+        return np.dot(X, self.coef_.T) + self.intercept_
+
+    def predict(self, X):
+        pred = self.decision_function(X)
+        return self.label_binarizer_.inverse_transform(pred, threshold=0)
+
+
+class BaseKernelClassifier(BaseClassifier):
 
     def n_support_vectors(self):
         if self.support_indices_.shape[0] == 0:

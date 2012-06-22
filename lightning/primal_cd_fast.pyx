@@ -22,7 +22,7 @@ from lightning.kernel_fast cimport KernelCache
 from lightning.kernel_fast cimport Kernel
 from lightning.select_fast cimport get_select_method
 from lightning.select_fast cimport select_sv_precomputed
-from lightning.select_fast cimport update_start
+from lightning.random.random_fast cimport RandomState
 
 cdef extern from "math.h":
    double fabs(double)
@@ -540,7 +540,7 @@ def _primal_cd_l2svm_l1r(self,
                          int n_components,
                          double C,
                          int max_iter,
-                         rs,
+                         RandomState rs,
                          double tol,
                          callback,
                          int verbose):
@@ -557,7 +557,7 @@ def _primal_cd_l2svm_l1r(self,
         Xc = X
         n_features = n_samples
 
-    cdef int j, s, t, start, i = 0
+    cdef int j, s, t, i = 0
     cdef int active_size = n_features
     cdef int max_num_linesearch = 20
 
@@ -602,18 +602,19 @@ def _primal_cd_l2svm_l1r(self,
             print "\nIteration", t
 
         Lpmax_new = 0
-        rs.shuffle(index[:active_size])
+
+        if permute:
+            rs.shuffle(index[:active_size])
 
         s = 0
-        start = 0
 
         while s < active_size:
             if permute:
                 j = index[s]
             else:
-                j = select_sv_precomputed(index, start, search_size,
+                j = select_sv_precomputed(index, search_size,
                                           active_size, select_method, b, kcache,
-                                          0)
+                                          0, rs)
 
             Lj_zero = 0
             Lp = 0
@@ -657,8 +658,6 @@ def _primal_cd_l2svm_l1r(self,
                 elif Lp_p > Lpmax_old / n_samples and Lp_n < -Lpmax_old / n_samples:
                     active_size -= 1
                     index[s], index[active_size] = index[active_size], index[s]
-                    start = update_start(start, select_method, search_size,
-                                         active_size, index, rs)
                     # Jump w/o incrementing s so as to use the swapped sample.
                     continue
             elif w[j] > 0:
@@ -678,8 +677,6 @@ def _primal_cd_l2svm_l1r(self,
                 d = -w[j]
 
             if fabs(d) < 1.0e-12:
-                start = update_start(start, select_method, search_size,
-                                     active_size, index, rs)
                 s += 1
                 continue
 
@@ -739,9 +736,6 @@ def _primal_cd_l2svm_l1r(self,
             if check_n_sv and kcache.n_sv() >= n_components:
                 stop = 1
                 break
-
-            start = update_start(start, select_method, search_size,
-                                 active_size, index, rs)
 
             # Callback
             if has_callback and s % 100 == 0:
@@ -847,16 +841,16 @@ def _primal_cd_l2r(self,
 
         Dpmax = 0
 
-        rs.shuffle(index)
-        start = 0
+        if permute:
+            rs.shuffle(index)
 
         for s in xrange(n_features):
             if permute:
                 j = index[s]
             else:
-                j = select_sv_precomputed(index, start, search_size,
+                j = select_sv_precomputed(index, search_size,
                                           n_features, select_method, b, kcache,
-                                          0)
+                                          0, rs)
 
             if linear_kernel:
                 col_ro_ptr = (<double*>Xf.data) + j * n_samples
@@ -884,9 +878,6 @@ def _primal_cd_l2r(self,
             if check_n_sv and n_sv == n_components:
                 stop = 1
                 break
-
-            start = update_start(start, select_method, search_size,
-                                 n_features, index, rs)
 
             # Callback
             if has_callback and s % 100 == 0:
@@ -958,7 +949,6 @@ def _primal_cd_l2svm_l2r(self,
         Dpmax = 0
 
         rs.shuffle(active_set[:active_size])
-        start = 0
 
         for s in xrange(max_inner * n_samples):
             j = active_set[s % active_size]

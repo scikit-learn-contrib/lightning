@@ -19,7 +19,8 @@ import numpy as np
 cimport numpy as np
 
 from lightning.kernel_fast cimport KernelCache
-from lightning.select_fast cimport get_select_method, select_sv, update_start
+from lightning.select_fast cimport get_select_method, select_sv
+from lightning.random.random_fast cimport RandomState
 
 cdef extern from "math.h":
    double fabs(double)
@@ -42,7 +43,7 @@ def _dual_cd(self,
              double C,
              loss,
              int max_iter,
-             rs,
+             RandomState rs,
              double tol,
              int shrinking,
              callback,
@@ -81,7 +82,7 @@ def _dual_cd(self,
     cdef double M_bar = DBL_MAX
     cdef double m_bar = -DBL_MAX
     cdef unsigned int t = 0
-    cdef int s, start = 0
+    cdef int s
     cdef double G, PG
     cdef double step
     cdef int r
@@ -105,19 +106,19 @@ def _dual_cd(self,
         if verbose >= 1:
             print "\nIteration", t
 
-        rs.shuffle(A[:active_size])
+        if permute:
+            rs.shuffle(A[:active_size])
 
         M = -DBL_MAX
         m = DBL_MAX
 
         s = 0
-        start = 0
         while s < active_size:
             if permute:
                 i = A[s]
             else:
-                i = select_sv(A, start, search_size, active_size, select_method,
-                              alpha, 0, X, y, kcache, col, 0)
+                i = select_sv(A, search_size, active_size, select_method,
+                              alpha, 0, X, y, kcache, col, 0, rs)
 
             y_i = y[i]
             alpha_i = fabs(alpha[i])
@@ -149,8 +150,6 @@ def _dual_cd(self,
                 elif G > M_bar:
                     active_size -= 1
                     A[s], A[active_size] = A[active_size], A[s]
-                    start = update_start(start, select_method, search_size,
-                                         active_size, A, rs)
                     # Jump w/o incrementing s so as to use the swapped sample.
                     continue
             elif alpha_i == U:
@@ -159,8 +158,6 @@ def _dual_cd(self,
                 elif G < m_bar:
                     active_size -= 1
                     A[s], A[active_size] = A[active_size], A[s]
-                    start = update_start(start, select_method, search_size,
-                                         active_size, A, rs)
                     continue
             else:
                 PG = G
@@ -191,9 +188,6 @@ def _dual_cd(self,
             if check_n_sv and kcache.n_sv() >= n_components:
                 stop = 1
                 break
-
-            start = update_start(start, select_method, search_size,
-                                 active_size, A, rs)
 
             # Callback
             if has_callback and s % 100 == 0:

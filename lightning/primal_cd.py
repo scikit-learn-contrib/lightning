@@ -56,7 +56,7 @@ class PrimalLinearSVC(BaseSVC, BaseLinearClassifier, ClassifierMixin):
 
     def fit(self, X, y):
         n_samples, n_features = X.shape
-        rs = check_random_state(self.random_state)
+        rs = self._get_random_state()
 
         X = np.asfortranarray(X, dtype=np.float64)
 
@@ -133,7 +133,7 @@ class PrimalSVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
 
     def fit(self, X, y, kcache=None):
         n_samples = X.shape[0]
-        rs = check_random_state(self.random_state)
+        rs = self._get_random_state()
         X = np.ascontiguousarray(X, dtype=np.float64)
 
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
@@ -247,7 +247,7 @@ class PrimalL2SVC(BaseSVC, BaseKernelClassifier, ClassifierMixin):
 
     def fit(self, X, y, kcache=None):
         n_samples = X.shape[0]
-        rs = check_random_state(self.random_state)
+        rs = self._get_random_state()
         X = np.ascontiguousarray(X, dtype=np.float64)
 
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)

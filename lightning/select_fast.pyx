@@ -8,6 +8,8 @@
 
 from cython.operator cimport dereference as deref, preincrement as inc
 
+from lightning.random.random_fast cimport RandomState
+
 cdef extern from "math.h":
    double fabs(double)
 
@@ -29,7 +31,6 @@ cdef int get_select_method(selection):
 
 
 cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
-                   int start,
                    int search_size,
                    int max_size,
                    int select_method,
@@ -39,14 +40,11 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
                    np.ndarray[double, ndim=1] y,
                    KernelCache kcache,
                    np.ndarray[double, ndim=1, mode='c'] col,
-                   int check_duplicates):
+                   int check_duplicates,
+                   RandomState rs):
 
-    if select_method <= 1: # permute or random
-        return A[start]
-
-    cdef int i = start
-    cdef int n_visited = 0
-    cdef int s, k, j
+    cdef int i
+    cdef int s, j
     cdef double score
     cdef double min_score = DBL_MAX
     cdef int selected = 0
@@ -54,14 +52,12 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
     cdef list[int]* support_set = kcache.support_set
     cdef int* support_vectors = kcache.support_vector
 
-    while n_visited < search_size and i < max_size:
-        s = A[i]
+    for i in xrange(search_size):
+        s = A[rs.randint(max_size - 1)]
 
         if check_duplicates and support_vectors[s] >= 0:
-            i += 1
             continue
 
-        k = 0
         score = 0
 
         # Compute prediction.
@@ -83,36 +79,28 @@ cdef int select_sv(np.ndarray[int, ndim=1, mode='c'] A,
             min_score = score
             selected = s
 
-        n_visited += 1
-        i += 1
-
     return selected
 
+
 cdef int select_sv_precomputed(np.ndarray[int, ndim=1, mode='c'] A,
-                               int start,
                                int search_size,
                                int max_size,
                                int select_method,
                                np.ndarray[double, ndim=1, mode='c'] errors,
                                KernelCache kcache,
-                               int check_duplicates):
+                               int check_duplicates,
+                               RandomState rs):
 
-    if select_method <= 1: # permute or random
-        return A[start]
-
-    cdef int i = start
-    cdef int n_visited = 0
     cdef int s
     cdef double score
     cdef double min_score = DBL_MAX
     cdef int selected = 0
     cdef int* support_vectors = kcache.support_vector
 
-    while n_visited < search_size and i < max_size:
-        s = A[i]
+    for i in xrange(search_size):
+        s = A[rs.randint(max_size - 1)]
 
         if check_duplicates and support_vectors[s] >= 0:
-            i += 1
             continue
 
         if select_method == 2: # active
@@ -124,27 +112,4 @@ cdef int select_sv_precomputed(np.ndarray[int, ndim=1, mode='c'] A,
             min_score = score
             selected = s
 
-        n_visited += 1
-        i += 1
-
     return selected
-
-
-cdef int update_start(int start,
-                      int select_method,
-                      int search_size,
-                      int active_size,
-                      np.ndarray[int, ndim=1, mode='c'] index,
-                      rs):
-
-    # Update position and reshuffle if needed.
-    if select_method: # others than permute
-        start += search_size
-
-        if start + search_size > active_size - 1:
-            rs.shuffle(index[:active_size])
-            start = 0
-    else:
-        start += 1
-
-    return start

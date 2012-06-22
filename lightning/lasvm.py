@@ -44,7 +44,7 @@ class LaSVM(BaseKernelClassifier, ClassifierMixin):
 
     def fit(self, X, y):
         n_samples = X.shape[0]
-        rs = check_random_state(self.random_state)
+        rs = self._get_random_state()
 
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = self.label_binarizer_.fit_transform(y)
