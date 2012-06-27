@@ -794,7 +794,7 @@ def _primal_cd_l2r(self,
                    int n_components,
                    double C,
                    int max_iter,
-                   rs,
+                   RandomState rs,
                    double tol,
                    callback,
                    int verbose):
@@ -918,7 +918,7 @@ def _primal_cd_l2svm_l2r(self,
                          double C,
                          int max_outer,
                          int max_inner,
-                         rs,
+                         RandomState rs,
                          double tol,
                          int verbose):
 
