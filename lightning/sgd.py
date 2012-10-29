@@ -45,7 +45,7 @@ class BaseSGD(object):
     def _set_label_transformers(self, y):
         if self.multiclass == "natural":
             self.label_encoder_ = LabelEncoder()
-            y = self.label_encoder_.fit_transform(y)
+            y = self.label_encoder_.fit_transform(y).astype(np.float64)
 
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         self.label_binarizer_.fit(y)
