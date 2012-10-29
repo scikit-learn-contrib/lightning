@@ -63,5 +63,10 @@ if __name__ == "__main__":
               'Operating System :: POSIX',
               'Operating System :: Unix',
               'Operating System :: MacOS'
-             ]
+             ],
+          package_data={
+              'lightning': [
+                 'datasets/*',
+              ],
+          },
     )
