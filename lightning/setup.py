@@ -46,6 +46,7 @@ def configuration(parent_package='', top_path=None):
 
     config.add_subpackage('random')
     config.add_subpackage('tests')
+    config.add_subpackage('datasets')
 
     return config
 
