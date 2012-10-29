@@ -38,7 +38,7 @@ class DualLinearSVC(BaseLinearClassifier, ClassifierMixin):
         rs = self._get_random_state()
 
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
-        Y = self.label_binarizer_.fit_transform(y)
+        Y = self.label_binarizer_.fit_transform(y).astype(np.float64)
         n_vectors = Y.shape[1]
 
         if not self.warm_start or self.coef_ is None:
@@ -97,7 +97,7 @@ class DualSVC(BaseKernelClassifier, ClassifierMixin):
         rs = self._get_random_state()
 
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
-        Y = self.label_binarizer_.fit_transform(y)
+        Y = self.label_binarizer_.fit_transform(y).astype(np.float64)
         self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
         n_vectors = Y.shape[1]
 
