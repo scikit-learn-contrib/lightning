@@ -18,10 +18,8 @@ from libcpp.vector cimport vector
 import numpy as np
 cimport numpy as np
 
-from lightning.select_fast cimport get_select_method, select_sv
 from lightning.random.random_fast cimport RandomState
 from lightning.dataset_fast cimport Dataset
-from lightning.dataset_fast cimport KernelDataset
 
 cdef extern from "math.h":
    double fabs(double)
@@ -34,14 +32,8 @@ def _dual_cd(self,
              np.ndarray[double, ndim=1, mode='c'] w,
              np.ndarray[double, ndim=1, mode='c'] alpha,
              Dataset X,
-             KernelDataset kds,
              np.ndarray[double, ndim=1]y,
-             int linear_kernel,
-             selection,
-             int search_size,
              int permute,
-             termination,
-             int n_components,
              double C,
              loss,
              int max_iter,
@@ -68,10 +60,6 @@ def _dual_cd(self,
     cdef double step
     cdef int r
     cdef list[int].iterator it
-    cdef int select_method = get_select_method(selection)
-    cdef int check_n_sv = termination == "n_components"
-    cdef int check_convergence = termination == "convergence"
-    cdef int cyclic = selection == "cyclic" or linear_kernel
     cdef int has_callback = callback is not None
     cdef int stop = 0
     cdef double U
@@ -93,19 +81,16 @@ def _dual_cd(self,
     # Diagonal values of the Q matrix.
     cdef np.ndarray[double, ndim=1, mode='c'] Q_bar_diag
     Q_bar_diag = np.zeros(n_samples, dtype=np.float64)
-    kds.get_diag_out(<double*>Q_bar_diag.data)
+    for i in xrange(n_samples):
+        X.get_row_ptr(i, &indices, &data, &n_nz)
+        for jj in xrange(n_nz):
+            Q_bar_diag[i] += data[jj] * data[jj]
     Q_bar_diag += D_ii
 
     # Data pointers.
     cdef double* data
     cdef int* indices
     cdef int n_nz
-
-    # FIXME: would be better to store the support indices in the class
-    if not linear_kernel:
-        for i in xrange(n_samples):
-            if alpha[i] != 0:
-                kds.add_sv(i)
 
     for t in xrange(max_iter):
         if verbose >= 1:
@@ -119,35 +104,20 @@ def _dual_cd(self,
 
         s = 0
         while s < active_size:
-            if cyclic:
-                i = A[s]
-            else:
-                i = select_sv(A, search_size, active_size, select_method,
-                              alpha, 0, kds, y, 0, rs)
+            i = A[s]
 
             y_i = y[i]
             alpha_i = fabs(alpha[i])
 
             # Compute ith element of the gradient.
-            if linear_kernel:
-                X.get_row_ptr(i, &indices, &data, &n_nz)
+            X.get_row_ptr(i, &indices, &data, &n_nz)
 
-                # G = y_i * np.dot(w, X[i]) - 1 + D_ii * alpha_i
-                G = 0
-                for jj in xrange(n_nz):
-                    j = indices[jj]
-                    G += w[j] * data[jj]
-                G = y_i * G - 1 + D_ii * alpha_i
-            else:
-                # G = np.dot(Q_bar, alpha)[i] - 1
-                G = -1
-                col = kds.get_column_sv_ptr(i)
-                it = kds.support_set.begin()
-                while it != kds.support_set.end():
-                    j = deref(it)
-                    G += col[j] * y[i] * alpha[j]
-                    inc(it)
-                G += D_ii * alpha_i
+            # G = y_i * np.dot(w, X[i]) - 1 + D_ii * alpha_i
+            G = 0
+            for jj in xrange(n_nz):
+                j = indices[jj]
+                G += w[j] * data[jj]
+            G = y_i * G - 1 + D_ii * alpha_i
 
             PG = 0
 
@@ -180,24 +150,11 @@ def _dual_cd(self,
                 alpha_i = min(max(alpha_i - G / Q_bar_diag[i], 0), U)
                 alpha[i] = alpha_i * y_i
 
-                # Update support set.
-                if not linear_kernel:
-                    if alpha_i != 0:
-                        kds.add_sv(i)
-                    elif alpha_i == 0:
-                        kds.remove_sv(i)
-
-                if linear_kernel:
-                    # Update the primal coefficients.
-                    step = (alpha_i - alpha_old) * y_i
-                    for jj in xrange(n_nz):
-                        j = indices[jj]
-                        w[j] += step * data[jj]
-
-            # Exit if necessary.
-            if check_n_sv and kds.n_sv() >= n_components:
-                stop = 1
-                break
+                # Update the primal coefficients.
+                step = (alpha_i - alpha_old) * y_i
+                for jj in xrange(n_nz):
+                    j = indices[jj]
+                    w[j] += step * data[jj]
 
             # Callback
             if has_callback and s % 100 == 0:
@@ -219,7 +176,7 @@ def _dual_cd(self,
             break
 
         # Convergence check.
-        if check_convergence and M - m <= tol:
+        if M - m <= tol:
             if active_size == n_samples:
                 if verbose >= 1:
                     print "\nConverged at iteration", t
