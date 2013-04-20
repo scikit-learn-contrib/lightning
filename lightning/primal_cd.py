@@ -71,11 +71,9 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
                  max_iter=50, tol=1e-3, termination="violation_sum",
                  shrinking=True,
                  max_steps=30, sigma=0.01, beta=0.5,
-                 kernel=None, gamma=0.1, coef0=1, degree=4, cache_mb=500,
                  warm_start=False, debiasing=False, Cd=1.0,
                  warm_debiasing=False,
                  selection="cyclic", search_size=60, permute=True,
-                 n_components=1000, components=None,
                  callback=None, n_calls=100,
                  random_state=None, verbose=0, n_jobs=1):
         self.C = C
@@ -91,26 +89,17 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
         self.max_steps = max_steps
         self.sigma = sigma
         self.beta = beta
-        self.kernel = kernel
-        self.gamma = gamma
-        self.coef0 = coef0
-        self.degree = degree
-        self.cache_mb = cache_mb
         self.warm_start = warm_start
         self.debiasing = debiasing
         self.Cd = Cd
         self.warm_debiasing = warm_debiasing
         self.selection = selection
-        self.search_size = search_size
         self.permute = permute
-        self.n_components = n_components
-        self.components = components
         self.callback = callback
         self.n_calls = n_calls
         self.random_state = random_state
         self.verbose = verbose
         self.n_jobs = n_jobs
-        self.support_vectors_ = None
         self.coef_ = None
         self.violation_init_ = {}
 
@@ -118,7 +107,7 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
         rs = self._get_random_state()
 
         # Create dataset
-        ds = self._get_dataset(X, self.components, order="fortran")
+        ds = self._get_dataset(X, kernel=False, order="fortran")
         n_samples = ds.get_n_samples()
         n_features = ds.get_n_features()
 
@@ -131,12 +120,7 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
                               dtype=np.float64)
 
         # Initialize coefficients
-        if self.warm_start and self.coef_ is not None:
-            if self.kernel:
-                coef = np.zeros((n_vectors, n_features), dtype=np.float64)
-                coef[:, self.support_indices_] = self.coef_
-                self.coef_ = coef
-        else:
+        if not self.warm_start or self.coef_ is None:
             self.C_init = self.C
             self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
             self._init_errors(Y)
@@ -155,8 +139,7 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
             viol = _primal_cd(self, self.coef_, self.errors_,
                               ds, y, Y, -1, self.multiclass,
                               indices, 12, self._get_loss(),
-                              self.selection, self.search_size, self.permute,
-                              self.termination, self.n_components,
+                              self.selection, self.permute, self.termination,
                               self.C, self.alpha, self.U,
                               self.max_iter, self.max_steps,
                               self.shrinking, vinit,
@@ -176,9 +159,8 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
                 viol = _primal_cd(self, self.coef_, self.errors_,
                                   ds, y, Y, k, False,
                                   indices, penalty, self._get_loss(),
-                                  self.selection, self.search_size,
-                                  self.permute,
-                                  self.termination, self.n_components,
+                                  self.selection, self.permute,
+                                  self.termination,
                                   self.C, self.alpha, self.U,
                                   self.max_iter, self.max_steps,
                                   self.shrinking, vinit,
@@ -200,25 +182,18 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
                 _primal_cd(self, self.coef_, self.errors_,
                            ds, y, Y, k, False,
                            indices, 2, self._get_loss(),
-                           "cyclic", self.search_size, self.permute,
-                           "violation_sum", self.n_components,
+                           "cyclic", self.permute,
+                           "violation_sum",
                            self.Cd, 1.0, self.U,
                            self.max_iter, self.max_steps,
                            self.shrinking, 0,
                            rs, self.tol, self.callback, self.n_calls,
                            self.verbose)
 
-        nz = np.sum(self.coef_ != 0, axis=0, dtype=bool)
-        self.support_indices_ = np.arange(n_features, dtype=np.int32)[nz]
-
-        if self.kernel:
-            A = X if self.components is None else self.components
-            self._post_process(A)
-
         return self
 
     def decision_function(self, X):
-        ds = self._get_dataset(X, self.support_vectors_)
+        ds = self._get_dataset(X)
         return ds.dot(self.coef_.T) + self.intercept_
 
 
@@ -229,11 +204,9 @@ class CDRegressor(BaseCD, BaseRegressor, RegressorMixin):
                  max_iter=50, tol=1e-3, termination="violation_sum",
                  shrinking=True,
                  max_steps=30, sigma=0.01, beta=0.5,
-                 kernel=None, gamma=0.1, coef0=1, degree=4, cache_mb=500,
                  warm_start=False, debiasing=False, Cd=1.0,
                  warm_debiasing=False,
                  selection="cyclic", permute=True,
-                 n_components=1000, components=None,
                  callback=None, n_calls=100,
                  random_state=None, verbose=0, n_jobs=1):
         self.C = C
@@ -248,25 +221,17 @@ class CDRegressor(BaseCD, BaseRegressor, RegressorMixin):
         self.max_steps = max_steps
         self.sigma = sigma
         self.beta = beta
-        self.kernel = kernel
-        self.gamma = gamma
-        self.coef0 = coef0
-        self.degree = degree
-        self.cache_mb = cache_mb
         self.warm_start = warm_start
         self.debiasing = debiasing
         self.Cd = Cd
         self.warm_debiasing = warm_debiasing
         self.selection = selection
         self.permute = permute
-        self.n_components = n_components
-        self.components = components
         self.callback = callback
         self.n_calls = n_calls
         self.random_state = random_state
         self.verbose = verbose
         self.n_jobs = n_jobs
-        self.support_vectors_ = None
         self.coef_ = None
         self.violation_init_ = {}
 
@@ -274,7 +239,7 @@ class CDRegressor(BaseCD, BaseRegressor, RegressorMixin):
         rs = self._get_random_state()
 
         # Create dataset
-        ds = self._get_dataset(X, self.components, order="fortran")
+        ds = self._get_dataset(X, kernel=False, order="fortran")
         n_samples = ds.get_n_samples()
         n_features = ds.get_n_features()
 
@@ -307,8 +272,8 @@ class CDRegressor(BaseCD, BaseRegressor, RegressorMixin):
             viol = _primal_cd(self, self.coef_, self.errors_,
                               ds, y, Y, k, False,
                               indices, penalty, self._get_loss(),
-                              self.selection, 0, self.permute,
-                              self.termination, self.n_components,
+                              self.selection, self.permute,
+                              self.termination,
                               self.C, self.alpha, self.U,
                               self.max_iter, self.max_steps,
                               self.shrinking, vinit,

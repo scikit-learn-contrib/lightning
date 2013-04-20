@@ -11,11 +11,8 @@ import sys
 import numpy as np
 cimport numpy as np
 
-from lightning.select_fast cimport get_select_method
-from lightning.select_fast cimport select_sv_precomputed
 from lightning.random.random_fast cimport RandomState
 from lightning.dataset_fast cimport Dataset
-from lightning.dataset_fast cimport KernelDataset
 
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
@@ -178,7 +175,6 @@ cdef class LossFunction:
                       double *y,
                       double *b,
                       double Lcst,
-                      int *n_sv,
                       double *PG,
                       double m_bar,
                       double M_bar,
@@ -294,7 +290,6 @@ cdef class LossFunction:
                       double Lcst,
                       double violation_old,
                       double *violation,
-                      int *n_sv,
                       int shrinking):
         cdef double Lj_zero = 0
         cdef double Lp = 0
@@ -390,11 +385,6 @@ cdef class LossFunction:
             step += 1
 
         # end for num_linesearch
-
-        if w[j] == 0 and z != 0:
-            n_sv[0] += 1
-        elif z != 0 and w[j] == -z:
-            n_sv[0] -= 1
 
         # Update w.
         w[j] += z
@@ -999,60 +989,6 @@ cdef class SquaredHinge(LossFunction):
         cdef double scale = 4 * C * (n_vectors - 1)
         self._lipschitz_constant(X, scale, out)
 
-    cpdef _C_lower_bound_kernel(self,
-                                KernelDataset kds,
-                                np.ndarray[double, ndim=2, mode='fortran'] Y,
-                                search_size=None,
-                                random_state=None):
-
-        cdef int n_samples = kds.get_n_samples()
-        cdef int n = n_samples
-
-        cdef int i, j, k, l
-        cdef int n_vectors = Y.shape[1]
-
-        cdef double val, max_ = -DBL_MAX
-        cdef int* indices
-        cdef double* data
-        cdef int n_nz
-
-        cdef np.ndarray[int, ndim=1, mode='c'] ind
-        ind = np.arange(n_samples, dtype=np.int32)
-
-        if search_size is not None:
-            n = search_size
-            random_state.shuffle(ind)
-
-        for j in xrange(n):
-            k = ind[j]
-
-            kds.get_column_ptr(k, &indices, &data, &n_nz)
-
-            for l in xrange(n_vectors):
-                val = 0
-                for i in xrange(n_samples):
-                    val += Y[i, l] * data[i]
-                max_ = max(max_, fabs(val))
-
-        return max_
-
-    def C_lower_bound(self, X, y, kernel=None, search_size=None,
-                      random_state=None, **kernel_params):
-        Y = LabelBinarizer(neg_label=-1, pos_label=1).fit_transform(y)
-        Y = np.asfortranarray(Y, dtype=np.float64)
-
-        if kernel is None:
-            den = np.max(np.abs(np.dot(Y.T, X)))
-        else:
-            random_state = check_random_state(random_state)
-            kds = KernelDataset(X, X, kernel=kernel, **kernel_params)
-            den = self._C_lower_bound_kernel(kds, Y, search_size, random_state)
-
-        if den == 0.0:
-            raise ValueError('Ill-posed')
-
-        return 0.5 / den
-
 
 cdef class SquaredHinge01(LossFunction):
 
@@ -1445,6 +1381,7 @@ cdef class Log(LossFunction):
         cdef double scale = C * 0.5
         self._lipschitz_constant(X, scale, out)
 
+
 def _primal_cd(self,
                np.ndarray[double, ndim=2, mode='c'] w,
                np.ndarray[double, ndim=2, mode='c'] b,
@@ -1457,10 +1394,8 @@ def _primal_cd(self,
                int penalty,
                LossFunction loss,
                selection,
-               int search_size,
                int permute,
                termination,
-               int n_components,
                double C,
                double alpha,
                double U,
@@ -1496,15 +1431,11 @@ def _primal_cd(self,
     # Convergence
     cdef int check_violation_sum = termination == "violation_sum"
     cdef int check_violation_max = termination == "violation_max"
-    cdef int check_convergence = check_violation_sum or check_violation_max
-    cdef int check_n_sv = termination == "n_components"
     cdef int stop = 0
     cdef int has_callback = callback is not None
     cdef int shrink = 0
-    cdef int n_sv = 0
 
     # Coordinate selection
-    cdef int select_method = get_select_method(selection)
     cdef int cyclic = selection == "cyclic"
     cdef int uniform = selection == "uniform"
     if uniform:
@@ -1568,20 +1499,17 @@ def _primal_cd(self,
                 j = active_set[s]
             elif uniform:
                 j = rs.randint(n_features - 1)
-            else:
-                j = select_sv_precomputed(active_set_ptr, search_size,
-                                          active_size, select_method, b_ptr, rs)
 
             # Solve sub-problem.
             if penalty <= -1:
                 shrink = loss.solve_nn(j, C, alpha, U, penalty,
                                        w_ptr, n_samples, X,
-                                       y_ptr, b_ptr, Lcst[j], &n_sv, &PG,
+                                       y_ptr, b_ptr, Lcst[j], &PG,
                                        m_bar, M_bar, shrinking)
             elif penalty == 1:
                 shrink = loss.solve_l1(j, C, alpha, w_ptr, n_samples, X,
                                        y_ptr, b_ptr, Lcst[j], violation_max_old,
-                                       &violation, &n_sv, shrinking)
+                                       &violation, shrinking)
             elif penalty == 12:
                 shrink = loss.solve_l1l2(j, C, alpha, w, n_vectors, X,
                                          <int*>y.data, Y, multiclass,
@@ -1592,8 +1520,6 @@ def _primal_cd(self,
             elif penalty == 2:
                 loss.solve_l2(j, C, alpha, w_ptr, X, y_ptr, b_ptr, &Dp)
                 Dpmax = max(Dpmax, fabs(Dp))
-                if w_ptr[j] != 0:
-                    n_sv += 1
 
             # Check if need to shrink.
             if shrink:
@@ -1611,11 +1537,6 @@ def _primal_cd(self,
                     M = max(M, PG)
                     m = min(m, PG)
                 violation_sum += PG * PG
-
-            # Exit if necessary.
-            if check_n_sv and n_sv >= n_components:
-                stop = 1
-                break
 
             # Callback
             if has_callback and s % n_calls == 0:
@@ -1653,28 +1574,27 @@ def _primal_cd(self,
                         (violation_max / violation_init, tol)
 
         # Check convergence.
-        if check_convergence:
-            if penalty == 2:
-                if Dpmax < tol:
+        if penalty == 2:
+            if Dpmax < tol:
+                if verbose >= 1:
+                    print "\nConverged at iteration", t
+                break
+        else:
+            if (check_violation_sum and
+                violation_sum <= tol * violation_init) or \
+               (check_violation_max and
+                violation_max <= tol * violation_init):
+                if active_size == n_features:
                     if verbose >= 1:
                         print "\nConverged at iteration", t
                     break
-            else:
-                if (check_violation_sum and
-                    violation_sum <= tol * violation_init) or \
-                   (check_violation_max and
-                    violation_max <= tol * violation_init):
-                    if active_size == n_features:
-                        if verbose >= 1:
-                            print "\nConverged at iteration", t
-                        break
-                    else:
-                        # Should only be possible if shrinking is enabled.
-                        active_size = n_features
-                        violation_max_old = DBL_MAX
-                        M_bar = DBL_MAX
-                        m_bar = -DBL_MAX
-                        continue
+                else:
+                    # Should only be possible if shrinking is enabled.
+                    active_size = n_features
+                    violation_max_old = DBL_MAX
+                    M_bar = DBL_MAX
+                    m_bar = -DBL_MAX
+                    continue
 
         violation_max_old = violation_max
 
