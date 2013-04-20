@@ -12,7 +12,7 @@ from sklearn.utils import check_random_state
 from .base import BaseClassifier
 from .base import BaseRegressor
 
-from .dataset_fast import KernelDataset
+from .dataset_fast import get_dataset
 from .primal_cd_fast import _primal_cd
 
 from .primal_cd_fast import Squared
@@ -107,7 +107,7 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
         rs = self._get_random_state()
 
         # Create dataset
-        ds = self._get_dataset(X, kernel=False, order="fortran")
+        ds = get_dataset(X, order="fortran")
         n_samples = ds.get_n_samples()
         n_features = ds.get_n_features()
 
@@ -193,7 +193,7 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
         return self
 
     def decision_function(self, X):
-        ds = self._get_dataset(X)
+        ds = get_dataset(X)
         return ds.dot(self.coef_.T) + self.intercept_
 
 
@@ -239,7 +239,7 @@ class CDRegressor(BaseCD, BaseRegressor, RegressorMixin):
         rs = self._get_random_state()
 
         # Create dataset
-        ds = self._get_dataset(X, kernel=False, order="fortran")
+        ds = get_dataset(X, order="fortran")
         n_samples = ds.get_n_samples()
         n_features = ds.get_n_features()
 

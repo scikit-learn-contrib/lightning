@@ -14,6 +14,8 @@ from sklearn.utils.validation import assert_all_finite
 from .base import BaseClassifier
 from .base import BaseRegressor
 
+from .dataset_fast import get_dataset
+
 from .sgd_fast import _binary_sgd
 from .sgd_fast import _multiclass_sgd
 
@@ -53,27 +55,21 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, BaseSGD):
 
     def __init__(self, loss="hinge", penalty="l2",
                  multiclass=False, alpha=0.01,
-                 kernel="linear", gamma=0.1, coef0=1, degree=4,
                  learning_rate="pegasos", eta0=0.03, power_t=0.5,
                  epsilon=0.01, fit_intercept=True, intercept_decay=1.0,
-                 n_components=0, max_iter=10, shuffle=True, random_state=None,
+                 max_iter=10, shuffle=True, random_state=None,
                  callback=None, n_calls=100,
                  cache_mb=500, verbose=0, n_jobs=1):
         self.loss = loss
         self.penalty = penalty
         self.multiclass = multiclass
         self.alpha = alpha
-        self.kernel = kernel
-        self.gamma = gamma
-        self.coef0 = coef0
-        self.degree = degree
         self.learning_rate = learning_rate
         self.eta0 = eta0
         self.power_t = power_t
         self.epsilon = epsilon
         self.fit_intercept = fit_intercept
         self.intercept_decay = intercept_decay
-        self.n_components = n_components
         self.max_iter = max_iter
         self.shuffle = shuffle
         self.random_state = random_state
@@ -113,25 +109,15 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, BaseSGD):
         reencode = self.multiclass == True
         y, n_classes, n_vectors = self._set_label_transformers(y, reencode)
 
-        kernel = False if self.kernel == "linear" else True
-        ds = self._get_dataset(X, kernel=kernel)
+        ds = get_dataset(X)
         n_samples = ds.get_n_samples()
         n_features = ds.get_n_features()
-        d = n_features if self.kernel == "linear" else n_samples
-        self.coef_ = np.zeros((n_vectors, d), dtype=np.float64)
+        self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
 
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
 
         loss = self._get_loss()
         penalty = self._get_penalty()
-        eta0 = self.eta0
-        if self.learning_rate == "invscaling" and self.power_t == 0.5 and \
-           self.eta0 == "auto":
-               D = loss.max_diameter(ds, n_vectors, penalty, self.alpha)
-               G = loss.max_gradient(ds, n_vectors)
-               eta0 = D / (4.0 * G)
-               if self.verbose >= 1:
-                   print "eta0=%f" % eta0
 
         if n_vectors == 1 or self.multiclass == False:
             Y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
@@ -140,9 +126,9 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, BaseSGD):
                 _binary_sgd(self,
                             self.coef_, self.intercept_, i,
                             ds, Y[:, i], loss, penalty,
-                            self.n_components, self.alpha,
+                            self.alpha,
                             self._get_learning_rate(),
-                            eta0, self.power_t,
+                            self.eta0, self.power_t,
                             self.fit_intercept,
                             self.intercept_decay,
                             int(self.max_iter * n_samples), self.shuffle, rs,
@@ -151,10 +137,10 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, BaseSGD):
         elif self.multiclass == True:
             _multiclass_sgd(self, self.coef_, self.intercept_,
                  ds, y.astype(np.int32), loss, penalty,
-                 self.n_components, self.alpha, self._get_learning_rate(),
-                 eta0, self.power_t, self.fit_intercept, self.intercept_decay,
-                 int(self.max_iter * n_samples), self.shuffle, rs,
-                 self.callback, self.n_calls, self.verbose)
+                 self.alpha, self._get_learning_rate(),
+                 self.eta0, self.power_t, self.fit_intercept,
+                 self.intercept_decay, int(self.max_iter * n_samples),
+                 self.shuffle, rs, self.callback, self.n_calls, self.verbose)
 
         else:
             raise ValueError("Wrong value for multiclass.")
@@ -164,41 +150,30 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, BaseSGD):
         except ValueError:
             warnings.warn("coef_ contains infinite values")
 
-        if self.kernel != "linear":
-            self._post_process(X)
-
         return self
 
     def decision_function(self, X):
-        kernel = False if self.kernel == "linear" else True
-        ds = self._get_dataset(X, self.support_vectors_, kernel=kernel)
-        return ds.dot(self.coef_.T) + self.intercept_
+        return safe_sparse_dot(X, self.coef_.T) + self.intercept_
 
 
 class SGDRegressor(BaseRegressor, RegressorMixin, BaseSGD):
 
     def __init__(self, loss="squared", penalty="l2",
                  alpha=0.01,
-                 kernel="linear", gamma=0.1, coef0=1, degree=4,
                  learning_rate="pegasos", eta0=0.03, power_t=0.5,
                  epsilon=0.01, fit_intercept=True, intercept_decay=1.0,
-                 n_components=0, max_iter=10, shuffle=True, random_state=None,
+                 max_iter=10, shuffle=True, random_state=None,
                  callback=None, n_calls=100,
                  cache_mb=500, verbose=0, n_jobs=1):
         self.loss = loss
         self.penalty = penalty
         self.alpha = alpha
-        self.kernel = kernel
-        self.gamma = gamma
-        self.coef0 = coef0
-        self.degree = degree
         self.learning_rate = learning_rate
         self.eta0 = eta0
         self.power_t = power_t
         self.epsilon = epsilon
         self.fit_intercept = fit_intercept
         self.intercept_decay = intercept_decay
-        self.n_components = n_components
         self.max_iter = max_iter
         self.shuffle = shuffle
         self.random_state = random_state
@@ -222,11 +197,9 @@ class SGDRegressor(BaseRegressor, RegressorMixin, BaseSGD):
     def fit(self, X, y):
         rs = check_random_state(self.random_state)
 
-        kernel = False if self.kernel == "linear" else True
-        ds = self._get_dataset(X, kernel=kernel)
+        ds = get_dataset(X)
         n_samples = ds.get_n_samples()
         n_features = ds.get_n_features()
-        d = n_features if self.kernel == "linear" else n_samples
 
         self.outputs_2d_ = len(y.shape) == 2
         if self.outputs_2d_:
@@ -235,20 +208,18 @@ class SGDRegressor(BaseRegressor, RegressorMixin, BaseSGD):
             Y = y.reshape(-1, 1)
         Y = np.asfortranarray(Y)
         n_vectors = Y.shape[1]
-        self.coef_ = np.zeros((n_vectors, d), dtype=np.float64)
+        self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
 
         loss = self._get_loss()
         penalty = self._get_penalty()
-        eta0 = self.eta0
 
         for k in xrange(n_vectors):
             _binary_sgd(self,
                         self.coef_, self.intercept_, k,
-                        ds, Y[:, k], loss, penalty,
-                        self.n_components, self.alpha,
+                        ds, Y[:, k], loss, penalty, self.alpha,
                         self._get_learning_rate(),
-                        eta0, self.power_t,
+                        self.eta0, self.power_t,
                         self.fit_intercept,
                         self.intercept_decay,
                         int(self.max_iter * n_samples), self.shuffle, rs,
@@ -259,9 +230,6 @@ class SGDRegressor(BaseRegressor, RegressorMixin, BaseSGD):
             assert_all_finite(self.coef_)
         except ValueError:
             warnings.warn("coef_ contains infinite values")
-
-        if self.kernel != "linear":
-            self._post_process(X)
 
         return self
 

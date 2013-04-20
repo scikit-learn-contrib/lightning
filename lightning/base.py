@@ -12,32 +12,6 @@ from sklearn.preprocessing import LabelEncoder
 
 from .random import RandomState
 
-from .dataset_fast import Dataset
-from .dataset_fast import ContiguousDataset
-from .dataset_fast import FortranDataset
-from .dataset_fast import CSRDataset
-from .dataset_fast import CSCDataset
-from .dataset_fast import KernelDataset
-
-
-def _get_dataset(X, order):
-    if sp.isspmatrix(X):
-        if order == "fortran":
-            X = X.tocsc()
-            ds = CSCDataset(X)
-        else:
-            X = X.tocsr()
-            ds = CSRDataset(X)
-    else:
-        if order == "fortran":
-            X = np.asfortranarray(X, dtype=np.float64)
-            ds = FortranDataset(X)
-        else:
-            X = np.ascontiguousarray(X, dtype=np.float64)
-            ds = ContiguousDataset(X)
-    return ds
-
-
 class BaseEstimator(_BaseEstimator):
 
     def _get_random_state(self):
@@ -93,26 +67,6 @@ class BaseEstimator(_BaseEstimator):
 
             if self.verbose >= 1:
                 print "Number of support vectors:", np.sum(sv)
-
-    def _get_dataset(self, X, Y=None, kernel=True, order="c"):
-        if isinstance(X, Dataset):
-            return X
-
-        elif kernel and getattr(self, "kernel", None) is not None:
-            X = np.ascontiguousarray(X, dtype=np.float64)
-
-            if Y is None:
-                Y = X
-            else:
-                Y = np.ascontiguousarray(Y, dtype=np.float64)
-
-            ds = KernelDataset(X, Y, self.kernel,
-                               self.gamma, self.coef0, self.degree,
-                               self.cache_mb, 1, self.verbose)
-        else:
-            ds = _get_dataset(X, order)
-
-        return ds
 
 
 class BaseClassifier(BaseEstimator):
@@ -174,8 +128,7 @@ class BaseRegressor(BaseEstimator):
         else:
             coef = self.coef_
 
-        ds = self._get_dataset(X)
-        pred = ds.dot(coef.T)
+        pred = safe_sparse_dot(X, coef.T)
 
         if hasattr(self, "intercept_"):
             pred += self.intercept_

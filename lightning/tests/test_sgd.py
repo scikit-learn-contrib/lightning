@@ -20,9 +20,6 @@ from lightning.sgd import SGDRegressor
 from lightning.sgd_fast import Hinge
 from lightning.sgd_fast import Log
 
-from lightning.dataset_fast import ContiguousDataset
-from lightning.dataset_fast import KernelDataset
-
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
@@ -58,31 +55,6 @@ def test_binary_linear_sgd():
             assert_greater(clf.score(data, bin_target), 0.934)
 
 
-def test_custom_dataset():
-    ds = KernelDataset(bin_dense, bin_dense, kernel="rbf", gamma=0.1)
-    clf = SGDClassifier(random_state=0)
-    clf.fit(ds, bin_target)
-    assert_equal(clf.score(ds, bin_target), 1.0)
-
-
-def test_binary_kernel_sgd():
-    for fit_intercept in (True, False):
-        clf = SGDClassifier(kernel="rbf", gamma=0.1,
-                            fit_intercept=fit_intercept,
-                            random_state=0)
-        clf.fit(bin_dense, bin_target)
-        assert_equal(clf.score(bin_dense, bin_target), 1.0)
-
-
-def test_multiclass_kernel_sgd():
-    for fit_intercept in (True, False):
-        clf = SGDClassifier(kernel="rbf", gamma=0.1,
-                            fit_intercept=fit_intercept,
-                            random_state=0)
-        clf.fit(mult_dense, mult_target)
-        assert_equal(clf.score(mult_dense, mult_target), 1.0)
-
-
 def test_multiclass_sgd():
     clf = SGDClassifier(random_state=0)
     clf.fit(mult_dense, mult_target)
@@ -116,16 +88,6 @@ def test_multiclass_squared_hinge_sgd():
             assert_greater(clf.score(data, mult_target), 0.78)
 
 
-def test_multiclass_hinge_kernel_sgd():
-    for fit_intercept in (True, False):
-        clf = SGDClassifier(kernel="rbf", gamma=0.1,
-                            loss="hinge", multiclass=True,
-                            fit_intercept=fit_intercept,
-                            random_state=0)
-        clf.fit(mult_dense, mult_target)
-        assert_greater(clf.score(mult_dense, mult_target), 0.90)
-
-
 def test_multiclass_log_sgd():
     for data in (mult_dense, mult_csr):
         for fit_intercept in (True, False):
@@ -134,58 +96,6 @@ def test_multiclass_log_sgd():
                                 random_state=0)
             clf.fit(data, mult_target)
             assert_greater(clf.score(data, mult_target), 0.78)
-
-
-def test_multiclass_log_kernel_sgd():
-    for fit_intercept in (True, False):
-        clf = SGDClassifier(kernel="rbf", gamma=0.1,
-                            loss="log", multiclass=True,
-                            fit_intercept=fit_intercept,
-                            random_state=0)
-        clf.fit(mult_dense, mult_target)
-        assert_equal(clf.score(mult_dense, mult_target), 1.0)
-
-
-def test_n_components_binary():
-    clf = SGDClassifier(kernel="rbf", gamma=0.1, loss="hinge",
-                        random_state=0, n_components=50)
-    clf.fit(bin_dense, bin_target)
-    assert_equal(clf.n_nonzero(), 50)
-    assert_greater(clf.score(bin_dense, bin_target), 0.6)
-
-
-def test_n_components_multiclass():
-    clf = SGDClassifier(kernel="rbf", gamma=1.0, loss="hinge",
-                        random_state=0, n_components=50)
-    clf.fit(mult_dense, mult_target)
-    assert_equal(clf.n_nonzero(), 55)
-    assert_greater(clf.score(mult_dense, mult_target), 0.3)
-
-
-def test_n_components_multiclass_natural():
-    for loss in ("hinge", "log"):
-        clf = SGDClassifier(loss=loss, multiclass=True,
-                            kernel="rbf", gamma=0.1, n_components=50,
-                            random_state=0)
-        clf.fit(mult_dense, mult_target)
-        assert_equal(clf.n_nonzero(), 50)
-        assert_greater(clf.score(mult_dense, mult_target), 0.38)
-
-
-def test_hinge_constants():
-    ds = ContiguousDataset(bin_dense)
-    hinge = Hinge()
-    G = hinge.max_gradient(ds, 1)
-    D = hinge.max_diameter(ds, 1, 2, 0.0125)
-    D = hinge.max_diameter(ds, 1, 1, 0.0125)
-
-
-def test_log_constants():
-    ds = ContiguousDataset(bin_dense)
-    log = Log()
-    G = log.max_gradient(ds, 1)
-    D = log.max_diameter(ds, 1, 2, 0.0125)
-    D = log.max_diameter(ds, 1, 1, 0.0125)
 
 
 def test_regression_squared_loss():

@@ -19,6 +19,8 @@ import numpy as np
 cimport numpy as np
 np.import_array()
 
+import scipy.sparse as sp
+
 from sklearn.utils.extmath import safe_sparse_dot
 
 cdef extern from "math.h":
@@ -604,3 +606,23 @@ cdef class KernelDataset(Dataset):
 
         return out
 
+
+def get_dataset(X, order="c"):
+    if isinstance(X, Dataset):
+        return X
+
+    if sp.isspmatrix(X):
+        if order == "fortran":
+            X = X.tocsc()
+            ds = CSCDataset(X)
+        else:
+            X = X.tocsr()
+            ds = CSRDataset(X)
+    else:
+        if order == "fortran":
+            X = np.asfortranarray(X, dtype=np.float64)
+            ds = FortranDataset(X)
+        else:
+            X = np.ascontiguousarray(X, dtype=np.float64)
+            ds = ContiguousDataset(X)
+    return ds

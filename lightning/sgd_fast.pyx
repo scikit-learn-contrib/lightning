@@ -16,7 +16,6 @@ from cython.operator cimport predecrement as dec
 
 from libcpp.list cimport list
 
-from lightning.dataset_fast cimport KernelDataset
 from lightning.dataset_fast cimport Dataset
 
 ctypedef np.int64_t LONG
@@ -62,24 +61,6 @@ cdef class LossFunction:
 
     cpdef double get_update(self, double p, double y):
         raise NotImplementedError()
-
-    cpdef double max_gradient(self, Dataset X, int n_vectors):
-        return _l2_norm_sums(X, False)
-
-    cpdef double max_loss(self, int n_samples, int n_vectors):
-        raise NotImplementedError()
-
-    cpdef double max_diameter(self, Dataset X,
-                              int n_vectors,
-                              int penalty, double alpha):
-        cdef double loss = self.max_loss(X.get_n_samples(), n_vectors)
-        if penalty == 1:
-            return loss / alpha
-        elif penalty == 2:
-            return sqrt(loss / alpha)
-        else:
-            raise ValueError("Unknown penalty.")
-
 
 cdef class ModifiedHuber(LossFunction):
 
@@ -163,12 +144,6 @@ cdef class SquaredHinge(LossFunction):
         if z > 0:
             return 2 * y * z
         return 0.0
-
-    cpdef double max_gradient(self, Dataset X, int n_vectors):
-        return 2 * _l2_norm_sums(X, True)
-
-    cpdef double max_loss(self, int n_samples, int n_vectors):
-        return n_samples
 
 
 cdef class SquaredHinge01(LossFunction):
@@ -322,26 +297,6 @@ cdef double _dot(np.ndarray[double, ndim=2, mode='c'] W,
     return pred
 
 
-cdef double _kernel_dot(np.ndarray[double, ndim=2, mode='c'] W,
-                        int k,
-                        KernelDataset kds,
-                        int i):
-    cdef int j
-    cdef double pred = 0
-    cdef list[int].iterator it
-    cdef double* col
-
-    col = kds.get_column_sv_ptr(i)
-    it = kds.support_set.begin()
-
-    while it != kds.support_set.end():
-        j = deref(it)
-        pred += col[j] * W[k, j]
-        inc(it)
-
-    return pred
-
-
 cdef void _add(np.ndarray[double, ndim=2, mode='c'] W,
                int k,
                int *indices,
@@ -449,7 +404,6 @@ def _binary_sgd(self,
                 np.ndarray[double, ndim=1] y,
                 LossFunction loss,
                 int penalty,
-                int n_components,
                 double alpha,
                 int learning_rate,
                 double eta0,
@@ -481,13 +435,6 @@ def _binary_sgd(self,
     cdef np.ndarray[double, ndim=1, mode='c'] delta
     delta = np.zeros(max_iter + 1, dtype=np.float64)
 
-    # Kernel
-    cdef int linear_kernel = 1
-    cdef KernelDataset kds
-    if isinstance(X, KernelDataset):
-        kds = <KernelDataset>X
-        linear_kernel = 0
-
     # Data pointers
     cdef double* data
     cdef int* indices
@@ -506,19 +453,14 @@ def _binary_sgd(self,
         eta = _get_eta(learning_rate, alpha, eta0, power_t, t)
 
         # Compute current prediction.
-        if linear_kernel:
-            X.get_row_ptr(i, &indices, &data, &n_nz)
+        X.get_row_ptr(i, &indices, &data, &n_nz)
 
         if penalty == 1 or nn_l1: # L1-regularization.
             _l1_update(eta, alpha,
                        <double*>delta.data, <LONG*>timestamps.data,
                        W, data, indices, n_nz, k, t, nn_l1)
 
-        if linear_kernel:
-            pred = _dot(W, k, indices, data, n_nz)
-        else:
-            pred = _kernel_dot(W, k, kds, i)
-
+        pred = _dot(W, k, indices, data, n_nz)
         pred *= w_scale
         pred += intercepts[k]
 
@@ -529,10 +471,7 @@ def _binary_sgd(self,
             update_eta = update * eta
             update_eta_scaled = update_eta / w_scale
 
-            if linear_kernel:
-                _add(W, k, indices, data, n_nz, update_eta_scaled)
-            else:
-                W[k, i] += update_eta_scaled
+            _add(W, k, indices, data, n_nz, update_eta_scaled)
 
             if fit_intercept:
                 intercepts[k] += update_eta * intercept_decay
@@ -548,22 +487,11 @@ def _binary_sgd(self,
             W[k] *= w_scale
             w_scale = 1.0
 
-        # Update support vector set.
-        if not linear_kernel:
-            if W[k, i] == 0:
-                kds.remove_sv(i)
-            else:
-                kds.add_sv(i)
-
         # Callback
         if has_callback and t % n_calls == 0:
             ret = callback(self)
             if ret is not None:
                 break
-
-        # Stop if necessary.
-        if n_components > 0 and kds.n_sv() >= n_components:
-            break
 
     # Finalize.
     if penalty == 1 or nn_l1:
@@ -608,27 +536,10 @@ cdef class MulticlassLossFunction:
                       double* intercepts,
                       double intercept_decay,
                       double eta,
-                      int linear_kernel,
                       int fit_intercept
                      ):
         raise NotImplementedError()
 
-    cpdef double max_gradient(self, Dataset X, int n_vectors):
-        return 2 * _l2_norm_sums(X, False)
-
-    cpdef double max_loss(self, int n_samples, int n_vectors):
-        raise NotImplementedError()
-
-    cpdef double max_diameter(self, Dataset X,
-                              int n_vectors,
-                              int penalty, double alpha):
-        cdef double loss = self.max_loss(X.get_n_samples(), n_vectors)
-        if penalty == 1 or penalty == 12:
-            return loss / alpha
-        elif penalty == 2:
-            return sqrt(loss / alpha)
-        else:
-            raise ValueError("Unknown penalty.")
 
 cdef class MulticlassHinge(MulticlassLossFunction):
 
@@ -644,7 +555,6 @@ cdef class MulticlassHinge(MulticlassLossFunction):
                       double* intercepts,
                       double intercept_decay,
                       double eta,
-                      int linear_kernel,
                       int fit_intercept
                      ):
         cdef int n_vectors = W.shape[0]
@@ -658,12 +568,8 @@ cdef class MulticlassHinge(MulticlassLossFunction):
 
         # Update if necessary.
         if k != y:
-            if linear_kernel:
-                _add(W, k, indices, data, n_nz, -eta / w_scales[k])
-                _add(W, y, indices, data, n_nz, eta / w_scales[y])
-            else:
-                W[k, i] -= eta / w_scales[k]
-                W[y, i] += eta / w_scales[y]
+            _add(W, k, indices, data, n_nz, -eta / w_scales[k])
+            _add(W, y, indices, data, n_nz, eta / w_scales[y])
 
             if fit_intercept:
                 scale = eta * intercept_decay
@@ -688,7 +594,6 @@ cdef class MulticlassSquaredHinge(MulticlassLossFunction):
                       double* intercepts,
                       double intercept_decay,
                       double eta,
-                      int linear_kernel,
                       int fit_intercept
                      ):
         cdef int n_vectors = W.shape[0]
@@ -707,23 +612,13 @@ cdef class MulticlassSquaredHinge(MulticlassLossFunction):
 
             u *= eta * 2
 
-            if linear_kernel:
-                _add(W, l, indices, data, n_nz, -u / w_scales[l])
-                _add(W, y, indices, data, n_nz, u / w_scales[y])
-            else:
-                W[l, i] -= u / w_scales[l]
-                W[y, i] += u / w_scales[y]
+            _add(W, l, indices, data, n_nz, -u / w_scales[l])
+            _add(W, y, indices, data, n_nz, u / w_scales[y])
 
             if fit_intercept:
                 scale = u * intercept_decay
                 intercepts[l] -= scale
                 intercepts[y] += scale
-
-    cpdef double max_gradient(self, Dataset X, int n_vectors):
-        return 4 * (n_vectors - 1) * _l2_norm_sums(X, True)
-
-    cpdef double max_loss(self, int n_samples, int n_vectors):
-        return n_samples * (n_vectors - 1)
 
 
 cdef class MulticlassLog(MulticlassLossFunction):
@@ -740,7 +635,6 @@ cdef class MulticlassLog(MulticlassLossFunction):
                       double* intercepts,
                       double intercept_decay,
                       double eta,
-                      int linear_kernel,
                       int fit_intercept
                      ):
         cdef int n_vectors = W.shape[0]
@@ -760,10 +654,7 @@ cdef class MulticlassLog(MulticlassLossFunction):
                     # prediction.
                     u = -eta * scores[l]
 
-                if linear_kernel:
-                    _add(W, l, indices, data, n_nz, u / w_scales[l])
-                else:
-                    W[l, i] += u / w_scales[l]
+                _add(W, l, indices, data, n_nz, u / w_scales[l])
 
                 if fit_intercept:
                     intercepts[l] += u * intercept_decay
@@ -840,7 +731,6 @@ def _multiclass_sgd(self,
                     np.ndarray[int, ndim=1] y,
                     MulticlassLossFunction loss,
                     int penalty,
-                    int n_components,
                     double alpha,
                     int learning_rate,
                     double eta0,
@@ -876,13 +766,6 @@ def _multiclass_sgd(self,
     cdef np.ndarray[double, ndim=1, mode='c'] delta
     delta = np.zeros(max_iter + 1, dtype=np.float64)
 
-    # Kernel
-    cdef int linear_kernel = 1
-    cdef KernelDataset kds
-    if isinstance(X, KernelDataset):
-        kds = <KernelDataset>X
-        linear_kernel = 0
-
     # Data pointers
     cdef double* data
     cdef int* indices
@@ -901,8 +784,7 @@ def _multiclass_sgd(self,
         eta = _get_eta(learning_rate, alpha, eta0, power_t, t)
 
         # Compute current prediction.
-        if linear_kernel:
-            X.get_row_ptr(i, &indices, &data, &n_nz)
+        X.get_row_ptr(i, &indices, &data, &n_nz)
 
         # L1/L2 regularization.
         if penalty == 12:
@@ -911,18 +793,14 @@ def _multiclass_sgd(self,
                          W, data, indices, n_nz, t)
 
         for l in xrange(n_vectors):
-            if linear_kernel:
-                scores[l] = _dot(W, l, indices, data, n_nz)
-            else:
-                scores[l] = _kernel_dot(W, l, kds, i)
-
+            scores[l] = _dot(W, l, indices, data, n_nz)
             scores[l] *= w_scales[l]
             scores[l] += intercepts[l]
 
         loss.update(<double*>scores.data, y[i],
                     data, indices, n_nz,
                     i, W, <double*>w_scales.data, <double*>intercepts.data,
-                    intercept_decay, eta, linear_kernel, fit_intercept)
+                    intercept_decay, eta, fit_intercept)
 
         # L2 regularization.
         if penalty == 2:
@@ -935,27 +813,11 @@ def _multiclass_sgd(self,
                     W[l] *= w_scales[l]
                     w_scales[l] = 1.0
 
-        # Update support vector set.
-        if not linear_kernel:
-            all_zero = 1
-            for l in xrange(n_vectors):
-                if W[l, i] != 0:
-                    all_zero = 0
-                    break
-            if all_zero:
-                kds.remove_sv(i)
-            else:
-                kds.add_sv(i)
-
         # Callback
         if has_callback and t % n_calls == 0:
             ret = callback(self)
             if ret is not None:
                 break
-
-        # Stop if necessary.
-        if n_components > 0 and kds.n_sv() >= n_components:
-            break
 
     # Finalize.
     if penalty == 2:

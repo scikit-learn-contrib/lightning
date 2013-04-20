@@ -9,6 +9,7 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.extmath import safe_sparse_dot
 
 from .base import BaseClassifier
+from .dataset_fast import get_dataset
 from .dual_cd_fast import _dual_cd
 
 
@@ -39,7 +40,7 @@ class LinearSVC(BaseClassifier, ClassifierMixin):
                               dtype=np.float64)
         n_vectors = Y.shape[1]
 
-        ds = self._get_dataset(X, kernel=False)
+        ds = get_dataset(X)
 
         if not self.warm_start or self.coef_ is None:
             self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
