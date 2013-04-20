@@ -3,8 +3,7 @@
 lightning
 ==========
 
-lightning is an ongoing project to implement and research large-scale
-algorithms for kernel-based classification and regression in Python/Cython.
+Large-scale sparse linear classification and regression in Python/Cython.
 
 Dependencies
 ============
