@@ -2,11 +2,9 @@
 # License: BSD
 
 import numpy as np
-import scipy.sparse as sp
 
 from sklearn.base import ClassifierMixin
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.utils.extmath import safe_sparse_dot
 
 from .base import BaseClassifier
 from .dataset_fast import get_dataset
@@ -44,7 +42,8 @@ class LinearSVC(BaseClassifier, ClassifierMixin):
 
         if not self.warm_start or self.coef_ is None:
             self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
-            self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
+            self.dual_coef_ = np.zeros((n_vectors, n_samples),
+                                       dtype=np.float64)
         self.intercept_ = 0
 
         for i in xrange(n_vectors):

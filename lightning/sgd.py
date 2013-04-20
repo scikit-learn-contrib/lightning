@@ -37,12 +37,12 @@ class BaseSGD(object):
 
     def _get_penalty(self):
         penalties = {
-            "nn" : -1,
-            "nnl1" : -1,
-            "nnl2" : -2,
-            "l1" : 1,
-            "l2" : 2,
-            "l1/l2" : 12
+            "nn": -1,
+            "nnl1": -1,
+            "nnl2": -2,
+            "l1": 1,
+            "l2": 2,
+            "l1/l2": 12
         }
         return penalties[self.penalty]
 
@@ -79,34 +79,32 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, BaseSGD):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.coef_ = None
-        self.support_vectors_ = None
 
     def _get_loss(self):
-        if self.multiclass == True:
+        if self.multiclass:
             losses = {
-                "log" : MulticlassLog(),
-                "hinge" : MulticlassHinge(),
-                "squared_hinge" : MulticlassSquaredHinge(),
+                "log": MulticlassLog(),
+                "hinge": MulticlassHinge(),
+                "squared_hinge": MulticlassSquaredHinge(),
             }
         else:
             losses = {
-                "modified_huber" : ModifiedHuber(),
-                "hinge" : Hinge(1.0),
-                "squared_hinge" : SquaredHinge(1.0),
-                "perceptron" : Hinge(0.0),
+                "modified_huber": ModifiedHuber(),
+                "hinge": Hinge(1.0),
+                "squared_hinge": SquaredHinge(1.0),
+                "perceptron": Hinge(0.0),
                 "log": Log(),
-                "sparse_log" : SparseLog(),
-                "squared" : SquaredLoss(),
-                "huber" : Huber(self.epsilon),
-                "epsilon_insensitive" : EpsilonInsensitive(self.epsilon)
+                "sparse_log": SparseLog(),
+                "squared": SquaredLoss(),
+                "huber": Huber(self.epsilon),
+                "epsilon_insensitive": EpsilonInsensitive(self.epsilon)
             }
         return losses[self.loss]
-
 
     def fit(self, X, y):
         rs = check_random_state(self.random_state)
 
-        reencode = self.multiclass == True
+        reencode = self.multiclass
         y, n_classes, n_vectors = self._set_label_transformers(y, reencode)
 
         ds = get_dataset(X)
@@ -119,7 +117,7 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, BaseSGD):
         loss = self._get_loss()
         penalty = self._get_penalty()
 
-        if n_vectors == 1 or self.multiclass == False:
+        if n_vectors == 1 or not self.multiclass:
             Y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
                                   dtype=np.float64)
             for i in xrange(n_vectors):
@@ -134,13 +132,15 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, BaseSGD):
                             int(self.max_iter * n_samples), self.shuffle, rs,
                             self.callback, self.n_calls, self.verbose)
 
-        elif self.multiclass == True:
+        elif self.multiclass:
             _multiclass_sgd(self, self.coef_, self.intercept_,
-                 ds, y.astype(np.int32), loss, penalty,
-                 self.alpha, self._get_learning_rate(),
-                 self.eta0, self.power_t, self.fit_intercept,
-                 self.intercept_decay, int(self.max_iter * n_samples),
-                 self.shuffle, rs, self.callback, self.n_calls, self.verbose)
+                            ds, y.astype(np.int32), loss, penalty,
+                            self.alpha, self._get_learning_rate(),
+                            self.eta0, self.power_t, self.fit_intercept,
+                            self.intercept_decay,
+                            int(self.max_iter * n_samples),
+                            self.shuffle, rs, self.callback, self.n_calls,
+                            self.verbose)
 
         else:
             raise ValueError("Wrong value for multiclass.")
@@ -180,16 +180,14 @@ class SGDRegressor(BaseRegressor, RegressorMixin, BaseSGD):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.coef_ = None
-        self.support_vectors_ = None
 
     def _get_loss(self):
         losses = {
-            "squared" : SquaredLoss(),
-            "huber" : Huber(self.epsilon),
-            "epsilon_insensitive" : EpsilonInsensitive(self.epsilon)
+            "squared": SquaredLoss(),
+            "huber": Huber(self.epsilon),
+            "epsilon_insensitive": EpsilonInsensitive(self.epsilon)
         }
         return losses[self.loss]
-
 
     def fit(self, X, y):
         rs = check_random_state(self.random_state)
@@ -221,7 +219,6 @@ class SGDRegressor(BaseRegressor, RegressorMixin, BaseSGD):
                         self.intercept_decay,
                         int(self.max_iter * n_samples), self.shuffle, rs,
                         self.callback, self.n_calls, self.verbose)
-
 
         try:
             assert_all_finite(self.coef_)

@@ -2,6 +2,7 @@ import os.path
 
 import numpy
 
+
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
 
@@ -10,29 +11,24 @@ def configuration(parent_package='', top_path=None):
     randomdir = os.path.join(top_path, "lightning", "random")
 
     config.add_extension('dataset_fast',
-         sources=['dataset_fast.cpp'],
-         include_dirs=[numpy.get_include(), randomdir],
-         )
+                         sources=['dataset_fast.cpp'],
+                         include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('dual_cd_fast',
-         sources=['dual_cd_fast.cpp'],
-         include_dirs=[numpy.get_include(), randomdir],
-         )
+                         sources=['dual_cd_fast.cpp'],
+                         include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('loss_fast',
-         sources=['loss_fast.cpp'],
-         include_dirs=[numpy.get_include()]
-         )
+                         sources=['loss_fast.cpp'],
+                         include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('primal_cd_fast',
-         sources=['primal_cd_fast.cpp'],
-         include_dirs=[numpy.get_include(), randomdir],
-         )
+                         sources=['primal_cd_fast.cpp'],
+                         include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('sgd_fast',
-         sources=['sgd_fast.cpp'],
-         include_dirs=[numpy.get_include()]
-         )
+                         sources=['sgd_fast.cpp'],
+                         include_dirs=[numpy.get_include(), randomdir])
 
     config.add_subpackage('random')
     config.add_subpackage('tests')

@@ -2,12 +2,9 @@
 # License: BSD
 
 import numpy as np
-import scipy.sparse as sp
 
 from sklearn.base import ClassifierMixin
 from sklearn.base import RegressorMixin
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.utils import check_random_state
 
 from .base import BaseClassifier
 from .base import BaseRegressor
@@ -17,8 +14,6 @@ from .primal_cd_fast import _primal_cd
 
 from .primal_cd_fast import Squared
 from .primal_cd_fast import SquaredHinge
-from .primal_cd_fast import Squared01
-from .primal_cd_fast import SquaredHinge01
 from .primal_cd_fast import ModifiedHuber
 from .primal_cd_fast import Log
 
@@ -26,15 +21,15 @@ from .primal_cd_fast import Log
 class BaseCD(object):
 
     def _get_loss(self):
-        params = {"max_steps" : self.max_steps,
-                  "sigma" : self.sigma,
-                  "beta" : self.beta,
-                  "verbose" : self.verbose}
+        params = {"max_steps": self.max_steps,
+                  "sigma": self.sigma,
+                  "beta": self.beta,
+                  "verbose": self.verbose}
         losses = {
-            "squared" : Squared(verbose=self.verbose),
-            "squared_hinge" : SquaredHinge(**params),
-            "modified_huber" : ModifiedHuber(**params),
-            "log" : Log(**params),
+            "squared": Squared(verbose=self.verbose),
+            "squared_hinge": SquaredHinge(**params),
+            "modified_huber": ModifiedHuber(**params),
+            "log": Log(**params),
         }
 
         #if self.penalty == "nn":
@@ -45,11 +40,11 @@ class BaseCD(object):
 
     def _get_penalty(self):
         penalties = {
-            "l1" : 1,
-            "l2" : 2,
-            "nn" : -1,
-            "nnl1" : -1,
-            "nnl2" : -2
+            "l1": 1,
+            "l2": 2,
+            "nn": -1,
+            "nnl1": -1,
+            "nnl2": -2
         }
         return penalties[self.penalty]
 
@@ -114,8 +109,9 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
         # Create label transformers
         #neg_label = 0 if self.penalty == "nn" else -1
         reencode = self.penalty == "l1/l2"
-        y, n_classes, n_vectors = \
-                self._set_label_transformers(y, reencode, neg_label=-1)
+        y, n_classes, n_vectors = self._set_label_transformers(y,
+                                                               reencode,
+                                                               neg_label=-1)
         Y = np.asfortranarray(self.label_binarizer_.transform(y),
                               dtype=np.float64)
 
@@ -124,7 +120,6 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
             self.C_init = self.C
             self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
             self._init_errors(Y)
-
 
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
         indices = np.arange(n_features, dtype=np.int32)
@@ -175,7 +170,8 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
             self.support_indices_ = np.arange(n_features, dtype=np.int32)[nz]
             indices = self.support_indices_.copy()
             if not self.warm_debiasing:
-                self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
+                self.coef_ = np.zeros((n_vectors, n_features),
+                                      dtype=np.float64)
                 self._init_errors(Y)
 
             for k in xrange(n_vectors):
@@ -236,7 +232,6 @@ class CDRegressor(BaseCD, BaseRegressor, RegressorMixin):
 
         # Create dataset
         ds = get_dataset(X, order="fortran")
-        n_samples = ds.get_n_samples()
         n_features = ds.get_n_features()
 
         self.outputs_2d_ = len(y.shape) == 2

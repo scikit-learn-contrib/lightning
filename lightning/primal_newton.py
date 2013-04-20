@@ -34,9 +34,9 @@ class KernelSVC(BaseClassifier, ClassifierMixin):
         self.n_jobs = n_jobs
 
     def _kernel_params(self):
-        return {"gamma" : self.gamma,
-                "degree" : self.degree,
-                "coef0" : self.coef0}
+        return {"gamma": self.gamma,
+                "degree": self.degree,
+                "coef0": self.coef0}
 
     def _solve(self, A, b):
         if self.solver == "cg":
@@ -86,7 +86,8 @@ class KernelSVC(BaseClassifier, ClassifierMixin):
                 self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
                 mask = safe_mask(X, sv)
                 self.support_vectors_ = np.ascontiguousarray(X[mask])
-                self.support_indices_ = np.arange(X.shape[0], dtype=np.int32)[sv]
+                self.support_indices_ = np.arange(X.shape[0],
+                                                  dtype=np.int32)[sv]
                 self.n_samples_ = X.shape[0]
 
             if self.verbose >= 1:

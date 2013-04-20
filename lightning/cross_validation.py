@@ -1,4 +1,4 @@
-from math import ceil, floor, factorial
+from math import ceil
 
 import scipy.sparse as sp
 
@@ -34,7 +34,5 @@ class SparseShuffleSplit(object):
 
             yield ind_train, val_train, ind_test, val_test
 
-
     def __len__(self):
         return self.n_iter
-

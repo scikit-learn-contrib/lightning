@@ -1,10 +1,10 @@
 import numpy as np
 import scipy.sparse as sp
 
-from numpy.testing import assert_array_equal, assert_array_almost_equal, \
-                          assert_almost_equal
-from nose.tools import assert_raises, assert_true, assert_equal, \
-                       assert_not_equal
+from sklearn.utils.testing import assert_array_almost_equal
+from sklearn.utils.testing import assert_almost_equal
+from sklearn.utils.testing import assert_true
+from sklearn.utils.testing import assert_equal
 
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.datasets import load_digits
@@ -12,7 +12,6 @@ from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer
 
 from lightning.primal_cd import CDClassifier, CDRegressor
-from lightning.primal_cd_fast import SquaredHinge
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,

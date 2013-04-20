@@ -4,8 +4,6 @@
 import numpy as np
 
 from sklearn.base import ClassifierMixin
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 
 from .base import BaseClassifier
@@ -17,7 +15,6 @@ from .loss_fast import MulticlassSquaredHinge
 
 from .penalty import L1Penalty
 from .penalty import L1L2Penalty
-from .penalty import NNConstraint
 
 
 class SparsaClassifier(BaseClassifier, ClassifierMixin):
@@ -46,19 +43,19 @@ class SparsaClassifier(BaseClassifier, ClassifierMixin):
     def _get_loss(self):
         if self.multiclass:
             losses = {
-                "squared_hinge" : MulticlassSquaredHinge(),
+                "squared_hinge": MulticlassSquaredHinge(),
             }
         else:
             losses = {
-                "squared_hinge" : SquaredHinge(),
+                "squared_hinge": SquaredHinge(),
             }
 
         return losses[self.loss]
 
     def _get_penalty(self):
         penalties = {
-            "l1" : L1Penalty(),
-            "l1/l2" : L1L2Penalty(),
+            "l1": L1Penalty(),
+            "l1/l2": L1L2Penalty(),
         }
         return penalties[self.penalty]
 
@@ -72,8 +69,8 @@ class SparsaClassifier(BaseClassifier, ClassifierMixin):
 
     def fit(self, X, y):
         n_samples, n_features = X.shape
-        y, n_classes, n_vectors = \
-                self._set_label_transformers(y, reencode=True)
+        y, n_classes, n_vectors = self._set_label_transformers(y,
+                                                               reencode=True)
         Y = np.asfortranarray(self.label_binarizer_.transform(y),
                               dtype=np.float64)
 

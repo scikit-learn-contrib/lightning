@@ -11,6 +11,7 @@ from sklearn.preprocessing import LabelEncoder
 
 from .random import RandomState
 
+
 class BaseEstimator(_BaseEstimator):
 
     def _get_random_state(self):
@@ -73,7 +74,8 @@ class BaseClassifier(BaseEstimator):
         else:
             y = y.astype(np.int32)
 
-        self.label_binarizer_ = LabelBinarizer(neg_label=neg_label, pos_label=1)
+        self.label_binarizer_ = LabelBinarizer(neg_label=neg_label,
+                                               pos_label=1)
         self.label_binarizer_.fit(y)
         self.classes_ = self.label_binarizer_.classes_.astype(np.int32)
         n_classes = len(self.label_binarizer_.classes_)
@@ -114,4 +116,3 @@ class BaseRegressor(BaseEstimator):
             pred = pred.ravel()
 
         return pred
-

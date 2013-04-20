@@ -3,6 +3,7 @@
 
 import numpy as np
 
+
 class L1Penalty(object):
 
     def projection(self, coef, alpha, L):
@@ -15,7 +16,6 @@ class L1Penalty(object):
 class L1L2Penalty(object):
 
     def projection(self, coef, alpha, L):
-        n_features = coef.shape[1]
         l2norms = np.sqrt(np.sum(coef ** 2, axis=0))
         scales = np.maximum(1.0 - alpha / (L * l2norms), 0)
         coef *= scales
