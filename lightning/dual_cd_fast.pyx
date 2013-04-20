@@ -28,7 +28,7 @@ def _dual_cd(self,
              np.ndarray[double, ndim=1]y,
              int permute,
              double C,
-             loss,
+             int loss,
              int max_iter,
              RandomState rs,
              double tol,
@@ -58,10 +58,10 @@ def _dual_cd(self,
     cdef double D_ii
 
     # Loss-dependent values.
-    if loss == "l1":
+    if loss == 1: # hinge
         U = C
         D_ii = 0
-    elif loss == "l2":
+    elif loss == 2: # squared_hinge
         U = DBL_MAX
         D_ii = 1.0 / (2 * C)
 
