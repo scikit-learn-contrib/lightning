@@ -78,7 +78,12 @@ def _dual_cd(self,
     A = np.arange(n_samples, dtype=np.int32)
     cdef Py_ssize_t active_size = n_samples
 
-    # Diagonal values of the Q matrix.
+    # Data pointers.
+    cdef double* data
+    cdef int* indices
+    cdef int n_nz
+
+    # Diagonal values of the Q matrix (squared norms).
     cdef np.ndarray[double, ndim=1, mode='c'] Q_bar_diag
     Q_bar_diag = np.zeros(n_samples, dtype=np.float64)
     for i in xrange(n_samples):
@@ -87,10 +92,6 @@ def _dual_cd(self,
             Q_bar_diag[i] += data[jj] * data[jj]
     Q_bar_diag += D_ii
 
-    # Data pointers.
-    cdef double* data
-    cdef int* indices
-    cdef int n_nz
 
     for t in xrange(max_iter):
         if verbose >= 1:
