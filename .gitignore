@@ -7,6 +7,8 @@
 build
 lightning/**/*.html
 lightning/*.c
+lightning/*.cpp
+lightning/random/*.cpp
 
 dist/
 doc/_build/
