@@ -19,11 +19,6 @@ def configuration(parent_package='', top_path=None):
          include_dirs=[numpy.get_include(), randomdir],
          )
 
-    config.add_extension('lasvm_fast',
-         sources=['lasvm_fast.cpp'],
-         include_dirs=[numpy.get_include(), randomdir],
-         )
-
     config.add_extension('loss_fast',
          sources=['loss_fast.cpp'],
          include_dirs=[numpy.get_include()]
