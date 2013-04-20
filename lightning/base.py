@@ -5,7 +5,6 @@ import numpy as np
 import scipy.sparse as sp
 
 from sklearn.base import BaseEstimator as _BaseEstimator
-from sklearn.utils import safe_mask
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import LabelEncoder
@@ -81,6 +80,12 @@ class BaseClassifier(BaseEstimator):
         n_vectors = 1 if n_classes <= 2 else n_classes
 
         return y, n_classes, n_vectors
+
+    def decision_function(self, X):
+        pred = safe_sparse_dot(X, self.coef_.T)
+        if hasattr(self, "intercept_"):
+            pred += self.intercept_
+        return pred
 
     def predict(self, X):
         pred = self.decision_function(X)

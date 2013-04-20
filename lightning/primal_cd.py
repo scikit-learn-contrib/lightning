@@ -192,10 +192,6 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
 
         return self
 
-    def decision_function(self, X):
-        ds = get_dataset(X)
-        return ds.dot(self.coef_.T) + self.intercept_
-
 
 class CDRegressor(BaseCD, BaseRegressor, RegressorMixin):
 

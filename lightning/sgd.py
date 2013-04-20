@@ -152,9 +152,6 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, BaseSGD):
 
         return self
 
-    def decision_function(self, X):
-        return safe_sparse_dot(X, self.coef_.T) + self.intercept_
-
 
 class SGDRegressor(BaseRegressor, RegressorMixin, BaseSGD):
 

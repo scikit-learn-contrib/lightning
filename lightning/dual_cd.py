@@ -54,7 +54,3 @@ class LinearSVC(BaseClassifier, ClassifierMixin):
                      self.shrinking, self.callback, verbose=self.verbose)
 
         return self
-
-    def decision_function(self, X):
-        return safe_sparse_dot(X, self.coef_.T) + self.intercept_
-

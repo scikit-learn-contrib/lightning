@@ -141,6 +141,3 @@ class SparsaClassifier(BaseClassifier, ClassifierMixin):
                     break
 
         return self
-
-    def decision_function(self, X):
-        return safe_sparse_dot(X, self.coef_.T)
