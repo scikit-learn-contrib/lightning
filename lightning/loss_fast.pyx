@@ -96,7 +96,7 @@ cdef class SquaredHinge:
 
         return obj
 
-    cpdef double max_gradient(self, RowDataset X, int n_vectors):
+    cpdef double lipschitz_constant(self, RowDataset X, int n_vectors):
         return 2 * n_vectors * _l2_norm_sums(X, True)
 
 
@@ -146,7 +146,7 @@ cdef class SquaredHinge01:
 
         return obj
 
-    cpdef double max_gradient(self, RowDataset X, int n_vectors):
+    cpdef double lipschitz_constant(self, RowDataset X, int n_vectors):
         return 2 * n_vectors * _l2_norm_sums(X, True)
 
 
@@ -203,7 +203,7 @@ cdef class MulticlassSquaredHinge:
 
         return obj
 
-    cpdef double max_gradient(self, RowDataset X, int n_vectors):
+    cpdef double lipschitz_constant(self, RowDataset X, int n_vectors):
         return 4 * (n_vectors - 1) * _l2_norm_sums(X, True)
 
 
@@ -231,3 +231,6 @@ cdef class MulticlassLog:
             obj += log(s)
 
         return obj
+
+    cpdef double lipschitz_constant(self, RowDataset X, int n_vectors):
+        return 0.5 * _l2_norm_sums(X, True)

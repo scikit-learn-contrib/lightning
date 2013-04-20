@@ -97,7 +97,7 @@ class FistaClassifier(BaseClassifier, ClassifierMixin):
 
         if self.max_steps == 0:
             # No line search, need to use constant step size.
-            L = self.C * loss.max_gradient(ds, n_vectors)
+            L = self.C * loss.lipschitz_constant(ds, n_vectors)
         else:
             # Do not bother to compute the Lipschitz constant (expensive).
             L = 1.0
