@@ -11,7 +11,7 @@ import sys
 import numpy as np
 cimport numpy as np
 
-from lightning.dataset_fast cimport Dataset
+from lightning.dataset_fast cimport RowDataset
 
 DEF LOWER = 1e-2
 DEF UPPER = 1e9
@@ -26,7 +26,7 @@ cdef extern from "float.h":
    double DBL_MAX
 
 
-cdef double _l2_norm_sums(Dataset X, int squared):
+cdef double _l2_norm_sums(RowDataset X, int squared):
         cdef int i, j, jj
         cdef int n_samples = X.get_n_samples()
         cdef double norm, G = 0
@@ -54,7 +54,7 @@ cdef class SquaredHinge:
 
     cpdef gradient(self,
                    np.ndarray[double, ndim=2, mode='c'] df,
-                   Dataset X,
+                   RowDataset X,
                    np.ndarray[double, ndim=2, mode='fortran'] y,
                    np.ndarray[double, ndim=2, mode='c'] G):
 
@@ -96,7 +96,7 @@ cdef class SquaredHinge:
 
         return obj
 
-    cpdef double max_gradient(self, Dataset X, int n_vectors):
+    cpdef double max_gradient(self, RowDataset X, int n_vectors):
         return 2 * n_vectors * _l2_norm_sums(X, True)
 
 
@@ -104,7 +104,7 @@ cdef class SquaredHinge01:
 
     cpdef gradient(self,
                    np.ndarray[double, ndim=2, mode='c'] df,
-                   Dataset X,
+                   RowDataset X,
                    np.ndarray[double, ndim=2, mode='fortran'] y,
                    np.ndarray[double, ndim=2, mode='c'] G):
 
@@ -146,7 +146,7 @@ cdef class SquaredHinge01:
 
         return obj
 
-    cpdef double max_gradient(self, Dataset X, int n_vectors):
+    cpdef double max_gradient(self, RowDataset X, int n_vectors):
         return 2 * n_vectors * _l2_norm_sums(X, True)
 
 
@@ -154,7 +154,7 @@ cdef class MulticlassSquaredHinge:
 
     cpdef gradient(self,
                    np.ndarray[double, ndim=2, mode='c'] df,
-                   Dataset X,
+                   RowDataset X,
                    np.ndarray[int, ndim=1, mode='c'] y,
                    np.ndarray[double, ndim=2, mode='c'] G):
 
@@ -203,7 +203,7 @@ cdef class MulticlassSquaredHinge:
 
         return obj
 
-    cpdef double max_gradient(self, Dataset X, int n_vectors):
+    cpdef double max_gradient(self, RowDataset X, int n_vectors):
         return 4 * (n_vectors - 1) * _l2_norm_sums(X, True)
 
 

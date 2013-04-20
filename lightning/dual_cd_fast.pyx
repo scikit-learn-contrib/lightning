@@ -19,7 +19,7 @@ import numpy as np
 cimport numpy as np
 
 from lightning.random.random_fast cimport RandomState
-from lightning.dataset_fast cimport Dataset
+from lightning.dataset_fast cimport RowDataset
 
 cdef extern from "math.h":
    double fabs(double)
@@ -31,7 +31,7 @@ cdef extern from "float.h":
 def _dual_cd(self,
              np.ndarray[double, ndim=1, mode='c'] w,
              np.ndarray[double, ndim=1, mode='c'] alpha,
-             Dataset X,
+             RowDataset X,
              np.ndarray[double, ndim=1]y,
              int permute,
              double C,

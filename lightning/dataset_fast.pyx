@@ -23,45 +23,20 @@ import scipy.sparse as sp
 
 from sklearn.utils.extmath import safe_sparse_dot
 
-cdef extern from "math.h":
-   double exp(double)
-
-cdef double powi(double base, int times):
-    cdef double tmp = base, ret = 1.0
-
-    cdef int t = times
-
-    while t > 0:
-        if t % 2 == 1:
-            ret *= tmp
-        tmp = tmp * tmp
-
-        t /= 2
-
-    return ret
 
 cdef class Dataset:
 
-    cdef void get_column_ptr(self,
-                             int j,
-                             int** indices,
-                             double** data,
-                             int* n_nz):
-        raise NotImplementedError()
+    cpdef int get_n_samples(self):
+        return self.n_samples
 
-    cpdef get_column(self, int j):
-        cdef double* data
-        cdef int* indices
-        cdef int n_nz
-        cdef np.npy_intp shape[1]
+    cpdef int get_n_features(self):
+        return self.n_features
 
-        self.get_column_ptr(j, &indices, &data, &n_nz)
+    def dot(self, coef):
+        return NotImplementedError()
 
-        shape[0] = <np.npy_intp> self.n_samples
-        indices_ = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT, indices)
-        data_ = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, data)
 
-        return indices_, data_, n_nz
+cdef class RowDataset(Dataset):
 
     cdef void get_row_ptr(self,
                           int i,
@@ -84,17 +59,32 @@ cdef class Dataset:
 
         return indices_, data_, n_nz
 
-    cpdef int get_n_samples(self):
-        return self.n_samples
 
-    cpdef int get_n_features(self):
-        return self.n_features
+cdef class ColumnDataset(Dataset):
 
-    def dot(self, coef):
-        return NotImplementedError()
+    cdef void get_column_ptr(self,
+                             int j,
+                             int** indices,
+                             double** data,
+                             int* n_nz):
+        raise NotImplementedError()
+
+    cpdef get_column(self, int j):
+        cdef double* data
+        cdef int* indices
+        cdef int n_nz
+        cdef np.npy_intp shape[1]
+
+        self.get_column_ptr(j, &indices, &data, &n_nz)
+
+        shape[0] = <np.npy_intp> self.n_samples
+        indices_ = np.PyArray_SimpleNewFromData(1, shape, np.NPY_INT, indices)
+        data_ = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, data)
+
+        return indices_, data_, n_nz
 
 
-cdef class ContiguousDataset(Dataset):
+cdef class ContiguousDataset(RowDataset):
 
     def __init__(self, np.ndarray[double, ndim=2, mode='c'] X):
         self.n_samples = X.shape[0]
@@ -125,7 +115,7 @@ cdef class ContiguousDataset(Dataset):
         return safe_sparse_dot(self.X, coef)
 
 
-cdef class FortranDataset(Dataset):
+cdef class FortranDataset(ColumnDataset):
 
     def __init__(self, np.ndarray[double, ndim=2, mode='fortran'] X):
         self.n_samples = X.shape[0]
@@ -156,7 +146,7 @@ cdef class FortranDataset(Dataset):
         return safe_sparse_dot(self.X, coef)
 
 
-cdef class CSRDataset(Dataset):
+cdef class CSRDataset(RowDataset):
 
     def __init__(self, X):
         cdef np.ndarray[double, ndim=1, mode='c'] X_data = X.data
@@ -184,7 +174,7 @@ cdef class CSRDataset(Dataset):
         return safe_sparse_dot(self.X, coef)
 
 
-cdef class CSCDataset(Dataset):
+cdef class CSCDataset(ColumnDataset):
 
     def __init__(self, X):
         cdef np.ndarray[double, ndim=1, mode='c'] X_data = X.data

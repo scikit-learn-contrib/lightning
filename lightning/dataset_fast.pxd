@@ -1,21 +1,16 @@
 # Author: Mathieu Blondel
 # License: BSD
 
-from libcpp.list cimport list
-from libcpp.map cimport map
-
 cdef class Dataset:
 
     cdef int n_samples
     cdef int n_features
 
-    cdef void get_column_ptr(self,
-                             int j,
-                             int** indices,
-                             double** data,
-                             int* n_nz)
+    cpdef int get_n_samples(self)
+    cpdef int get_n_features(self)
 
-    cpdef get_column(self, int j)
+
+cdef class RowDataset(Dataset):
 
     cdef void get_row_ptr(self,
                              int i,
@@ -25,11 +20,19 @@ cdef class Dataset:
 
     cpdef get_row(self, int i)
 
-    cpdef int get_n_samples(self)
-    cpdef int get_n_features(self)
+
+cdef class ColumnDataset(Dataset):
+
+    cdef void get_column_ptr(self,
+                             int j,
+                             int** indices,
+                             double** data,
+                             int* n_nz)
+
+    cpdef get_column(self, int j)
 
 
-cdef class ContiguousDataset(Dataset):
+cdef class ContiguousDataset(RowDataset):
 
     cdef int* indices
     cdef double* data
@@ -42,7 +45,7 @@ cdef class ContiguousDataset(Dataset):
                           int* n_nz)
 
 
-cdef class FortranDataset(Dataset):
+cdef class FortranDataset(ColumnDataset):
 
     cdef int* indices
     cdef double* data
@@ -55,7 +58,7 @@ cdef class FortranDataset(Dataset):
                              int* n_nz)
 
 
-cdef class CSRDataset(Dataset):
+cdef class CSRDataset(RowDataset):
 
     cdef int* indices
     cdef double* data
@@ -69,7 +72,7 @@ cdef class CSRDataset(Dataset):
                           int* n_nz)
 
 
-cdef class CSCDataset(Dataset):
+cdef class CSCDataset(ColumnDataset):
 
     cdef int* indices
     cdef double* data

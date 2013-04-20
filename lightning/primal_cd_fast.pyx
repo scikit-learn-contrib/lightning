@@ -12,7 +12,7 @@ import numpy as np
 cimport numpy as np
 
 from lightning.random.random_fast cimport RandomState
-from lightning.dataset_fast cimport Dataset
+from lightning.dataset_fast cimport ColumnDataset
 
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
@@ -43,7 +43,7 @@ cdef class LossFunction:
                        double C,
                        double alpha,
                        double *w,
-                       Dataset X,
+                       ColumnDataset X,
                        double *y,
                        double *b,
                        double *Dp):
@@ -133,14 +133,14 @@ cdef class LossFunction:
         raise NotImplementedError()
 
     cdef void recompute(self,
-                        Dataset X,
+                        ColumnDataset X,
                         double* y,
                         double* w,
                         double* b):
         pass
 
     cdef void _lipschitz_constant(self,
-                                  Dataset X,
+                                  ColumnDataset X,
                                   double scale,
                                   double* out):
 
@@ -171,7 +171,7 @@ cdef class LossFunction:
                       int penalty,
                       double *w,
                       int n_samples,
-                      Dataset X,
+                      ColumnDataset X,
                       double *y,
                       double *b,
                       double Lcst,
@@ -284,7 +284,7 @@ cdef class LossFunction:
                       double alpha,
                       double *w,
                       int n_samples,
-                      Dataset X,
+                      ColumnDataset X,
                       double *y,
                       double *b,
                       double Lcst,
@@ -402,7 +402,7 @@ cdef class LossFunction:
                         double alpha,
                         np.ndarray[double, ndim=2, mode='c'] w,
                         int n_vectors,
-                        Dataset X,
+                        ColumnDataset X,
                         int* y,
                         np.ndarray[double, ndim=2, mode='fortran'] Y,
                         int multiclass,
@@ -614,7 +614,7 @@ cdef class LossFunction:
 
     cdef void recompute_mc(self,
                            int n_vectors,
-                           Dataset X,
+                           ColumnDataset X,
                            int* y,
                            np.ndarray[double, ndim=2, mode='c'] w,
                            np.ndarray[double, ndim=2, mode='c'] b):
@@ -622,14 +622,14 @@ cdef class LossFunction:
 
     cdef void lipschitz_constant_mt(self,
                                     int n_vectors,
-                                    Dataset X,
+                                    ColumnDataset X,
                                     double C,
                                     double* out):
         raise NotImplementedError()
 
     cdef void lipschitz_constant_mc(self,
                                     int n_vectors,
-                                    Dataset X,
+                                    ColumnDataset X,
                                     double C,
                                     double* out):
         raise NotImplementedError()
@@ -973,7 +973,7 @@ cdef class SquaredHinge(LossFunction):
 
     cdef void lipschitz_constant_mt(self,
                                     int n_vectors,
-                                    Dataset X,
+                                    ColumnDataset X,
                                     double C,
                                     double* out):
 
@@ -982,7 +982,7 @@ cdef class SquaredHinge(LossFunction):
 
     cdef void lipschitz_constant_mc(self,
                                     int n_vectors,
-                                    Dataset X,
+                                    ColumnDataset X,
                                     double C,
                                     double* out):
 
@@ -1294,7 +1294,7 @@ cdef class Log(LossFunction):
             L_new[0] += C * log(Z[i])
 
     cdef void recompute(self,
-                        Dataset X,
+                        ColumnDataset X,
                         double* y,
                         double* w,
                         double* b):
@@ -1323,7 +1323,7 @@ cdef class Log(LossFunction):
 
     cdef void recompute_mc(self,
                            int n_vectors,
-                           Dataset X,
+                           ColumnDataset X,
                            int* y,
                            np.ndarray[double, ndim=2, mode='c'] w,
                            np.ndarray[double, ndim=2, mode='c'] b):
@@ -1365,7 +1365,7 @@ cdef class Log(LossFunction):
 
     cdef void lipschitz_constant_mt(self,
                                     int n_vectors,
-                                    Dataset X,
+                                    ColumnDataset X,
                                     double C,
                                     double* out):
 
@@ -1374,7 +1374,7 @@ cdef class Log(LossFunction):
 
     cdef void lipschitz_constant_mc(self,
                                     int n_vectors,
-                                    Dataset X,
+                                    ColumnDataset X,
                                     double C,
                                     double* out):
 
@@ -1385,7 +1385,7 @@ cdef class Log(LossFunction):
 def _primal_cd(self,
                np.ndarray[double, ndim=2, mode='c'] w,
                np.ndarray[double, ndim=2, mode='c'] b,
-               Dataset X,
+               ColumnDataset X,
                np.ndarray[int, ndim=1] y,
                np.ndarray[double, ndim=2, mode='fortran'] Y,
                int k,

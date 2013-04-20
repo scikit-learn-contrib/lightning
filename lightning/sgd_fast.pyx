@@ -16,7 +16,7 @@ from cython.operator cimport predecrement as dec
 
 from libcpp.list cimport list
 
-from lightning.dataset_fast cimport Dataset
+from lightning.dataset_fast cimport RowDataset
 
 ctypedef np.int64_t LONG
 
@@ -31,7 +31,7 @@ cdef extern from "float.h":
    double DBL_MAX
 
 
-cdef double _l2_norm_sums(Dataset X, int squared):
+cdef double _l2_norm_sums(RowDataset X, int squared):
         cdef int i, j, jj
         cdef int n_samples = X.get_n_samples()
         cdef double norm, G = 0
@@ -400,7 +400,7 @@ def _binary_sgd(self,
                 np.ndarray[double, ndim=2, mode='c'] W,
                 np.ndarray[double, ndim=1] intercepts,
                 int k,
-                Dataset X,
+                RowDataset X,
                 np.ndarray[double, ndim=1] y,
                 LossFunction loss,
                 int penalty,
@@ -727,7 +727,7 @@ cdef void _l1l2_finalize(double* delta,
 def _multiclass_sgd(self,
                     np.ndarray[double, ndim=2, mode='c'] W,
                     np.ndarray[double, ndim=1] intercepts,
-                    Dataset X,
+                    RowDataset X,
                     np.ndarray[int, ndim=1] y,
                     MulticlassLossFunction loss,
                     int penalty,
