@@ -1,28 +1,14 @@
-
-import numpy as np
-
-from numpy.testing import assert_array_equal, assert_array_almost_equal, \
-                          assert_almost_equal
-from nose.tools import assert_raises, assert_true, assert_equal, \
-                       assert_not_equal
+from sklearn.utils.testing import assert_almost_equal
 
 from sklearn.datasets.samples_generator import make_classification
 
-from lightning.primal_newton import PrimalNewton
+from lightning.primal_newton import KernelSVC
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
                                             n_classes=2, random_state=0)
 
-def test_primal_newton():
-    clf = PrimalNewton(kernel="rbf", gamma=0.1, random_state=0, verbose=0)
+def test_kernel_svc():
+    clf = KernelSVC(kernel="rbf", gamma=0.1, random_state=0, verbose=0)
     clf.fit(bin_dense, bin_target)
     assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
-
-
-def test_primal_newton_incremental():
-    clf = PrimalNewton(kernel="rbf", gamma=0.1, random_state=0, verbose=0,
-                       n_components=70)
-    clf.fit(bin_dense, bin_target)
-    assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
-    assert_equal(clf.n_nonzero(), 70)

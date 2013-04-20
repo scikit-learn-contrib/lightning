@@ -7,23 +7,24 @@ from scipy.sparse.linalg import cg
 from scipy.linalg import solve
 
 from sklearn.base import ClassifierMixin
+from sklearn.utils import safe_mask
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
 from sklearn.metrics.pairwise import pairwise_kernels
 
 from .base import BaseClassifier
 
-class PrimalNewton(BaseClassifier, ClassifierMixin):
+
+class KernelSVC(BaseClassifier, ClassifierMixin):
 
     def __init__(self, lmbda=1.0, solver="cg",
-                 max_iter=50, tol=1e-3, n_components=None,
+                 max_iter=50, tol=1e-3,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
                  random_state=0, verbose=0, n_jobs=1):
         self.lmbda = lmbda
         self.solver = solver
         self.max_iter = max_iter
         self.tol = tol
-        self.n_components = n_components
         self.kernel = kernel
         self.gamma = gamma
         self.coef0 = coef0
@@ -77,37 +78,19 @@ class PrimalNewton(BaseClassifier, ClassifierMixin):
 
         return coef
 
-    def _fit_binary_inc(self, K, y, rs):
-        n_samples = K.shape[0]
-        coef = np.zeros(n_samples)
+    def _post_process(self, X):
+        # We can't know the support vectors when using precomputed kernels.
+        if self.kernel != "precomputed":
+            sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
+            if np.sum(sv) > 0:
+                self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
+                mask = safe_mask(X, sv)
+                self.support_vectors_ = np.ascontiguousarray(X[mask])
+                self.support_indices_ = np.arange(X.shape[0], dtype=np.int32)[sv]
+                self.n_samples_ = X.shape[0]
 
-        is_sel = {rs.randint(n_samples) : 1}
-        for t in xrange(1, self.n_components + 1):
-            if self.verbose:
-                print "#SV", t
-
-            J = np.array(is_sel.keys())
-            K_J = K[J]
-            coef_J = coef[J]
-            pred = np.dot(K_J.T, coef_J)
-            errors = 1 - y * pred
-            I = errors > 0
-            K_JI = K_J[:, I]
-            K_JJ = K_J[:, J]
-            P = self.lmbda * K_JJ + np.dot(K_JI, K_JI.T)
-            g = np.dot(self.lmbda * K_JJ, coef_J)
-            g -= np.dot(K_JI, y[I] - pred[I])
-
-            sol = self._solve(P, g)
-            coef[J] = coef_J - sol
-
-            ind = errors.argsort()[::-1]
-            for i in ind:
-                if not i in is_sel:
-                    is_sel[i] = 1
-                    break
-
-        return coef
+            if self.verbose >= 1:
+                print "Number of support vectors:", np.sum(sv)
 
     def fit(self, X, y):
         n_samples, n_features = X.shape
@@ -124,11 +107,7 @@ class PrimalNewton(BaseClassifier, ClassifierMixin):
         K = pairwise_kernels(X, filter_params=True, n_jobs=self.n_jobs,
                              metric=self.kernel, **self._kernel_params())
 
-
-        func = self._fit_binary if self.n_components is None \
-                                else self._fit_binary_inc
-
-        coef = [func(K, Y[:, i], rs) for i in xrange(n_vectors)]
+        coef = [self._fit_binary(K, Y[:, i], rs) for i in xrange(n_vectors)]
         self.coef_ = np.array(coef)
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
 

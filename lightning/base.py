@@ -40,34 +40,6 @@ class BaseEstimator(_BaseEstimator):
 
         return n_nz
 
-    def _post_process(self, X):
-        # We can't know the support vectors when using precomputed kernels.
-        if self.kernel != "precomputed":
-            sv = np.sum(self.coef_ != 0, axis=0, dtype=bool)
-            if np.sum(sv) > 0:
-                self.coef_ = np.ascontiguousarray(self.coef_[:, sv])
-                mask = safe_mask(X, sv)
-                self.support_vectors_ = np.ascontiguousarray(X[mask])
-                self.support_indices_ = np.arange(X.shape[0], dtype=np.int32)[sv]
-                self.n_samples_ = X.shape[0]
-
-            if self.verbose >= 1:
-                print "Number of support vectors:", np.sum(sv)
-
-    def _post_process_dual(self, X):
-        # We can't know the support vectors when using precomputed kernels.
-        if self.kernel != "precomputed":
-            sv = np.sum(self.dual_coef_ != 0, axis=0, dtype=bool)
-            if np.sum(sv) > 0:
-                self.dual_coef_ = np.ascontiguousarray(self.dual_coef_[:, sv])
-                mask = safe_mask(X, sv)
-                self.support_vectors_ = np.ascontiguousarray(X[mask])
-                self.support_indices_ = np.arange(X.shape[0], dtype=np.int32)[sv]
-                self.n_samples_ = X.shape[0]
-
-            if self.verbose >= 1:
-                print "Number of support vectors:", np.sum(sv)
-
 
 class BaseClassifier(BaseEstimator):
 
