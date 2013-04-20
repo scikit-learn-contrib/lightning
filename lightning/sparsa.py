@@ -9,8 +9,12 @@ from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 
 from .base import BaseClassifier
+
+from .dataset_fast import get_dataset
+
 from .loss_fast import SquaredHinge
 from .loss_fast import MulticlassSquaredHinge
+
 from .penalty import L1Penalty
 from .penalty import L1L2Penalty
 from .penalty import NNConstraint
@@ -75,7 +79,7 @@ class SparsaClassifier(BaseClassifier, ClassifierMixin):
 
         loss = self._get_loss()
         penalty = self._get_penalty()
-        ds = self._get_dataset(X, kernel=False)
+        ds = get_dataset(X)
 
         df = np.zeros((n_samples, n_vectors), dtype=np.float64)
         coef = np.zeros((n_vectors, n_features), dtype=np.float64)

@@ -29,11 +29,6 @@ def configuration(parent_package='', top_path=None):
          include_dirs=[numpy.get_include(), randomdir],
          )
 
-    config.add_extension('select_fast',
-         sources=['select_fast.cpp'],
-         include_dirs=[numpy.get_include(), randomdir],
-         )
-
     config.add_extension('sgd_fast',
          sources=['sgd_fast.cpp'],
          include_dirs=[numpy.get_include()]
