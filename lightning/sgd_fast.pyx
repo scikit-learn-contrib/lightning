@@ -96,8 +96,6 @@ cdef class Hinge(LossFunction):
             return y
         return 0.0
 
-    cpdef double max_loss(self, int n_samples, int n_vectors):
-        return n_samples
 
 
 cdef class Hinge01(LossFunction):
@@ -180,9 +178,6 @@ cdef class Log(LossFunction):
             return y
         return y / (exp(z) + 1.0)
 
-    cpdef double max_loss(self, int n_samples, int n_vectors):
-        return n_samples * log(2.0)
-
 
 cdef class SparseLog(LossFunction):
 
@@ -218,10 +213,6 @@ cdef class SquaredLoss(LossFunction):
     cpdef double get_update(self, double p, double y):
         return y - p
 
-    cpdef double max_loss(self, int n_samples, int n_vectors):
-        # \sum_i y_i^2
-        raise NotImplementedError
-
 
 cdef class Huber(LossFunction):
 
@@ -248,9 +239,6 @@ cdef class Huber(LossFunction):
         else:
             return self.c
 
-    cpdef double max_loss(self, int n_samples, int n_vectors):
-        raise NotImplementedError
-
 
 cdef class EpsilonInsensitive(LossFunction):
 
@@ -270,10 +258,6 @@ cdef class EpsilonInsensitive(LossFunction):
             return -1
         else:
             return 0
-
-    cpdef double max_loss(self, int n_samples, int n_vectors):
-        # \sum_i [abs(y_i) - eps]
-        raise NotImplementedError
 
 
 cdef double _dot(np.ndarray[double, ndim=2, mode='c'] W,
@@ -570,9 +554,6 @@ cdef class MulticlassHinge(MulticlassLossFunction):
                 intercepts[k] -= scale
                 intercepts[y] += scale
 
-    cpdef double max_loss(self, int n_samples, int n_vectors):
-        return n_samples
-
 
 cdef class MulticlassSquaredHinge(MulticlassLossFunction):
 
@@ -653,8 +634,6 @@ cdef class MulticlassLog(MulticlassLossFunction):
                 if fit_intercept:
                     intercepts[l] += u * intercept_decay
 
-    cpdef double max_loss(self, int n_samples, int n_vectors):
-        return n_samples * log(<double>n_vectors)
 
 cdef void _l1l2_update(double eta,
                        double alpha,
