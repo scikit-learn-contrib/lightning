@@ -64,23 +64,3 @@ def test_csc_get_column():
         for ii in xrange(n_nz):
             i = indices[ii]
             assert_equal(X[i, j], data[ii])
-
-
-def test_contiguous_dot():
-    ds = ContiguousDataset(X)
-    assert_array_almost_equal(ds.dot(X2.T), np.dot(X, X2.T))
-
-
-def test_fortran_dot():
-    ds = FortranDataset(np.asfortranarray(X))
-    assert_array_almost_equal(ds.dot(X2.T), np.dot(X, X2.T))
-
-
-def test_csr_dot():
-    ds = CSRDataset(X_csr)
-    assert_array_almost_equal(ds.dot(X2.T), np.dot(X, X2.T))
-
-
-def test_csc_dot():
-    ds = CSCDataset(X_csc)
-    assert_array_almost_equal(ds.dot(X2.T), np.dot(X, X2.T))

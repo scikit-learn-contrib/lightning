@@ -6,13 +6,6 @@
 # Author: Mathieu Blondel
 # License: BSD
 
-from cython.operator cimport dereference as deref
-from cython.operator cimport preincrement as inc
-from cython.operator cimport postincrement as postinc
-from cython.operator cimport predecrement as dec
-
-from libcpp.list cimport list
-from libcpp.map cimport map
 from libc cimport stdlib
 
 import numpy as np
@@ -21,9 +14,6 @@ np.import_array()
 
 import scipy.sparse as sp
 
-from sklearn.utils.extmath import safe_sparse_dot
-
-
 cdef class Dataset:
 
     cpdef int get_n_samples(self):
@@ -31,9 +21,6 @@ cdef class Dataset:
 
     cpdef int get_n_features(self):
         return self.n_features
-
-    def dot(self, coef):
-        return NotImplementedError()
 
 
 cdef class RowDataset(Dataset):
@@ -111,9 +98,6 @@ cdef class ContiguousDataset(RowDataset):
         data[0] = self.data + i * self.n_features
         n_nz[0] = self.n_features
 
-    def dot(self, coef):
-        return safe_sparse_dot(self.X, coef)
-
 
 cdef class FortranDataset(ColumnDataset):
 
@@ -142,9 +126,6 @@ cdef class FortranDataset(ColumnDataset):
         data[0] = self.data + j * self.n_samples
         n_nz[0] = self.n_samples
 
-    def dot(self, coef):
-        return safe_sparse_dot(self.X, coef)
-
 
 cdef class CSRDataset(RowDataset):
 
@@ -170,9 +151,6 @@ cdef class CSRDataset(RowDataset):
         data[0] = self.data + self.indptr[i]
         n_nz[0] = self.indptr[i + 1] - self.indptr[i]
 
-    def dot(self, coef):
-        return safe_sparse_dot(self.X, coef)
-
 
 cdef class CSCDataset(ColumnDataset):
 
@@ -197,9 +175,6 @@ cdef class CSCDataset(ColumnDataset):
         indices[0] = self.indices + self.indptr[j]
         data[0] = self.data + self.indptr[j]
         n_nz[0] = self.indptr[j + 1] - self.indptr[j]
-
-    def dot(self, coef):
-        return safe_sparse_dot(self.X, coef)
 
 
 def get_dataset(X, order="c"):
