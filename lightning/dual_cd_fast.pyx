@@ -8,13 +8,6 @@
 
 import sys
 
-from cython.operator cimport dereference as deref
-from cython.operator cimport preincrement as inc
-from cython.operator cimport predecrement as dec
-
-from libcpp.list cimport list
-from libcpp.vector cimport vector
-
 import numpy as np
 cimport numpy as np
 
@@ -59,7 +52,6 @@ def _dual_cd(self,
     cdef double G, PG
     cdef double step
     cdef int r
-    cdef list[int].iterator it
     cdef int has_callback = callback is not None
     cdef int stop = 0
     cdef double U

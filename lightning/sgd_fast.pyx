@@ -10,12 +10,6 @@
 import numpy as np
 cimport numpy as np
 
-from cython.operator cimport dereference as deref
-from cython.operator cimport preincrement as inc
-from cython.operator cimport predecrement as dec
-
-from libcpp.list cimport list
-
 from lightning.dataset_fast cimport RowDataset
 
 ctypedef np.int64_t LONG

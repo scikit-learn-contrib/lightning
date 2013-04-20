@@ -6,8 +6,6 @@
 # Author: Mathieu Blondel
 # License: BSD
 
-import sys
-
 import numpy as np
 cimport numpy as np
 

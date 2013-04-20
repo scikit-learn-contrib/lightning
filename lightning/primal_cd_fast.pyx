@@ -14,9 +14,6 @@ cimport numpy as np
 from lightning.random.random_fast cimport RandomState
 from lightning.dataset_fast cimport ColumnDataset
 
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.utils import check_random_state
-
 DEF LOWER = 1e-2
 DEF UPPER = 1e9
 
