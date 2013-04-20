@@ -16,10 +16,13 @@ from cython.operator cimport predecrement as dec
 
 from libcpp.list cimport list
 
-from lightning.kernel_fast cimport KernelCache
-from lightning.kernel_fast cimport Kernel
+from lightning.dataset_fast cimport KernelDataset
+from lightning.dataset_fast cimport Dataset
+
+ctypedef np.int64_t LONG
 
 cdef extern from "math.h":
+    cdef extern double fabs(double x)
     cdef extern double exp(double x)
     cdef extern double log(double x)
     cdef extern double sqrt(double x)
@@ -28,6 +31,30 @@ cdef extern from "math.h":
 cdef extern from "float.h":
    double DBL_MAX
 
+
+cdef double _l2_norm_sums(Dataset X, int squared):
+        cdef int i, j, jj
+        cdef int n_samples = X.get_n_samples()
+        cdef double norm, G = 0
+
+        cdef double* data
+        cdef int* indices
+        cdef int n_nz
+
+        for i in xrange(n_samples):
+            X.get_row_ptr(i, &indices, &data, &n_nz)
+
+            norm = 0
+            for jj in xrange(n_nz):
+                norm += data[jj] * data[jj]
+
+            if squared:
+                G += norm
+            else:
+                G += sqrt(norm)
+
+        return G
+
 cdef class LossFunction:
 
     cpdef double loss(self, double p, double y):
@@ -35,6 +62,23 @@ cdef class LossFunction:
 
     cpdef double get_update(self, double p, double y):
         raise NotImplementedError()
+
+    cpdef double max_gradient(self, Dataset X, int n_vectors):
+        return _l2_norm_sums(X, False)
+
+    cpdef double max_loss(self, int n_samples, int n_vectors):
+        raise NotImplementedError()
+
+    cpdef double max_diameter(self, Dataset X,
+                              int n_vectors,
+                              int penalty, double alpha):
+        cdef double loss = self.max_loss(X.get_n_samples(), n_vectors)
+        if penalty == 1:
+            return loss / alpha
+        elif penalty == 2:
+            return sqrt(loss / alpha)
+        else:
+            raise ValueError("Unknown penalty.")
 
 
 cdef class ModifiedHuber(LossFunction):
@@ -77,6 +121,75 @@ cdef class Hinge(LossFunction):
             return y
         return 0.0
 
+    cpdef double max_loss(self, int n_samples, int n_vectors):
+        return n_samples
+
+
+cdef class Hinge01(LossFunction):
+
+    cdef double threshold
+
+    def __init__(self, double threshold=1.0):
+        self.threshold = threshold
+
+    cpdef double loss(self, double p, double y):
+        cdef double z = self.threshold - 4 * (y - 0.5) * (p - 0.5)
+        if z >= 0:
+            return z
+        return 0.0
+
+    cpdef double get_update(self, double p, double y):
+        cdef double z = self.threshold - 4 * (y - 0.5) * (p - 0.5)
+        if z >= 0:
+            return 4 * y - 2
+        return 0.0
+
+
+cdef class SquaredHinge(LossFunction):
+
+    cdef double threshold
+
+    def __init__(self, double threshold=1.0):
+        self.threshold = threshold
+
+    cpdef double loss(self, double p, double y):
+        cdef double z = self.threshold - p * y
+        if z > 0:
+            return z * z
+        return 0.0
+
+    cpdef double get_update(self, double p, double y):
+        cdef double z = self.threshold - p * y
+        if z > 0:
+            return 2 * y * z
+        return 0.0
+
+    cpdef double max_gradient(self, Dataset X, int n_vectors):
+        return 2 * _l2_norm_sums(X, True)
+
+    cpdef double max_loss(self, int n_samples, int n_vectors):
+        return n_samples
+
+
+cdef class SquaredHinge01(LossFunction):
+
+    cdef double threshold
+
+    def __init__(self, double threshold=1.0):
+        self.threshold = threshold
+
+    cpdef double loss(self, double p, double y):
+        cdef double z = self.threshold - 4 * (y - 0.5) * (p - 0.5)
+        if z >= 0:
+            return z * z
+        return 0.0
+
+    cpdef double get_update(self, double p, double y):
+        cdef double z = self.threshold - 4 * (y - 0.5) * (p - 0.5)
+        if z >= 0:
+            return 2 * (4 * y - 2) * z
+        return 0.0
+
 
 cdef class Log(LossFunction):
 
@@ -97,6 +210,9 @@ cdef class Log(LossFunction):
         if z < -18.0:
             return y
         return y / (exp(z) + 1.0)
+
+    cpdef double max_loss(self, int n_samples, int n_vectors):
+        return n_samples * log(2.0)
 
 
 cdef class SparseLog(LossFunction):
@@ -133,10 +249,17 @@ cdef class SquaredLoss(LossFunction):
     cpdef double get_update(self, double p, double y):
         return y - p
 
+    cpdef double max_loss(self, int n_samples, int n_vectors):
+        # \sum_i y_i^2
+        raise NotImplementedError
+
 
 cdef class Huber(LossFunction):
 
     cdef double c
+
+    def __init__(self, double c):
+        self.c = c
 
     cpdef double loss(self, double p, double y):
         cdef double r = p - y
@@ -145,9 +268,6 @@ cdef class Huber(LossFunction):
             return 0.5 * r * r
         else:
             return self.c * abs_r - (0.5 * self.c * self.c)
-
-    def __init__(self, double c):
-        self.c = c
 
     cpdef double get_update(self, double p, double y):
         cdef double r = p - y
@@ -158,6 +278,9 @@ cdef class Huber(LossFunction):
             return -self.c
         else:
             return self.c
+
+    cpdef double max_loss(self, int n_samples, int n_vectors):
+        raise NotImplementedError
 
 
 cdef class EpsilonInsensitive(LossFunction):
@@ -179,35 +302,39 @@ cdef class EpsilonInsensitive(LossFunction):
         else:
             return 0
 
+    cpdef double max_loss(self, int n_samples, int n_vectors):
+        # \sum_i [abs(y_i) - eps]
+        raise NotImplementedError
+
 
 cdef double _dot(np.ndarray[double, ndim=2, mode='c'] W,
                  int k,
-                 np.ndarray[double, ndim=2, mode='c'] X,
-                 int i):
-    cdef Py_ssize_t n_features = X.shape[1]
-    cdef int j
+                 int *indices,
+                 double *data,
+                 int n_nz):
+    cdef int jj, j
     cdef double pred = 0.0
 
-    for j in xrange(n_features):
-        pred += X[i, j] * W[k, j]
+    for jj in xrange(n_nz):
+        j = indices[jj]
+        pred += data[jj] * W[k, j]
 
     return pred
 
 
 cdef double _kernel_dot(np.ndarray[double, ndim=2, mode='c'] W,
                         int k,
-                        np.ndarray[double, ndim=2, mode='c'] X,
-                        int i,
-                        KernelCache kcache,
-                        np.ndarray[double, ndim=1, mode='c'] col):
+                        KernelDataset kds,
+                        int i):
     cdef int j
     cdef double pred = 0
     cdef list[int].iterator it
+    cdef double* col
 
-    kcache.compute_column_sv(X, X, i, col)
-    it = kcache.support_set.begin()
+    col = kds.get_column_sv_ptr(i)
+    it = kds.support_set.begin()
 
-    while it != kcache.support_set.end():
+    while it != kds.support_set.end():
         j = deref(it)
         pred += col[j] * W[k, j]
         inc(it)
@@ -217,92 +344,206 @@ cdef double _kernel_dot(np.ndarray[double, ndim=2, mode='c'] W,
 
 cdef void _add(np.ndarray[double, ndim=2, mode='c'] W,
                int k,
-               np.ndarray[double, ndim=2, mode='c'] X,
-               int i,
+               int *indices,
+               double *data,
+               int n_nz,
                double scale):
-    cdef Py_ssize_t n_features = X.shape[1]
-    cdef int j
+    cdef int jj, j
 
-    for j in xrange(n_features):
-        W[k, j] += X[i, j] * scale
+    for jj in xrange(n_nz):
+        j = indices[jj]
+        W[k, j] += data[jj] * scale
 
 
-cdef double _get_eta(int learning_rate, double lmbda,
-                     double eta0, double power_t, long t):
+cdef double _get_eta(int learning_rate, double alpha,
+                     double eta0, double power_t, LONG t):
     cdef double eta = eta0
     if learning_rate == 2: # PEGASOS
-        eta = 1.0 / (lmbda * t)
+        eta = 1.0 / (alpha * t)
     elif learning_rate == 3: # INVERSE SCALING
         eta = eta0 / pow(t, power_t)
     return eta
+
+
+cdef void _l1_update(double eta,
+                     double alpha,
+                     double* delta,
+                     LONG* timestamps,
+                     np.ndarray[double, ndim=2, mode='c'] W,
+                     double* data,
+                     int* indices,
+                     int n_nz,
+                     int k,
+                     LONG t,
+                     int non_negative):
+    cdef int j, jj
+    cdef double w_new
+    cdef LONG tm1 = t - 1
+
+    for jj in xrange(n_nz):
+        j = indices[jj]
+
+        if timestamps[j] == tm1:
+            continue
+
+        if non_negative:
+            w_new = W[k, j] - (delta[tm1] - delta[timestamps[j]])
+        else:
+            w_new = fabs(W[k, j]) - (delta[tm1] - delta[timestamps[j]])
+
+        if w_new <= 0:
+            W[k, j] = 0
+        elif W[k, j] > 0 or non_negative:
+            W[k, j] = w_new
+        else:
+            W[k, j] = -w_new
+
+        timestamps[j] = tm1
+
+    delta[t] = delta[tm1] + eta * alpha
+
+
+cdef void _nnl2_update(np.ndarray[double, ndim=2, mode='c'] W,
+                       int* indices,
+                       int n_nz,
+                       int k):
+    cdef int j, jj
+    for jj in xrange(n_nz):
+        j = indices[jj]
+        if W[k, j] < 0:
+            W[k, j] = 0
+
+
+cdef void _l1_finalize(double* delta,
+                       LONG* timestamps,
+                       np.ndarray[double, ndim=2, mode='c'] W,
+                       int k,
+                       LONG t,
+                       int non_negative):
+    cdef int n_features = W.shape[1]
+    cdef int j
+    cdef double w_new
+
+    for j in xrange(n_features):
+        if timestamps[j] == t:
+            continue
+
+        if non_negative:
+            w_new = W[k, j] - (delta[t] - delta[timestamps[j]])
+        else:
+            w_new = fabs(W[k, j]) - (delta[t] - delta[timestamps[j]])
+
+        if w_new <= 0:
+            W[k, j] = 0
+        elif W[k, j] > 0 or non_negative:
+            W[k, j] = w_new
+        else:
+            W[k, j] = -w_new
 
 
 def _binary_sgd(self,
                 np.ndarray[double, ndim=2, mode='c'] W,
                 np.ndarray[double, ndim=1] intercepts,
                 int k,
-                np.ndarray[double, ndim=2, mode='c'] X,
+                Dataset X,
                 np.ndarray[double, ndim=1] y,
                 LossFunction loss,
-                KernelCache kcache,
-                int linear_kernel,
+                int penalty,
                 int n_components,
-                double lmbda,
+                double alpha,
                 int learning_rate,
                 double eta0,
                 double power_t,
                 int fit_intercept,
                 double intercept_decay,
                 int max_iter,
+                int shuffle,
                 random_state,
+                callback,
+                int n_calls,
                 int verbose):
 
-    cdef Py_ssize_t n_samples = X.shape[0]
-    cdef Py_ssize_t n_features = X.shape[1]
+    cdef Py_ssize_t n_samples = X.get_n_samples()
+    cdef Py_ssize_t n_features = X.get_n_features()
 
-    cdef np.ndarray[int, ndim=1, mode='c'] indices
-    indices = np.arange(n_samples, dtype=np.int32)
-
-    cdef int n, i
-    cdef long t = 1
-    cdef double update, update_eta, update_eta_scaled, pred, eta
+    # Initialization
+    cdef int i, ii
+    cdef LONG t
+    cdef double update, update_eta, update_eta_scaled, pred, eta, scale
     cdef double w_scale = 1.0
     cdef double intercept = 0.0
+    cdef int has_callback = callback is not None
+    cdef int nn_l1 = penalty == -1
 
-    cdef np.ndarray[double, ndim=1, mode='c'] col
-    if not linear_kernel:
-        col = np.zeros(n_samples, dtype=np.float64)
+    cdef np.ndarray[LONG, ndim=1, mode='c'] timestamps
+    timestamps = np.zeros(n_features, dtype=np.int64)
 
-    random_state.shuffle(indices)
+    cdef np.ndarray[double, ndim=1, mode='c'] delta
+    delta = np.zeros(max_iter + 1, dtype=np.float64)
+
+    # Kernel
+    cdef int linear_kernel = 1
+    cdef KernelDataset kds
+    if isinstance(X, KernelDataset):
+        kds = <KernelDataset>X
+        linear_kernel = 0
+
+    # Data pointers
+    cdef double* data
+    cdef int* indices
+    cdef int n_nz
+
+    # Training indices.
+    cdef np.ndarray[int, ndim=1, mode='c'] index
+    index = np.arange(n_samples, dtype=np.int32)
 
     for t in xrange(1, max_iter + 1):
-        i = indices[(t-1) % n_samples]
+        # Retrieve current training instance and shuffle if necessary.
+        ii = (t-1) % n_samples
+        if shuffle and ii == 0:
+            random_state.shuffle(index)
+        i = index[ii]
+        eta = _get_eta(learning_rate, alpha, eta0, power_t, t)
+
+        # Compute current prediction.
+        if linear_kernel:
+            X.get_row_ptr(i, &indices, &data, &n_nz)
+
+        if penalty == 1 or nn_l1: # L1-regularization.
+            _l1_update(eta, alpha,
+                       <double*>delta.data, <LONG*>timestamps.data,
+                       W, data, indices, n_nz, k, t, nn_l1)
 
         if linear_kernel:
-            pred = _dot(W, k, X, i)
+            pred = _dot(W, k, indices, data, n_nz)
         else:
-            pred = _kernel_dot(W, k, X, i, kcache, col)
+            pred = _kernel_dot(W, k, kds, i)
 
         pred *= w_scale
         pred += intercepts[k]
 
-        eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
         update = loss.get_update(pred, y[i])
 
+        # Update if necessary.
         if update != 0:
             update_eta = update * eta
             update_eta_scaled = update_eta / w_scale
 
             if linear_kernel:
-                _add(W, k, X, i, update_eta_scaled)
+                _add(W, k, indices, data, n_nz, update_eta_scaled)
             else:
                 W[k, i] += update_eta_scaled
 
             if fit_intercept:
                 intercepts[k] += update_eta * intercept_decay
 
-        w_scale *= (1 - lmbda * eta)
+        if penalty == 2: # L2-regularization.
+            w_scale *= (1 - alpha * eta)
+        elif penalty == -2:
+            w_scale *= 1 / (1 + alpha * eta)
+            _nnl2_update(W, indices, n_nz, k)
 
+        # Take care of possible underflow.
         if w_scale < 1e-9:
             W[k] *= w_scale
             w_scale = 1.0
@@ -310,177 +551,29 @@ def _binary_sgd(self,
         # Update support vector set.
         if not linear_kernel:
             if W[k, i] == 0:
-                kcache.remove_sv(i)
+                kds.remove_sv(i)
             else:
-                kcache.add_sv(i)
+                kds.add_sv(i)
+
+        # Callback
+        if has_callback and t % n_calls == 0:
+            ret = callback(self)
+            if ret is not None:
+                break
 
         # Stop if necessary.
-        if n_components > 0 and kcache.n_sv() >= n_components:
+        if n_components > 0 and kds.n_sv() >= n_components:
             break
 
-    if w_scale != 1.0:
+    # Finalize.
+    if penalty == 1 or nn_l1:
+        _l1_finalize(<double*>delta.data, <LONG*>timestamps.data,
+                     W, k, t, nn_l1)
+    elif w_scale != 1.0:
         W[k] *= w_scale
 
 
-cdef int _predict_multiclass(np.ndarray[double, ndim=2, mode='c'] W,
-                             np.ndarray[double, ndim=1] w_scales,
-                             np.ndarray[double, ndim=1] intercepts,
-                             np.ndarray[double, ndim=2, mode='c'] X,
-                             int i):
-    cdef Py_ssize_t n_features = X.shape[1]
-    cdef Py_ssize_t n_vectors = W.shape[0]
-    cdef int j, l
-
-    cdef double pred
-    cdef double best = -DBL_MAX
-    cdef int selected = 0
-
-    for l in xrange(n_vectors):
-        pred = 0
-
-        for j in xrange(n_features):
-            pred += X[i, j] * W[l, j]
-
-        pred *= w_scales[l]
-        pred += intercepts[l]
-
-        # pred += loss(y_true, y_pred)
-
-        if pred > best:
-            best = pred
-            selected = l
-
-    return selected
-
-
-cdef int _kernel_predict_multiclass(np.ndarray[double, ndim=2, mode='c'] W,
-                                    np.ndarray[double, ndim=1] w_scales,
-                                    np.ndarray[double, ndim=1] intercepts,
-                                    np.ndarray[double, ndim=2, mode='c'] X,
-                                    int i,
-                                    KernelCache kcache,
-                                    np.ndarray[double, ndim=1] col):
-    cdef Py_ssize_t n_features = X.shape[1]
-    cdef Py_ssize_t n_vectors = W.shape[0]
-    cdef int j, l
-    cdef double pred
-    cdef double best = -DBL_MAX
-    cdef int selected = 0
-    cdef list[int].iterator it
-
-    kcache.compute_column_sv(X, X, i, col)
-
-    for l in xrange(n_vectors):
-        pred = 0
-
-        it = kcache.support_set.begin()
-        while it != kcache.support_set.end():
-            j = deref(it)
-            pred += col[j] * W[l, j]
-            inc(it)
-
-        pred *= w_scales[l]
-        pred += intercepts[l]
-
-        # pred += loss(y_true, y_pred)
-
-        if pred > best:
-            best = pred
-            selected = l
-
-    return selected
-
-
-def _multiclass_hinge_sgd(self,
-                          np.ndarray[double, ndim=2, mode='c'] W,
-                          np.ndarray[double, ndim=1] intercepts,
-                          np.ndarray[double, ndim=2, mode='c'] X,
-                          np.ndarray[int, ndim=1] y,
-                          KernelCache kcache,
-                          int linear_kernel,
-                          int n_components,
-                          double lmbda,
-                          int learning_rate,
-                          double eta0,
-                          double power_t,
-                          int fit_intercept,
-                          double intercept_decay,
-                          int max_iter,
-                          random_state,
-                          int verbose):
-
-    cdef Py_ssize_t n_samples = X.shape[0]
-    cdef Py_ssize_t n_features = X.shape[1]
-    cdef Py_ssize_t n_vectors = W.shape[0]
-
-    cdef np.ndarray[int, ndim=1, mode='c'] indices
-    indices = np.arange(n_samples, dtype=np.int32)
-
-    cdef int it, i, l
-    cdef long t = 1
-    cdef double update, pred, eta, scale
-    cdef double intercept = 0.0
-
-    cdef np.ndarray[double, ndim=1, mode='c'] w_scales
-    w_scales = np.ones(n_vectors, dtype=np.float64)
-
-    cdef np.ndarray[double, ndim=1, mode='c'] col
-    if not linear_kernel:
-        col = np.zeros(n_samples, dtype=np.float64)
-
-    random_state.shuffle(indices)
-
-    for t in xrange(t, max_iter + 1):
-        i = indices[(t-1) % n_samples]
-
-        eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
-
-        if linear_kernel:
-            k = _predict_multiclass(W, w_scales, intercepts, X, i)
-        else:
-            k = _kernel_predict_multiclass(W, w_scales, intercepts, X, i,
-                                           kcache, col)
-
-        if k != y[i]:
-            if linear_kernel:
-                _add(W, k, X, i, -eta / w_scales[k])
-                _add(W, y[i], X, i, eta / w_scales[y[i]])
-            else:
-                W[k, i] -= eta / w_scales[k]
-                W[y[i], i] += eta / w_scales[y[i]]
-
-            if fit_intercept:
-                scale = eta * intercept_decay
-                intercepts[k] -= scale
-                intercepts[y[i]] += scale
-
-
-        scale = (1 - lmbda * eta)
-        for l in xrange(n_vectors):
-            w_scales[l] *= scale
-
-            if w_scales[l] < 1e-9:
-                W[l] *= w_scales[l]
-                w_scales[l] = 1.0
-
-        # Update support vector set.
-        if not linear_kernel:
-            if W[k, i] == 0 and W[y[i], i] == 0:
-                kcache.remove_sv(i)
-            else:
-                kcache.add_sv(i)
-
-        # Stop if necessary.
-        if n_components > 0 and kcache.n_sv() >= n_components:
-            break
-
-    for l in xrange(n_vectors):
-        if w_scales[l] != 1.0:
-            W[l] *= w_scales[l]
-
-
-cdef void _softmax(np.ndarray[double, ndim=1] scores):
-    cdef Py_ssize_t size = scores.shape[0]
+cdef void _softmax(double* scores, int size):
     cdef double sum_ = 0
     cdef double max_score = -DBL_MAX
     cdef int i
@@ -501,91 +594,346 @@ cdef void _softmax(np.ndarray[double, ndim=1] scores):
             scores[i] /= sum_
 
 
-def _multiclass_log_sgd(self,
-                        np.ndarray[double, ndim=2, mode='c'] W,
-                        np.ndarray[double, ndim=1] intercepts,
-                        np.ndarray[double, ndim=2, mode='c'] X,
-                        np.ndarray[int, ndim=1] y,
-                        KernelCache kcache,
-                        int linear_kernel,
-                        int n_components,
-                        double lmbda,
-                        int learning_rate,
-                        double eta0,
-                        double power_t,
-                        int fit_intercept,
-                        double intercept_decay,
-                        int max_iter,
-                        random_state,
-                        int verbose):
+cdef class MulticlassLossFunction:
 
-    cdef Py_ssize_t n_samples = X.shape[0]
-    cdef Py_ssize_t n_features = X.shape[1]
+    cdef void update(self,
+                      double* scores,
+                      int y,
+                      double* data,
+                      int* indices,
+                      int n_nz,
+                      int i,
+                      np.ndarray[double, ndim=2, mode='c'] W,
+                      double* w_scales,
+                      double* intercepts,
+                      double intercept_decay,
+                      double eta,
+                      int linear_kernel,
+                      int fit_intercept
+                     ):
+        raise NotImplementedError()
+
+    cpdef double max_gradient(self, Dataset X, int n_vectors):
+        return 2 * _l2_norm_sums(X, False)
+
+    cpdef double max_loss(self, int n_samples, int n_vectors):
+        raise NotImplementedError()
+
+    cpdef double max_diameter(self, Dataset X,
+                              int n_vectors,
+                              int penalty, double alpha):
+        cdef double loss = self.max_loss(X.get_n_samples(), n_vectors)
+        if penalty == 1 or penalty == 12:
+            return loss / alpha
+        elif penalty == 2:
+            return sqrt(loss / alpha)
+        else:
+            raise ValueError("Unknown penalty.")
+
+cdef class MulticlassHinge(MulticlassLossFunction):
+
+    cdef void update(self,
+                      double* scores,
+                      int y,
+                      double* data,
+                      int* indices,
+                      int n_nz,
+                      int i,
+                      np.ndarray[double, ndim=2, mode='c'] W,
+                      double* w_scales,
+                      double* intercepts,
+                      double intercept_decay,
+                      double eta,
+                      int linear_kernel,
+                      int fit_intercept
+                     ):
+        cdef int n_vectors = W.shape[0]
+        cdef double best = -DBL_MAX
+        cdef int l, k
+
+        for l in xrange(n_vectors):
+            if scores[l] > best:
+                best = scores[l]
+                k = l
+
+        # Update if necessary.
+        if k != y:
+            if linear_kernel:
+                _add(W, k, indices, data, n_nz, -eta / w_scales[k])
+                _add(W, y, indices, data, n_nz, eta / w_scales[y])
+            else:
+                W[k, i] -= eta / w_scales[k]
+                W[y, i] += eta / w_scales[y]
+
+            if fit_intercept:
+                scale = eta * intercept_decay
+                intercepts[k] -= scale
+                intercepts[y] += scale
+
+    cpdef double max_loss(self, int n_samples, int n_vectors):
+        return n_samples
+
+
+cdef class MulticlassSquaredHinge(MulticlassLossFunction):
+
+    cdef void update(self,
+                      double* scores,
+                      int y,
+                      double* data,
+                      int* indices,
+                      int n_nz,
+                      int i,
+                      np.ndarray[double, ndim=2, mode='c'] W,
+                      double* w_scales,
+                      double* intercepts,
+                      double intercept_decay,
+                      double eta,
+                      int linear_kernel,
+                      int fit_intercept
+                     ):
+        cdef int n_vectors = W.shape[0]
+        cdef double u
+        cdef int l
+
+        for l in xrange(n_vectors):
+
+            if y == l:
+                continue
+
+            u = 1 - scores[y] + scores[l]
+
+            if u <= 0:
+                continue
+
+            u *= eta * 2
+
+            if linear_kernel:
+                _add(W, l, indices, data, n_nz, -u / w_scales[l])
+                _add(W, y, indices, data, n_nz, u / w_scales[y])
+            else:
+                W[l, i] -= u / w_scales[l]
+                W[y, i] += u / w_scales[y]
+
+            if fit_intercept:
+                scale = u * intercept_decay
+                intercepts[l] -= scale
+                intercepts[y] += scale
+
+    cpdef double max_gradient(self, Dataset X, int n_vectors):
+        return 4 * (n_vectors - 1) * _l2_norm_sums(X, True)
+
+    cpdef double max_loss(self, int n_samples, int n_vectors):
+        return n_samples * (n_vectors - 1)
+
+
+cdef class MulticlassLog(MulticlassLossFunction):
+
+    cdef void update(self,
+                      double* scores,
+                      int y,
+                      double* data,
+                      int* indices,
+                      int n_nz,
+                      int i,
+                      np.ndarray[double, ndim=2, mode='c'] W,
+                      double* w_scales,
+                      double* intercepts,
+                      double intercept_decay,
+                      double eta,
+                      int linear_kernel,
+                      int fit_intercept
+                     ):
+        cdef int n_vectors = W.shape[0]
+        cdef double u
+        cdef int l
+
+        _softmax(scores, n_vectors)
+
+        # Update.
+        for l in xrange(n_vectors):
+            if scores[l] != 0:
+                if l == y:
+                    # Need to update the correct label minus the prediction.
+                    u = eta * (1 - scores[l])
+                else:
+                    # Need to update the incorrect label weighted by the
+                    # prediction.
+                    u = -eta * scores[l]
+
+                if linear_kernel:
+                    _add(W, l, indices, data, n_nz, u / w_scales[l])
+                else:
+                    W[l, i] += u / w_scales[l]
+
+                if fit_intercept:
+                    intercepts[l] += u * intercept_decay
+
+    cpdef double max_loss(self, int n_samples, int n_vectors):
+        return n_samples * log(<double>n_vectors)
+
+cdef void _l1l2_update(double eta,
+                       double alpha,
+                       double* delta,
+                       LONG* timestamps,
+                       np.ndarray[double, ndim=2, mode='c'] W,
+                       double* data,
+                       int* indices,
+                       int n_nz,
+                       LONG t):
+    cdef int j, jj, l
+    cdef double scale, norm
+    cdef int n_vectors = W.shape[0]
+    cdef LONG tm1 = t - 1
+
+    for jj in xrange(n_nz):
+        j = indices[jj]
+
+        if timestamps[j] == tm1:
+            continue
+
+        norm = 0
+        for l in xrange(n_vectors):
+            norm += W[l, j] * W[l, j]
+        norm = sqrt(norm)
+
+        scale = 1 - (delta[tm1] - delta[timestamps[j]]) / norm
+        if scale < 0:
+            scale = 0
+        for l in xrange(n_vectors):
+            W[l, j] *= scale
+
+        timestamps[j] = tm1
+
+    delta[t] = delta[tm1] + eta * alpha
+
+
+cdef void _l1l2_finalize(double* delta,
+                         LONG* timestamps,
+                         np.ndarray[double, ndim=2, mode='c'] W,
+                         LONG t):
+    cdef int n_features = W.shape[1]
+    cdef int n_vectors = W.shape[0]
+    cdef double norm
+    cdef int j, l
+
+    for j in xrange(n_features):
+
+        if timestamps[j] == t:
+            continue
+
+        norm = 0
+        for l in xrange(n_vectors):
+            norm += W[l, j] * W[l, j]
+        norm = sqrt(norm)
+
+        scale = 1 - (delta[t] - delta[timestamps[j]]) / norm
+        if scale < 0:
+            scale = 0
+        for l in xrange(n_vectors):
+            W[l, j] *= scale
+
+
+def _multiclass_sgd(self,
+                    np.ndarray[double, ndim=2, mode='c'] W,
+                    np.ndarray[double, ndim=1] intercepts,
+                    Dataset X,
+                    np.ndarray[int, ndim=1] y,
+                    MulticlassLossFunction loss,
+                    int penalty,
+                    int n_components,
+                    double alpha,
+                    int learning_rate,
+                    double eta0,
+                    double power_t,
+                    int fit_intercept,
+                    double intercept_decay,
+                    int max_iter,
+                    int shuffle,
+                    random_state,
+                    callback,
+                    int n_calls,
+                    int verbose):
+
+    cdef Py_ssize_t n_samples = X.get_n_samples()
+    cdef Py_ssize_t n_features = X.get_n_features()
     cdef Py_ssize_t n_vectors = W.shape[0]
 
-    cdef np.ndarray[int, ndim=1, mode='c'] indices
-    indices = np.arange(n_samples, dtype=np.int32)
-
-    cdef int it, i, l
-    cdef long t = 1
-    cdef double update, pred, eta, scale
+    # Initialization
+    cdef int it, i, ii, l
+    cdef LONG t
+    cdef double pred, eta, scale, norm
     cdef double intercept = 0.0
-
     cdef np.ndarray[double, ndim=1, mode='c'] w_scales
     w_scales = np.ones(n_vectors, dtype=np.float64)
-
     cdef np.ndarray[double, ndim=1, mode='c'] scores
     scores = np.ones(n_vectors, dtype=np.float64)
-
-    cdef np.ndarray[double, ndim=1, mode='c'] col
-    if not linear_kernel:
-        col = np.zeros(n_samples, dtype=np.float64)
-
     cdef int all_zero
+    cdef int has_callback = callback is not None
 
-    random_state.shuffle(indices)
+    cdef np.ndarray[LONG, ndim=1, mode='c'] timestamps
+    timestamps = np.zeros(n_features, dtype=np.int64)
 
-    for t in xrange(t, max_iter + 1):
-        i = indices[(t-1) % n_samples]
+    cdef np.ndarray[double, ndim=1, mode='c'] delta
+    delta = np.zeros(max_iter + 1, dtype=np.float64)
 
-        eta = _get_eta(learning_rate, lmbda, eta0, power_t, t)
+    # Kernel
+    cdef int linear_kernel = 1
+    cdef KernelDataset kds
+    if isinstance(X, KernelDataset):
+        kds = <KernelDataset>X
+        linear_kernel = 0
+
+    # Data pointers
+    cdef double* data
+    cdef int* indices
+    cdef int n_nz
+
+    # Training indices.
+    cdef np.ndarray[int, ndim=1, mode='c'] index
+    index = np.arange(n_samples, dtype=np.int32)
+
+    for t in xrange(1, max_iter + 1):
+        # Retrieve current training instance and shuffle if necessary.
+        ii = (t-1) % n_samples
+        if shuffle and ii == 0:
+            random_state.shuffle(index)
+        i = index[ii]
+        eta = _get_eta(learning_rate, alpha, eta0, power_t, t)
+
+        # Compute current prediction.
+        if linear_kernel:
+            X.get_row_ptr(i, &indices, &data, &n_nz)
+
+        # L1/L2 regularization.
+        if penalty == 12:
+            _l1l2_update(eta, alpha,
+                         <double*>delta.data, <LONG*>timestamps.data,
+                         W, data, indices, n_nz, t)
 
         for l in xrange(n_vectors):
             if linear_kernel:
-                scores[l] = _dot(W, l, X, i)
+                scores[l] = _dot(W, l, indices, data, n_nz)
             else:
-                scores[l] = _kernel_dot(W, l, X, i, kcache, col)
+                scores[l] = _kernel_dot(W, l, kds, i)
 
             scores[l] *= w_scales[l]
             scores[l] += intercepts[l]
 
-        _softmax(scores)
+        loss.update(<double*>scores.data, y[i],
+                    data, indices, n_nz,
+                    i, W, <double*>w_scales.data, <double*>intercepts.data,
+                    intercept_decay, eta, linear_kernel, fit_intercept)
 
-        for l in xrange(n_vectors):
-            if scores[l] != 0:
-                if l == y[i]:
-                    # Need to update the correct label minus the prediction.
-                    update = eta * (1 - scores[l])
-                else:
-                    # Need to update the incorrect label weighted by the
-                    # prediction.
-                    update = -eta * scores[l]
+        # L2 regularization.
+        if penalty == 2:
+            scale = (1 - alpha * eta)
+            for l in xrange(n_vectors):
+                w_scales[l] *= scale
 
-                if linear_kernel:
-                    _add(W, l, X, i, update / w_scales[l])
-                else:
-                    W[l, i] += update / w_scales[l]
-
-                if fit_intercept:
-                    intercepts[l] += update * intercept_decay
-
-        scale = (1 - lmbda * eta)
-        for l in xrange(n_vectors):
-            w_scales[l] *= scale
-
-            if w_scales[l] < 1e-9:
-                W[l] *= w_scales[l]
-                w_scales[l] = 1.0
+                # Take care of possible underflow.
+                if w_scales[l] < 1e-9:
+                    W[l] *= w_scales[l]
+                    w_scales[l] = 1.0
 
         # Update support vector set.
         if not linear_kernel:
@@ -595,14 +943,26 @@ def _multiclass_log_sgd(self,
                     all_zero = 0
                     break
             if all_zero:
-                kcache.remove_sv(i)
+                kds.remove_sv(i)
             else:
-                kcache.add_sv(i)
+                kds.add_sv(i)
+
+        # Callback
+        if has_callback and t % n_calls == 0:
+            ret = callback(self)
+            if ret is not None:
+                break
 
         # Stop if necessary.
-        if n_components > 0 and kcache.n_sv() >= n_components:
+        if n_components > 0 and kds.n_sv() >= n_components:
             break
 
-    for l in xrange(n_vectors):
-        if w_scales[l] != 1.0:
-            W[l] *= w_scales[l]
+    # Finalize.
+    if penalty == 2:
+        for l in xrange(n_vectors):
+            if w_scales[l] != 1.0:
+                W[l] *= w_scales[l]
+    elif penalty == 12:
+        _l1l2_finalize(<double*>delta.data, <LONG*>timestamps.data,
+                       W, t)
+

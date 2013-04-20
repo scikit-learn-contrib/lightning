@@ -3,6 +3,7 @@
 import os
 
 import numpy as np
+import scipy.sparse as sp
 
 try:
     from svmlight_loader import load_svmlight_files
@@ -117,6 +118,12 @@ def load_mnist8():
     return X_train, y_train, X_test, y_test
 
 
+def load_realsim():
+    data_home = get_data_home()
+    train_file = os.path.join(data_home, "realsim")
+    return _load(train_file, None, "realsim")
+
+
 def load_reuters():
     data_home = get_data_home()
     train_file = os.path.join(data_home, "reuters", "money-fx.trn")
@@ -158,10 +165,23 @@ def load_usps0_noisy():
     return X_train, y_train, X_test, y_test
 
 
+def load_url():
+    data_home = get_data_home()
+    train_file = os.path.join(data_home, "url_combined")
+    return _load(train_file, None, "url")
+
+
 def load_waveform():
     data_home = get_data_home()
     train_file = os.path.join(data_home, "waveform", "waveform.all.txt")
     return _todense(_load(train_file, None, "waveform"))
+
+
+def load_webspam():
+    data_home = get_data_home()
+    train_file = os.path.join(data_home, "webspam")
+    return _load(train_file, None, "webspam")
+
 
 # multi-class
 
@@ -207,11 +227,25 @@ def load_protein():
     return _todense(_load(train_file, test_file, "protein"))
 
 
+def load_rcv1():
+    data_home = get_data_home()
+    train_file = os.path.join(data_home, "rcv1_train.multiclass")
+    test_file = os.path.join(data_home, "rcv1_test.multiclass")
+    return _load(train_file, test_file, "rcv1")
+
+
 def load_satimage():
     data_home = get_data_home()
     train_file = os.path.join(data_home, "satimage.scale.tr")
     test_file = os.path.join(data_home, "satimage.scale.t")
     return _todense(_load(train_file, test_file, "satimage"))
+
+
+def load_sector():
+    data_home = get_data_home()
+    train_file = os.path.join(data_home, "sector.scale")
+    test_file = os.path.join(data_home, "sector.t.scale")
+    return _load(train_file, test_file, "sector")
 
 
 def load_usps():
@@ -249,19 +283,24 @@ LOADERS = {
             "covtype_subset": load_covtype_subset,
             "ijcnn": load_ijcnn,
             "mnist8": load_mnist8,
+            "realsim": load_realsim,
             "reuters": load_reuters,
             "protein0": load_protein0,
+            "url" : load_url,
             "usps0": load_usps0,
             "usps0_noisy": load_usps0_noisy,
             "waveform": load_waveform,
+            "webspam": load_webspam,
             # multi-class
             "dna": load_dna,
             "letter": load_letter,
             "news20" : load_news20,
             "mnist": load_mnist,
             "satimage": load_satimage,
+            "sector": load_sector,
             "pendigits": load_pendigits,
             "protein": load_protein,
+            "rcv1": load_rcv1,
             "usps": load_usps,
             "usps_noisy": load_usps_noisy,
 }
@@ -271,7 +310,18 @@ def get_loader(dataset):
     return LOADERS[dataset]
 
 
-def load_dataset(dataset):
-    return get_loader(dataset)()
+def load_dataset(dataset, group_all=False):
+    ret = get_loader(dataset)()
 
+    if group_all and len(ret) > 2 and ret[2] is not None:
+        X_tr, y_tr, X_te, y_te = ret
 
+        if hasattr(X_tr, "tocsr"):
+            data = sp.vstack((X_tr, X_te)).tocsr()
+        else:
+            data = np.vstack((X_tr, X_te))
+        target = np.concatenate((y_tr, y_te))
+
+        return (data, target)
+    else:
+        return ret[:2]

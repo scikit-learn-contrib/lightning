@@ -8,1060 +8,1684 @@
 
 import sys
 
-from cython.operator cimport dereference as deref
-from cython.operator cimport preincrement as inc
-from cython.operator cimport predecrement as dec
-
-from libcpp.list cimport list
-from libcpp.vector cimport vector
-
 import numpy as np
 cimport numpy as np
 
-from lightning.kernel_fast cimport KernelCache
-from lightning.kernel_fast cimport Kernel
 from lightning.select_fast cimport get_select_method
 from lightning.select_fast cimport select_sv_precomputed
 from lightning.random.random_fast cimport RandomState
+from lightning.dataset_fast cimport Dataset
+from lightning.dataset_fast cimport KernelDataset
+
+from sklearn.preprocessing import LabelBinarizer
+from sklearn.utils import check_random_state
+
+DEF LOWER = 1e-2
+DEF UPPER = 1e9
 
 cdef extern from "math.h":
    double fabs(double)
    double exp(double x)
    double log(double x)
+   double sqrt(double x)
 
 cdef extern from "float.h":
    double DBL_MAX
 
 cdef class LossFunction:
 
+    cdef int max_steps
+    cdef double sigma
+    cdef double beta
+    cdef int verbose
+
+    # L2 regularization
+
     cdef void solve_l2(self,
                        int j,
-                       int n_samples,
                        double C,
+                       double alpha,
                        double *w,
-                       double *col_ro,
-                       double *col,
+                       Dataset X,
                        double *y,
                        double *b,
-                       double *Dp,
-                       int kernel_regularizer):
+                       double *Dp):
 
-        cdef double sigma = 0.01
-        cdef double beta = 0.5
-        cdef double bound, Dpp, Dj_zero, z, d, regul_deriv
+        cdef double Dpp, Dj_zero, z, d
+        cdef int i, ii, step, recompute
+        cdef double z_diff, z_old, Dj_z, cond
 
-        self.derivatives_l2(j,
-                            n_samples,
-                            C,
-                            sigma,
-                            w,
-                            col_ro,
-                            col,
-                            y,
-                            b,
-                            Dp,
-                            &Dpp,
-                            &Dj_zero,
-                            &bound,
-                            kernel_regularizer,
-                            &regul_deriv)
+        # Data pointers
+        cdef double* data
+        cdef int* indices
+        cdef int n_nz
+
+        # Retrieve column.
+        X.get_column_ptr(j, &indices, &data, &n_nz)
+
+        # Compute derivatives
+        self.derivatives(j, C, indices, data, n_nz, y, b,
+                         Dp, &Dpp, &Dj_zero)
+
+        Dp[0] = alpha * w[j] + Dp[0]
+        Dpp = alpha + Dpp
 
         if fabs(Dp[0]/Dpp) <= 1e-12:
             return
 
         d = -Dp[0] / Dpp
 
-        z = self.line_search_l2(j,
-                                n_samples,
-                                d,
-                                C,
-                                sigma,
-                                beta,
-                                w,
-                                col_ro,
-                                col,
-                                y,
-                                b,
-                                Dp[0],
-                                Dpp,
-                                Dj_zero,
-                                bound,
-                                kernel_regularizer,
-                                regul_deriv)
+        # Perform line search
+        z_old = 0
+        z = d
+
+        step = 1
+        recompute = 0
+        while True:
+            z_diff = z_old - z
+
+            # Update old predictions
+            self.update(j, z_diff, C, indices, data, n_nz,
+                        y, b, &Dj_z)
+
+            if step >= self.max_steps:
+                if self.max_steps > 1:
+                    if self.verbose >= 3:
+                        print "Max steps reached during line search..."
+                    recompute = 1
+                break
+
+            #   0.5 * alpha * (w + z e_j)^T (w + z e_j)
+            # = 0.5 * alpha * w^T w + alpha * w_j z + 0.5 * alpha * z^2
+            cond = alpha * w[j] * z + (0.5 * alpha + self.sigma) * z * z
+            if cond + Dj_z - Dj_zero <= 0:
+                break
+
+            z_old = z
+            z *= self.beta
+            step += 1
 
         w[j] += z
 
-    cdef double regularizer_derivative(self,
-                                       int n_samples,
-                                       double *w,
-                                       double *col_ro):
-        cdef int i
-        cdef double ret = 0
-        for i in xrange(n_samples):
-            ret += w[i] * col_ro[i]
-        return ret
+        if recompute:
+            self.recompute(X, y, w, b)
 
-    cdef void derivatives_l2(self,
-                             int j,
-                             int n_samples,
-                             double C,
-                             double sigma,
-                             double *w,
-                             double *col_ro,
-                             double *col,
-                             double *y,
-                             double *b,
-                             double *Dp,
-                             double *Dpp,
-                             double *Dj_zero,
-                             double *bound,
-                             int kernel_regularizer,
-                             double *regul_deriv):
+    cdef void derivatives(self,
+                          int j,
+                          double C,
+                          int *indices,
+                          double *data,
+                          int n_nz,
+                          double *y,
+                          double *b,
+                          double *Lp,
+                          double *Lpp,
+                          double *L):
         raise NotImplementedError()
 
-    cdef double line_search_l2(self,
-                               int j,
-                               int n_samples,
-                               double d,
-                               double C,
-                               double sigma,
-                               double beta,
-                               double *w,
-                               double *col_ro,
-                               double *col,
-                               double *y,
-                               double *b,
-                               double Dp,
-                               double Dpp,
-                               double Dj_zero,
-                               double bound,
-                               int kernel_regularizer,
-                               double regul_deriv):
+    cdef void update(self,
+                     int j,
+                     double z_diff,
+                     double C,
+                     int *indices,
+                     double *data,
+                     int n_nz,
+                     double *y,
+                     double *b,
+                     double *L_new):
+        raise NotImplementedError()
+
+    cdef void recompute(self,
+                        Dataset X,
+                        double* y,
+                        double* w,
+                        double* b):
+        pass
+
+    cdef void _lipschitz_constant(self,
+                                  Dataset X,
+                                  double scale,
+                                  double* out):
+
+        cdef int n_samples = X.get_n_samples()
+        cdef int n_features = X.get_n_features()
+        cdef int i, j, ii
+
+        # Data pointers
+        cdef double* data
+        cdef int* indices
+        cdef int n_nz
+
+        for j in xrange(n_features):
+            X.get_column_ptr(j, &indices, &data, &n_nz)
+
+            for ii in xrange(n_nz):
+                i = indices[ii]
+
+                out[j] += scale * data[ii] * data[ii]
+
+    # NN regularization
+
+    cdef int solve_nn(self,
+                      int j,
+                      double C,
+                      double alpha,
+                      double U,
+                      int penalty,
+                      double *w,
+                      int n_samples,
+                      Dataset X,
+                      double *y,
+                      double *b,
+                      double Lcst,
+                      int *n_sv,
+                      double *PG,
+                      double m_bar,
+                      double M_bar,
+                      int shrinking):
+        cdef double Lj_zero = 0
+        cdef double Lp = 0
+        cdef double Lpp = 0
+        cdef double d
+        cdef double Lj_z
+        cdef double reg_z
+        cdef int step, recompute
+
+        # Data pointers
+        cdef double* data
+        cdef int* indices
+        cdef int n_nz
+
+        # Retrieve column.
+        X.get_column_ptr(j, &indices, &data, &n_nz)
+
+        # Compute derivatives
+        self.derivatives(j, C, indices, data, n_nz, y, b,
+                         &Lp, &Lpp, &Lj_zero)
+
+        # User chose to run the algorithm without line search.
+        if self.max_steps == 0:
+            Lpp_max = Lcst
+
+        Lpp = max(Lpp, 1e-12)
+
+        PG[0] = 0
+        if penalty == -1: # L1-regularization
+            Lp += alpha
+        else: # L2-regularization
+            Lp += alpha * w[j]
+            Lpp += alpha
+
+        # Shrinking.
+        if w[j] == 0:
+            if Lp < 0:
+                PG[0] = Lp
+            elif Lp > M_bar and shrinking:
+                return 1
+        elif w[j] == U:
+            if Lp > 0:
+                PG[0] = Lp
+            elif Lp < m_bar and shrinking:
+                return 1
+        else:
+            PG[0] = Lp
+
+        d = max(0, min(U, w[j] - Lp/Lpp)) - w[j]
+
+        if fabs(PG[0]) < 1.0e-12:
+            return 0
+
+        delta = Lp * d
+        z_old = 0
+        z = d
+
+        # Check z = lambda*d for lambda = 1, beta, beta^2 such that
+        # sufficient decrease condition is met.
+        step = 1
+        recompute = 0
+        while True:
+            # Reversed because of the minus in b[i] = 1 - y_i w^T x_i.
+            z_diff = z_old - z
+
+            # Compute objective function value.
+            self.update(j, z_diff, C, indices, data, n_nz, y, b, &Lj_z)
+
+            if step >= self.max_steps:
+                if self.max_steps > 1:
+                    if self.verbose >= 3:
+                        print "Max steps reached during line search..."
+                    recompute = 1
+                break
+
+            # Check stopping condition.
+            if penalty == -1:
+                reg_z = z
+            else:
+                reg_z = z * (w[j] + z)
+            if Lj_z - Lj_zero + alpha * reg_z - self.sigma * delta <= 0:
+                break
+
+            z_old = z
+            z *= self.beta
+            delta *= self.beta
+            step += 1
+
+        # end for num_linesearch
+
+        # Update w.
+        w[j] += z
+
+        if recompute:
+            self.recompute(X, y, w, b)
+
+        return 0
+
+    # L1 regularization
+
+    cdef int solve_l1(self,
+                      int j,
+                      double C,
+                      double alpha,
+                      double *w,
+                      int n_samples,
+                      Dataset X,
+                      double *y,
+                      double *b,
+                      double Lcst,
+                      double violation_old,
+                      double *violation,
+                      int *n_sv,
+                      int shrinking):
+        cdef double Lj_zero = 0
+        cdef double Lp = 0
+        cdef double Lpp = 0
+        cdef double Lpp_wj, d, wj_abs
+        cdef double cond
+        cdef double Lj_z
+        cdef int step, recompute
+
+        # Data pointers
+        cdef double* data
+        cdef int* indices
+        cdef int n_nz
+
+        # Retrieve column.
+        X.get_column_ptr(j, &indices, &data, &n_nz)
+
+        # Compute derivatives
+        self.derivatives(j, C, indices, data, n_nz, y, b,
+                         &Lp, &Lpp, &Lj_zero)
+
+        # User chose to run the algorithm without line search.
+        if self.max_steps == 0:
+            Lpp_max = Lcst
+
+        Lpp = max(Lpp, 1e-12)
+
+        Lp_p = Lp + alpha
+        Lp_n = Lp - alpha
+        violation[0] = 0
+
+        # Violation and shrinking.
+        if w[j] == 0:
+            if Lp_p < 0:
+                violation[0] = -Lp_p
+            elif Lp_n > 0:
+                violation[0] = Lp_n
+            elif shrinking and \
+                 Lp_p > violation_old / n_samples and \
+                 Lp_n < -violation_old / n_samples:
+                # Shrink!
+                if self.verbose >= 4:
+                    print "Shrink variable", j
+                return 1
+        elif w[j] > 0:
+            violation[0] = fabs(Lp_p)
+        else:
+            violation[0] = fabs(Lp_n)
+
+        # Obtain Newton direction d.
+        Lpp_wj = Lpp * w[j]
+        if Lp_p <= Lpp_wj:
+            d = -Lp_p / Lpp
+        elif Lp_n >= Lpp_wj:
+            d = -Lp_n / Lpp
+        else:
+            d = -w[j]
+
+        if fabs(d) < 1.0e-12:
+            return 0
+
+        wj_abs = fabs(w[j])
+        delta = alpha * (fabs(w[j] + d) - wj_abs) + Lp * d
+        z_old = 0
+        z = d
+
+        # Check z = lambda*d for lambda = 1, beta, beta^2 such that
+        # sufficient decrease condition is met.
+        step = 1
+        recompute = 0
+        while True:
+            # Reversed because of the minus in b[i] = 1 - y_i w^T x_i.
+            z_diff = z_old - z
+
+            # Compute objective function value.
+            self.update(j, z_diff, C, indices, data, n_nz, y, b, &Lj_z)
+
+            if step >= self.max_steps:
+                if self.max_steps > 1:
+                    if self.verbose >= 3:
+                        print "Max steps reached during line search..."
+                    recompute = 1
+                break
+
+            # Check stopping condition.
+            cond = alpha * (fabs(w[j] + z) - wj_abs) - self.sigma * delta
+            if cond + Lj_z - Lj_zero <= 0:
+                break
+
+            z_old = z
+            z *= self.beta
+            delta *= self.beta
+            step += 1
+
+        # end for num_linesearch
+
+        if w[j] == 0 and z != 0:
+            n_sv[0] += 1
+        elif z != 0 and w[j] == -z:
+            n_sv[0] -= 1
+
+        # Update w.
+        w[j] += z
+
+        if recompute:
+            self.recompute(X, y, w, b)
+
+        return 0
+
+    # L1/L2 regularization
+
+    cdef int solve_l1l2(self,
+                        int j,
+                        double C,
+                        double alpha,
+                        np.ndarray[double, ndim=2, mode='c'] w,
+                        int n_vectors,
+                        Dataset X,
+                        int* y,
+                        np.ndarray[double, ndim=2, mode='fortran'] Y,
+                        int multiclass,
+                        np.ndarray[double, ndim=2, mode='c'] b,
+                        double Lcst,
+                        double *g,
+                        double *d,
+                        double *d_old,
+                        double* Z,
+                        double violation_old,
+                        double *violation,
+                        int shrinking):
+
+        cdef int n_samples = Y.shape[0]
+        cdef int n_features = w.shape[1]
+        cdef int i, k, ii, step, recompute
+        cdef double scaling, delta, L, R_j, Lpp_max, dmax
+        cdef double tmp, L_new, R_j_new
+        cdef double L_tmp, Lpp_tmp
+        cdef double* y_ptr = <double*>Y.data
+        cdef double* b_ptr = <double*>b.data
+        cdef double* w_ptr = <double*>w.data
+        cdef double z_diff, g_norm
+        cdef int nv = n_samples * n_vectors
+
+        # Data pointers
+        cdef double* data
+        cdef int* indices
+        cdef int n_nz
+
+        # Retrieve column.
+        X.get_column_ptr(j, &indices, &data, &n_nz)
+
+        # Compute partial gradient.
+        if multiclass:
+            self.derivatives_mc(j, C, n_samples, n_vectors, indices, data, n_nz,
+                                y, b_ptr, g, Z, &L, &Lpp_max)
+        else:
+            L = 0
+            Lpp_max = -DBL_MAX
+
+            for k in xrange(n_vectors):
+                self.derivatives(j, C, indices, data, n_nz, y_ptr,
+                                 b_ptr, &g[k], &Lpp_tmp, &L_tmp)
+                L += L_tmp
+                Lpp_max = max(Lpp_max, Lpp_tmp)
+                y_ptr += n_samples
+                b_ptr += n_samples
+
+            Lpp_max = min(max(Lpp_max, LOWER), UPPER)
+
+        # User chose to run the algorithm without line search.
+        if self.max_steps == 0:
+            if Lcst == 0:
+                return 0 # The corresponding column is entirely 0.
+            Lpp_max = Lcst
+
+        # Compute partial gradient norm and regularization term.
+        g_norm = 0
+        R_j = 0
+
+        for k in xrange(n_vectors):
+            g_norm += g[k] * g[k]
+            R_j += w[k, j] * w[k, j]
+
+        g_norm = sqrt(g_norm)
+        R_j = sqrt(R_j)
+
+        # Violation and shrinking.
+        if R_j == 0:
+            g_norm -= alpha
+            if g_norm > 0:
+                violation[0] = g_norm
+            elif shrinking and \
+                 g_norm + violation_old / nv <= 0:
+                # Shrink!
+                if self.verbose >= 4:
+                    print "Shrink variable", j
+                return 1
+        else:
+            violation[0] = fabs(g_norm - alpha)
+
+        # Compute vector to be projected and scaling factor.
+        scaling = 0
+        for k in xrange(n_vectors):
+            d_old[k] = 0
+            d[k] = w[k, j] - g[k] / Lpp_max
+            scaling += d[k] * d[k]
+
+        scaling = 1 - alpha / (Lpp_max * sqrt(scaling))
+
+        if scaling < 0:
+            scaling = 0
+
+        # Project.
+        delta = 0
+        dmax = -DBL_MAX
+        for k in xrange(n_vectors):
+            # Difference between new and old solution.
+            d[k] = scaling * d[k] - w[k, j]
+            delta += d[k] * g[k]
+            dmax = max(dmax, fabs(d[k]))
+
+        # Check optimality.
+        if dmax < 1e-12:
+            return 0
+
+        # Perform line search.
+        step = 1
+        recompute = 0
+        while True:
+
+            # Update predictions, normalizations and objective value.
+            if multiclass:
+                self.update_mc(C, n_samples, n_vectors, indices, data, n_nz,
+                               y, b_ptr, d, d_old, Z, &L_new)
+            else:
+                L_new = 0
+                y_ptr = <double*>Y.data
+                b_ptr = <double*>b.data
+
+                for k in xrange(n_vectors):
+                    z_diff = d_old[k] - d[k]
+                    self.update(j, z_diff, C, indices, data, n_nz,
+                                y_ptr, b_ptr, &L_tmp)
+                    L_new += L_tmp
+                    y_ptr += n_samples
+                    b_ptr += n_samples
+
+            if step >= self.max_steps:
+                if self.max_steps > 1:
+                    if self.verbose >= 3:
+                        print "Max steps reached during line search..."
+                    recompute = 1
+                break
+
+            # Compute regularization term.
+            R_j_new = 0
+            for k in xrange(n_vectors):
+                tmp = w[k, j] + d[k]
+                R_j_new += tmp * tmp
+            R_j_new = sqrt(R_j_new)
+            # R_new = R - R_j + R_j_new
+
+            if step == 1:
+                delta += alpha * (R_j_new - R_j)
+                delta *= self.sigma
+
+            # Check decrease condition
+            if L_new - L + alpha * (R_j_new - R_j) <= delta:
+                break
+
+            delta *= self.beta
+            for k in xrange(n_vectors):
+                d_old[k] = d[k]
+                d[k] *= self.beta
+            step += 1
+
+        # Update solution
+        for k in xrange(n_vectors):
+            w[k, j] += d[k]
+
+        if recompute:
+            if multiclass:
+                self.recompute_mc(n_vectors, X, y, w, b)
+            else:
+                y_ptr = <double*>Y.data
+                b_ptr = <double*>b.data
+                w_ptr = <double*>w.data
+
+                for k in xrange(n_vectors):
+                    self.recompute(X, y_ptr, w_ptr, b_ptr)
+                    y_ptr += n_samples
+                    b_ptr += n_samples
+                    w_ptr += n_features
+
+        return 0
+
+    cdef void derivatives_mc(self,
+                             int j,
+                             double C,
+                             int n_samples,
+                             int n_vectors,
+                             int* indices,
+                             double *data,
+                             int n_nz,
+                             int* y,
+                             double* b,
+                             double* g,
+                             double* Z,
+                             double* L,
+                             double* Lpp_max):
+        raise NotImplementedError()
+
+    cdef void update_mc(self,
+                        double C,
+                        int n_samples,
+                        int n_vectors,
+                        int* indices,
+                        double *data,
+                        int n_nz,
+                        int* y,
+                        double *b,
+                        double *d,
+                        double *d_old,
+                        double* Z,
+                        double* L_new):
+        raise NotImplementedError()
+
+    cdef void recompute_mc(self,
+                           int n_vectors,
+                           Dataset X,
+                           int* y,
+                           np.ndarray[double, ndim=2, mode='c'] w,
+                           np.ndarray[double, ndim=2, mode='c'] b):
+        pass
+
+    cdef void lipschitz_constant_mt(self,
+                                    int n_vectors,
+                                    Dataset X,
+                                    double C,
+                                    double* out):
+        raise NotImplementedError()
+
+    cdef void lipschitz_constant_mc(self,
+                                    int n_vectors,
+                                    Dataset X,
+                                    double C,
+                                    double* out):
         raise NotImplementedError()
 
 
 cdef class Squared(LossFunction):
 
+    def __init__(self, verbose=0):
+        self.max_steps = 1
+        self.beta = 0.5
+        self.sigma = 0.01
+        self.verbose = verbose
 
-    cdef void solve_l2(self,
-                       int j,
-                       int n_samples,
-                       double C,
-                       double *w,
-                       double *col_ro,
-                       double *col,
-                       double *y,
-                       double *b,
-                       double *Dp,
-                       int kernel_regularizer):
-        cdef int i
-        cdef double pred, num, denom, old_w, val, z
+    cdef void derivatives(self,
+                          int j,
+                          double C,
+                          int *indices,
+                          double *data,
+                          int n_nz,
+                          double *y,
+                          double *b,
+                          double *Lp,
+                          double *Lpp,
+                          double *L):
+        cdef int ii, i
+        cdef double tmp
 
-        num = 0
-        denom = 0
-        Dp[0] = 0
+        Lp[0] = 0
+        Lpp[0] = 0
+        L[0] = 0
 
-        for i in xrange(n_samples):
-            val = col_ro[i] * y[i]
-            col[i] = val
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            tmp = data[ii] * C
+            Lpp[0] += data[ii] * tmp
+            Lp[0] += b[i] * tmp
+            L[0] += C * b[i] * b[i]
 
-            Dp[0] -= b[i] * val
-            pred = (1 - b[i]) * y[i]
-            denom += col_ro[i] * col_ro[i]
-            num += (y[i] - pred) * col_ro[i]
+        Lpp[0] *= 2
+        Lp[0] *= 2
 
-        denom *= 2 * C
-        denom += 1
-        num *= 2 * C
+    cdef void update(self,
+                     int j,
+                     double z_diff,
+                     double C,
+                     int *indices,
+                     double *data,
+                     int n_nz,
+                     double *y,
+                     double *b,
+                     double *L_new):
+        cdef int ii, i
 
-        if kernel_regularizer:
-            val = self.regularizer_derivative(n_samples, w, col_ro)
-            Dp[0] = val + 2 * C * Dp[0]
-            num -= val
-        else:
-            Dp[0] = w[j] + 2 * C * Dp[0]
-            num -= w[j]
+        L_new[0] = 0
 
-        old_w = w[j]
-        z = num/denom
-        w[j] += z
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            b[i] -= z_diff * data[ii]
+            L_new[0] += C * b[i] * b[i]
 
-        for i in xrange(n_samples):
-            b[i] -= z * col[i]
+
+cdef class Squared01(LossFunction):
+
+    def __init__(self, verbose=0):
+        self.max_steps = 1
+        self.beta = 0.5
+        self.sigma = 0.01
+        self.verbose = verbose
+
+    cdef void derivatives(self,
+                          int j,
+                          double C,
+                          int *indices,
+                          double *data,
+                          int n_nz,
+                          double *y,
+                          double *b,
+                          double *Lp,
+                          double *Lpp,
+                          double *L):
+        cdef int ii, i
+        cdef double tmp
+
+        Lp[0] = 0
+        Lpp[0] = 0
+        L[0] = 0
+
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            tmp = data[ii] * C
+            Lpp[0] += data[ii] * tmp
+            Lp[0] += b[i] * tmp
+            L[0] += C * b[i] * b[i]
+
+        Lpp[0] *= 8
+        Lp[0] *= 8
+        L[0] *= 4
+
+    cdef void update(self,
+                     int j,
+                     double z_diff,
+                     double C,
+                     int *indices,
+                     double *data,
+                     int n_nz,
+                     double *y,
+                     double *b,
+                     double *L_new):
+        cdef int ii, i
+
+        L_new[0] = 0
+
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            b[i] -= z_diff * data[ii]
+            L_new[0] += C * b[i] * b[i]
+
+        L_new[0] *= 4
 
 
 cdef class SquaredHinge(LossFunction):
 
-    cdef void derivatives_l2(self,
-                             int j,
-                             int n_samples,
-                             double C,
-                             double sigma,
-                             double *w,
-                             double *col_ro,
-                             double *col,
-                             double *y,
-                             double *b,
-                             double *Dp,
-                             double *Dpp,
-                             double *Dj_zero,
-                             double *bound,
-                             int kernel_regularizer,
-                             double *regul_deriv):
-        cdef int i
-        cdef double xj_sq = 0
-        cdef double val
+    def __init__(self,
+                 int max_steps=20,
+                 double sigma=0.01,
+                 double beta=0.5,
+                 int verbose=0):
+        self.max_steps = max_steps
+        self.sigma = sigma
+        self.beta = beta
+        self.verbose = verbose
 
-        Dp[0] = 0
-        Dpp[0] = 0
-        Dj_zero[0] = 0
+    # Binary
 
-        for i in xrange(n_samples):
-            val = col_ro[i] * y[i]
-            col[i] = val
-            xj_sq += val * val
+    cdef void derivatives(self,
+                          int j,
+                          double C,
+                          int *indices,
+                          double *data,
+                          int n_nz,
+                          double *y,
+                          double *b,
+                          double *Lp,
+                          double *Lpp,
+                          double *L):
+        cdef int i, ii
+        cdef double val, tmp
+
+        Lp[0] = 0
+        Lpp[0] = 0
+        L[0] = 0
+
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            val = data[ii] * y[i]
 
             if b[i] > 0:
-                Dp[0] -= b[i] * val
-                Dpp[0] += val * val
-                Dj_zero[0] += b[i] * b[i]
+                tmp = val * C
+                Lp[0] -= b[i] * tmp
+                Lpp[0] += val * tmp
+                L[0] += C * b[i] * b[i]
 
+        Lp[0] *= 2
+        Lpp[0] *= 2
 
-        if kernel_regularizer:
-            regul_deriv[0] = self.regularizer_derivative(n_samples,
-                                                         w,
-                                                         col_ro)
-            Dp[0] = regul_deriv[0] + 2 * C * Dp[0]
-            Dpp[0] = col_ro[j] + 2 * C * Dpp[0]
-            bound[0] = (2 * C * xj_sq + col_ro[j]) / 2.0 + sigma
-        else:
-            Dp[0] = w[j] + 2 * C * Dp[0]
-            Dpp[0] = 1 + 2 * C * Dpp[0]
-            bound[0] = (2 * C * xj_sq + 1) / 2.0 + sigma
+    cdef void update(self,
+                     int j,
+                     double z_diff,
+                     double C,
+                     int *indices,
+                     double *data,
+                     int n_nz,
+                     double *y,
+                     double *b,
+                     double *L_new):
+        cdef int i, ii
+        cdef double b_new
 
-        Dj_zero[0] *= C
+        L_new[0] = 0
 
-    cdef double line_search_l2(self,
-                               int j,
-                               int n_samples,
-                               double d,
-                               double C,
-                               double sigma,
-                               double beta,
-                               double *w,
-                               double *col_ro,
-                               double *col,
-                               double *y,
-                               double *b,
-                               double Dp,
-                               double Dpp,
-                               double Dj_zero,
-                               double bound,
-                               int kernel_regularizer,
-                               double regul_deriv):
-        cdef int step
-        cdef double z_diff, z_old, z, Dj_z, b_new, cond
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            b_new = b[i] + z_diff * data[ii] * y[i]
+            b[i] = b_new
+            if b_new > 0:
+                L_new[0] += b_new * b_new
 
-        z_old = 0
-        z = d
+        L_new[0] *= C
 
-        for step in xrange(100):
-            z_diff = z_old - z
+    cdef void derivatives_01(self,
+                            int j,
+                            double C,
+                            int *indices,
+                            double *data,
+                            int n_nz,
+                            double *y,
+                            double *b,
+                            double *Lp,
+                            double *Lpp,
+                            double *L):
+        cdef int i, ii
+        cdef double val, tmp
 
-            # lambda <= Dpp/bound is equivalent to Dp/z <= -bound
-            if Dp/z + bound <= 0:
+        Lp[0] = 0
+        Lpp[0] = 0
+        L[0] = 0
+
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            val = data[ii] * (4 * y[i] - 2)
+
+            if b[i] > 0:
+                tmp = val * C
+                Lp[0] -= b[i] * tmp
+                Lpp[0] += val * tmp
+                L[0] += C * b[i] * b[i]
+
+        Lp[0] *= 2
+        Lpp[0] *= 2
+
+    cdef void update_01(self,
+                       int j,
+                       double z_diff,
+                       double C,
+                       int *indices,
+                       double *data,
+                       int n_nz,
+                       double *y,
+                       double *b,
+                       double *L_new):
+        cdef int i, ii
+        cdef double b_new
+
+        L_new[0] = 0
+
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            b_new = b[i] + z_diff * data[ii] * (4 * y[i] - 2)
+            b[i] = b_new
+            if b_new > 0:
+                L_new[0] += b_new * b_new
+
+        L_new[0] *= C
+
+    # Multiclass
+
+    cdef void derivatives_mc(self,
+                             int j,
+                             double C,
+                             int n_samples,
+                             int n_vectors,
+                             int* indices,
+                             double *data,
+                             int n_nz,
+                             int* y,
+                             double* b,
+                             double* g,
+                             double* h,
+                             double* L,
+                             double* Lpp_max):
+
+        cdef int ii, i, k
+        cdef double tmp, tmp2, b_val
+        cdef double* b_ptr = b
+
+        # Compute objective value, gradient and largest second derivative.
+        Lpp_max[0] = 0
+        L[0] = 0
+
+        for k in xrange(n_vectors):
+            # First derivative with respect to w_jk
+            g[k] = 0
+            # Second derivative with respect to  w_jk^2
+            h[k] = 0
+
+        for k in xrange(n_vectors):
+
+            for ii in xrange(n_nz):
+                i = indices[ii]
+
+                if y[i] == k:
+                    continue
+
+                # b_val = b[k, i]
+                b_val = b_ptr[i]
+
+                if b_val > 0:
+                    L[0] += C * b_val * b_val
+                    tmp = C * data[ii]
+                    tmp2 = tmp * b_val
+                    g[y[i]] -= tmp2
+                    g[k] += tmp2
+                    tmp2 = tmp * data[ii]
+                    h[y[i]] += tmp2
+                    h[k] += tmp2
+
+            b_ptr += n_samples
+
+        Lpp_max[0] = -DBL_MAX
+        for k in xrange(n_vectors):
+            g[k] *= 2
+            Lpp_max[0] = max(Lpp_max[0], h[k])
+
+        Lpp_max[0] *= 2
+        Lpp_max[0] = min(max(Lpp_max[0], LOWER), UPPER)
+
+    cdef void update_mc(self,
+                        double C,
+                        int n_samples,
+                        int n_vectors,
+                        int* indices,
+                        double *data,
+                        int n_nz,
+                        int* y,
+                        double *b,
+                        double *d,
+                        double *d_old,
+                        double* h,
+                        double* L_new):
+
+        cdef int ii, i, k
+        cdef double tmp, b_new
+        cdef double* b_ptr
+
+        L_new[0] = 0
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            b_ptr = b + i
+
+            tmp = d_old[y[i]] - d[y[i]]
+
+            for k in xrange(n_vectors):
+                if k != y[i]:
+                    # b_ptr[0] = b[k, i]
+                    b_new = b_ptr[0] + (tmp - (d_old[k] - d[k])) * data[ii]
+                    b_ptr[0] = b_new
+                    if b_new > 0:
+                        L_new[0] += C * b_new * b_new
+
+                b_ptr += n_samples
+
+    cdef void lipschitz_constant_mt(self,
+                                    int n_vectors,
+                                    Dataset X,
+                                    double C,
+                                    double* out):
+
+        cdef double scale = 2 * C * n_vectors
+        self._lipschitz_constant(X, scale, out)
+
+    cdef void lipschitz_constant_mc(self,
+                                    int n_vectors,
+                                    Dataset X,
+                                    double C,
+                                    double* out):
+
+        cdef double scale = 4 * C * (n_vectors - 1)
+        self._lipschitz_constant(X, scale, out)
+
+    cpdef _C_lower_bound_kernel(self,
+                                KernelDataset kds,
+                                np.ndarray[double, ndim=2, mode='fortran'] Y,
+                                search_size=None,
+                                random_state=None):
+
+        cdef int n_samples = kds.get_n_samples()
+        cdef int n = n_samples
+
+        cdef int i, j, k, l
+        cdef int n_vectors = Y.shape[1]
+
+        cdef double val, max_ = -DBL_MAX
+        cdef int* indices
+        cdef double* data
+        cdef int n_nz
+
+        cdef np.ndarray[int, ndim=1, mode='c'] ind
+        ind = np.arange(n_samples, dtype=np.int32)
+
+        if search_size is not None:
+            n = search_size
+            random_state.shuffle(ind)
+
+        for j in xrange(n):
+            k = ind[j]
+
+            kds.get_column_ptr(k, &indices, &data, &n_nz)
+
+            for l in xrange(n_vectors):
+                val = 0
                 for i in xrange(n_samples):
-                    b[i] += z_diff * col[i]
-                break
+                    val += Y[i, l] * data[i]
+                max_ = max(max_, fabs(val))
 
-            Dj_z = 0
+        return max_
 
-            for i in xrange(n_samples):
-                b_new = b[i] + z_diff * col[i]
-                b[i] = b_new
-                if b_new > 0:
-                    Dj_z += b_new * b_new
+    def C_lower_bound(self, X, y, kernel=None, search_size=None,
+                      random_state=None, **kernel_params):
+        Y = LabelBinarizer(neg_label=-1, pos_label=1).fit_transform(y)
+        Y = np.asfortranarray(Y, dtype=np.float64)
 
-            Dj_z *= C
+        if kernel is None:
+            den = np.max(np.abs(np.dot(Y.T, X)))
+        else:
+            random_state = check_random_state(random_state)
+            kds = KernelDataset(X, X, kernel=kernel, **kernel_params)
+            den = self._C_lower_bound_kernel(kds, Y, search_size, random_state)
 
-            z_old = z
+        if den == 0.0:
+            raise ValueError('Ill-posed')
 
-            if kernel_regularizer:
-                cond = regul_deriv * z + (0.5 * col_ro[j] * y[i] + sigma) * z * z
-            else:
-                #   0.5 * (w + z e_j)^T (w + z e_j)
-                # = 0.5 * w^T w + w_j z + 0.5 z^2
-                cond = w[j] * z + (0.5 + sigma) * z * z
+        return 0.5 / den
 
-            cond += Dj_z - Dj_zero
 
-            if cond <= 0:
-                break
-            else:
-                z *= beta
+cdef class SquaredHinge01(LossFunction):
 
-        return z
+    def __init__(self,
+                 int max_steps=20,
+                 double sigma=0.01,
+                 double beta=0.5,
+                 int verbose=0):
+        self.max_steps = max_steps
+        self.sigma = sigma
+        self.beta = beta
+        self.verbose = verbose
+
+    # Binary
+
+    cdef void derivatives(self,
+                          int j,
+                          double C,
+                          int *indices,
+                          double *data,
+                          int n_nz,
+                          double *y,
+                          double *b,
+                          double *Lp,
+                          double *Lpp,
+                          double *L):
+        cdef int i, ii
+        cdef double val, tmp
+
+        Lp[0] = 0
+        Lpp[0] = 0
+        L[0] = 0
+
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            val = data[ii] * (4 * y[i] - 2)
+
+            if b[i] > 0:
+                tmp = val * C
+                Lp[0] -= b[i] * tmp
+                Lpp[0] += val * tmp
+                L[0] += C * b[i] * b[i]
+
+        Lp[0] *= 2
+        Lpp[0] *= 2
+
+    cdef void update(self,
+                     int j,
+                     double z_diff,
+                     double C,
+                     int *indices,
+                     double *data,
+                     int n_nz,
+                     double *y,
+                     double *b,
+                     double *L_new):
+        cdef int i, ii
+        cdef double b_new
+
+        L_new[0] = 0
+
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            b_new = b[i] + z_diff * data[ii] * (4 * y[i] - 2)
+            b[i] = b_new
+            if b_new > 0:
+                L_new[0] += b_new * b_new
+
+        L_new[0] *= C
 
 
 cdef class ModifiedHuber(LossFunction):
 
-    cdef void derivatives_l2(self,
-                             int j,
-                             int n_samples,
-                             double C,
-                             double sigma,
-                             double *w,
-                             double *col_ro,
-                             double *col,
-                             double *y,
-                             double *b,
-                             double *Dp,
-                             double *Dpp,
-                             double *Dj_zero,
-                             double *bound,
-                             int kernel_regularizer,
-                             double *regul_deriv):
-        cdef int i
-        cdef double xj_sq = 0
-        cdef double val
+    def __init__(self,
+                 int max_steps=30,
+                 double sigma=0.01,
+                 double beta=0.5,
+                 int verbose=0):
+        self.max_steps = max_steps
+        self.sigma = sigma
+        self.beta = beta
+        self.verbose = verbose
 
-        Dp[0] = 0
-        Dpp[0] = 0
-        Dj_zero[0] = 0
+    cdef void derivatives(self,
+                          int j,
+                          double C,
+                          int *indices,
+                          double *data,
+                          int n_nz,
+                          double *y,
+                          double *b,
+                          double *Lp,
+                          double *Lpp,
+                          double *L):
+        cdef int i, ii
+        cdef double val, tmp
 
-        for i in xrange(n_samples):
-            val = col_ro[i] * y[i]
-            col[i] = val
-            xj_sq += val * val
+        Lp[0] = 0
+        Lpp[0] = 0
+        L[0] = 0
+
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            val = data[ii] * y[i]
 
             if b[i] > 2:
-                Dp[0] -= 2 * val
+                Lp[0] -= 2 * val * C
                 # -4 yp = 4 (b[i] - 1)
-                Dj_zero[0] += 4 * (b[i] - 1)
+                L[0] += 4 * C * (b[i] - 1)
             elif b[i] > 0:
-                Dp[0] -= b[i] * val
-                Dpp[0] += val * val
-                Dj_zero[0] += b[i] * b[i]
+                tmp = val * C
+                Lp[0] -= b[i] * tmp
+                Lpp[0] += val * tmp
+                L[0] += C * b[i] * b[i]
 
-        if kernel_regularizer:
-            regul_deriv[0] = self.regularizer_derivative(n_samples,
-                                                         w,
-                                                         col_ro)
-            Dp[0] = regul_deriv[0] + 2 * C * Dp[0]
-            Dpp[0] = col_ro[j] + 2 * C * Dpp[0]
-            bound[0] = (2 * C * xj_sq + col_ro[j]) / 2.0 + sigma
-        else:
-            Dp[0] = w[j] + 2 * C * Dp[0]
-            Dpp[0] = 1 + 2 * C * Dpp[0]
-            bound[0] = (2 * C * xj_sq + 1) / 2.0 + sigma
+        Lp[0] *= 2
+        Lpp[0] *= 2
 
-        Dj_zero[0] *= C
+    cdef void update(self,
+                     int j,
+                     double z_diff,
+                     double C,
+                     int *indices,
+                     double *data,
+                     int n_nz,
+                     double *y,
+                     double *b,
+                     double *L_new):
+        cdef int i, ii
+        cdef double b_new
 
+        L_new[0] = 0
 
-    cdef double line_search_l2(self,
-                               int j,
-                               int n_samples,
-                               double d,
-                               double C,
-                               double sigma,
-                               double beta,
-                               double *w,
-                               double *col_ro,
-                               double *col,
-                               double *y,
-                               double *b,
-                               double Dp,
-                               double Dpp,
-                               double Dj_zero,
-                               double bound,
-                               int kernel_regularizer,
-                               double regul_deriv):
-        cdef int step
-        cdef double z_diff, z_old, z, Dj_z, b_new, cond
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            b_new = b[i] + z_diff * data[ii] * y[i]
+            b[i] = b_new
 
-        z_old = 0
-        z = d
-
-        for step in xrange(100):
-            z_diff = z_old - z
-
-            # lambda <= Dpp/bound is equivalent to Dp/z <= -bound
-            if Dp/z + bound <= 0:
-                for i in xrange(n_samples):
-                    b[i] += z_diff * col[i]
-                break
-
-            Dj_z = 0
-
-            for i in xrange(n_samples):
-                b_new = b[i] + z_diff * col[i]
-                b[i] = b_new
-
-                if b_new > 2:
-                    Dj_z += 4 * (b[i] - 1)
-                elif b_new > 0:
-                    Dj_z += b_new * b_new
-
-            Dj_z *= C
-
-            z_old = z
-
-            if kernel_regularizer:
-                cond = regul_deriv * z + (0.5 * col_ro[j] * y[i] + sigma) * z * z
-            else:
-                #   0.5 * (w + z e_j)^T (w + z e_j)
-                # = 0.5 * w^T w + w_j z + 0.5 z^2
-                cond = w[j] * z + (0.5 + sigma) * z * z
-
-            cond += Dj_z - Dj_zero
-
-            if cond <= 0:
-                break
-            else:
-                z *= beta
-
-        return z
+            if b_new > 2:
+                L_new[0] += 4 * C * (b[i] - 1)
+            elif b_new > 0:
+                L_new[0] += C * b_new * b_new
 
 
 cdef class Log(LossFunction):
 
-    cdef void derivatives_l2(self,
-                             int j,
-                             int n_samples,
-                             double C,
-                             double sigma,
-                             double *w,
-                             double *col_ro,
-                             double *col,
-                             double *y,
-                             double *b,
-                             double *Dp,
-                             double *Dpp,
-                             double *Dj_zero,
-                             double *bound,
-                             int kernel_regularizer,
-                             double *regul_deriv):
-        cdef int i
-        cdef double xj_sq = 0
-        cdef double val, tau, exppred
+    def __init__(self,
+                 int max_steps=30,
+                 double sigma=0.01,
+                 double beta=0.5,
+                 int verbose=0):
+        self.max_steps = max_steps
+        self.sigma = sigma
+        self.beta = beta
+        self.verbose = verbose
 
-        Dp[0] = 0
-        Dpp[0] = 0
-        Dj_zero[0] = 0
+    # Binary
 
-        for i in xrange(n_samples):
-            val = col_ro[i] * y[i]
-            col[i] = val
+    cdef void derivatives(self,
+                          int j,
+                          double C,
+                          int *indices,
+                          double *data,
+                          int n_nz,
+                          double *y,
+                          double *b,
+                          double *Lp,
+                          double *Lpp,
+                          double *L):
+        cdef int i, ii
+        cdef double val, tau, exppred, tmp
+
+        Lp[0] = 0
+        Lpp[0] = 0
+        L[0] = 0
+
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            val = data[ii] * y[i]
 
             exppred = 1 + 1 / b[i]
             tau = 1 / exppred
-            Dp[0] += val * (tau - 1)
-            Dpp[0] += val * val * tau * (1 - tau)
-            Dj_zero[0] += log(exppred)
-
-        if kernel_regularizer:
-            regul_deriv[0] = self.regularizer_derivative(n_samples,
-                                                         w,
-                                                         col_ro)
-            Dp[0] = regul_deriv[0] + C * Dp[0]
-            Dpp[0] = col_ro[j] + C * Dpp[0]
-        else:
-            Dp[0] = w[j] + C * Dp[0]
-            Dpp[0] = 1 + C * Dpp[0]
-
-        Dj_zero[0] *= C
+            tmp = val * C
+            Lp[0] += tmp * (tau - 1)
+            Lpp[0] += tmp * val * tau * (1 - tau)
+            L[0] += C * log(exppred)
 
 
-    cdef double line_search_l2(self,
-                               int j,
-                               int n_samples,
-                               double d,
-                               double C,
-                               double sigma,
-                               double beta,
-                               double *w,
-                               double *col_ro,
-                               double *col,
-                               double *y,
-                               double *b,
-                               double Dp,
-                               double Dpp,
-                               double Dj_zero,
-                               double bound,
-                               int kernel_regularizer,
-                               double regul_deriv):
-        cdef int step
-        cdef double z_diff, z_old, z, Dj_z, exppred, cond
+    cdef void update(self,
+                     int j,
+                     double z_diff,
+                     double C,
+                     int *indices,
+                     double *data,
+                     int n_nz,
+                     double *y,
+                     double *b,
+                     double *L_new):
+        cdef int i, ii
+        cdef double exppred
 
-        z_old = 0
-        z = d
+        L_new[0] = 0
 
-        for step in xrange(100):
-            z_diff = z - z_old
-            Dj_z = 0
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            b[i] /= exp(z_diff * data[ii] * y[i])
+            exppred = 1 + 1 / b[i]
+            L_new[0] += C * log(exppred)
 
-            for i in xrange(n_samples):
-                b[i] *= exp(z_diff * col[i])
-                exppred = 1 + 1 / b[i]
-                Dj_z += log(exppred)
+    # Multiclass
 
-            Dj_z *= C
+    cdef void derivatives_mc(self,
+                             int j,
+                             double C,
+                             int n_samples,
+                             int n_vectors,
+                             int* indices,
+                             double *data,
+                             int n_nz,
+                             int* y,
+                             double* b,
+                             double *g,
+                             double* Z,
+                             double* L,
+                             double* Lpp_max):
 
-            z_old = z
+        cdef int ii, i, k
+        cdef double Lpp, tmp, tmp2
+        cdef double* b_ptr
 
-            if kernel_regularizer:
-                cond = regul_deriv * z + (0.5 * col_ro[j] * y[i] + sigma) * z * z
-            else:
-                #   0.5 * (w + z e_j)^T (w + z e_j)
-                # = 0.5 * w^T w + w_j z + 0.5 z^2
-                cond = w[j] * z + (0.5 + sigma) * z * z
+        # Compute normalization and objective value.
+        L[0] = 0
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            b_ptr = b + i
+            Z[i] = 0
+            for k in xrange(n_vectors):
+                # b_ptr[0] = b[k, i]
+                Z[i] += b_ptr[0]
+                b_ptr += n_samples
+            L[0] += C * log(Z[i])
 
-            cond += Dj_z - Dj_zero
+        # Compute gradient and largest second derivative.
+        Lpp_max[0] = -DBL_MAX
 
-            if cond <= 0:
-                break
-            else:
-                z *= beta
+        b_ptr = b
+        for k in xrange(n_vectors):
+            g[k] = 0
+            Lpp = 0
 
-        return z
+            for ii in xrange(n_nz):
+                i = indices[ii]
 
+                if Z[i] == 0:
+                    continue
 
-def _primal_cd_l2svm_l1r(self,
-                         np.ndarray[double, ndim=1, mode='c'] w,
-                         np.ndarray[double, ndim=1, mode='c'] b,
-                         X,
-                         np.ndarray[double, ndim=1] y,
-                         np.ndarray[int, ndim=1, mode='c'] index,
-                         KernelCache kcache,
-                         int linear_kernel,
-                         selection,
-                         int search_size,
-                         termination,
-                         int n_components,
-                         double C,
-                         int max_iter,
-                         RandomState rs,
-                         double tol,
-                         callback,
-                         int verbose):
+                # b_ptr[i] = b[k, i]
+                tmp = b_ptr[i] / Z[i]
+                tmp2 = data[ii] * C
+                Lpp += tmp2 * data[ii] * tmp * (1 - tmp)
 
-    cdef Py_ssize_t n_samples = X.shape[0]
-    cdef Py_ssize_t n_features = X.shape[1]
+                if k == y[i]:
+                    tmp -= 1
 
-    cdef np.ndarray[double, ndim=2, mode='fortran'] Xf
-    cdef np.ndarray[double, ndim=2, mode='c'] Xc
+                g[k] += tmp * tmp2
 
-    if linear_kernel:
-        Xf = X
-    else:
-        Xc = X
-        n_features = n_samples
+            Lpp_max[0] = max(Lpp, Lpp_max[0])
+            b_ptr += n_samples
 
-    cdef int j, s, t, i = 0
-    cdef int active_size = n_features
-    cdef int max_num_linesearch = 20
+        Lpp_max[0] = min(max(Lpp_max[0], LOWER), UPPER)
 
-    cdef double sigma = 0.01
-    cdef double beta = 0.5
-    cdef double d, Lp, Lpp, Lpp_wj
-    cdef double Lpmax_old = DBL_MAX
-    cdef double Lpmax_new
-    cdef double Lpmax_init
-    cdef double z, z_old, z_diff
-    cdef double Lj_zero, Lj_z
-    cdef double appxcond, cond
-    cdef double val, val_sq
-    cdef double Lp_p, Lp_n, violation
-    cdef double delta, b_new, b_add
-    cdef double xj_sq
-    cdef double wj_abs
+    cdef void update_mc(self,
+                        double C,
+                        int n_samples,
+                        int n_vectors,
+                        int* indices,
+                        double *data,
+                        int n_nz,
+                        int* y,
+                        double* b,
+                        double* d,
+                        double* d_old,
+                        double* Z,
+                        double* L_new):
+        cdef int i, ii, k
+        cdef double tmp
+        cdef double* b_ptr
 
-    cdef double* col_data
-    cdef double* col_ro
-    cdef np.ndarray[double, ndim=1, mode='c'] col
-    col = np.zeros(n_samples, dtype=np.float64)
-    col_data = <double*>col.data
+        L_new[0] = 0
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            b_ptr = b + i
+            tmp = d_old[y[i]] - d[y[i]]
+            Z[i] = 0
 
-    cdef list[int].iterator it
+            for k in xrange(n_vectors):
+                # b_ptr[0] = b[k, i]
+                if y[i] != k:
+                    b_ptr[0] *= exp((d[k] - d_old[k] + tmp) * data[ii])
+                Z[i] += b_ptr[0]
+                b_ptr += n_samples
 
-    cdef int check_n_sv = termination == "n_components"
-    cdef int check_convergence = termination == "convergence"
-    cdef int stop = 0
-    cdef int select_method = get_select_method(selection)
-    cdef int permute = selection == "permute" or linear_kernel
-    cdef int has_callback = callback is not None
+            L_new[0] += C * log(Z[i])
 
-    # FIXME: would be better to store the support indices in the class.
-    if not linear_kernel:
+    cdef void recompute(self,
+                        Dataset X,
+                        double* y,
+                        double* w,
+                        double* b):
+        cdef int n_samples = X.get_n_samples()
+        cdef int n_features = X.get_n_features()
+        cdef int i, j, ii
+        cdef double tmp
+
+        # Data pointers
+        cdef double* data
+        cdef int* indices
+        cdef int n_nz
+
+        for i in xrange(n_samples):
+            b[i] = 0
+
         for j in xrange(n_features):
-            if w[j] != 0:
-                kcache.add_sv(j)
+            X.get_column_ptr(j, &indices, &data, &n_nz)
+
+            for ii in xrange(n_nz):
+                i = indices[ii]
+                b[i] += data[ii] * w[j]
+
+        for i in xrange(n_samples):
+            b[i] = exp(y[i] * b[i])
+
+    cdef void recompute_mc(self,
+                           int n_vectors,
+                           Dataset X,
+                           int* y,
+                           np.ndarray[double, ndim=2, mode='c'] w,
+                           np.ndarray[double, ndim=2, mode='c'] b):
+        cdef int n_samples = X.get_n_samples()
+        cdef int n_features = X.get_n_features()
+        cdef int i, j, k, k2, ii
+        cdef double tmp
+
+        # Data pointers
+        cdef double* data
+        cdef int* indices
+        cdef int n_nz
+
+        for i in xrange(n_samples):
+            for k in xrange(n_vectors):
+                b[k, i] = 0
+
+        for j in xrange(n_features):
+            X.get_column_ptr(j, &indices, &data, &n_nz)
+
+            for ii in xrange(n_nz):
+                i = indices[ii]
+
+                for k in xrange(n_vectors):
+                    tmp = w[k, j] * data[ii]
+                    if k == y[i]:
+                        for k2 in xrange(n_vectors):
+                            if k2 != y[i]:
+                                b[k2, i] -= tmp
+                    else:
+                        b[k, i] += tmp
+
+        for i in xrange(n_samples):
+            for k in xrange(n_vectors):
+                if k != y[i]:
+                    b[k, i] = exp(b[k, i])
+                else:
+                    b[k, i] = 1
+
+    cdef void lipschitz_constant_mt(self,
+                                    int n_vectors,
+                                    Dataset X,
+                                    double C,
+                                    double* out):
+
+        cdef double scale = 0.25 * C * n_vectors
+        self._lipschitz_constant(X, scale, out)
+
+    cdef void lipschitz_constant_mc(self,
+                                    int n_vectors,
+                                    Dataset X,
+                                    double C,
+                                    double* out):
+
+        cdef double scale = C * 0.5
+        self._lipschitz_constant(X, scale, out)
+
+def _primal_cd(self,
+               np.ndarray[double, ndim=2, mode='c'] w,
+               np.ndarray[double, ndim=2, mode='c'] b,
+               Dataset X,
+               np.ndarray[int, ndim=1] y,
+               np.ndarray[double, ndim=2, mode='fortran'] Y,
+               int k,
+               int multiclass,
+               np.ndarray[int, ndim=1, mode='c'] active_set,
+               int penalty,
+               LossFunction loss,
+               selection,
+               int search_size,
+               int permute,
+               termination,
+               int n_components,
+               double C,
+               double alpha,
+               double U,
+               int max_iter,
+               int max_steps,
+               int shrinking,
+               double violation_init,
+               RandomState rs,
+               double tol,
+               callback,
+               int n_calls,
+               int verbose):
+
+    # Dataset
+    cdef int n_samples = X.get_n_samples()
+    cdef int n_features = active_set.shape[0]
+    cdef int n_vectors = w.shape[0]
+    cdef int active_size = n_features
+
+    # Counters
+    cdef int t, s, i, j, n
+
+    # Optimality violations
+    cdef double violation_max_old = DBL_MAX
+    cdef double violation_max
+    cdef double violation
+    cdef double violation_sum
+    cdef double Dpmax, Dp
+    cdef double M_bar = DBL_MAX
+    cdef double m_bar = -DBL_MAX
+    cdef double M, m, PG
+
+    # Convergence
+    cdef int check_violation_sum = termination == "violation_sum"
+    cdef int check_violation_max = termination == "violation_max"
+    cdef int check_convergence = check_violation_sum or check_violation_max
+    cdef int check_n_sv = termination == "n_components"
+    cdef int stop = 0
+    cdef int has_callback = callback is not None
+    cdef int shrink = 0
+    cdef int n_sv = 0
+
+    # Coordinate selection
+    cdef int select_method = get_select_method(selection)
+    cdef int cyclic = selection == "cyclic"
+    cdef int uniform = selection == "uniform"
+    if uniform:
+        permute = 0
+        shrinking = 0
+    cdef int* active_set_ptr = <int*>active_set.data
+    cdef double* b_ptr
+    cdef double* y_ptr
+    cdef double* w_ptr
+
+    # Lipschitz constants
+    cdef np.ndarray[double, ndim=1, mode='c'] Lcst
+    Lcst = np.zeros(n_features, dtype=np.float64)
+    if max_steps == 0:
+        if multiclass:
+            loss.lipschitz_constant_mc(n_vectors, X, C, <double*>Lcst.data)
+        else:
+            loss.lipschitz_constant_mt(n_vectors, X, C, <double*>Lcst.data)
+
+    # Vector containers
+    cdef np.ndarray[double, ndim=1, mode='c'] g  # Partial gradient
+    cdef np.ndarray[double, ndim=1, mode='c'] d  # Block update
+    cdef np.ndarray[double, ndim=1, mode='c'] d_old  # Block update (old)
+    cdef np.ndarray[double, ndim=1, mode='c'] buf  # Buffer
+    cdef double* buf_ptr
+    if k == -1:
+        # Multiclass or multitask.
+        g = np.zeros(n_vectors, dtype=np.float64)
+        d = np.zeros(n_vectors, dtype=np.float64)
+        d_old = np.zeros(n_vectors, dtype=np.float64)
+        if multiclass:
+            buf = np.zeros(n_samples, dtype=np.float64)
+            buf_ptr = <double*>buf.data
+        b_ptr = <double*>b.data
+    else:
+        # Binary classification or regression.
+        b_ptr = <double*>b.data + k * n_samples
+        y_ptr = <double*>Y.data + k * n_samples
+        w_ptr = <double*>w.data + k * n_features
+        buf = np.zeros(n_samples, dtype=np.float64)
+        buf_ptr = <double*>buf.data
 
     for t in xrange(max_iter):
-        if verbose >= 1:
+        if verbose >= 2:
             print "\nIteration", t
 
-        Lpmax_new = 0
-
+        # Permute features (cyclic case only)
         if permute:
-            rs.shuffle(index[:active_size])
+            rs.shuffle(active_set[:active_size])
+
+        violation_max = 0
+        violation_sum = 0
+        Dpmax = 0
+        M = -DBL_MAX
+        m = DBL_MAX
 
         s = 0
-
         while s < active_size:
-            if permute:
-                j = index[s]
+            # Select coordinate.
+            if cyclic:
+                j = active_set[s]
+            elif uniform:
+                j = rs.randint(n_features - 1)
             else:
-                j = select_sv_precomputed(index, search_size,
-                                          active_size, select_method, b, kcache,
-                                          0, rs)
+                j = select_sv_precomputed(active_set_ptr, search_size,
+                                          active_size, select_method, b_ptr, rs)
 
-            Lj_zero = 0
-            Lp = 0
-            Lpp = 0
-            xj_sq = 0
+            # Solve sub-problem.
+            if penalty <= -1:
+                shrink = loss.solve_nn(j, C, alpha, U, penalty,
+                                       w_ptr, n_samples, X,
+                                       y_ptr, b_ptr, Lcst[j], &n_sv, &PG,
+                                       m_bar, M_bar, shrinking)
+            elif penalty == 1:
+                shrink = loss.solve_l1(j, C, alpha, w_ptr, n_samples, X,
+                                       y_ptr, b_ptr, Lcst[j], violation_max_old,
+                                       &violation, &n_sv, shrinking)
+            elif penalty == 12:
+                shrink = loss.solve_l1l2(j, C, alpha, w, n_vectors, X,
+                                         <int*>y.data, Y, multiclass,
+                                         b, Lcst[j], <double*>g.data,
+                                         <double*>d.data, <double*>d_old.data,
+                                         buf_ptr, violation_max_old,
+                                         &violation, shrinking)
+            elif penalty == 2:
+                loss.solve_l2(j, C, alpha, w_ptr, X, y_ptr, b_ptr, &Dp)
+                Dpmax = max(Dpmax, fabs(Dp))
+                if w_ptr[j] != 0:
+                    n_sv += 1
 
-            if linear_kernel:
-                col_ro = (<double*>Xf.data) + j * n_samples
-            else:
-                kcache.compute_column(Xc, Xc, j, col)
-                col_ro = col_data
-
-            for i in xrange(n_samples):
-                val = col_ro[i] * y[i]
-                col[i] = val
-                val_sq = val * val
-                if b[i] > 0:
-                    Lp -= val * b[i]
-                    Lpp += val_sq
-                    Lj_zero += b[i] * b[i]
-                xj_sq += val_sq
-            # end for
-
-            xj_sq *= C
-            Lj_zero *= C
-            Lp *= 2 * C
-
-            Lpp *= 2 * C
-            Lpp = max(Lpp, 1e-12)
-
-            Lp_p = Lp + 1
-            Lp_n = Lp - 1
-            violation = 0
-
-            # Shrinking.
-            if w[j] == 0:
-                if Lp_p < 0:
-                    violation = -Lp_p
-                elif Lp_n > 0:
-                    violation = Lp_n
-                elif Lp_p > Lpmax_old / n_samples and Lp_n < -Lpmax_old / n_samples:
-                    active_size -= 1
-                    index[s], index[active_size] = index[active_size], index[s]
-                    # Jump w/o incrementing s so as to use the swapped sample.
-                    continue
-            elif w[j] > 0:
-                violation = fabs(Lp_p)
-            else:
-                violation = fabs(Lp_n)
-
-            Lpmax_new = max(Lpmax_new, violation)
-
-            # Obtain Newton direction d.
-            Lpp_wj = Lpp * w[j]
-            if Lp_p <= Lpp_wj:
-                d = -Lp_p / Lpp
-            elif Lp_n >= Lpp_wj:
-                d = -Lp_n / Lpp
-            else:
-                d = -w[j]
-
-            if fabs(d) < 1.0e-12:
-                s += 1
+            # Check if need to shrink.
+            if shrink:
+                active_size -= 1
+                active_set[s], active_set[active_size] = \
+                    active_set[active_size], active_set[s]
                 continue
 
-            wj_abs = fabs(w[j])
-            delta = fabs(w[j] + d) - wj_abs + Lp * d
-            z_old = 0
-            z = d
-
-            # Check z = lambda*d for lambda = 1, beta, beta^2 such that
-            # sufficient decrease condition is met.
-            for num_linesearch in xrange(max_num_linesearch):
-                # Reversed because of the minus in b[i] = 1 - y_i w^T x_i.
-                z_diff = z_old - z
-                cond = fabs(w[j] + z) - wj_abs - sigma * delta
-
-                appxcond = xj_sq * z * z + Lp * z + cond
-
-                # Avoid line search if possible.
-                if appxcond <= 0:
-                    for i in xrange(n_samples):
-                        # Need to remove the old z and had the new one.
-                        b[i] += z_diff * col[i]
-                    break
-
-                # Compute objective function value.
-                Lj_z = 0
-
-                for i in xrange(n_samples):
-                    b_new = b[i] + z_diff * col[i]
-                    b[i] = b_new
-                    if b_new > 0:
-                        Lj_z += b_new * b_new
-
-                Lj_z *= C
-
-                # Check stopping condition.
-                cond = cond + Lj_z - Lj_zero
-                if cond <= 0:
-                    break
-                else:
-                    z_old = z
-                    z *= beta
-                    delta *= beta
-
-            # end for num_linesearch
-
-            w[j] += z
-
-            # Update support set.
-            if not linear_kernel:
-                if w[j] != 0:
-                    kcache.add_sv(j)
-                elif w[j] == 0:
-                    kcache.remove_sv(j)
+            # Update violations.
+            violation_max = max(violation_max, violation)
+            if penalty == 12 or penalty == 1:
+                violation_sum += violation
+            elif penalty <= -1:
+                if j > 0:
+                    M = max(M, PG)
+                    m = min(m, PG)
+                violation_sum += PG * PG
 
             # Exit if necessary.
-            if check_n_sv and kcache.n_sv() >= n_components:
+            if check_n_sv and n_sv >= n_components:
                 stop = 1
                 break
 
             # Callback
-            if has_callback and s % 100 == 0:
+            if has_callback and s % n_calls == 0:
                 ret = callback(self)
                 if ret is not None:
                     stop = 1
                     break
 
-            if verbose >= 1 and s % 100 == 0:
+            # Output progress.
+            if verbose >= 2 and s % 100 == 0:
                 sys.stdout.write(".")
                 sys.stdout.flush()
 
             s += 1
-        # while active_size
+        # end while active_size
 
         if stop:
             break
 
-        if t == 0:
-            Lpmax_init = Lpmax_new
+        if t == 0 and violation_init == 0:
+            if check_violation_sum:
+                violation_init = violation_sum
+            elif check_violation_max:
+                violation_init = violation_max
 
-        if check_convergence and Lpmax_new <= tol * Lpmax_init:
-            if active_size == n_features:
-                if verbose >= 1:
-                    print "\nConverged at iteration", t
-                break
-            else:
-                active_size = n_features
-                Lpmax_old = DBL_MAX
-                continue
+        if verbose >= 2:
+            print "\nActive size:", active_size
+            if penalty == 2:
+                print "Dpmax: %f (tol=%f)" % (Dpmax, tol)
+            elif check_violation_sum:
+                print "Violation sum ratio: %f (tol=%f)" % \
+                        (violation_sum / violation_init, tol)
+            elif check_violation_max:
+                print "Violation max ratio: %f (tol=%f)" % \
+                        (violation_max / violation_init, tol)
 
-        Lpmax_old = Lpmax_new
-
-    # end for while max_iter
-
-    if verbose >= 1:
-        print
-
-    return w
-
-
-def _primal_cd_l2r(self,
-                   np.ndarray[double, ndim=1, mode='c'] w,
-                   np.ndarray[double, ndim=1, mode='c'] b,
-                   X,
-                   A,
-                   np.ndarray[double, ndim=1] y,
-                   np.ndarray[int, ndim=1, mode='c'] index,
-                   LossFunction loss,
-                   KernelCache kcache,
-                   int linear_kernel,
-                   int kernel_regularizer,
-                   selection,
-                   int search_size,
-                   termination,
-                   int n_components,
-                   double C,
-                   int max_iter,
-                   RandomState rs,
-                   double tol,
-                   callback,
-                   int verbose):
-
-    cdef Py_ssize_t n_samples = X.shape[0]
-    cdef Py_ssize_t n_features = X.shape[1]
-
-    cdef np.ndarray[double, ndim=2, mode='fortran'] Xf
-    cdef np.ndarray[double, ndim=2, mode='c'] Xc
-    cdef np.ndarray[double, ndim=2, mode='c'] Ac
-
-    if linear_kernel:
-        Xf = X
-    else:
-        Xc = X
-        Ac = A
-        n_features = index.shape[0]
-
-    cdef int i, j, s, t
-    cdef double Dp, Dpmax
-
-    cdef np.ndarray[double, ndim=1, mode='c'] col
-    col = np.zeros(n_samples, dtype=np.float64)
-    # Container to store X[i, j] * y[i] for all i.
-    cdef double *col_ptr = <double*>col.data
-
-    cdef np.ndarray[double, ndim=1, mode='c'] col_ro
-    col_ro = np.zeros(n_samples, dtype=np.float64)
-    # Pointer to X[i, j] for all i (read-only).
-    cdef double *col_ro_ptr = <double*>col_ro.data
-
-    cdef int check_n_sv = termination == "n_components"
-    cdef int check_convergence = termination == "convergence"
-    cdef int has_callback = callback is not None
-    cdef int select_method = get_select_method(selection)
-    cdef int permute = selection == "permute" or linear_kernel
-    cdef int stop = 0
-    cdef int n_sv = 0
-
-
-    for t in xrange(max_iter):
-        if verbose >= 1:
-            print "\nIteration", t
-
-        Dpmax = 0
-
-        if permute:
-            rs.shuffle(index)
-
-        for s in xrange(n_features):
-            if permute:
-                j = index[s]
-            else:
-                j = select_sv_precomputed(index, search_size,
-                                          n_features, select_method, b, kcache,
-                                          0, rs)
-
-            if linear_kernel:
-                col_ro_ptr = (<double*>Xf.data) + j * n_samples
-            else:
-                kcache.compute_column(Xc, Ac, j, col_ro)
-
-            loss.solve_l2(j,
-                          n_samples,
-                          C,
-                          <double*>w.data,
-                          col_ro_ptr,
-                          col_ptr,
-                          <double*>y.data,
-                          <double*>b.data,
-                          &Dp,
-                          kernel_regularizer)
-
-            if fabs(Dp) > Dpmax:
-                Dpmax = fabs(Dp)
-
-            if w[j] != 0:
-                n_sv += 1
-
-            # Exit if necessary.
-            if check_n_sv and n_sv == n_components:
-                stop = 1
-                break
-
-            # Callback
-            if has_callback and s % 100 == 0:
-                ret = callback(self)
-                if ret is not None:
-                    stop = 1
+        # Check convergence.
+        if check_convergence:
+            if penalty == 2:
+                if Dpmax < tol:
+                    if verbose >= 1:
+                        print "\nConverged at iteration", t
                     break
-
-            if verbose >= 1 and s % 100 == 0:
-                sys.stdout.write(".")
-                sys.stdout.flush()
-
-        # end for (iterate over features)
-
-        if stop:
-            break
-
-        if check_convergence and Dpmax < tol:
-            if verbose >= 1:
-                print "\nConverged at iteration", t
-            break
-
-    # for iterations
-
-    if verbose >= 1:
-        print
-
-    return w
-
-
-def _primal_cd_l2svm_l2r(self,
-                         np.ndarray[double, ndim=1, mode='c'] w,
-                         np.ndarray[double, ndim=1, mode='c'] b,
-                         np.ndarray[double, ndim=2, mode='c'] X,
-                         np.ndarray[double, ndim=1] y,
-                         KernelCache kcache,
-                         int kernel_regularizer,
-                         double C,
-                         int max_outer,
-                         int max_inner,
-                         RandomState rs,
-                         double tol,
-                         int verbose):
-
-    cdef Py_ssize_t n_samples = X.shape[0]
-    cdef Py_ssize_t n_features = X.shape[1]
-
-
-    cdef int i, j, s, t, k, r
-    cdef double Dp, Dpmax
-    cdef double pred, num, denom, old_w, val, z, regul
-
-    cdef np.ndarray[double, ndim=1, mode='c'] col_ro
-    col_ro = np.zeros(n_samples, dtype=np.float64)
-
-    cdef np.ndarray[int, ndim=1, mode='c'] active_set
-    active_set = np.arange(n_samples, dtype=np.int32)
-    cdef int active_size = n_samples
-    cdef int new_active_size
-
-    if active_size > 1000:
-        rs.shuffle(active_set)
-        active_size = 1000
-
-    for t in xrange(max_outer):
-        if verbose >= 1:
-            print "\nIteration", t
-
-        Dpmax = 0
-
-        rs.shuffle(active_set[:active_size])
-
-        for s in xrange(max_inner * n_samples):
-            j = active_set[s % active_size]
-
-            kcache.compute_column(X, X, j, col_ro)
-
-            # Solve one-variable sub-problem.
-            num = 0
-            denom = 0
-            Dp = 0
-            regul = 0
-
-            for k in xrange(active_size):
-                i = active_set[k]
-                val = col_ro[i] * y[i]
-
-                Dp -= b[i] * val
-                pred = (1 - b[i]) * y[i]
-                denom += col_ro[i] * col_ro[i]
-                num += (y[i] - pred) * col_ro[i]
-                regul += w[i] * col_ro[i]
-
-            denom *= 2 * C
-            denom += 1
-            num *= 2 * C
-
-            if kernel_regularizer:
-                Dp = regul + 2 * C * Dp
-                num -= regul
             else:
-                Dp = w[j] + 2 * C * Dp
-                num -= w[j]
+                if (check_violation_sum and
+                    violation_sum <= tol * violation_init) or \
+                   (check_violation_max and
+                    violation_max <= tol * violation_init):
+                    if active_size == n_features:
+                        if verbose >= 1:
+                            print "\nConverged at iteration", t
+                        break
+                    else:
+                        # Should only be possible if shrinking is enabled.
+                        active_size = n_features
+                        violation_max_old = DBL_MAX
+                        M_bar = DBL_MAX
+                        m_bar = -DBL_MAX
+                        continue
 
-            old_w = w[j]
-            z = num/denom
-            w[j] += z
+        violation_max_old = violation_max
 
-            # Update errors.
-            for i in xrange(n_samples):
-                b[i] -= z * col_ro[i] * y[i]
-
-            if fabs(Dp) > Dpmax:
-                Dpmax = fabs(Dp)
-
-            if verbose >= 1 and s % 100 == 0:
-                sys.stdout.write(".")
-                sys.stdout.flush()
-
-            if Dpmax < tol:
-                if verbose >= 1:
-                    print "\nConverged at iteration", t
-                break
-
-        # end inner iterations
-
-        # Update active set
-        new_active_size = 0
-        for i in xrange(n_samples):
-            if b[i] > 0:
-                active_set[new_active_size] = i
-                new_active_size += 1
-
-        if new_active_size != active_size and t != max_outer - 1:
-            if verbose:
-                print "New active size:", new_active_size
-            active_size = new_active_size
-            for i in xrange(n_samples):
-                w[i] = 0
-                b[i] = 1
-
-
-    # end outer iterations
+        # For non-negativity constraints.
+        if penalty <= -1:
+            M_bar = M
+            m_bar = m
+            if M <= 0: M_bar = DBL_MAX
+            if m >= 0: m_bar = -DBL_MAX
 
     if verbose >= 1:
         print
 
-    return w
-
-
-cpdef _C_lower_bound_kernel(np.ndarray[double, ndim=2, mode='c'] X,
-                            np.ndarray[double, ndim=2, mode='c'] Y,
-                            Kernel kernel,
-                            search_size=None,
-                            random_state=None):
-
-    cdef int n_samples = X.shape[0]
-    cdef int n = n_samples
-
-    cdef int i, j, k, l
-    cdef int n_vectors = Y.shape[1]
-
-    cdef double val, max_ = -DBL_MAX
-
-    cdef np.ndarray[int, ndim=1, mode='c'] ind
-    ind = np.arange(n, dtype=np.int32)
-
-    cdef np.ndarray[double, ndim=1, mode='c'] col
-    col = np.zeros(n, dtype=np.float64)
-
-    if search_size is not None:
-        n = search_size
-        random_state.shuffle(ind)
-
-    for j in xrange(n):
-        k = ind[j]
-
-        for i in xrange(n_samples):
-            col[i] = kernel.compute(X, i, X, k)
-
-        for l in xrange(n_vectors):
-            val = 0
-            for i in xrange(n_samples):
-                val += Y[i, l] * col[i]
-            max_ = max(max_, fabs(val))
-
-    return max_
+    return violation_init

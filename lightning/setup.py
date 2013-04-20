@@ -9,14 +9,14 @@ def configuration(parent_package='', top_path=None):
 
     randomdir = os.path.join(top_path, "lightning", "random")
 
-    config.add_extension('dual_cd_fast',
-         sources=['dual_cd_fast.cpp'],
+    config.add_extension('dataset_fast',
+         sources=['dataset_fast.cpp'],
          include_dirs=[numpy.get_include(), randomdir],
          )
 
-    config.add_extension('kernel_fast',
-         sources=['kernel_fast.cpp'],
-         include_dirs=[numpy.get_include()]
+    config.add_extension('dual_cd_fast',
+         sources=['dual_cd_fast.cpp'],
+         include_dirs=[numpy.get_include(), randomdir],
          )
 
     config.add_extension('lasvm_fast',
@@ -24,8 +24,8 @@ def configuration(parent_package='', top_path=None):
          include_dirs=[numpy.get_include(), randomdir],
          )
 
-    config.add_extension('predict_fast',
-         sources=['predict_fast.cpp'],
+    config.add_extension('loss_fast',
+         sources=['loss_fast.cpp'],
          include_dirs=[numpy.get_include()]
          )
 

@@ -21,7 +21,7 @@ mult_sparse = sp.csr_matrix(mult_dense)
 
 
 def test_fit_linear_binary():
-    for selection, exp in (("permute", 1.0),
+    for selection, exp in (("cyclic", 1.0),
                            ("active", 1.0),
                            ("loss", 1.0)):
         clf = LaSVM(random_state=0, max_iter=2, kernel="linear",
@@ -32,7 +32,7 @@ def test_fit_linear_binary():
 
 
 def test_fit_rbf_binary():
-    for selection in ("permute", "active", "loss"):
+    for selection in ("cyclic", "active", "loss"):
         clf = LaSVM(random_state=0, max_iter=2, kernel="rbf",
                     selection=selection)
         clf.fit(bin_dense, bin_target)
@@ -49,7 +49,7 @@ def test_fit_rbf_multi():
 
 
 def test_warm_start():
-    for selection in ("permute", "active", "loss"):
+    for selection in ("cyclic", "active", "loss"):
         clf = LaSVM(random_state=0, max_iter=2, kernel="rbf", warm_start=True,
                     selection=selection)
         clf.C = 0.5
@@ -67,5 +67,4 @@ def test_n_components():
     clf = LaSVM(random_state=0, max_iter=2, kernel="rbf", finish_step=True,
                 termination="n_components", n_components=30)
     clf.fit(bin_dense, bin_target)
-    n_sv = np.sum(clf.coef_ != 0)
-    assert_equal(n_sv, 30)
+    assert_equal(clf.n_nonzero(), 30)
