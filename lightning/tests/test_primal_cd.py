@@ -196,7 +196,7 @@ def test_fit_squared_loss_l1():
 def test_l1l2_multiclass_log_loss():
     for data in (mult_dense, mult_csc):
         clf = CDClassifier(penalty="l1/l2", loss="log", multiclass=True,
-                           max_iter=5, C=1.0, random_state=0)
+                           max_steps=30, max_iter=5, C=1.0, random_state=0)
         clf.fit(data, mult_target)
         assert_almost_equal(clf.score(data, mult_target), 0.8766, 3)
         df = clf.decision_function(data)
@@ -210,7 +210,7 @@ def test_l1l2_multiclass_log_loss():
         assert_equal(nz, 297)
 
         clf = CDClassifier(penalty="l1/l2", loss="log", multiclass=True,
-                           max_iter=5, C=0.3, random_state=0)
+                           max_steps=30, max_iter=5, C=0.3, random_state=0)
         clf.fit(data, mult_target)
         assert_almost_equal(clf.score(data, mult_target), 0.8566, 3)
         nz = np.sum(clf.coef_ != 0)
@@ -306,6 +306,7 @@ def test_l1l2_multi_task_squared_hinge_loss():
 def test_l1l2_multi_task_log_loss():
     clf = CDClassifier(penalty="l1/l2", loss="log",
                        multiclass=False,
+                       max_steps=30,
                        max_iter=20, C=5.0, random_state=0)
     clf.fit(mult_dense, mult_target)
     assert_almost_equal(clf.score(mult_dense, mult_target), 0.8633, 3)

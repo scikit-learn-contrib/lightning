@@ -21,7 +21,7 @@ from .primal_cd_fast import Log
 class BaseCD(object):
 
     def _get_loss(self):
-        params = {"max_steps": self.max_steps,
+        params = {"max_steps": self._get_max_steps(),
                   "sigma": self.sigma,
                   "beta": self.beta,
                   "verbose": self.verbose}
@@ -37,6 +37,16 @@ class BaseCD(object):
             #losses["squared_hinge"] = SquaredHinge01(**params)
 
         return losses[self.loss]
+
+    def _get_max_steps(self):
+        if self.max_steps == "auto":
+            if self.loss == "log":
+                max_steps = 0
+            else:
+                max_steps = 30
+        else:
+            max_steps = self.max_steps
+        return max_steps
 
     def _get_penalty(self):
         penalties = {
@@ -65,7 +75,7 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
                  multiclass=False,
                  max_iter=50, tol=1e-3, termination="violation_sum",
                  shrinking=True,
-                 max_steps=30, sigma=0.01, beta=0.5,
+                 max_steps="auto", sigma=0.01, beta=0.5,
                  warm_start=False, debiasing=False, Cd=1.0,
                  warm_debiasing=False,
                  selection="cyclic", search_size=60, permute=True,
@@ -124,6 +134,8 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
         indices = np.arange(n_features, dtype=np.int32)
 
+        max_steps = self._get_max_steps()
+
         # Learning
         if self.penalty == "l1/l2":
             tol = self.tol
@@ -136,7 +148,7 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
                               indices, 12, self._get_loss(),
                               self.selection, self.permute, self.termination,
                               self.C, self.alpha, self.U,
-                              self.max_iter, self.max_steps,
+                              self.max_iter, max_steps,
                               self.shrinking, vinit,
                               rs, tol, self.callback, self.n_calls,
                               self.verbose)
@@ -157,7 +169,7 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
                                   self.selection, self.permute,
                                   self.termination,
                                   self.C, self.alpha, self.U,
-                                  self.max_iter, self.max_steps,
+                                  self.max_iter, max_steps,
                                   self.shrinking, vinit,
                                   rs, tol, self.callback, self.n_calls,
                                   self.verbose)
@@ -181,7 +193,7 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
                            "cyclic", self.permute,
                            "violation_sum",
                            self.Cd, 1.0, self.U,
-                           self.max_iter, self.max_steps,
+                           self.max_iter, max_steps,
                            self.shrinking, 0,
                            rs, self.tol, self.callback, self.n_calls,
                            self.verbose)
