@@ -6,8 +6,8 @@ import sys
 import os
 
 DISTNAME = 'lightning'
-DESCRIPTION = "Large-scale algorithms for kernel-based classification " + \
-              "and regression in Python/Cython."
+DESCRIPTION = "Large-scale sparse linear classification and " + \
+              "regression in Python/Cython"
 LONG_DESCRIPTION = open('README.rst').read()
 MAINTAINER = 'Mathieu Blondel'
 MAINTAINER_EMAIL = 'mathieu@mblondel.org'
