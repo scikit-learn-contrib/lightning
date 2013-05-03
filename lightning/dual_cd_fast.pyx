@@ -102,9 +102,10 @@ def _dual_cd(self,
             y_i = y[i]
             alpha_i = fabs(alpha[i])
 
-            # Compute ith element of the gradient.
+            # Retrieve row.
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
+            # Compute ith element of the gradient.
             # G = y_i * np.dot(w, X[i]) - 1 + D_ii * alpha_i
             G = 0
             for jj in xrange(n_nz):
@@ -112,9 +113,8 @@ def _dual_cd(self,
                 G += w[j] * data[jj]
             G = y_i * G - 1 + D_ii * alpha_i
 
+            # Projected gradient and shrinking.
             PG = 0
-
-            # Shrinking.
             if alpha_i == 0:
                 if G < 0:
                     PG = G
@@ -175,6 +175,8 @@ def _dual_cd(self,
                     print "\nConverged at iteration", t
                 break
             else:
+                # When shrinking is enabled, we need to do one more outer
+                # iteration on the entire optimization problem.
                 active_size = n_samples
                 M_bar = DBL_MAX
                 m_bar = -DBL_MAX

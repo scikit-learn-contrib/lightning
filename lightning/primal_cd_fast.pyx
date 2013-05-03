@@ -1445,7 +1445,8 @@ def _primal_cd(self,
                         print "\nConverged at iteration", t
                     break
                 else:
-                    # Should only be possible if shrinking is enabled.
+                    # When shrinking is enabled, we need to do one more outer
+                    # iteration on the entire optimization problem.
                     active_size = n_features
                     violation_max_old = DBL_MAX
                     M_bar = DBL_MAX
