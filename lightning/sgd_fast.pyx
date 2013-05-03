@@ -25,29 +25,6 @@ cdef extern from "float.h":
    double DBL_MAX
 
 
-cdef double _l2_norm_sums(RowDataset X, int squared):
-        cdef int i, j, jj
-        cdef int n_samples = X.get_n_samples()
-        cdef double norm, G = 0
-
-        cdef double* data
-        cdef int* indices
-        cdef int n_nz
-
-        for i in xrange(n_samples):
-            X.get_row_ptr(i, &indices, &data, &n_nz)
-
-            norm = 0
-            for jj in xrange(n_nz):
-                norm += data[jj] * data[jj]
-
-            if squared:
-                G += norm
-            else:
-                G += sqrt(norm)
-
-        return G
-
 cdef class LossFunction:
 
     cpdef double loss(self, double p, double y):
@@ -319,6 +296,9 @@ cdef void _l1_update(double eta,
         if timestamps[j] == tm1:
             continue
 
+        # delta[tm1] - delta[timestamps[j]] corresponds to the amount of
+        # regularization buffered and that must applied before the weights can
+        # be used to compute the current prediction.
         if non_negative:
             w_new = W[k, j] - (delta[tm1] - delta[timestamps[j]])
         else:
@@ -430,7 +410,7 @@ def _binary_sgd(self,
         i = index[ii]
         eta = _get_eta(learning_rate, alpha, eta0, power_t, t)
 
-        # Compute current prediction.
+        # Retrieve row.
         X.get_row_ptr(i, &indices, &data, &n_nz)
 
         if penalty == 1 or nn_l1: # L1-regularization.
@@ -438,6 +418,7 @@ def _binary_sgd(self,
                        <double*>delta.data, <LONG*>timestamps.data,
                        W, data, indices, n_nz, k, t, nn_l1)
 
+        # Compute current prediction.
         pred = _dot(W, k, indices, data, n_nz)
         pred *= w_scale
         pred += intercepts[k]
@@ -456,7 +437,7 @@ def _binary_sgd(self,
 
         if penalty == 2: # L2-regularization.
             w_scale *= (1 - alpha * eta)
-        elif penalty == -2:
+        elif penalty == -2: # NN constraints + L2-regularization.
             w_scale *= 1 / (1 + alpha * eta)
             _nnl2_update(W, indices, n_nz, k)
 
@@ -756,7 +737,7 @@ def _multiclass_sgd(self,
         i = index[ii]
         eta = _get_eta(learning_rate, alpha, eta0, power_t, t)
 
-        # Compute current prediction.
+        # Retrieve row.
         X.get_row_ptr(i, &indices, &data, &n_nz)
 
         # L1/L2 regularization.
@@ -765,11 +746,13 @@ def _multiclass_sgd(self,
                          <double*>delta.data, <LONG*>timestamps.data,
                          W, data, indices, n_nz, t)
 
+        # Compute predictions.
         for l in xrange(n_vectors):
             scores[l] = _dot(W, l, indices, data, n_nz)
             scores[l] *= w_scales[l]
             scores[l] += intercepts[l]
 
+        # Update weight vectors.
         loss.update(<double*>scores.data, y[i],
                     data, indices, n_nz,
                     i, W, <double*>w_scales.data, <double*>intercepts.data,
