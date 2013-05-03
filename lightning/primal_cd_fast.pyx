@@ -57,19 +57,21 @@ cdef class LossFunction:
         # Retrieve column.
         X.get_column_ptr(j, &indices, &data, &n_nz)
 
-        # Compute derivatives
+        # Compute derivatives.
         self.derivatives(j, C, indices, data, n_nz, y, b,
                          Dp, &Dpp, &Dj_zero)
 
-        Dp[0] = alpha * w[j] + Dp[0]
-        Dpp = alpha + Dpp
+        # Add regularization term.
+        Dp[0] = alpha * w[j] + Dp[0] # first derivative
+        Dpp = alpha + Dpp # second derivative
 
         if fabs(Dp[0]/Dpp) <= 1e-12:
             return
 
+        # Newton step
         d = -Dp[0] / Dpp
 
-        # Perform line search
+        # Perform line search.
         z_old = 0
         z = d
 
@@ -78,7 +80,7 @@ cdef class LossFunction:
         while True:
             z_diff = z_old - z
 
-            # Update old predictions
+            # Update predictions / errors / residuals (depends on loss).
             self.update(j, z_diff, C, indices, data, n_nz,
                         y, b, &Dj_z)
 
@@ -89,6 +91,7 @@ cdef class LossFunction:
                     recompute = 1
                 break
 
+            # Check decrease condition
             #   0.5 * alpha * (w + z e_j)^T (w + z e_j)
             # = 0.5 * alpha * w^T w + alpha * w_j z + 0.5 * alpha * z^2
             cond = alpha * w[j] * z + (0.5 * alpha + self.sigma) * z * z
@@ -99,8 +102,10 @@ cdef class LossFunction:
             z *= self.beta
             step += 1
 
+        # Update weight w[j].
         w[j] += z
 
+        # Recompute predictions / errors / residuals if needed.
         if recompute:
             self.recompute(X, y, w, b)
 
@@ -202,14 +207,15 @@ cdef class LossFunction:
 
         Lpp = max(Lpp, 1e-12)
 
-        PG[0] = 0
+        # Add regularization term.
         if penalty == -1: # L1-regularization
             Lp += alpha
         else: # L2-regularization
             Lp += alpha * w[j]
             Lpp += alpha
 
-        # Shrinking.
+        PG[0] = 0
+        # Projected gradient and shrinking.
         if w[j] == 0:
             if Lp < 0:
                 PG[0] = Lp
@@ -223,6 +229,7 @@ cdef class LossFunction:
         else:
             PG[0] = Lp
 
+        # Projected gradient update.
         d = max(0, min(U, w[j] - Lp/Lpp)) - w[j]
 
         if fabs(PG[0]) < 1.0e-12:
@@ -265,9 +272,10 @@ cdef class LossFunction:
 
         # end for num_linesearch
 
-        # Update w.
+        # Update weight w[j].
         w[j] += z
 
+        # Recompute predictions / errors / residuals if needed.
         if recompute:
             self.recompute(X, y, w, b)
 
@@ -314,6 +322,7 @@ cdef class LossFunction:
 
         Lpp = max(Lpp, 1e-12)
 
+        # Add regularization term.
         Lp_p = Lp + alpha
         Lp_n = Lp - alpha
         violation[0] = 0
@@ -348,13 +357,14 @@ cdef class LossFunction:
         if fabs(d) < 1.0e-12:
             return 0
 
+        # Perform line search.
+        # Check z = lambda*d for lambda = 1, beta, beta^2 until a
+        # sufficient decrease condition is met.
         wj_abs = fabs(w[j])
         delta = alpha * (fabs(w[j] + d) - wj_abs) + Lp * d
         z_old = 0
         z = d
 
-        # Check z = lambda*d for lambda = 1, beta, beta^2 such that
-        # sufficient decrease condition is met.
         step = 1
         recompute = 0
         while True:
@@ -383,9 +393,10 @@ cdef class LossFunction:
 
         # end for num_linesearch
 
-        # Update w.
+        # Update weight w[j].
         w[j] += z
 
+        # Recompute predictions / errors / residuals if needed.
         if recompute:
             self.recompute(X, y, w, b)
 
@@ -437,7 +448,7 @@ cdef class LossFunction:
         if multiclass:
             self.derivatives_mc(j, C, n_samples, n_vectors, indices, data, n_nz,
                                 y, b_ptr, g, Z, &L, &Lpp_max)
-        else:
+        else: # multi-task
             L = 0
             Lpp_max = -DBL_MAX
 
@@ -449,6 +460,7 @@ cdef class LossFunction:
                 y_ptr += n_samples
                 b_ptr += n_samples
 
+            # Make sure Lpp is not too small (negative) or too large.
             Lpp_max = min(max(Lpp_max, LOWER), UPPER)
 
         # User chose to run the algorithm without line search.
@@ -494,7 +506,7 @@ cdef class LossFunction:
         if scaling < 0:
             scaling = 0
 
-        # Project.
+        # Project (proximity operator).
         delta = 0
         dmax = -DBL_MAX
         for k in xrange(n_vectors):
@@ -503,7 +515,7 @@ cdef class LossFunction:
             delta += d[k] * g[k]
             dmax = max(dmax, fabs(d[k]))
 
-        # Check optimality.
+        # Do not bother update if update is too small.
         if dmax < 1e-12:
             return 0
 
@@ -516,7 +528,7 @@ cdef class LossFunction:
             if multiclass:
                 self.update_mc(C, n_samples, n_vectors, indices, data, n_nz,
                                y, b_ptr, d, d_old, Z, &L_new)
-            else:
+            else: # multi-task
                 L_new = 0
                 y_ptr = <double*>Y.data
                 b_ptr = <double*>b.data
@@ -562,10 +574,11 @@ cdef class LossFunction:
         for k in xrange(n_vectors):
             w[k, j] += d[k]
 
+        # Recompute errors if necessary.
         if recompute:
             if multiclass:
                 self.recompute_mc(n_vectors, X, y, w, b)
-            else:
+            else: # multi-task
                 y_ptr = <double*>Y.data
                 b_ptr = <double*>b.data
                 w_ptr = <double*>w.data
@@ -635,6 +648,8 @@ cdef class LossFunction:
 cdef class Squared(LossFunction):
 
     def __init__(self, verbose=0):
+        # Squared loss enjoys closed form solution.
+        # Therefore a single step is enough (no line search needed).
         self.max_steps = 1
         self.beta = 0.5
         self.sigma = 0.01
@@ -654,8 +669,11 @@ cdef class Squared(LossFunction):
         cdef int ii, i
         cdef double tmp
 
+        # First-derivative
         Lp[0] = 0
+        # Second derivative
         Lpp[0] = 0
+        # Objective value
         L[0] = 0
 
         for ii in xrange(n_nz):
@@ -680,10 +698,12 @@ cdef class Squared(LossFunction):
                      double *L_new):
         cdef int ii, i
 
+        # New objective value
         L_new[0] = 0
 
         for ii in xrange(n_nz):
             i = indices[ii]
+            # Update residuals.
             b[i] -= z_diff * data[ii]
             L_new[0] += C * b[i] * b[i]
 
@@ -716,8 +736,11 @@ cdef class SquaredHinge(LossFunction):
         cdef int i, ii
         cdef double val, tmp
 
+        # First derivative
         Lp[0] = 0
+        # Second derivative
         Lpp[0] = 0
+        # Objective value
         L[0] = 0
 
         for ii in xrange(n_nz):
@@ -746,71 +769,19 @@ cdef class SquaredHinge(LossFunction):
         cdef int i, ii
         cdef double b_new
 
+        # New objective value
         L_new[0] = 0
 
         for ii in xrange(n_nz):
             i = indices[ii]
             b_new = b[i] + z_diff * data[ii] * y[i]
+            # b[i] = 1 - y[i] * np.dot(w, X[i])
             b[i] = b_new
             if b_new > 0:
                 L_new[0] += b_new * b_new
 
         L_new[0] *= C
 
-    cdef void derivatives_01(self,
-                            int j,
-                            double C,
-                            int *indices,
-                            double *data,
-                            int n_nz,
-                            double *y,
-                            double *b,
-                            double *Lp,
-                            double *Lpp,
-                            double *L):
-        cdef int i, ii
-        cdef double val, tmp
-
-        Lp[0] = 0
-        Lpp[0] = 0
-        L[0] = 0
-
-        for ii in xrange(n_nz):
-            i = indices[ii]
-            val = data[ii] * (4 * y[i] - 2)
-
-            if b[i] > 0:
-                tmp = val * C
-                Lp[0] -= b[i] * tmp
-                Lpp[0] += val * tmp
-                L[0] += C * b[i] * b[i]
-
-        Lp[0] *= 2
-        Lpp[0] *= 2
-
-    cdef void update_01(self,
-                       int j,
-                       double z_diff,
-                       double C,
-                       int *indices,
-                       double *data,
-                       int n_nz,
-                       double *y,
-                       double *b,
-                       double *L_new):
-        cdef int i, ii
-        cdef double b_new
-
-        L_new[0] = 0
-
-        for ii in xrange(n_nz):
-            i = indices[ii]
-            b_new = b[i] + z_diff * data[ii] * (4 * y[i] - 2)
-            b[i] = b_new
-            if b_new > 0:
-                L_new[0] += b_new * b_new
-
-        L_new[0] *= C
 
     # Multiclass
 
@@ -833,8 +804,9 @@ cdef class SquaredHinge(LossFunction):
         cdef double tmp, tmp2, b_val
         cdef double* b_ptr = b
 
-        # Compute objective value, gradient and largest second derivative.
+        # Largest second derivative.
         Lpp_max[0] = 0
+        # Objective value
         L[0] = 0
 
         for k in xrange(n_vectors):
@@ -892,6 +864,7 @@ cdef class SquaredHinge(LossFunction):
         cdef double tmp, b_new
         cdef double* b_ptr
 
+        # New objective value
         L_new[0] = 0
         for ii in xrange(n_nz):
             i = indices[ii]
@@ -954,8 +927,11 @@ cdef class ModifiedHuber(LossFunction):
         cdef int i, ii
         cdef double val, tmp
 
+        # First derivative
         Lp[0] = 0
+        # Second derivative
         Lpp[0] = 0
+        # Objective value
         L[0] = 0
 
         for ii in xrange(n_nz):
@@ -1029,8 +1005,11 @@ cdef class Log(LossFunction):
         cdef int i, ii
         cdef double val, tau, exppred, tmp
 
+        # First derivative
         Lp[0] = 0
+        # Second derivative
         Lpp[0] = 0
+        # Objective value
         L[0] = 0
 
         for ii in xrange(n_nz):
@@ -1058,6 +1037,7 @@ cdef class Log(LossFunction):
         cdef int i, ii
         cdef double exppred
 
+        # New objective value
         L_new[0] = 0
 
         for ii in xrange(n_nz):
@@ -1087,24 +1067,27 @@ cdef class Log(LossFunction):
         cdef double Lpp, tmp, tmp2
         cdef double* b_ptr
 
-        # Compute normalization and objective value.
+        # Objective value
         L[0] = 0
+
         for ii in xrange(n_nz):
             i = indices[ii]
             b_ptr = b + i
-            Z[i] = 0
+            Z[i] = 0 # Normalization term
             for k in xrange(n_vectors):
                 # b_ptr[0] = b[k, i]
                 Z[i] += b_ptr[0]
                 b_ptr += n_samples
             L[0] += C * log(Z[i])
 
-        # Compute gradient and largest second derivative.
+        # Largest second derivative
         Lpp_max[0] = -DBL_MAX
 
         b_ptr = b
         for k in xrange(n_vectors):
+            # First derivatives (k th element of the partial gradient)
             g[k] = 0
+            # Second derivative
             Lpp = 0
 
             for ii in xrange(n_nz):
@@ -1145,7 +1128,9 @@ cdef class Log(LossFunction):
         cdef double tmp
         cdef double* b_ptr
 
+        # New objective value
         L_new[0] = 0
+
         for ii in xrange(n_nz):
             i = indices[ii]
             b_ptr = b + i
@@ -1354,6 +1339,7 @@ def _primal_cd(self,
         if permute:
             rs.shuffle(active_set[:active_size])
 
+        # Initialize violations.
         violation_max = 0
         violation_sum = 0
         Dpmax = 0
@@ -1424,12 +1410,14 @@ def _primal_cd(self,
         if stop:
             break
 
+        # Initialize violations.
         if t == 0 and violation_init == 0:
             if check_violation_sum:
                 violation_init = violation_sum
             elif check_violation_max:
                 violation_init = violation_max
 
+        # Verbose output.
         if verbose >= 2:
             print "\nActive size:", active_size
             if penalty == 2:
