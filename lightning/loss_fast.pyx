@@ -98,56 +98,6 @@ cdef class SquaredHinge:
         return 2 * n_vectors * _l2_norm_sums(X, True)
 
 
-cdef class SquaredHinge01:
-
-    cpdef gradient(self,
-                   np.ndarray[double, ndim=2, mode='c'] df,
-                   RowDataset X,
-                   np.ndarray[double, ndim=2, mode='fortran'] y,
-                   np.ndarray[double, ndim=2, mode='c'] G):
-
-        cdef double* data
-        cdef int* indices
-        cdef int n_nz
-
-        cdef int n_samples = df.shape[0]
-        cdef int n_vectors = df.shape[1]
-        cdef int i, k, j, jj
-        cdef double tmp
-
-        for i in xrange(n_samples):
-            for k in xrange(n_vectors):
-                tmp = 1 - 4 * (y[i, k] - 0.5) * (df[i, k] - 0.5)
-                if tmp > 0:
-                    tmp *= (8 * y[i, k] - 4)
-                    X.get_row_ptr(i, &indices, &data, &n_nz)
-                    for jj in xrange(n_nz):
-                        j = indices[jj]
-                        G[k, j] -= tmp * data[jj]
-
-    cpdef objective(self,
-                    np.ndarray[double, ndim=2, mode='c'] df,
-                    np.ndarray[double, ndim=2, mode='fortran'] y):
-
-        cdef int n_samples = df.shape[0]
-        cdef int n_vectors = df.shape[1]
-
-        cdef int i, k
-        cdef double obj, value
-
-        obj = 0
-
-        for i in xrange(n_samples):
-            for k in xrange(n_vectors):
-                value = max(1 - 4 * (y[i, k] - 0.5) * (df[i, k] - 0.5), 0)
-                obj += value * value
-
-        return obj
-
-    cpdef double lipschitz_constant(self, RowDataset X, int n_vectors):
-        return 2 * n_vectors * _l2_norm_sums(X, True)
-
-
 cdef class MulticlassSquaredHinge:
 
     cpdef gradient(self,
