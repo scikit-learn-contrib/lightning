@@ -65,7 +65,7 @@ class BaseCD(object):
 class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
     """Estimator for learning linear classifiers by coordinate descent (CD).
 
-    The objective functions considered are the form
+    The objective functions considered take the form
 
     minimize F(W) = C * L(W) + alpha * R(W),
 
@@ -280,7 +280,7 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
 class CDRegressor(BaseCD, BaseRegressor, RegressorMixin):
     """Estimator for learning linear regressors by coordinate descent (CD).
 
-    The objective functions considered are the form
+    The objective functions considered take the form
 
     minimize F(W) = C * L(W) + alpha * R(W),
 
@@ -303,7 +303,7 @@ class CDRegressor(BaseCD, BaseRegressor, RegressorMixin):
         Upper bound on the weights (only when penalty='nnl1' or 'nnl2').
 
 
-    For orther parameters, see `CDClassifier`.
+    For other parameters, see `CDClassifier`.
     """
 
     def __init__(self, C=1.0, alpha=1.0, U=1e12,
