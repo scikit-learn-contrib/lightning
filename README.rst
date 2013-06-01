@@ -5,6 +5,8 @@ lightning
 
 Large-scale sparse linear classification and regression in Python/Cython.
 
+lightning follows the `scikit-learn <http://scikit-learn.org>`_ API conventions.
+
 Dependencies
 ============
 
@@ -30,4 +32,13 @@ To install for all users on Unix/Linux::
   python setup.py build
   sudo python setup.py install
 
+Citation
+========
 
+If you used lightning in your research, please consider citing the following paper:
+
+| Block Coordinate Descent Algorithms for Large-scale Sparse Multiclass Classiﬁcation. [`BibTeX <http://www.mblondel.org/publications/bib/mblondel-mlj2013.txt>`_]
+| Mathieu Blondel, Kazuhiro Seki, and Kuniaki Uehara.
+| Machine Learning, May 2013.
+
+For more information, see http://www.mblondel.org/journal/2013/05/12/large-scale-sparse-multiclass-classification/
