@@ -18,10 +18,6 @@ class BaseEstimator(_BaseEstimator):
         return RandomState(seed=self.random_state)
 
     def n_nonzero(self, percentage=False):
-        if hasattr(self, "support_indices_") and \
-           self.support_indices_.shape[0] == 0:
-            return 0
-
         if hasattr(self, "dual_coef_"):
             coef = self.dual_coef_
         elif hasattr(self, "coef_avg_"):

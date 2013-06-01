@@ -5,6 +5,7 @@ from sklearn.utils.testing import assert_array_almost_equal
 from sklearn.utils.testing import assert_almost_equal
 from sklearn.utils.testing import assert_true
 from sklearn.utils.testing import assert_equal
+from sklearn.utils.testing import assert_greater
 
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.datasets import load_digits
@@ -132,12 +133,26 @@ def test_warm_start_l2r():
     assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
 
 
-def test_debiasing():
-    clf = CDClassifier(penalty="l1", debiasing=True,
-                       C=0.05, Cd=1.0, max_iter=10, random_state=0)
-    clf.fit(bin_dense, bin_target)
-    assert_equal(clf.n_nonzero(), 22)
-    assert_almost_equal(clf.score(bin_dense, bin_target), 0.955, 3)
+def test_debiasing_l1():
+    for warm_debiasing in (True, False):
+        clf = CDClassifier(penalty="l1", debiasing=True,
+                           warm_debiasing=warm_debiasing,
+                           C=0.05, Cd=1.0, max_iter=10, random_state=0)
+        clf.fit(bin_dense, bin_target)
+        assert_equal(clf.n_nonzero(), 22)
+        assert_almost_equal(clf.score(bin_dense, bin_target), 0.955, 3)
+
+
+def test_debiasing_l1l2():
+    for warm_debiasing in (True, False):
+        clf = CDClassifier(penalty="l1/l2", loss="squared_hinge",
+                           multiclass=False,
+                           debiasing=True,
+                           warm_debiasing=warm_debiasing,
+                           max_iter=20, C=0.01, random_state=0)
+        clf.fit(mult_csc, mult_target)
+        assert_greater(clf.score(mult_csc, mult_target), 0.75)
+        assert_equal(clf.n_nonzero(percentage=True), 0.08)
 
 
 def test_debiasing_warm_start():

@@ -1264,9 +1264,10 @@ def _primal_cd(self,
 
     # Dataset
     cdef int n_samples = X.get_n_samples()
-    cdef int n_features = active_set.shape[0]
+    cdef int n_features = X.get_n_features()
     cdef int n_vectors = w.shape[0]
-    cdef int active_size = n_features
+    cdef int active_size = active_set.shape[0]
+    cdef int active_size_start = active_size
 
     # Counters
     cdef int t, s, i, j, n
@@ -1294,7 +1295,6 @@ def _primal_cd(self,
     if uniform:
         permute = 0
         shrinking = 0
-    cdef int* active_set_ptr = <int*>active_set.data
     cdef double* b_ptr
     cdef double* y_ptr
     cdef double* w_ptr
@@ -1352,7 +1352,7 @@ def _primal_cd(self,
             if cyclic:
                 j = active_set[s]
             elif uniform:
-                j = rs.randint(n_features - 1)
+                j = active_set[rs.randint(active_size - 1)]
 
             # Solve sub-problem.
             if penalty <= -1:
@@ -1440,14 +1440,14 @@ def _primal_cd(self,
                 violation_sum <= tol * violation_init) or \
                (check_violation_max and
                 violation_max <= tol * violation_init):
-                if active_size == n_features:
+                if active_size == active_size_start:
                     if verbose >= 1:
                         print "\nConverged at iteration", t
                     break
                 else:
                     # When shrinking is enabled, we need to do one more outer
                     # iteration on the entire optimization problem.
-                    active_size = n_features
+                    active_size = active_size_start
                     violation_max_old = DBL_MAX
                     M_bar = DBL_MAX
                     m_bar = -DBL_MAX

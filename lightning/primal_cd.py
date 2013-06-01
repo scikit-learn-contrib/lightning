@@ -254,15 +254,14 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
                     self.violation_init_[k] = viol
 
         if self.debiasing:
-            nz = np.sum(self.coef_ != 0, axis=0, dtype=bool)
-            self.support_indices_ = np.arange(n_features, dtype=np.int32)[nz]
-            indices = self.support_indices_.copy()
+            nz = self.coef_ != 0
+
             if not self.warm_debiasing:
-                self.coef_ = np.zeros((n_vectors, n_features),
-                                      dtype=np.float64)
+                self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
                 self._init_errors(Y)
 
             for k in xrange(n_vectors):
+                indices = np.arange(n_features, dtype=np.int32)[nz[k]]
                 _primal_cd(self, self.coef_, self.errors_,
                            ds, y, Y, k, False,
                            indices, 2, self._get_loss(),
@@ -270,7 +269,7 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
                            "violation_sum",
                            self.Cd, 1.0, 1e12,
                            self.max_iter, max_steps,
-                           self.shrinking, 0,
+                           False, 0,
                            rs, self.tol, self.callback, self.n_calls,
                            self.verbose)
 
