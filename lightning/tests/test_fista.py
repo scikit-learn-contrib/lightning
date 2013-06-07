@@ -61,3 +61,10 @@ def test_fista_bin_l1_no_line_search():
         clf = FistaClassifier(max_iter=500, penalty="l1", max_steps=0)
         clf.fit(data, bin_target)
         assert_greater(clf.score(data, bin_target), 0.95)
+
+
+def test_fista_multiclass_trace():
+    for data in (mult_dense, mult_csr):
+        clf = FistaClassifier(max_iter=100, penalty="trace", multiclass=True)
+        clf.fit(data, mult_target)
+        assert_greater(clf.score(data, mult_target), 0.96)

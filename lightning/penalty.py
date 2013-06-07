@@ -2,6 +2,7 @@
 # License: BSD
 
 import numpy as np
+from scipy.linalg import svd
 
 
 class L1Penalty(object):
@@ -23,6 +24,20 @@ class L1L2Penalty(object):
 
     def regularization(self, coef):
         return np.sum(np.sqrt(np.sum(coef ** 2, axis=0)))
+
+
+class TracePenalty(object):
+
+    def projection(self, coef, alpha, L):
+        U, s, V = svd(coef, full_matrices=False)
+        s = np.maximum(s - alpha / L, 0)
+        #return np.dot(np.dot(U, np.diag(s)), V)
+        U *= s
+        return np.dot(U, V)
+
+    def regularization(self, coef):
+        U, s, V = svd(coef, full_matrices=False)
+        return np.sum(s)
 
 
 class NNConstraint(object):

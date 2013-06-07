@@ -16,6 +16,7 @@ from .loss_fast import MulticlassSquaredHinge
 from .penalty import NNConstraint
 from .penalty import L1Penalty
 from .penalty import L1L2Penalty
+from .penalty import TracePenalty
 
 
 class FistaClassifier(BaseClassifier, ClassifierMixin):
@@ -54,6 +55,7 @@ class FistaClassifier(BaseClassifier, ClassifierMixin):
             "nn": NNConstraint(),
             "l1": L1Penalty(),
             "l1/l2": L1L2Penalty(),
+            "trace": TracePenalty(),
         }
         return penalties[self.penalty]
 
