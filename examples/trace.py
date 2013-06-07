@@ -12,7 +12,6 @@ def rank(M, eps=1e-9):
     return np.sum(s > eps)
 
 
-# Create dataset with 4 classes
 bunch = fetch_20newsgroups_vectorized(subset="train")
 X_train = bunch.data
 y_train = bunch.target
