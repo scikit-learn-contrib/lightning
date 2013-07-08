@@ -157,6 +157,49 @@ cdef class MulticlassSquaredHinge:
 
 cdef class MulticlassLog:
 
+    cdef int margin
+
+    def __init__(self, int margin=0):
+        self.margin = margin
+
+    cpdef gradient(self,
+                   np.ndarray[double, ndim=2, mode='c'] df,
+                   RowDataset X,
+                   np.ndarray[int, ndim=1, mode='c'] y,
+                   np.ndarray[double, ndim=2, mode='c'] G):
+
+        cdef double* data
+        cdef int* indices
+        cdef int n_nz
+
+        cdef int n_samples = df.shape[0]
+        cdef int n_vectors = df.shape[1]
+        cdef int i, k, j, jj
+        cdef double tmp, Z
+        cdef np.ndarray[double, ndim=1, mode='c'] scores
+        scores = np.zeros(n_vectors, dtype=np.float64)
+
+        for i in xrange(n_samples):
+            Z = 0
+
+            for k in xrange(n_vectors):
+                tmp = df[i, k] - df[i, y[i]]
+                if self.margin and k != y[i]:
+                    tmp += 1
+                tmp = exp(tmp)
+                scores[k] = tmp
+                Z += tmp
+
+            for k in xrange(n_vectors):
+                tmp = scores[k] / Z
+                if k == y[i]:
+                    tmp -= 1
+
+                X.get_row_ptr(i, &indices, &data, &n_nz)
+                for jj in xrange(n_nz):
+                    j = indices[jj]
+                    G[k, j] += tmp * data[jj]
+
     cpdef objective(self,
                     np.ndarray[double, ndim=2, mode='c'] df,
                     np.ndarray[int, ndim=1, mode='c'] y):
@@ -172,10 +215,10 @@ cdef class MulticlassLog:
         for i in xrange(n_samples):
             s = 1
             for k in xrange(n_vectors):
-                if y[i] == k:
-                    continue
-                else:
-                    s += exp(df[i, k] - df[i, y[i]])
+                tmp = df[i, k] - df[i, y[i]]
+                if self.margin and k != y[i]:
+                    tmp += 1
+                s += exp(tmp)
             obj += log(s)
 
         return obj

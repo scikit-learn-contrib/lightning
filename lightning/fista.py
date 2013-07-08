@@ -12,6 +12,7 @@ from .dataset_fast import get_dataset
 
 from .loss_fast import SquaredHinge
 from .loss_fast import MulticlassSquaredHinge
+from .loss_fast import MulticlassLog
 
 from .penalty import NNConstraint
 from .penalty import L1Penalty
@@ -42,6 +43,8 @@ class FistaClassifier(BaseClassifier, ClassifierMixin):
         if self.multiclass:
             losses = {
                 "squared_hinge": MulticlassSquaredHinge(),
+                "log": MulticlassLog(),
+                "log_margin": MulticlassLog(margin=1),
             }
         else:
             losses = {
