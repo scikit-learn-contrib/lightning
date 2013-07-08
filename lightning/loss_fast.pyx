@@ -116,6 +116,8 @@ cdef class MulticlassSquaredHinge:
         cdef double update, tmp
 
         for i in xrange(n_samples):
+            X.get_row_ptr(i, &indices, &data, &n_nz)
+
             for k in xrange(n_vectors):
                 if y[i] == k:
                     continue
@@ -123,7 +125,6 @@ cdef class MulticlassSquaredHinge:
                 update = max(1 - df[i, y[i]] + df[i, k], 0)
                 if update != 0:
                     update *= 2
-                    X.get_row_ptr(i, &indices, &data, &n_nz)
                     for jj in xrange(n_nz):
                         j = indices[jj]
                         tmp = update * data[jj]
@@ -180,8 +181,9 @@ cdef class MulticlassLog:
         scores = np.zeros(n_vectors, dtype=np.float64)
 
         for i in xrange(n_samples):
-            Z = 0
+            X.get_row_ptr(i, &indices, &data, &n_nz)
 
+            Z = 0
             for k in xrange(n_vectors):
                 tmp = df[i, k] - df[i, y[i]]
                 if self.margin and k != y[i]:
@@ -195,7 +197,6 @@ cdef class MulticlassLog:
                 if k == y[i]:
                     tmp -= 1
 
-                X.get_row_ptr(i, &indices, &data, &n_nz)
                 for jj in xrange(n_nz):
                     j = indices[jj]
                     G[k, j] += tmp * data[jj]
