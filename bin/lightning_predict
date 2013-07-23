@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+
+from optparse import OptionParser
+import pickle
+
+try:
+    from svmlight_loader import load_svmlight_file
+except ImportError:
+    from sklearn.datasets import load_svmlight_file
+
+parser = OptionParser("lightning_predict [options] test_file model_file "
+                      "[output_file]")
+
+(opts, args) = parser.parse_args()
+
+if len(args) < 2 or len(args) > 3:
+    parser.print_help()
+    exit()
+
+clf = pickle.load(file(args[1]))
+n_features = clf.coef_.shape[1]
+
+X, y = load_svmlight_file(args[0], n_features=n_features)
+
+print "Accuracy"
+print clf.score(X, y)
+
+if len(args) == 3:
+    pred = clf.predict(X).astype(int)
+    pred = "\n".join(map(str, pred))
+    f = file(args[2], "w")
+    f.write(pred)
+    f.close()

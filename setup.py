@@ -43,6 +43,8 @@ if __name__ == "__main__":
           name=DISTNAME,
           maintainer=MAINTAINER,
           include_package_data=True,
+          scripts=["bin/lightning_train",
+                   "bin/lightning_predict"],
           maintainer_email=MAINTAINER_EMAIL,
           description=DESCRIPTION,
           license=LICENSE,
