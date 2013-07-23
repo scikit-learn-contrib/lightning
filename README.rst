@@ -41,4 +41,4 @@ If you used lightning in your research, please consider citing the following pap
 | Mathieu Blondel, Kazuhiro Seki, and Kuniaki Uehara.
 | Machine Learning, May 2013.
 
-For more information, see http://www.mblondel.org/journal/2013/05/12/large-scale-sparse-multiclass-classification/
+For more information, see http://www.mblondel.org/code/mlj2013/
