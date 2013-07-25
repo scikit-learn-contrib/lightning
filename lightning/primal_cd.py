@@ -18,7 +18,7 @@ from .primal_cd_fast import ModifiedHuber
 from .primal_cd_fast import Log
 
 
-class BaseCD(object):
+class _BaseCD(object):
 
     def _get_loss(self):
         params = {"max_steps": self._get_max_steps(),
@@ -62,7 +62,7 @@ class BaseCD(object):
             self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
 
 
-class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
+class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
     """Estimator for learning linear classifiers by coordinate descent (CD).
 
     The objective functions considered take the form
@@ -276,7 +276,7 @@ class CDClassifier(BaseCD, BaseClassifier, ClassifierMixin):
         return self
 
 
-class CDRegressor(BaseCD, BaseRegressor, RegressorMixin):
+class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
     """Estimator for learning linear regressors by coordinate descent (CD).
 
     The objective functions considered take the form
