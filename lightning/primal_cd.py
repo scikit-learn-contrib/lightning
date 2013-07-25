@@ -1,3 +1,12 @@
+"""
+==========================================
+Primal (Block) Coordinate Descent Solvers
+==========================================
+
+This module provides (block) coordinate descent solvers for a variety of loss
+functions and penalties.
+"""
+
 # Author: Mathieu Blondel
 # License: BSD
 
