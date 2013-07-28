@@ -158,6 +158,26 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
     verbose: int
         Verbosity level.
 
+    Example
+    -------
+
+    The following example demonstrates how to learn a classification
+    model with a multiclass squared hinge loss and an l1/l2 penalty.
+
+    >>> from sklearn.datasets import fetch_20newsgroups_vectorized
+    >>> from lightning.primal_cd import CDClassifier
+    >>> bunch = fetch_20newsgroups_vectorized(subset="all")
+    >>> X, y = bunch.data, bunch.target
+    >>> clf = CDClassifier(penalty="l1/l2",
+                           loss="squared_hinge",
+                           multiclass=True,
+                           max_iter=20,
+                           alpha=1e-4,
+                           C=1.0 / X.shape[0],
+                           tol=1e-3,
+                           random_state=0).fit(X, y)
+    >>> accuracy = clf.score(X, y)
+
     References
     ----------
     Block Coordinate Descent Algorithms for Large-scale Sparse Multiclass
