@@ -72,7 +72,7 @@ class _BaseCD(object):
 
 
 class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
-    """Estimator for learning linear classifiers by coordinate descent (CD).
+    """Estimator for learning linear classifiers by (block) coordinate descent.
 
     The objective functions considered take the form
 
@@ -87,6 +87,7 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
 
     penalty: str, 'l2', 'l1', 'l1/l2'
         The penalty to be used.
+
         - l2: ridge
         - l1: lasso
         - l1/l2: group lasso
@@ -156,6 +157,12 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
 
     verbose: int
         Verbosity level.
+
+    References
+    ----------
+    Block Coordinate Descent Algorithms for Large-scale Sparse Multiclass
+    Classification.  Mathieu Blondel, Kazuhiro Seki, and Kuniaki Uehara.
+    Machine Learning, May 2013.
     """
 
     def __init__(self, loss="squared_hinge", penalty="l2", multiclass=False,
@@ -194,6 +201,22 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
         self.violation_init_ = {}
 
     def fit(self, X, y):
+        """Fit model according to X and y.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Training vectors, where n_samples is the number of samples
+            and n_features is the number of features.
+
+        y : array-like, shape = [n_samples]
+            Target values.
+
+        Returns
+        -------
+        self : classifier
+            Returns self.
+        """
         rs = self._get_random_state()
 
         # Create dataset
@@ -284,9 +307,59 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
 
         return self
 
+    # Temporary: for documentation purposes.
+    def decision_function(self, X):
+        """
+        Return the decision function for test vectors X.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+
+        Returns
+        -------
+        P : array, shape = [n_classes, n_samples]
+            Decision function for X
+        """
+        return super(CDClassifier, self).decision_function(X)
+
+    # Temporary: for documentation purposes.
+    def predict(self, X):
+        """
+        Perform classification on an array of test vectors X.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+
+        Returns
+        -------
+        p : array, shape = [n_samples]
+            Predicted target values for X
+        """
+        return super(CDClassifier, self).predict(X)
+
+    # Temporary: for documentation purposes.
+    def score(self, X, y):
+        """Returns the mean accuracy on the given test data and labels.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Training set.
+
+        y : array-like, shape = [n_samples]
+            Labels for X.
+
+        Returns
+        -------
+        z : float
+
+        """
+        return super(CDClassifier, self).score(X, y)
 
 class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
-    """Estimator for learning linear regressors by coordinate descent (CD).
+    """Estimator for learning linear regressors by (block) coordinate descent.
 
     The objective functions considered take the form
 
@@ -301,6 +374,7 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
 
     penalty: str, 'l2', 'l1', 'l1/l2', 'nnl1', 'nnl2'
         The penalty to be used.
+
         - l2: ridge
         - l1: lasso
         - l1/l2: group lasso
@@ -350,6 +424,22 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
         self.violation_init_ = {}
 
     def fit(self, X, y):
+        """Fit model according to X and y.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Training vectors, where n_samples is the number of samples
+            and n_features is the number of features.
+
+        y : array-like, shape = [n_samples] or [n_samples, n_targets]
+            Target values.
+
+        Returns
+        -------
+        self : regressor
+            Returns self.
+        """
         rs = self._get_random_state()
 
         # Create dataset
@@ -397,3 +487,42 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
                 self.violation_init_[k] = viol
 
         return self
+
+    # Temporary: for documentation purposes.
+    def predict(self, X):
+        """
+        Perform regression on an array of test vectors X.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+
+        Returns
+        -------
+        p : array, shape = [n_samples]
+            Predicted target values for X
+        """
+        return super(CDRegressor, self).predict(X)
+
+    # Temporary: for documentation purposes.
+    def score(self, X, y):
+        """Returns the coefficient of determination R^2 of the prediction.
+
+        The coefficient R^2 is defined as (1 - u/v), where u is the regression
+        sum of squares ((y_true - y_pred) ** 2).sum() and v is the residual
+        sum of squares ((y_true - y_true.mean()) ** 2).sum().
+        Best possible score is 1.0, lower values are worse.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Training set.
+
+        y : array-like, shape = [n_samples]
+
+        Returns
+        -------
+        z : float
+        """
+
+        return super(CDRegressor, self).score(X, y)
