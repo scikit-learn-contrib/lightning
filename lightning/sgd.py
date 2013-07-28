@@ -33,7 +33,7 @@ from .sgd_fast import MulticlassHinge
 from .sgd_fast import MulticlassSquaredHinge
 
 
-class BaseSGD(object):
+class _BaseSGD(object):
 
     def _get_penalty(self):
         penalties = {
@@ -51,7 +51,7 @@ class BaseSGD(object):
         return learning_rates[self.learning_rate]
 
 
-class SGDClassifier(BaseClassifier, ClassifierMixin, BaseSGD):
+class SGDClassifier(BaseClassifier, ClassifierMixin, _BaseSGD):
 
     def __init__(self, loss="hinge", penalty="l2",
                  multiclass=False, alpha=0.01,
@@ -153,7 +153,7 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, BaseSGD):
         return self
 
 
-class SGDRegressor(BaseRegressor, RegressorMixin, BaseSGD):
+class SGDRegressor(BaseRegressor, RegressorMixin, _BaseSGD):
 
     def __init__(self, loss="squared", penalty="l2",
                  alpha=0.01,
