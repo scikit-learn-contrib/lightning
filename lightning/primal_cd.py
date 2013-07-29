@@ -85,77 +85,77 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
     loss : str, 'squared_hinge', 'log', 'modified_huber', 'squared'
         The loss function to be used.
 
-    penalty: str, 'l2', 'l1', 'l1/l2'
+    penalty : str, 'l2', 'l1', 'l1/l2'
         The penalty to be used.
 
         - l2: ridge
         - l1: lasso
         - l1/l2: group lasso
 
-    multiclass: bool
+    multiclass : bool
         Whether to use a direct multiclass formulation (True) or one-vs-rest
         (False). Direct formulations are only available for loss='squared_hinge'
         and loss='log'.
 
-    C: float
+    C : float
         Weight of the loss term.
 
-    alpha: float
+    alpha : float
         Weight of the penalty term.
 
-    max_iter: int
+    max_iter : int
         Maximum number of iterations to perform.
 
-    tol: float
+    tol : float
         Tolerance of the stopping criterion.
 
-    termination: str, 'violation_sum', 'violation_max'
+    termination : str, 'violation_sum', 'violation_max'
         Stopping criterion to use.
 
-    shrinking: bool
+    shrinking : bool
         Whether to activate shrinking or not.
 
-    max_steps: int or "auto"
+    max_steps : int or "auto"
         Maximum number of steps to use during the line search. Use max_steps=0
         to use a constant step size instead of the line search. Use
         max_steps="auto" to let CDClassifier choose the best value.
 
-    sigma: float
+    sigma : float
         Constant used in the line search sufficient decrease condition.
 
-    beta: float
+    beta : float
         Multiplicative constant used in the backtracking line search.
 
-    warm_start: bool
+    warm_start : bool
         Whether to activate warm-start or not.
 
-    debiasing: bool
+    debiasing : bool
         Whether to refit the model using l2 penalty (only useful if penalty='l1'
         or penalty='l1/l2').
 
-    Cd: float
+    Cd : float
         Value of `C` when doing debiasing.
 
-    warm_debiasing: bool
+    warm_debiasing : bool
         Whether to warm-start the model or not when doing debiasing.
 
-    selection: str, 'cyclic', 'uniform'
+    selection : str, 'cyclic', 'uniform'
         Strategy to use for selecting coordinates.
 
-    permute: bool
+    permute : bool
         Whether to permute coordinates or not before cycling (only when
         selection='cyclic').
 
-    callback: callable
+    callback : callable
         Callback function.
 
-    n_calls: int
+    n_calls : int
         Frequency with which `callback` must be called.
 
-    random_state: RandomState or int
+    random_state : RandomState or int
         The seed of the pseudo random number generator to use.
 
-    verbose: int
+    verbose : int
         Verbosity level.
 
     Example
@@ -392,7 +392,7 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
     loss : str, 'squared'
         The loss function to be used.
 
-    penalty: str, 'l2', 'l1', 'l1/l2', 'nnl1', 'nnl2'
+    penalty : str, 'l2', 'l1', 'l1/l2', 'nnl1', 'nnl2'
         The penalty to be used.
 
         - l2: ridge
@@ -401,7 +401,7 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
         - nnl1: non-negative constraints + l1 penalty
         - nnl2: non-negative constraints + l2 penalty
 
-    U: float
+    U : float
         Upper bound on the weights (only when penalty='nnl1' or 'nnl2').
 
 
