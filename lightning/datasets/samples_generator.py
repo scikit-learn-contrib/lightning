@@ -65,11 +65,13 @@ def make_nn_regression(n_samples=100, n_features=100, n_informative=10,
         train, test = list(cv)[0]
         X_train, y_train = X[train], y[train]
         X_test, y_test = X[test], y[test]
-        X_train.sort_indices()
-        X_test.sort_indices()
+        if not dense:
+            X_train.sort_indices()
+            X_test.sort_indices()
     else:
         X_train, y_train = X, y
-        X_train.sort_indices()
+        if not dense:
+            X_train.sort_indices()
         X_test, y_test = None, None
 
     # Add noise
