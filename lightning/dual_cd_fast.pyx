@@ -95,6 +95,7 @@ def _dual_cd(self,
              double tol,
              int shrinking,
              callback,
+             int n_calls,
              int verbose):
     cdef Py_ssize_t n_samples = X.get_n_samples()
     cdef Py_ssize_t n_features = X.get_n_features()
@@ -208,7 +209,7 @@ def _dual_cd(self,
                     w[j] += step * data[jj]
 
             # Callback
-            if has_callback and s % 100 == 0:
+            if has_callback and s % n_calls == 0:
                 ret = callback(self)
                 if ret is not None:
                     stop = 1
