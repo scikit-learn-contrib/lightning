@@ -9,15 +9,18 @@ from sklearn.preprocessing import LabelBinarizer
 from .base import BaseClassifier
 from .dataset_fast import get_dataset
 from .dual_cd_fast import _dual_cd
+from .dual_cd_fast import _dual_cd_auc
 
 
 class LinearSVC(BaseClassifier, ClassifierMixin):
 
-    def __init__(self, C=1.0, loss="hinge", max_iter=1000, tol=1e-3,
+    def __init__(self, C=1.0, loss="hinge", criterion="accuracy",
+                 max_iter=1000, tol=1e-3,
                  permute=True, shrinking=True, warm_start=False,
                  random_state=None, callback=None, verbose=0, n_jobs=1):
         self.C = C
         self.loss = loss
+        self.criterion = criterion
         self.max_iter = max_iter
         self.tol = tol
         self.permute = permute
@@ -49,13 +52,19 @@ class LinearSVC(BaseClassifier, ClassifierMixin):
 
         if not self.warm_start or self.coef_ is None:
             self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
-            self.dual_coef_ = np.zeros((n_vectors, n_samples),
-                                       dtype=np.float64)
+            if self.criterion == "accuracy":
+                self.dual_coef_ = np.zeros((n_vectors, n_samples),
+                                           dtype=np.float64)
 
         for i in xrange(n_vectors):
-            _dual_cd(self, self.coef_[i], self.dual_coef_[i],
-                     ds, Y[:, i], self.permute,
-                     self.C, self._get_loss(), self.max_iter, rs, self.tol,
-                     self.shrinking, self.callback, verbose=self.verbose)
+            if self.criterion == "accuracy":
+                _dual_cd(self, self.coef_[i], self.dual_coef_[i],
+                         ds, Y[:, i], self.permute,
+                         self.C, self._get_loss(), self.max_iter, rs, self.tol,
+                         self.shrinking, self.callback, verbose=self.verbose)
+            else:
+                _dual_cd_auc(self, self.coef_[i], ds, Y[:, i],
+                             self.C, self._get_loss(), self.max_iter, rs,
+                             self.verbose)
 
         return self
