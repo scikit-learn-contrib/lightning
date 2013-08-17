@@ -45,17 +45,11 @@ class LinearSVC(BaseClassifier, ClassifierMixin):
     shrinking : bool
         Whether to activate shrinking or not.
 
-    max_steps : int or "auto"
-        Maximum number of steps to use during the line search. Use max_steps=0
-        to use a constant step size instead of the line search. Use
-        max_steps="auto" to let CDClassifier choose the best value.
-
     warm_start : bool
         Whether to activate warm-start or not.
 
     permute : bool
-        Whether to permute coordinates or not before cycling (only when
-        selection='cyclic').
+        Whether to permute coordinates or not before cycling.
 
     callback : callable
         Callback function.
