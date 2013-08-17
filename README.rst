@@ -38,13 +38,16 @@ Documentation
 
 Classification:
 
-* `CDClassifier <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/primal_cd.py>`_ Learning linear classifiers by coordinate descent in the primal. Supports different losses & penalties.
+* `CDClassifier <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/primal_cd.py>`_ Learning linear classifiers by coordinate descent in the primal. Supports different losses and penalties.
+* `SGDClassifier <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/sgd.py>`_ Learning linear classifiers by stochastic (sub)gradient descent. Supports different losses and penalties.
 * `LinearSVC <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/dual_cd.py>`_ Learning linear SVM by coordinate descent in the dual. Supports optimizing for accuracy or AUC.
 * `KernelSVC <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/primal_newton.py>`_ Learning kernel SVM by Newton's method in the primal. Nice if kernel matrix fits is memory.
 
 Regression:
 
-* `CDRegressor <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/primal_cd.py>`_ Learning linear regressors by coordinate descent in the primal. Supports different losses & penalties.
+* `CDRegressor <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/primal_cd.py#class-CDRegressor>`_ Learning linear regressors by coordinate descent in the primal. Supports different losses and penalties.
+* `SGDRegressor <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/sgd.py#class-SGDRegressor>`_ Learning linear regressors by stochastic (sub)gradient descent. Supports different losses and penalties.
+
 
 Citation
 ========

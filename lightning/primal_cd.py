@@ -378,6 +378,7 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
         """
         return super(CDClassifier, self).score(X, y)
 
+
 class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
     """Estimator for learning linear regressors by (block) coordinate descent.
 

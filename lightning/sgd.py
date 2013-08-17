@@ -1,3 +1,11 @@
+"""
+===================================
+Stochastic Gradient Descent Solvers
+===================================
+
+This module provides SGD solvers for a variety of loss
+functions and penalties.
+"""
 # Author: Mathieu Blondel
 # License: BSD
 
@@ -52,14 +60,81 @@ class _BaseSGD(object):
 
 
 class SGDClassifier(BaseClassifier, ClassifierMixin, _BaseSGD):
+    """Estimator for learning linear classifiers by SGD.
+
+    Parameters
+    ----------
+    loss : str, 'hinge', 'squared_hinge', 'log', 'perceptron'
+        Loss function to be used.
+
+    penalty : str, 'l2', 'l1', 'l1/l2'
+        The penalty to be used.
+
+        - l2: ridge
+        - l1: lasso
+        - l1/l2: group lasso
+
+    multiclass : bool
+        Whether to use a direct multiclass formulation (True) or one-vs-rest
+        (False). Direct formulations are only available for loss='hinge', 'squared_hinge'
+        and 'log'.
+
+    alpha : float
+        Weight of the penalty term.
+
+    learning_rate : 'pegasos', 'constant', 'invscaling'
+        Learning schedule to use.
+
+    eta0 : float
+        Step size.
+
+    power_t : float
+        Power to be used (when learning_rate='invscaling').
+
+    epsilon : float
+        Value to be used for epsilon-insensitive loss.
+
+    fit_intercept : bool
+        Whether to fit the intercept or not.
+
+    intercept_decay : float
+        Value by which the intercept is multiplied (to regularize it).
+
+    max_iter : int
+        Maximum number of iterations to perform.
+
+    shuffle : bool
+        Whether to shuffle data.
+
+    callback : callable
+        Callback function.
+
+    n_calls : int
+        Frequency with which `callback` must be called.
+
+    random_state : RandomState or int
+        The seed of the pseudo random number generator to use.
+
+    verbose : int
+        Verbosity level.
+
+    Example
+    -------
+
+    >>> from sklearn.datasets import fetch_20newsgroups_vectorized
+    >>> from lightning.sgd import SGDClassifier
+    >>> bunch = fetch_20newsgroups_vectorized(subset="all")
+    >>> X, y = bunch.data, bunch.target
+    >>> clf = SGDClassifier().fit(X, y)
+    >>> accuracy = clf.score(X, y)
+    """
 
     def __init__(self, loss="hinge", penalty="l2",
                  multiclass=False, alpha=0.01,
                  learning_rate="pegasos", eta0=0.03, power_t=0.5,
                  epsilon=0.01, fit_intercept=True, intercept_decay=1.0,
                  max_iter=10, shuffle=True, random_state=None,
-                 callback=None, n_calls=100,
-                 cache_mb=500, verbose=0, n_jobs=1):
+                 callback=None, n_calls=100, verbose=0):
         self.loss = loss
         self.penalty = penalty
         self.multiclass = multiclass
@@ -75,9 +150,7 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, _BaseSGD):
         self.random_state = random_state
         self.callback = callback
         self.n_calls = n_calls
-        self.cache_mb = cache_mb
         self.verbose = verbose
-        self.n_jobs = n_jobs
         self.coef_ = None
 
     def _get_loss(self):
@@ -154,14 +227,66 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, _BaseSGD):
 
 
 class SGDRegressor(BaseRegressor, RegressorMixin, _BaseSGD):
+    """Estimator for learning linear classifiers by SGD.
+
+    Parameters
+    ----------
+    loss : str, 'squared', 'epsilon_insensitive', 'huber'
+        Loss function to be used.
+
+    penalty : str, 'l2', 'l1', 'l1/l2'
+        The penalty to be used.
+
+        - l2: ridge
+        - l1: lasso
+        - l1/l2: group lasso
+
+    alpha : float
+        Weight of the penalty term.
+
+    learning_rate : 'pegasos', 'constant', 'invscaling'
+        Learning schedule to use.
+
+    eta0 : float
+        Step size.
+
+    power_t : float
+        Power to be used (when learning_rate='invscaling').
+
+    epsilon : float
+        Value to be used for epsilon-insensitive loss.
+
+    fit_intercept : bool
+        Whether to fit the intercept or not.
+
+    intercept_decay : float
+        Value by which the intercept is multiplied (to regularize it).
+
+    max_iter : int
+        Maximum number of iterations to perform.
+
+    shuffle : bool
+        Whether to shuffle data.
+
+    callback : callable
+        Callback function.
+
+    n_calls : int
+        Frequency with which `callback` must be called.
+
+    random_state : RandomState or int
+        The seed of the pseudo random number generator to use.
+
+    verbose : int
+        Verbosity level.
+    """
 
     def __init__(self, loss="squared", penalty="l2",
                  alpha=0.01,
                  learning_rate="pegasos", eta0=0.03, power_t=0.5,
                  epsilon=0.01, fit_intercept=True, intercept_decay=1.0,
                  max_iter=10, shuffle=True, random_state=None,
-                 callback=None, n_calls=100,
-                 cache_mb=500, verbose=0, n_jobs=1):
+                 callback=None, n_calls=100, verbose=0):
         self.loss = loss
         self.penalty = penalty
         self.alpha = alpha
@@ -176,9 +301,7 @@ class SGDRegressor(BaseRegressor, RegressorMixin, _BaseSGD):
         self.random_state = random_state
         self.callback = callback
         self.n_calls = n_calls
-        self.cache_mb = cache_mb
         self.verbose = verbose
-        self.n_jobs = n_jobs
         self.coef_ = None
 
     def _get_loss(self):
