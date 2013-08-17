@@ -1,3 +1,11 @@
+"""
+============================
+Kernel SVM by Newton's method
+============================
+
+This module provides a kernel SVM solver using Newton's method.
+
+"""
 # Author: Mathieu Blondel
 # License: BSD
 
@@ -16,12 +24,64 @@ from .base import BaseClassifier
 
 
 class KernelSVC(BaseClassifier, ClassifierMixin):
+    """Learn a kernel SVM by Newton's method
 
-    def __init__(self, lmbda=1.0, solver="cg",
+
+    Parameters
+    ----------
+
+    alpha : float
+        Weight of the penalty term.
+
+    solver : str, 'cg', 'dense'
+
+    max_iter : int
+        Maximum number of iterations to perform.
+
+    tol : float
+        Tolerance of the stopping criterion.
+
+    kernel: "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
+        Kernel to use.  Default: "linear"
+
+    degree : int, default=3
+        Degree for poly, rbf and sigmoid kernels. Ignored by other kernels.
+
+    gamma : float, optional
+        Kernel coefficient for rbf and poly kernels. Default: 1/n_features.
+        Ignored by other kernels.
+
+    coef0 : float, optional
+        Independent term in poly and sigmoid kernels.
+        Ignored by other kernels.
+
+    random_state : RandomState or int
+        The seed of the pseudo random number generator to use.
+
+    verbose : int
+        Verbosity level.
+
+    n_jobs : int
+        Number of jobs to use to compute the kernel matrix.
+
+    Example
+    -------
+
+    The following example demonstrates how to learn a classification
+    model with a multiclass squared hinge loss and an l1/l2 penalty.
+
+    >>> from sklearn.datasets import make_classification
+    >>> from lightning.primal_newton import KernelSVC
+    >>> X, y = make_classification()
+    >>> clf = KernelSVC().fit(X, y)
+    >>> accuracy = clf.score(X, y)
+    """
+
+    def __init__(self, alpha=1.0, solver="cg",
                  max_iter=50, tol=1e-3,
                  kernel="linear", gamma=0.1, coef0=1, degree=4,
-                 random_state=0, verbose=0, n_jobs=1):
-        self.lmbda = lmbda
+                 random_state=None, verbose=0, n_jobs=1):
+        self.alpha = alpha
         self.solver = solver
         self.max_iter = max_iter
         self.tol = tol
@@ -60,7 +120,7 @@ class KernelSVC(BaseClassifier, ClassifierMixin):
                 print "Iteration", t, "#SV=", np.sum(sv)
 
             K_sv = K[sv][:, sv]
-            I = np.diag(self.lmbda * np.ones(K_sv.shape[0]))
+            I = np.diag(self.alpha * np.ones(K_sv.shape[0]))
 
             coef_sv = self._solve(K_sv + I, y[sv])
 
@@ -94,6 +154,22 @@ class KernelSVC(BaseClassifier, ClassifierMixin):
                 print "Number of support vectors:", np.sum(sv)
 
     def fit(self, X, y):
+        """Fit model according to X and y.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Training vectors, where n_samples is the number of samples
+            and n_features is the number of features.
+
+        y : array-like, shape = [n_samples]
+            Target values.
+
+        Returns
+        -------
+        self : classifier
+            Returns self.
+        """
         n_samples, n_features = X.shape
         rs = check_random_state(self.random_state)
 
@@ -117,6 +193,18 @@ class KernelSVC(BaseClassifier, ClassifierMixin):
         return self
 
     def decision_function(self, X):
+        """
+        Return the decision function for test vectors X.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+
+        Returns
+        -------
+        P : array, shape = [n_classes, n_samples]
+            Decision function for X
+        """
         K = pairwise_kernels(X, self.support_vectors_, filter_params=True,
                              n_jobs=self.n_jobs, metric=self.kernel,
                              **self._kernel_params())
