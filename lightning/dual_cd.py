@@ -109,6 +109,22 @@ class LinearSVC(BaseClassifier, ClassifierMixin):
         return loss[self.loss]
 
     def fit(self, X, y):
+        """Fit model according to X and y.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Training vectors, where n_samples is the number of samples
+            and n_features is the number of features.
+
+        y : array-like, shape = [n_samples]
+            Target values.
+
+        Returns
+        -------
+        self : classifier
+            Returns self.
+        """
         n_samples, n_features = X.shape
         rs = self._get_random_state()
 
