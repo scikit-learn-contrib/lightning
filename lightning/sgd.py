@@ -243,7 +243,7 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, _BaseSGD):
 
 
 class SGDRegressor(BaseRegressor, RegressorMixin, _BaseSGD):
-    """Estimator for learning linear classifiers by SGD.
+    """Estimator for learning linear regressors by SGD.
 
     Parameters
     ----------
