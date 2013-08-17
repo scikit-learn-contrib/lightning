@@ -175,6 +175,22 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, _BaseSGD):
         return losses[self.loss]
 
     def fit(self, X, y):
+        """Fit model according to X and y.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Training vectors, where n_samples is the number of samples
+            and n_features is the number of features.
+
+        y : array-like, shape = [n_samples]
+            Target values.
+
+        Returns
+        -------
+        self : classifier
+            Returns self.
+        """
         rs = check_random_state(self.random_state)
 
         reencode = self.multiclass
@@ -313,6 +329,22 @@ class SGDRegressor(BaseRegressor, RegressorMixin, _BaseSGD):
         return losses[self.loss]
 
     def fit(self, X, y):
+        """Fit model according to X and y.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Training vectors, where n_samples is the number of samples
+            and n_features is the number of features.
+
+        y : array-like, shape = [n_samples] or [n_samples, n_targets]
+            Target values.
+
+        Returns
+        -------
+        self : regressor
+            Returns self.
+        """
         rs = check_random_state(self.random_state)
 
         ds = get_dataset(X)
@@ -351,6 +383,18 @@ class SGDRegressor(BaseRegressor, RegressorMixin, _BaseSGD):
         return self
 
     def predict(self, X):
+        """
+        Perform regression on an array of test vectors X.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+
+        Returns
+        -------
+        p : array, shape = [n_samples]
+            Predicted target values for X
+        """
         try:
             assert_all_finite(self.coef_)
             pred = safe_sparse_dot(X, self.coef_.T)
