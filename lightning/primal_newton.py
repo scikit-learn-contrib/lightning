@@ -1,7 +1,7 @@
 """
-============================
+=============================
 Kernel SVM by Newton's method
-============================
+=============================
 
 This module provides a kernel SVM solver using Newton's method.
 
