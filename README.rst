@@ -31,6 +31,19 @@ To install for all users on Unix/Linux::
 
   python setup.py build
   sudo python setup.py install
+  
+  
+Documentation
+=============
+
+Classification:
+
+* `CDClassifier <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/primal_cd.py>`_ Learning linear classifiers by coordinate descent in the primal. Supports different losses & penalties.
+* `LinearSVC <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/dual_cd.py>`_ Learning linear SVM by coordinate descent in the dual. Supports optimizing for accuracy or AUC.
+
+Regression:
+
+* `CDRegressor <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/primal_cd.py>`_ Learning linear regressors by coordinate descent in the primal. Supports different losses & penalties.
 
 Citation
 ========
