@@ -490,19 +490,34 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
         indices = np.arange(n_features, dtype=np.int32)
 
-        penalty = self._get_penalty()
-        for k in xrange(n_vectors):
-            vinit = self.violation_init_.get(k, 0) * self.C / self.C_init
+
+        if self.penalty == "l1/l2":
+            vinit = self.violation_init_.get(0, 0) * self.C / self.C_init
             viol = _primal_cd(self, self.coef_, self.errors_,
-                              ds, y, Y, k, False,
-                              indices, penalty, self._get_loss(),
-                              self.selection, self.permute,
-                              self.termination,
-                              self.C, self.alpha, self.U,
+                              ds, y, Y, -1, False,
+                              indices, 12, self._get_loss(),
+                              self.selection, self.permute, self.termination,
+                              self.C, self.alpha, 1e12,
                               self.max_iter, self.max_steps,
                               self.shrinking, vinit,
                               rs, self.tol, self.callback, self.n_calls,
                               self.verbose)
+            if self.warm_start and len(self.violation_init_) == 0:
+                self.violation_init_[0] = viol
+        else:
+            penalty = self._get_penalty()
+            for k in xrange(n_vectors):
+                vinit = self.violation_init_.get(k, 0) * self.C / self.C_init
+                viol = _primal_cd(self, self.coef_, self.errors_,
+                                  ds, y, Y, k, False,
+                                  indices, penalty, self._get_loss(),
+                                  self.selection, self.permute,
+                                  self.termination,
+                                  self.C, self.alpha, self.U,
+                                  self.max_iter, self.max_steps,
+                                  self.shrinking, vinit,
+                                  rs, self.tol, self.callback, self.n_calls,
+                                  self.verbose)
 
             if self.warm_start and not k in self.violation_init_:
                 self.violation_init_[k] = viol

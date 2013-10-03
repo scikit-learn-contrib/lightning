@@ -383,3 +383,14 @@ def test_fit_reg_squared_multiple_outputs():
     y_pred = reg.predict(digit.data)
     assert_equal(y_pred.shape[0], len(digit.target))
     assert_equal(y_pred.shape[1], 2)
+
+
+def test_fit_reg_squared_multiple_outputs():
+    reg = CDRegressor(C=0.05, random_state=0, penalty="l1/l2",
+                      loss="squared", max_iter=100)
+    lb = LabelBinarizer()
+    Y = lb.fit_transform(mult_target)
+    reg.fit(mult_dense, Y)
+    y_pred = lb.inverse_transform(reg.predict(mult_dense))
+    assert_almost_equal(np.mean(y_pred == mult_target), 0.797, 3)
+    assert_almost_equal(reg.n_nonzero(percentage=True), 0.5)
