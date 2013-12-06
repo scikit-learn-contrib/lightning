@@ -203,7 +203,7 @@ def load_mnist():
     data_home = get_data_home()
     train_file = os.path.join(data_home, "mnist.scale")
     test_file = os.path.join(data_home, "mnist.scale.t")
-    return _todense(_load(train_file, test_file, "mnist"))
+    return _load(train_file, test_file, "mnist")
 
 
 def load_news20():
