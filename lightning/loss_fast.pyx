@@ -51,7 +51,7 @@ cdef double _l2_norm_sums(RowDataset X, int squared):
 cdef class SquaredHinge:
 
     cpdef gradient(self,
-                   np.ndarray[double, ndim=2, mode='c'] df,
+                   np.ndarray[double, ndim=2] df,
                    RowDataset X,
                    np.ndarray[double, ndim=2, mode='fortran'] y,
                    np.ndarray[double, ndim=2, mode='c'] G):
@@ -76,7 +76,7 @@ cdef class SquaredHinge:
                         G[k, j] -= tmp * data[jj]
 
     cpdef objective(self,
-                    np.ndarray[double, ndim=2, mode='c'] df,
+                    np.ndarray[double, ndim=2] df,
                     np.ndarray[double, ndim=2, mode='fortran'] y):
 
         cdef int n_samples = df.shape[0]
@@ -101,7 +101,7 @@ cdef class SquaredHinge:
 cdef class MulticlassSquaredHinge:
 
     cpdef gradient(self,
-                   np.ndarray[double, ndim=2, mode='c'] df,
+                   np.ndarray[double, ndim=2] df,
                    RowDataset X,
                    np.ndarray[int, ndim=1, mode='c'] y,
                    np.ndarray[double, ndim=2, mode='c'] G):
@@ -132,7 +132,7 @@ cdef class MulticlassSquaredHinge:
                         G[k, j] += tmp
 
     cpdef objective(self,
-                    np.ndarray[double, ndim=2, mode='c'] df,
+                    np.ndarray[double, ndim=2] df,
                     np.ndarray[int, ndim=1, mode='c'] y):
 
         cdef int n_samples = df.shape[0]
@@ -164,7 +164,7 @@ cdef class MulticlassLog:
         self.margin = margin
 
     cpdef gradient(self,
-                   np.ndarray[double, ndim=2, mode='c'] df,
+                   np.ndarray[double, ndim=2] df,
                    RowDataset X,
                    np.ndarray[int, ndim=1, mode='c'] y,
                    np.ndarray[double, ndim=2, mode='c'] G):
@@ -202,7 +202,7 @@ cdef class MulticlassLog:
                     G[k, j] += tmp * data[jj]
 
     cpdef objective(self,
-                    np.ndarray[double, ndim=2, mode='c'] df,
+                    np.ndarray[double, ndim=2] df,
                     np.ndarray[int, ndim=1, mode='c'] y):
 
         cdef int n_samples = df.shape[0]
