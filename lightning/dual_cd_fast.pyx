@@ -424,7 +424,7 @@ def _dual_cd_svr(self,
         U = DBL_MAX
         lmbda = 1 / (2 * C)
 
-    # Active set.
+    # Instance indices.
     cdef np.ndarray[int, ndim=1, mode='c'] A
     A = np.arange(n_samples, dtype=np.int32)
     cdef Py_ssize_t active_size = n_samples
@@ -435,8 +435,8 @@ def _dual_cd_svr(self,
     cdef int n_nz
 
     # Dual coefficients (two per instance).
-    cdef np.ndarray[double, ndim=1, mode='c'] alphas_
-    alphas_ = np.zeros(n_samples * 2, dtype=np.float64)
+    cdef np.ndarray[double, ndim=1, mode='c'] alpha_
+    alpha_ = np.zeros(n_samples * 2, dtype=np.float64)
 
     # Squared norms.
     cdef np.ndarray[double, ndim=1, mode='c'] sqnorms
@@ -444,6 +444,17 @@ def _dual_cd_svr(self,
     _sqnorms(X, sqnorms)
     sqnorms += lmbda
 
+    # We store alphas in the form
+    # alpha[i] = alpha_+[i] - alpha_-[i]
+    # so we need to convert representation.
+    for i in xrange(n_samples):
+        ii = i * 2
+        if alpha[i] > 0:
+            alpha_[ii] = alpha[i]
+        else:
+            alpha_[ii + 1] = -alpha[i]
+
+    # Learning...
     for t in xrange(max_iter):
         if verbose >= 1:
             print "\nIteration", t
@@ -465,7 +476,7 @@ def _dual_cd_svr(self,
                 j = indices[jj]
                 pred += w[j] * data[jj]
 
-            alpha_old = alphas_[s]
+            alpha_old = alpha_[s]
             pos = s % 2 == 0
 
             # Compute gradient.
@@ -492,12 +503,12 @@ def _dual_cd_svr(self,
             # Compute update
             if PG_abs > 1e-12:
                 update = G / sqnorms[i]
-                alphas_[s] = min(max(alpha_old - update, 0), U)
+                alpha_[s] = min(max(alpha_old - update, 0), U)
 
                 if pos:
-                    diff = alphas_[s] - alpha_old
+                    diff = alpha_[s] - alpha_old
                 else:
-                    diff = -alphas_[s] + alpha_old
+                    diff = -alpha_[s] + alpha_old
 
                 # Update the primal coefficients.
                 if diff != 0:
@@ -534,5 +545,9 @@ def _dual_cd_svr(self,
 
     if verbose >= 1:
         print
+
+    for i in xrange(n_samples):
+        ii = i * 2
+        alpha[i] = alpha_[ii] - alpha_[ii + 1]
 
     return w, alpha
