@@ -10,11 +10,14 @@ from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils import check_random_state
 
 
-X_train, y_train = make_regression(n_samples=15, n_features=1, n_informative=1,
-                       random_state=0)
+# Generate regression data.
+X_train, y_train = make_regression(n_samples=15, n_features=1,
+                                   n_informative=1, random_state=0)
 
+# Add noise.
 rs = check_random_state(0)
 y_train += rs.normal(np.std(y_train), size=X_train.shape[0])
+# Add an outlier.
 y_train[5] *= 5
 
 X_test = np.linspace(-5, 5, 100).reshape(-1, 1)
