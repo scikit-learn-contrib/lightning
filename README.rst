@@ -47,6 +47,7 @@ Regression:
 
 * `CDRegressor <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/primal_cd.py#class-CDRegressor>`_ Learning linear regressors by coordinate descent in the primal. Supports different losses and penalties.
 * `SGDRegressor <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/sgd.py#class-SGDRegressor>`_ Learning linear regressors by stochastic (sub)gradient descent. Supports different losses and penalties.
+* `LinearSVR <http://mblondel.org/livedoc/g/mblondel/lightning/master/lightning/dual_cd.py>`_ Learning linear SVR by coordinate descent in the dual.
 
 
 Citation
