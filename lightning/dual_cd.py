@@ -14,6 +14,7 @@ import numpy as np
 
 from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.preprocessing import add_dummy_feature
 
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
@@ -172,6 +173,9 @@ class LinearSVR(BaseRegressor, RegressorMixin):
     tol : float
         Tolerance of the stopping criterion.
 
+    fit_intercept : bool
+        Whether to fit an intercept term or not.
+
     warm_start : bool
         Whether to activate warm-start or not.
 
@@ -192,14 +196,15 @@ class LinearSVR(BaseRegressor, RegressorMixin):
     """
 
     def __init__(self, C=1.0, epsilon=0, loss="epsilon_insensitive",
-                 max_iter=1000, tol=1e-3,
-                 permute=True, shrinking=True, warm_start=False,
+                 max_iter=1000, tol=1e-3, fit_intercept=False,
+                 permute=True, warm_start=False,
                  random_state=None, callback=None, n_calls=100, verbose=0):
         self.C = C
         self.epsilon = epsilon
         self.loss = loss
         self.max_iter = max_iter
         self.tol = tol
+        self.fit_intercept = fit_intercept
         self.permute = permute
         self.warm_start = warm_start
         self.random_state = random_state
@@ -232,6 +237,9 @@ class LinearSVR(BaseRegressor, RegressorMixin):
         self : regressor
             Returns self.
         """
+        if self.fit_intercept:
+            X = add_dummy_feature(X)
+
         n_samples, n_features = X.shape
         rs = self._get_random_state()
 
@@ -257,5 +265,9 @@ class LinearSVR(BaseRegressor, RegressorMixin):
                          self.max_iter, rs, self.tol,
                          self.callback, self.n_calls,
                          verbose=self.verbose)
+
+        if self.fit_intercept:
+            self.intercept_ = self.coef_[:, 0]
+            self.coef_ = self.coef_[:, 1:]
 
         return self

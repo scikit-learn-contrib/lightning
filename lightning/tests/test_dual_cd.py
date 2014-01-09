@@ -86,6 +86,12 @@ def test_linear_svr():
     assert_greater(reg.score(reg_dense, reg_target), 0.99)
 
 
+def test_linear_svr_fit_intercept():
+    reg = LinearSVR(random_state=0, fit_intercept=True)
+    reg.fit(reg_dense, reg_target)
+    assert_greater(reg.score(reg_dense, reg_target), 0.99)
+
+
 def test_linear_svr_l2():
     reg = LinearSVR(loss="l2", random_state=0)
     reg.fit(reg_dense, reg_target)
