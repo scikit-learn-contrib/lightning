@@ -60,3 +60,8 @@ If you used lightning in your research, please consider citing the following pap
 | Machine Learning, May 2013.
 
 For more information, see http://www.mblondel.org/code/mlj2013/
+
+AUTHOR
+=======
+
+Mathieu Blondel, 2012-present
