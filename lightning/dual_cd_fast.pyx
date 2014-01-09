@@ -384,3 +384,152 @@ def _dual_cd_auc(self,
                     w[j] -= step * data2[jj]
 
     return w, alpha
+
+
+def _dual_cd_svr(self,
+                 np.ndarray[double, ndim=1, mode='c'] w,
+                 np.ndarray[double, ndim=1, mode='c'] alpha,
+                 RowDataset X,
+                 np.ndarray[double, ndim=1]y,
+                 int permute,
+                 double C,
+                 double epsilon,
+                 int loss,
+                 int max_iter,
+                 RandomState rs,
+                 double tol,
+                 callback,
+                 int n_calls,
+                 int verbose):
+    cdef Py_ssize_t n_samples = X.get_n_samples()
+    cdef Py_ssize_t n_features = X.get_n_features()
+
+    # Initialization.
+    cdef int i, j, jj, s
+    cdef double y_i
+    cdef double alpha_old
+    cdef unsigned int t
+    cdef double G, PG, pred, PG_abs
+    cdef int has_callback = callback is not None
+    cdef int stop = 0
+    cdef double U, lmbda
+    cdef double violation_sum, violation_init
+
+    # Loss-dependent values.
+    if loss == 1: # epsilon-insensitive
+        U = C
+        lmbda = 0
+    elif loss == 2: # squared epsilon-insensitive
+        U = DBL_MAX
+        lmbda = 1 / (2 * C)
+
+    # Active set.
+    cdef np.ndarray[int, ndim=1, mode='c'] A
+    A = np.arange(n_samples, dtype=np.int32)
+    cdef Py_ssize_t active_size = n_samples
+
+    # Data pointers.
+    cdef double* data
+    cdef int* indices
+    cdef int n_nz
+
+    # alphas.
+    cdef np.ndarray[double, ndim=2, mode='c'] alphas_
+    alphas_ = np.zeros((n_samples, 2), dtype=np.float64)
+
+    # Squared norms.
+    cdef np.ndarray[double, ndim=1, mode='c'] sqnorms
+    sqnorms = np.zeros(n_samples, dtype=np.float64)
+    _sqnorms(X, sqnorms)
+    sqnorms += lmbda
+
+    for t in xrange(max_iter):
+        if verbose >= 1:
+            print "\nIteration", t
+
+        if permute:
+            rs.shuffle(A)
+
+        violation_sum = 0
+
+        for s in xrange(n_samples * 2):
+            i = A[s % n_samples]
+
+            # Retrieve row.
+            X.get_row_ptr(i, &indices, &data, &n_nz)
+
+            # Compute prediction.
+            pred = 0
+            for jj in xrange(n_nz):
+                j = indices[jj]
+                pred += w[j] * data[jj]
+
+            alpha_old = alphas_[i, s % 2]
+
+            # Compute gradient.
+            if s % 2 == 0:
+                G = pred + epsilon - y[i] + lmbda * alpha_old
+            else:
+                G = -pred + epsilon + y[i] + lmbda * alpha_old
+
+            # Compute projected gradient.
+            PG = 0
+            if alpha_old == 0:
+                if G < 0:
+                    PG = G
+            elif alpha_old == U:
+                if G > 0:
+                    PG = G
+            else:
+                PG = G
+
+            PG_abs = fabs(PG)
+
+            violation_sum += PG_abs
+
+            # Compute update
+            if PG_abs > 1e-12:
+                update = G / sqnorms[i]
+                alphas_[i, s % 2] = min(max(alpha_old - update, 0), U)
+
+                if s % 2 == 0:
+                    diff = alphas_[i, s % 2] - alpha_old
+                else:
+                    diff = -alphas_[i, s % 2] + alpha_old
+
+                # Update the primal coefficients.
+                for jj in xrange(n_nz):
+                    j = indices[jj]
+                    w[j] += diff * data[jj]
+
+            # Callback
+            if has_callback and s % n_calls == 0:
+                ret = callback(self)
+                if ret is not None:
+                    stop = 1
+                    break
+
+        # end for i
+
+        if stop:
+            break
+
+        # Convergence check.
+
+        if t == 0:
+            violation_init = violation_sum
+
+        if verbose >= 1:
+            print t, violation_sum / violation_init
+
+        if violation_sum / violation_init < tol:
+            if verbose >= 1:
+                print "Converged"
+            break
+
+    # end for t
+
+    if verbose >= 1:
+        print
+
+    return w, alpha

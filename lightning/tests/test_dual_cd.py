@@ -4,12 +4,14 @@ import scipy.sparse as sp
 from sklearn.metrics.pairwise import linear_kernel
 from sklearn.metrics import auc_score
 from sklearn.datasets.samples_generator import make_classification
+from sklearn.datasets.samples_generator import make_regression
 
 from sklearn.utils.testing import assert_equal
 from sklearn.utils.testing import assert_greater
 from sklearn.utils.testing import assert_array_almost_equal
 
 from lightning.dual_cd import LinearSVC
+from lightning.dual_cd import LinearSVR
 from lightning.dual_cd_fast import sparse_dot
 from lightning.dataset_fast import get_dataset
 
@@ -22,6 +24,9 @@ mult_dense, mult_target = make_classification(n_samples=300, n_features=100,
                                               n_informative=5,
                                               n_classes=3, random_state=0)
 mult_sparse = sp.csr_matrix(mult_dense)
+
+reg_dense, reg_target = make_regression(n_samples=200, n_features=100,
+                                        n_informative=5, random_state=0)
 
 
 def test_sparse_dot():
@@ -74,3 +79,14 @@ def test_warm_start():
         acc = clf.score(bin_dense, bin_target)
         assert_greater(acc, 0.99)
 
+
+def test_linear_svr():
+    reg = LinearSVR(C=10)
+    reg.fit(reg_dense, reg_target)
+    assert_greater(reg.score(reg_dense, reg_target), 0.99)
+
+
+def test_linear_svr_l2():
+    reg = LinearSVR(C=10, loss="l2")
+    reg.fit(reg_dense, reg_target)
+    assert_greater(reg.score(reg_dense, reg_target), 0.99)

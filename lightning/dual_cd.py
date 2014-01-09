@@ -4,7 +4,7 @@ Dual Coordinate Descent Solvers
 ==========================================
 
 This module provides coordinate descent solvers for support vector machines
-(SVMs) with L2 regularization.
+(SVMs) and support vector regression (SVR) with L2 regularization.
 """
 
 # Author: Mathieu Blondel
@@ -12,13 +12,14 @@ This module provides coordinate descent solvers for support vector machines
 
 import numpy as np
 
-from sklearn.base import ClassifierMixin
+from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.preprocessing import LabelBinarizer
 
-from .base import BaseClassifier
+from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
 from .dual_cd_fast import _dual_cd
 from .dual_cd_fast import _dual_cd_auc
+from .dual_cd_fast import _dual_cd_svr
 
 
 class LinearSVC(BaseClassifier, ClassifierMixin):
@@ -146,5 +147,115 @@ class LinearSVC(BaseClassifier, ClassifierMixin):
                 _dual_cd_auc(self, self.coef_[i], ds, Y[:, i],
                              self.C, self._get_loss(), self.max_iter, rs,
                              self.verbose)
+
+        return self
+
+
+class LinearSVR(BaseRegressor, RegressorMixin):
+    """Estimator for learning a linear support vector regressor by coordinate
+    descent in the dual.
+
+    Parameters
+    ----------
+    loss : str, 'epsilon_insensitive', 'squared_epsilon_insensitive'
+        The loss function to be used.
+
+    C : float
+        Weight of the loss term.
+
+    epsilon : float
+        Parameter of the epsilon-insensitive loss.
+
+    max_iter : int
+        Maximum number of iterations to perform.
+
+    tol : float
+        Tolerance of the stopping criterion.
+
+    warm_start : bool
+        Whether to activate warm-start or not.
+
+    permute : bool
+        Whether to permute coordinates or not before cycling.
+
+    callback : callable
+        Callback function.
+
+    n_calls : int
+        Frequency with which `callback` must be called.
+
+    random_state : RandomState or int
+        The seed of the pseudo random number generator to use.
+
+    verbose : int
+        Verbosity level.
+    """
+
+    def __init__(self, C=1.0, epsilon=0, loss="epsilon_insensitive",
+                 max_iter=1000, tol=1e-3,
+                 permute=True, shrinking=True, warm_start=False,
+                 random_state=None, callback=None, n_calls=100, verbose=0):
+        self.C = C
+        self.epsilon = epsilon
+        self.loss = loss
+        self.max_iter = max_iter
+        self.tol = tol
+        self.permute = permute
+        self.warm_start = warm_start
+        self.random_state = random_state
+        self.callback = callback
+        self.n_calls = n_calls
+        self.verbose = verbose
+        self.coef_ = None
+
+    def _get_loss(self):
+        loss = {"l1": 1,
+                "epsilon_insensitive": 1,
+                "l2": 2,
+                "squared_epsilon_insensitive": 2}
+        return loss[self.loss]
+
+    def fit(self, X, y):
+        """Fit model according to X and y.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Training vectors, where n_samples is the number of samples
+            and n_features is the number of features.
+
+        y : array-like, shape = [n_samples]
+            Target values.
+
+        Returns
+        -------
+        self : regressor
+            Returns self.
+        """
+        n_samples, n_features = X.shape
+        rs = self._get_random_state()
+
+        self.outputs_2d_ = len(y.shape) == 2
+        if self.outputs_2d_:
+            Y = y
+        else:
+            Y = y.reshape(-1, 1)
+        Y = np.asfortranarray(Y)
+        n_vectors = Y.shape[1]
+
+        ds = get_dataset(X)
+
+        if not self.warm_start or self.coef_ is None:
+            self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
+            self.dual_coef_ = np.zeros((n_vectors, n_samples),
+                                       dtype=np.float64)
+
+        for i in xrange(n_vectors):
+            _dual_cd_svr(self, self.coef_[i], self.dual_coef_[i],
+                         ds, Y[:, i], self.permute,
+                         self.C, self.epsilon, self._get_loss(),
+                         self.max_iter, rs, self.tol,
+                         self.callback, self.n_calls,
+                         verbose=self.verbose)
 
         return self
