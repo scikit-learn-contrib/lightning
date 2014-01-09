@@ -3,7 +3,7 @@
 lightning
 ==========
 
-Large-scale sparse linear classification and regression in Python/Cython.
+Large-scale linear classification and regression in Python/Cython.
 
 lightning follows the `scikit-learn <http://scikit-learn.org>`_ API conventions.
 
