@@ -6,9 +6,6 @@ from sklearn.utils import check_random_state
 from sklearn.linear_model import Ridge
 
 from lightning.dual_cd import LinearSVR
-from sklearn.base import BaseEstimator, RegressorMixin
-from sklearn.utils import check_random_state
-
 
 # Generate regression data.
 X_train, y_train = make_regression(n_samples=15, n_features=1,
