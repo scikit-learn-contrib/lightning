@@ -409,11 +409,12 @@ def _dual_cd_svr(self,
     cdef double y_i
     cdef double alpha_old
     cdef unsigned int t
-    cdef double G, PG, pred, PG_abs
+    cdef double G, PG, pred, PG_abs, update, diff
     cdef int has_callback = callback is not None
     cdef int stop = 0
     cdef double U, lmbda
     cdef double violation_sum, violation_init
+    cdef int pos
 
     # Loss-dependent values.
     if loss == 1: # epsilon-insensitive
@@ -433,9 +434,9 @@ def _dual_cd_svr(self,
     cdef int* indices
     cdef int n_nz
 
-    # alphas.
-    cdef np.ndarray[double, ndim=2, mode='c'] alphas_
-    alphas_ = np.zeros((n_samples, 2), dtype=np.float64)
+    # Dual coefficients (two per instance).
+    cdef np.ndarray[double, ndim=1, mode='c'] alphas_
+    alphas_ = np.zeros(n_samples * 2, dtype=np.float64)
 
     # Squared norms.
     cdef np.ndarray[double, ndim=1, mode='c'] sqnorms
@@ -464,10 +465,11 @@ def _dual_cd_svr(self,
                 j = indices[jj]
                 pred += w[j] * data[jj]
 
-            alpha_old = alphas_[i, s % 2]
+            alpha_old = alphas_[s]
+            pos = s % 2 == 0
 
             # Compute gradient.
-            if s % 2 == 0:
+            if pos:
                 G = pred + epsilon - y[i] + lmbda * alpha_old
             else:
                 G = -pred + epsilon + y[i] + lmbda * alpha_old
@@ -490,17 +492,18 @@ def _dual_cd_svr(self,
             # Compute update
             if PG_abs > 1e-12:
                 update = G / sqnorms[i]
-                alphas_[i, s % 2] = min(max(alpha_old - update, 0), U)
+                alphas_[s] = min(max(alpha_old - update, 0), U)
 
-                if s % 2 == 0:
-                    diff = alphas_[i, s % 2] - alpha_old
+                if pos:
+                    diff = alphas_[s] - alpha_old
                 else:
-                    diff = -alphas_[i, s % 2] + alpha_old
+                    diff = -alphas_[s] + alpha_old
 
                 # Update the primal coefficients.
-                for jj in xrange(n_nz):
-                    j = indices[jj]
-                    w[j] += diff * data[jj]
+                if diff != 0:
+                    for jj in xrange(n_nz):
+                        j = indices[jj]
+                        w[j] += diff * data[jj]
 
             # Callback
             if has_callback and s % n_calls == 0:

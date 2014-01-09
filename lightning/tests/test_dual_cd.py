@@ -81,12 +81,12 @@ def test_warm_start():
 
 
 def test_linear_svr():
-    reg = LinearSVR(C=10)
+    reg = LinearSVR(C=10, random_state=0)
     reg.fit(reg_dense, reg_target)
     assert_greater(reg.score(reg_dense, reg_target), 0.99)
 
 
 def test_linear_svr_l2():
-    reg = LinearSVR(C=10, loss="l2")
+    reg = LinearSVR(C=10, loss="l2", random_state=0)
     reg.fit(reg_dense, reg_target)
     assert_greater(reg.score(reg_dense, reg_target), 0.99)
