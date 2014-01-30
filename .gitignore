@@ -6,9 +6,9 @@
 .DS_Store
 build
 lightning/**/*.html
-lightning/*.c
-lightning/*.cpp
-lightning/random/*.cpp
+lightning/impl/*.c
+lightning/impl/*.cpp
+lightning/impl/random/*.cpp
 
 dist/
 doc/_build/
