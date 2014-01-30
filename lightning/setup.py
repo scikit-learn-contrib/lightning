@@ -9,7 +9,6 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('lightning', parent_package, top_path)
 
     config.add_subpackage('impl')
-    config.add_subpackage('datasets')
 
     return config
 

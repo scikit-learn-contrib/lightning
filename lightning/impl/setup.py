@@ -30,6 +30,7 @@ def configuration(parent_package='', top_path=None):
                          sources=['sgd_fast.cpp'],
                          include_dirs=[numpy.get_include(), randomdir])
 
+    config.add_subpackage('datasets')
     config.add_subpackage('random')
     config.add_subpackage('tests')
 
