@@ -10,7 +10,7 @@
 import numpy as np
 cimport numpy as np
 
-from lightning.dataset_fast cimport RowDataset
+from lightning.impl.dataset_fast cimport RowDataset
 
 ctypedef np.int64_t LONG
 

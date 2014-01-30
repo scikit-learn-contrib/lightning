@@ -8,10 +8,10 @@ from sklearn.utils.testing import assert_equal
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.utils import check_random_state
 
-from lightning.dataset_fast import ContiguousDataset
-from lightning.dataset_fast import FortranDataset
-from lightning.dataset_fast import CSRDataset
-from lightning.dataset_fast import CSCDataset
+from lightning.impl.dataset_fast import ContiguousDataset
+from lightning.impl.dataset_fast import FortranDataset
+from lightning.impl.dataset_fast import CSRDataset
+from lightning.impl.dataset_fast import CSCDataset
 
 # Create test datasets.
 X, _ = make_classification(n_samples=20, n_features=100,

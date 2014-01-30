@@ -11,8 +11,8 @@ import sys
 import numpy as np
 cimport numpy as np
 
-from lightning.random.random_fast cimport RandomState
-from lightning.dataset_fast cimport ColumnDataset
+from lightning.impl.random.random_fast cimport RandomState
+from lightning.impl.dataset_fast cimport ColumnDataset
 
 DEF LOWER = 1e-2
 DEF UPPER = 1e9

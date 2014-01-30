@@ -3,10 +3,10 @@
 from optparse import OptionParser
 import pickle
 
-from lightning.primal_cd import CDClassifier
-from lightning.fista import FistaClassifier
-from lightning.sparsa import SparsaClassifier
-from lightning.sgd import SGDClassifier
+from lightning.classification import CDClassifier
+from lightning.classification import FistaClassifier
+from lightning.classification import SparsaClassifier
+from lightning.classification import SGDClassifier
 
 
 try:

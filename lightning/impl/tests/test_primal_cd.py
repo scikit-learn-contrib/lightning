@@ -12,7 +12,7 @@ from sklearn.datasets import load_digits
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer
 
-from lightning.primal_cd import CDClassifier, CDRegressor
+from lightning.impl.primal_cd import CDClassifier, CDRegressor
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,

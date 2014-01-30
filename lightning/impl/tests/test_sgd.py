@@ -8,9 +8,9 @@ from sklearn.utils.testing import assert_greater
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.datasets.samples_generator import make_regression
 
-from lightning.datasets.samples_generator import make_nn_regression
-from lightning.sgd import SGDClassifier
-from lightning.sgd import SGDRegressor
+from lightning.impl.datasets.samples_generator import make_nn_regression
+from lightning.impl.sgd import SGDClassifier
+from lightning.impl.sgd import SGDRegressor
 
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,

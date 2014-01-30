@@ -2,7 +2,7 @@ from sklearn.utils.testing import assert_almost_equal
 
 from sklearn.datasets.samples_generator import make_classification
 
-from lightning.primal_newton import KernelSVC
+from lightning.impl.primal_newton import KernelSVC
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,

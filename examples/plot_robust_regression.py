@@ -5,7 +5,7 @@ from sklearn.datasets import make_regression
 from sklearn.utils import check_random_state
 from sklearn.linear_model import Ridge
 
-from lightning.dual_cd import LinearSVR
+from lightning.regression import LinearSVR
 
 # Generate regression data.
 X_train, y_train = make_regression(n_samples=15, n_features=1,

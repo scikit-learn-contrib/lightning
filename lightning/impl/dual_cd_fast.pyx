@@ -11,8 +11,8 @@ import sys
 import numpy as np
 cimport numpy as np
 
-from lightning.random.random_fast cimport RandomState
-from lightning.dataset_fast cimport RowDataset
+from lightning.impl.random.random_fast cimport RandomState
+from lightning.impl.dataset_fast cimport RowDataset
 
 cdef extern from "math.h":
    double fabs(double)

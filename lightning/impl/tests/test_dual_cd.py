@@ -10,10 +10,10 @@ from sklearn.utils.testing import assert_equal
 from sklearn.utils.testing import assert_greater
 from sklearn.utils.testing import assert_array_almost_equal
 
-from lightning.dual_cd import LinearSVC
-from lightning.dual_cd import LinearSVR
-from lightning.dual_cd_fast import sparse_dot
-from lightning.dataset_fast import get_dataset
+from lightning.impl.dual_cd import LinearSVC
+from lightning.impl.dual_cd import LinearSVR
+from lightning.impl.dual_cd_fast import sparse_dot
+from lightning.impl.dataset_fast import get_dataset
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,

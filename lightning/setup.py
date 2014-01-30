@@ -8,30 +8,7 @@ def configuration(parent_package='', top_path=None):
 
     config = Configuration('lightning', parent_package, top_path)
 
-    randomdir = os.path.join(top_path, "lightning", "random")
-
-    config.add_extension('dataset_fast',
-                         sources=['dataset_fast.cpp'],
-                         include_dirs=[numpy.get_include(), randomdir])
-
-    config.add_extension('dual_cd_fast',
-                         sources=['dual_cd_fast.cpp'],
-                         include_dirs=[numpy.get_include(), randomdir])
-
-    config.add_extension('loss_fast',
-                         sources=['loss_fast.cpp'],
-                         include_dirs=[numpy.get_include(), randomdir])
-
-    config.add_extension('primal_cd_fast',
-                         sources=['primal_cd_fast.cpp'],
-                         include_dirs=[numpy.get_include(), randomdir])
-
-    config.add_extension('sgd_fast',
-                         sources=['sgd_fast.cpp'],
-                         include_dirs=[numpy.get_include(), randomdir])
-
-    config.add_subpackage('random')
-    config.add_subpackage('tests')
+    config.add_subpackage('impl')
     config.add_subpackage('datasets')
 
     return config

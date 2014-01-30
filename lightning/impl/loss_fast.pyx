@@ -9,7 +9,7 @@
 import numpy as np
 cimport numpy as np
 
-from lightning.dataset_fast cimport RowDataset
+from lightning.impl.dataset_fast cimport RowDataset
 
 DEF LOWER = 1e-2
 DEF UPPER = 1e9
