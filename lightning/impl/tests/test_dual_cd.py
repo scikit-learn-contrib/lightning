@@ -3,13 +3,13 @@ import scipy.sparse as sp
 
 from sklearn.metrics.pairwise import linear_kernel
 from sklearn.metrics import auc_score
-from sklearn.datasets.samples_generator import make_classification
 from sklearn.datasets.samples_generator import make_regression
 
 from sklearn.utils.testing import assert_equal
 from sklearn.utils.testing import assert_greater
 from sklearn.utils.testing import assert_array_almost_equal
 
+from lightning.datasets.samples_generator import make_classification
 from lightning.impl.dual_cd import LinearSVC
 from lightning.impl.dual_cd import LinearSVR
 from lightning.impl.dual_cd_fast import sparse_dot

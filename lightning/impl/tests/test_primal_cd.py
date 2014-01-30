@@ -7,11 +7,11 @@ from sklearn.utils.testing import assert_true
 from sklearn.utils.testing import assert_equal
 from sklearn.utils.testing import assert_greater
 
-from sklearn.datasets.samples_generator import make_classification
 from sklearn.datasets import load_digits
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer
 
+from lightning.datasets.samples_generator import make_classification
 from lightning.impl.primal_cd import CDClassifier, CDRegressor
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,

@@ -5,10 +5,10 @@ from sklearn.utils.testing import assert_almost_equal
 from sklearn.utils.testing import assert_false
 from sklearn.utils.testing import assert_greater
 
-from sklearn.datasets.samples_generator import make_classification
 from sklearn.datasets.samples_generator import make_regression
 
-from lightning.impl.datasets.samples_generator import make_nn_regression
+from lightning.datasets.samples_generator import make_classification
+from lightning.datasets.samples_generator import make_nn_regression
 from lightning.impl.sgd import SGDClassifier
 from lightning.impl.sgd import SGDRegressor
 
