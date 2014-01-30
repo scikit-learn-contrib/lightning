@@ -2,7 +2,7 @@ import numpy as np
 
 from sklearn.utils.testing import assert_equal
 
-from lightning.datasets.samples_generator import make_nn_regression
+from lightning.impl.datasets.samples_generator import make_nn_regression
 
 
 def test_make_nn_regression():

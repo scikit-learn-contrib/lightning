@@ -4,7 +4,7 @@ from sklearn.utils.testing import assert_almost_equal
 
 from sklearn.datasets import load_digits
 
-from lightning.datasets.samples_generator import make_classification
+from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.fista import FistaClassifier
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,

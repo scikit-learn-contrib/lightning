@@ -9,7 +9,7 @@ from sklearn.utils.testing import assert_equal
 from sklearn.utils.testing import assert_greater
 from sklearn.utils.testing import assert_array_almost_equal
 
-from lightning.datasets.samples_generator import make_classification
+from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.dual_cd import LinearSVC
 from lightning.impl.dual_cd import LinearSVR
 from lightning.impl.dual_cd_fast import sparse_dot

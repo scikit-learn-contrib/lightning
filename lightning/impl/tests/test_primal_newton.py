@@ -1,6 +1,6 @@
 from sklearn.utils.testing import assert_almost_equal
 
-from lightning.datasets.samples_generator import make_classification
+from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.primal_newton import KernelSVC
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,

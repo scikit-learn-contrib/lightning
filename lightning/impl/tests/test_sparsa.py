@@ -5,7 +5,7 @@ from sklearn.utils.testing import assert_greater
 
 from sklearn.datasets import load_digits
 
-from lightning.datasets.samples_generator import make_classification
+from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.sparsa import SparsaClassifier
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
