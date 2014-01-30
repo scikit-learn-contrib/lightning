@@ -5,7 +5,7 @@ from sklearn.datasets import fetch_20newsgroups_vectorized
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.feature_selection import SelectKBest, chi2
 
-from lightning.fista import FistaClassifier
+from lightning.classification import FistaClassifier
 
 def rank(M, eps=1e-9):
     U, s, V = svd(M, full_matrices=False)

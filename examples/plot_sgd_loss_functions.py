@@ -8,11 +8,11 @@ print __doc__
 
 import numpy as np
 import pylab as pl
-from lightning.sgd import Hinge
-from lightning.sgd import Log
-from lightning.sgd import SparseLog
-from lightning.sgd import ModifiedHuber
-from lightning.sgd import SquaredLoss
+from lightning.impl.sgd import Hinge
+from lightning.impl.sgd import Log
+from lightning.impl.sgd import SparseLog
+from lightning.impl.sgd import ModifiedHuber
+from lightning.impl.sgd import SquaredLoss
 
 ###############################################################################
 # Define loss funcitons
