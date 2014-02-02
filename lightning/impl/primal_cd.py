@@ -165,7 +165,7 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
     model with a multiclass squared hinge loss and an l1/l2 penalty.
 
     >>> from sklearn.datasets import fetch_20newsgroups_vectorized
-    >>> from lightning.primal_cd import CDClassifier
+    >>> from lightning.classification import CDClassifier
     >>> bunch = fetch_20newsgroups_vectorized(subset="all")
     >>> X, y = bunch.data, bunch.target
     >>> clf = CDClassifier(penalty="l1/l2",

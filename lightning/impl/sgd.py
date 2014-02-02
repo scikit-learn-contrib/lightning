@@ -122,7 +122,7 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, _BaseSGD):
     -------
 
     >>> from sklearn.datasets import fetch_20newsgroups_vectorized
-    >>> from lightning.sgd import SGDClassifier
+    >>> from lightning.classification import SGDClassifier
     >>> bunch = fetch_20newsgroups_vectorized(subset="all")
     >>> X, y = bunch.data, bunch.target
     >>> clf = SGDClassifier().fit(X, y)

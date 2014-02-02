@@ -66,11 +66,8 @@ class KernelSVC(BaseClassifier, ClassifierMixin):
     Example
     -------
 
-    The following example demonstrates how to learn a classification
-    model with a multiclass squared hinge loss and an l1/l2 penalty.
-
     >>> from sklearn.datasets import make_classification
-    >>> from lightning.primal_newton import KernelSVC
+    >>> from lightning.classification import KernelSVC
     >>> X, y = make_classification()
     >>> clf = KernelSVC().fit(X, y)
     >>> accuracy = clf.score(X, y)

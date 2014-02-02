@@ -72,7 +72,7 @@ class LinearSVC(BaseClassifier, ClassifierMixin):
     model:
 
     >>> from sklearn.datasets import fetch_20newsgroups_vectorized
-    >>> from lightning.dual_cd import LinearSVC
+    >>> from lightning.classification import LinearSVC
     >>> bunch = fetch_20newsgroups_vectorized(subset="all")
     >>> X, y = bunch.data, bunch.target
     >>> clf = LinearSVC().fit(X, y)
