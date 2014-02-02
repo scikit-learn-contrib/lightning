@@ -21,6 +21,8 @@ from .penalty import TracePenalty
 
 
 class SparsaClassifier(BaseClassifier, ClassifierMixin):
+    """Estimator for learning linear classifiers by SpaRSA.
+    """
 
     def __init__(self, C=1.0, alpha=1.0,
                  loss="squared_hinge", penalty="l1", multiclass=False,
