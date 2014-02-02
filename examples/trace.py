@@ -1,3 +1,10 @@
+"""
+===========
+Trace norm
+===========
+
+"""
+print __doc__
 import numpy as np
 from scipy.linalg import svd
 
