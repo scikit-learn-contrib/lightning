@@ -8,14 +8,15 @@ DATADIR=$(HOME)/lightning_data
 CYTHONSRC= $(wildcard lightning/impl/*.pyx lightning/impl/random/*.pyx)
 CSRC= $(CYTHONSRC:.pyx=.cpp)
 
-inplace: cython
+inplace:
 	$(PYTHON) setup.py build_ext -i
+
+all: cython inplace
 
 cython: $(CSRC)
 
 clean:
 	rm -f lightning/impl/*.c lightning/impl/*.html
-	rm -f `find lightning -name "*.cpp"`
 	rm -f `find lightning -name "*.pyc"`
 	rm -f `find lightning -name "*.so"`
 
