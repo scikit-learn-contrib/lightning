@@ -6,12 +6,14 @@ from sklearn.metrics import auc_score
 from sklearn.datasets.samples_generator import make_regression
 
 from sklearn.utils.testing import assert_equal
+from sklearn.utils.testing import assert_almost_equal
 from sklearn.utils.testing import assert_greater
 from sklearn.utils.testing import assert_array_almost_equal
 
 from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.dual_cd import LinearSVC
 from lightning.impl.dual_cd import LinearSVR
+from lightning.impl.dual_cd import LinearRidge
 from lightning.impl.dual_cd_fast import sparse_dot
 from lightning.impl.dataset_fast import get_dataset
 
@@ -106,3 +108,9 @@ def test_linear_svr_warm_start():
     reg.C = 1
     reg.fit(reg_dense, reg_target)
     assert_greater(reg.score(reg_dense, reg_target), 0.99)
+
+def test_linear_ridge():
+    reg = LinearRidge(alpha=1e-2, random_state=0)
+    reg.fit(reg_dense, reg_target)
+    pred = reg.predict(reg_dense)
+    assert_almost_equal(np.mean((reg_target - pred) ** 2), 0.004, 3)

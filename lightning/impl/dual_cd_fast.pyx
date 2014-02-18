@@ -551,3 +551,123 @@ def _dual_cd_svr(self,
         alpha[i] = alpha_[ii] - alpha_[ii + 1]
 
     return w, alpha
+
+
+def _dual_cd_ridge(self,
+                   np.ndarray[double, ndim=1, mode='c'] w,
+                   np.ndarray[double, ndim=1, mode='c'] dual_coef,
+                   RowDataset X,
+                   np.ndarray[double, ndim=1]y,
+                   int permute,
+                   double C,
+                   double alpha,
+                   int max_iter,
+                   RandomState rs,
+                   double tol,
+                   callback,
+                   int n_calls,
+                   int verbose):
+    cdef Py_ssize_t n_samples = X.get_n_samples()
+    cdef Py_ssize_t n_features = X.get_n_features()
+
+    # Initialization.
+    cdef int i, j, jj, s
+    cdef double y_i
+    cdef double alpha_old
+    cdef unsigned int t
+    cdef double G, H, pred, G_abs, update
+    cdef int has_callback = callback is not None
+    cdef int stop = 0
+    cdef double violation_sum, violation_init
+
+    # Instance indices.
+    cdef np.ndarray[int, ndim=1, mode='c'] A
+    A = np.arange(n_samples, dtype=np.int32)
+    cdef Py_ssize_t active_size = n_samples
+
+    # Data pointers.
+    cdef double* data
+    cdef int* indices
+    cdef int n_nz
+
+    # Squared norms.
+    cdef np.ndarray[double, ndim=1, mode='c'] sqnorms
+    sqnorms = np.zeros(n_samples, dtype=np.float64)
+    _sqnorms(X, sqnorms)
+
+    # Learning...
+    for t in xrange(max_iter):
+        if verbose >= 1:
+            print "\nIteration", t
+
+        if permute:
+            rs.shuffle(A)
+
+        violation_sum = 0
+
+        for s in xrange(n_samples):
+            i = A[s]
+
+            # Retrieve row.
+            X.get_row_ptr(i, &indices, &data, &n_nz)
+
+            # Compute prediction.
+            pred = 0
+            for jj in xrange(n_nz):
+                j = indices[jj]
+                pred += w[j] * data[jj]
+
+            coef_old = dual_coef[s]
+
+            # Compute first derivative.
+            G = pred + coef_old / C - y[i]
+
+            # Compute second derivative
+            H = sqnorms[i] / alpha + 1 / C;
+
+            G_abs = fabs(G)
+
+            violation_sum += G_abs
+
+            # Compute update
+            if G_abs > 1e-12:
+                update = G / H
+                dual_coef[s] = coef_old - update
+
+                # Update the primal coefficients.
+                if update != 0:
+                    for jj in xrange(n_nz):
+                        j = indices[jj]
+                        w[j] -= update * data[jj] / alpha
+
+            # Callback
+            if has_callback and s % n_calls == 0:
+                ret = callback(self)
+                if ret is not None:
+                    stop = 1
+                    break
+
+        # end for i
+
+        if stop:
+            break
+
+        # Convergence check.
+
+        if t == 0:
+            violation_init = violation_sum
+
+        if verbose >= 1:
+            print t, violation_sum / violation_init
+
+        if violation_sum / violation_init < tol:
+            if verbose >= 1:
+                print "Converged"
+            break
+
+    # end for t
+
+    if verbose >= 1:
+        print
+
+    return w, dual_coef
