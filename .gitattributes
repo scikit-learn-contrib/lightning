@@ -1,6 +1,6 @@
-/lightning/impl/dataset_fast.cpp
-/lightning/impl/dual_cd_fast.cpp
-/lightning/impl/loss_fast.cpp
-/lightning/impl/primal_cd_fast.cpp
-/lightning/impl/random/random_fast.cpp
-/lightning/impl/sgd_fast.cpp
+/lightning/impl/dataset_fast.cpp -diff
+/lightning/impl/dual_cd_fast.cpp -diff
+/lightning/impl/loss_fast.cpp -diff
+/lightning/impl/primal_cd_fast.cpp -diff
+/lightning/impl/random/random_fast.cpp -diff
+/lightning/impl/sgd_fast.cpp -diff
