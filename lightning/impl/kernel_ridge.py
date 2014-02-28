@@ -34,9 +34,17 @@ class KernelRidge(BaseEstimator, RegressorMixin):
         n_samples = X.shape[0]
         K = self._get_kernel(X)
         alpha = np.array([self.alpha])
-        y = y.reshape(-1, 1)
+
+        ravel = False
+        if len(y.shape) == 1:
+            y = y.reshape(-1, 1)
+            ravel = True
+
+
         self.dual_coef_ = _solve_dense_cholesky_kernel(K, y, alpha,
                                                        sample_weight)
+        if ravel:
+            self.dual_coef_ = self.dual_coef_.ravel()
 
         self.X_fit_ = X
 
@@ -44,5 +52,4 @@ class KernelRidge(BaseEstimator, RegressorMixin):
 
     def predict(self, X, ret_variance=False):
         K = self._get_kernel(X, self.X_fit_)
-        return np.dot(K, self.dual_coef_).ravel()
-
+        return np.dot(K, self.dual_coef_)
