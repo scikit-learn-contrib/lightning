@@ -5,7 +5,10 @@ from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.metrics.pairwise import pairwise_kernels
 
 
-def _solve_dense_cholesky_kernel(K, y, alpha, sample_weight=1.0):
+def _solve_dense_cholesky_kernel(K, y, alpha, sample_weight=1.0, copy=True):
+    if copy:
+        K = K.copy()
+
     # dual_coef = inv(X X^t + alpha*Id) y
     n_samples = K.shape[0]
     n_targets = y.shape[1]
@@ -91,8 +94,10 @@ class KernelRidge(BaseEstimator, RegressorMixin):
             ravel = True
 
 
+        copy = self.kernel == "precomputed"
         self.dual_coef_ = _solve_dense_cholesky_kernel(K, y, alpha,
-                                                       sample_weight)
+                                                       sample_weight,
+                                                       copy)
         if ravel:
             self.dual_coef_ = self.dual_coef_.ravel()
 

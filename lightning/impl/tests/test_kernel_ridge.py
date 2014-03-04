@@ -24,6 +24,14 @@ def test_kernel_ridge_precomputed():
     assert_array_almost_equal(pred, pred2)
 
 
+def test_kernel_ridge_precomputed_sample_weight():
+    K = np.dot(X, X.T)
+    K2 = K.copy()
+    sw = np.ones(X.shape[0]) / float(X.shape[0])
+    KernelRidge(kernel="precomputed").fit(K, y, sample_weight=sw)
+    assert_array_almost_equal(K, K2)
+
+
 def test_kernel_ridge_multi_output():
     pred = Ridge(alpha=1, fit_intercept=False).fit(X, Y).predict(X)
     pred2 = KernelRidge(kernel="linear", alpha=1).fit(X, Y).predict(X)
