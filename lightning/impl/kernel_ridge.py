@@ -105,6 +105,6 @@ class KernelRidge(BaseEstimator, RegressorMixin):
 
         return self
 
-    def predict(self, X, ret_variance=False):
+    def predict(self, X):
         K = self._get_kernel(X, self.X_fit_)
         return np.dot(K, self.dual_coef_)
