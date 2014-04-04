@@ -76,6 +76,20 @@ def test_warm_start_l1r():
     assert_true(n_nz < n_nz2)
 
 
+def test_warm_start_l1r_regression():
+    clf = CDRegressor(warm_start=True, random_state=0, penalty="l1")
+
+    clf.C = 0.1
+    clf.fit(bin_dense, bin_target)
+    n_nz = clf.n_nonzero()
+
+    clf.C = 0.2
+    clf.fit(bin_dense, bin_target)
+    n_nz2 = clf.n_nonzero()
+
+    assert_true(n_nz < n_nz2)
+
+
 def test_fit_linear_binary_l1r_log_loss():
     clf = CDClassifier(C=1.0, random_state=0, penalty="l1", loss="log")
     clf.fit(bin_dense, bin_target)

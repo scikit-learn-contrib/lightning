@@ -426,12 +426,7 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
         n_vectors = Y.shape[1]
 
         # Initialize coefficients
-        if self.warm_start and self.coef_ is not None:
-            if self.kernel:
-                coef = np.zeros((n_vectors, n_features), dtype=np.float64)
-                coef[:, self.support_indices_] = self.coef_
-                self.coef_ = coef
-        else:
+        if not self.warm_start or self.coef_ is None:
             self.C_init = self.C
             self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
             self._init_errors(Y)
