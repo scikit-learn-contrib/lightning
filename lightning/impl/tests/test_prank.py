@@ -11,6 +11,10 @@ y = np.round(y, decimals=-2)
 
 
 def test_prank():
-    est = PRank(n_iter=10)
+    est = PRank(n_iter=10, shuffle=False, random_state=0)
     est.fit(X, y)
     assert_almost_equal(est.score(X, y), 41.86, 2)
+
+    est = PRank(n_iter=10, shuffle=True, random_state=0)
+    est.fit(X, y)
+    assert_almost_equal(est.score(X, y), 71.04, 2)

@@ -9,6 +9,7 @@
 import numpy as np
 cimport numpy as np
 
+from lightning.impl.random.random_fast cimport RandomState
 from lightning.impl.dataset_fast cimport RowDataset
 
 
@@ -31,12 +32,14 @@ def _prank_fit(np.ndarray[double, ndim=1, mode='c'] w,
                RowDataset X,
                np.ndarray[int, ndim=1] y,
                int n_classes,
-               int n_iter):
+               int n_iter,
+               RandomState rs,
+               int shuffle):
 
     cdef int n_samples = X.get_n_samples()
     cdef int n_features = X.get_n_features()
 
-    cdef int n, i, j, jj, y_hat, tau, yr, r
+    cdef int n, i, ii, j, jj, y_hat, tau, yr, r
     cdef double dot
 
     # Data pointers.
@@ -44,8 +47,17 @@ def _prank_fit(np.ndarray[double, ndim=1, mode='c'] w,
     cdef int* indices
     cdef int n_nz
 
+    # Data indices.
+    cdef np.ndarray[int, ndim=1] ind
+    ind = np.arange(n_samples, dtype=np.int32)
+
     for n in xrange(n_iter):
-        for i in xrange(n_samples):
+        if shuffle:
+            rs.shuffle(ind)
+
+        for ii in xrange(n_samples):
+            i = ind[ii]
+
             # Retrieve row.
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
