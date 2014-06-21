@@ -27,6 +27,26 @@ cdef int _predict(double dot,
     return y_hat
 
 
+cdef int _update_thresholds(double dot,
+                            np.ndarray[double, ndim=1, mode='c'] b,
+                            int y,
+                            int n_classes):
+    cdef int tau = 0
+    cdef int r, yr
+
+    for r in xrange(n_classes - 1):
+        if y <= r:
+            yr = -1
+        else:
+            yr = 1
+
+        if yr * (dot - b[r]) <= 0:
+            tau += yr
+            b[r] -= yr
+
+    return tau
+
+
 def _prank_fit(np.ndarray[double, ndim=1, mode='c'] w,
                np.ndarray[double, ndim=1, mode='c'] b,
                RowDataset X,
@@ -39,7 +59,7 @@ def _prank_fit(np.ndarray[double, ndim=1, mode='c'] w,
     cdef int n_samples = X.get_n_samples()
     cdef int n_features = X.get_n_features()
 
-    cdef int n, i, ii, j, jj, y_hat, tau, yr, r
+    cdef int n, i, ii, j, jj, y_hat, tau
     cdef double dot
 
     # Data pointers.
@@ -73,21 +93,54 @@ def _prank_fit(np.ndarray[double, ndim=1, mode='c'] w,
             if y_hat == y[i]:
                 continue
 
-            tau = 0
-            for r in xrange(n_classes - 1):
-                if y[i] <= r:
-                    yr = -1
-                else:
-                    yr = 1
-
-                if yr * (dot - b[r]) <= 0:
-                    tau += yr
-                    b[r] -= yr
+            tau = _update_thresholds(dot, b, y[i], n_classes)
 
             # Update w.
             for jj in xrange(n_nz):
                 j = indices[jj]
                 w[j] += tau * data[jj]
+
+
+def _prank_fit_kernel(np.ndarray[double, ndim=1, mode='c'] alpha,
+                      np.ndarray[double, ndim=1, mode='c'] b,
+                      np.ndarray[double, ndim=2] K,
+                      np.ndarray[int, ndim=1] y,
+                      int n_classes,
+                      int n_iter,
+                      RandomState rs,
+                      int shuffle):
+
+    cdef int n_samples = K.shape[0]
+
+    cdef int n, i, ii, j, y_hat, tau
+    cdef double dot
+
+    # Data indices.
+    cdef np.ndarray[int, ndim=1] ind
+    ind = np.arange(n_samples, dtype=np.int32)
+
+    for n in xrange(n_iter):
+        if shuffle:
+            rs.shuffle(ind)
+
+        for ii in xrange(n_samples):
+            i = ind[ii]
+
+            # Compute dot product.
+            dot = 0
+            for j in xrange(n_samples):
+                dot += alpha[j] * K[i, j]
+
+            y_hat = _predict(dot, b, n_classes)
+
+            # Nothing to do if prediction was correct.
+            if y_hat == y[i]:
+                continue
+
+            tau = _update_thresholds(dot, b, y[i], n_classes)
+
+            # Update alpha.
+            alpha[i] += tau
 
 
 def _prank_predict(np.ndarray[double, ndim=1, mode='c'] dot,
