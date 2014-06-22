@@ -26,6 +26,33 @@ class _BasePRank(BaseEstimator):
 
 
 class PRank(_BasePRank):
+    """Online algorithm for learning an ordinal regression model.
+
+    Parameters
+    ----------
+    n_iter : int
+        Number of iterations to run.
+
+    shuffle : boolean
+        Whether to shuffle data.
+
+    random_state : RandomState or int
+        The seed of the pseudo random number generator to use.
+
+    Attributes
+    ----------
+    coef_ : array, shape=[n_features]
+        Estimated weights.
+
+    thresholds_ : array, shape=[n_classes]
+        Estimated thresholds.
+
+    Reference
+    ---------
+    Pranking with Ranking
+    Koby Crammer, Yoram Singer
+    NIPS 2001
+    """
 
     def __init__(self, n_iter=10, shuffle=True, random_state=None):
         self.n_iter = n_iter
@@ -33,6 +60,22 @@ class PRank(_BasePRank):
         self.random_state = random_state
 
     def fit(self, X, y):
+        """Fit model according to X and y.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Training vectors, where n_samples is the number of samples
+            and n_features is the number of features.
+
+        y : array-like, shape = [n_samples]
+            Target values.
+
+        Returns
+        -------
+        self : classifier
+            Returns self.
+        """
         n_samples, n_features = X.shape
         rs = self._get_random_state()
 
@@ -61,6 +104,52 @@ class PRank(_BasePRank):
 
 
 class KernelPRank(_BasePRank):
+    """Kernelized online algorithm for learning an ordinal regression model.
+
+    Parameters
+    ----------
+    n_iter : int
+        Number of iterations to run.
+
+    shuffle : boolean
+        Whether to shuffle data.
+
+    random_state : RandomState or int
+        The seed of the pseudo random number generator to use.
+
+    kernel: "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
+        Kernel.
+        Default: "linear"
+
+    degree : int, default=3
+        Degree for poly kernels. Ignored by other kernels.
+
+    gamma : float, optional
+        Kernel coefficient for rbf and poly kernels. Default: 1/n_features.
+        Ignored by other kernels.
+
+    coef0 : float, optional
+        Independent term in poly and sigmoid kernels.
+        Ignored by other kernels.
+
+    kernel_params : mapping of string to any, optional
+        Parameters (keyword arguments) and values for kernel passed as
+        callable object. Ignored by other kernels.
+
+    Attributes
+    ----------
+    coef_ : array, shape=[n_features]
+        Estimated weights.
+
+    thresholds_ : array, shape=[n_classes]
+        Estimated thresholds.
+
+    Reference
+    ---------
+    Pranking with Ranking
+    Koby Crammer, Yoram Singer
+    NIPS 2001
+    """
 
     def __init__(self, n_iter=10, shuffle=True, random_state=None,
                  kernel="linear", gamma=None, degree=3, coef0=1,
@@ -89,6 +178,22 @@ class KernelPRank(_BasePRank):
                                 filter_params=True, **params)
 
     def fit(self, X, y):
+        """Fit model according to X and y.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Training vectors, where n_samples is the number of samples
+            and n_features is the number of features.
+
+        y : array-like, shape = [n_samples]
+            Target values.
+
+        Returns
+        -------
+        self : classifier
+            Returns self.
+        """
         n_samples, n_features = X.shape
         rs = self._get_random_state()
 
