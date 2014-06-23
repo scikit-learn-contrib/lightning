@@ -138,7 +138,7 @@ class KernelPRank(_BasePRank):
 
     Attributes
     ----------
-    coef_ : array, shape=[n_features]
+    dual_coef_ : array, shape=[n_samples]
         Estimated weights.
 
     thresholds_ : array, shape=[n_classes]
@@ -153,7 +153,7 @@ class KernelPRank(_BasePRank):
 
     def __init__(self, n_iter=10, shuffle=True, random_state=None,
                  kernel="linear", gamma=None, degree=3, coef0=1,
-                 kernel_params=None, ):
+                 kernel_params=None):
         self.n_iter = n_iter
         self.shuffle = shuffle
         self.random_state = random_state
