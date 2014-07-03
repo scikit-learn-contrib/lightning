@@ -43,5 +43,7 @@ This module contains algorithms for solving regression problems.
    :template: class.rst
 
     regression.CDRegressor
+    regression.KernelRidge
+    regression.LinearRidge
     regression.LinearSVR
     regression.SGDRegressor
