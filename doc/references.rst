@@ -47,3 +47,21 @@ This module contains algorithms for solving regression problems.
     regression.LinearRidge
     regression.LinearSVR
     regression.SGDRegressor
+
+Ranking
+=======
+
+This module contains algorithms for solving ranking and ordinal regression problems.
+
+.. automodule:: lightning.ranking
+   :no-members:
+   :no-inherited-members:
+
+.. currentmodule:: lightning
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+    ranking.PRank
+    ranking.KernelPRank
