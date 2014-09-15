@@ -6,6 +6,7 @@ from sklearn.utils.testing import assert_almost_equal
 from sklearn.utils.testing import assert_true
 from sklearn.utils.testing import assert_equal
 from sklearn.utils.testing import assert_greater
+from sklearn.utils.testing import assert_raises
 
 from sklearn.datasets import load_digits
 from sklearn.metrics.pairwise import pairwise_kernels
@@ -408,3 +409,9 @@ def test_fit_reg_squared_multiple_outputs():
     y_pred = lb.inverse_transform(reg.predict(mult_dense))
     assert_almost_equal(np.mean(y_pred == mult_target), 0.797, 3)
     assert_almost_equal(reg.n_nonzero(percentage=True), 0.5)
+
+
+def test_multiclass_error_nongrouplasso():
+    for penalty in ['l1', 'l2']:
+        clf = CDClassifier(multiclass=True, penalty=penalty)
+        assert_raises(NotImplementedError, clf.fit, mult_dense, mult_target)
