@@ -14,6 +14,7 @@ import numpy as np
 
 from sklearn.base import ClassifierMixin
 from sklearn.base import RegressorMixin
+from sklearn.externals.joblib import Parallel, delayed
 
 from .base import BaseClassifier
 from .base import BaseRegressor
@@ -194,7 +195,7 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
                  warm_debiasing=False,
                  selection="cyclic", permute=True,
                  callback=None, n_calls=100,
-                 random_state=None, verbose=0):
+                 random_state=None, verbose=0, n_jobs=-1):
         self.C = C
         self.alpha = alpha
         self.loss = loss
@@ -219,6 +220,7 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
         self.verbose = verbose
         self.coef_ = None
         self.violation_init_ = {}
+        self.n_jobs = n_jobs
 
     def fit(self, X, y):
         """Fit model according to X and y.
@@ -289,25 +291,28 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
 
         elif self.penalty in ("l1", "l2", "nn"):
             penalty = self._get_penalty()
-            for k in xrange(n_vectors):
-                n_pos = np.sum(Y[:, k] == 1)
-                n_neg = n_samples - n_pos
-                tol = self.tol * max(min(n_pos, n_neg), 1) / n_samples
+            n_pos = np.asarray([np.sum(Y[:, k] == 1) for k in xrange(n_vectors)])
+            n_neg = n_samples - n_pos
+            tol = self.tol * np.maximum(np.minimum(n_pos, n_neg), 1) / n_samples
+            vinit = np.asarray([self.violation_init_.get(k, 0)
+                                for k in xrange(n_vectors)]) * self.C / self.C_init
 
-                vinit = self.violation_init_.get(k, 0) * self.C / self.C_init
-                viol = _primal_cd(self, self.coef_, self.errors_,
-                                  ds, y, Y, k, False,
-                                  indices, penalty, self._get_loss(),
-                                  self.selection, self.permute,
-                                  self.termination,
-                                  self.C, self.alpha, 1e12,
-                                  self.max_iter, max_steps,
-                                  self.shrinking, vinit,
-                                  rs, tol, self.callback, self.n_calls,
-                                  self.verbose)
+            jobs = (delayed(_primal_cd)(self, self.coef_, self.errors_,
+                                        ds, y, Y, k, False,
+                                        indices, penalty, self._get_loss(),
+                                        self.selection, self.permute,
+                                        self.termination,
+                                        self.C, self.alpha, 1e12,
+                                        self.max_iter, max_steps,
+                                        self.shrinking, vinit[k],
+                                        rs, tol[k], self.callback, self.n_calls,
+                                        self.verbose)
+                    for k in xrange(n_vectors))
+            viol = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(jobs)
 
+            for k in range(n_vectors):
                 if self.warm_start and not k in self.violation_init_:
-                    self.violation_init_[k] = viol
+                    self.violation_init_[k] = viol[k]
 
         if self.debiasing:
             nz = self.coef_ != 0
