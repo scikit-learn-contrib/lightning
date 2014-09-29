@@ -71,4 +71,6 @@ def test_picklable_datasets():
 
     for dataset in [cds, csr_ds, fds, csc_ds]:
         pds = pickle.dumps(dataset)
-        pickle.loads(pds)
+        dataset = pickle.loads(pds)
+        assert_equal(dataset.get_n_samples(), X.shape[0])
+        assert_equal(dataset.get_n_features(), X.shape[1])
