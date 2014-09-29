@@ -89,6 +89,10 @@ cdef class ContiguousDataset(RowDataset):
     def __dealloc__(self):
         stdlib.free(self.indices)
 
+    # This is used to reconstruct the object in order to make it picklable.
+    def __reduce__(self):
+        return (ContiguousDataset, (self.X, ))
+
     cdef void get_row_ptr(self,
                           int i,
                           int** indices,
@@ -117,6 +121,10 @@ cdef class FortranDataset(ColumnDataset):
     def __dealloc__(self):
         stdlib.free(self.indices)
 
+    # This is used to reconstruct the object in order to make it picklable.
+    def __reduce__(self):
+        return (FortranDataset, (self.X, ))
+
     cdef void get_column_ptr(self,
                              int j,
                              int** indices,
@@ -142,6 +150,10 @@ cdef class CSRDataset(RowDataset):
 
         self.X = X
 
+    # This is used to reconstruct the object in order to make it picklable.
+    def __reduce__(self):
+        return (CSRDataset, (self.X, ))
+
     cdef void get_row_ptr(self,
                           int i,
                           int** indices,
@@ -166,6 +178,10 @@ cdef class CSCDataset(ColumnDataset):
         self.indptr = <int*> X_indptr.data
 
         self.X = X
+
+    # This is used to reconstruct the object in order to make it picklable.
+    def __reduce__(self):
+        return (CSCDataset, (self.X, ))
 
     cdef void get_column_ptr(self,
                              int j,
