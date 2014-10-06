@@ -159,6 +159,11 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
     verbose : int
         Verbosity level.
 
+    n_jobs : int
+        Number of CPU's to be used when `multiclass=False` and when
+        penalty is a non group-lasso penalty. By default use all
+        the CPU's.
+
     Example
     -------
 
@@ -277,7 +282,7 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
             #tol *= max(n_min, 1) / n_samples
 
             vinit = self.violation_init_.get(0, 0) * self.C / self.C_init
-            viol = _primal_cd(self, self.coef_, self.errors_,
+            model = _primal_cd(self, self.coef_, self.errors_,
                               ds, y, Y, -1, self.multiclass,
                               indices, 12, self._get_loss(),
                               self.selection, self.permute, self.termination,
@@ -286,16 +291,20 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
                               self.shrinking, vinit,
                               rs, tol, self.callback, self.n_calls,
                               self.verbose)
+            viol = model[0]
             if self.warm_start and len(self.violation_init_) == 0:
                 self.violation_init_[0] = viol
 
         elif self.penalty in ("l1", "l2", "nn"):
             penalty = self._get_penalty()
-            n_pos = np.asarray([np.sum(Y[:, k] == 1) for k in xrange(n_vectors)])
+
+            n_pos = np.zeros(n_vectors)
+            vinit = self.C / self.C_init * np.ones_like(n_pos)
+            for k in xrange(n_vectors):
+                n_pos[k] = np.sum(Y[:, k] == 1)
+                vinit[k] *= self.violation_init_.get(k, 0)
             n_neg = n_samples - n_pos
             tol = self.tol * np.maximum(np.minimum(n_pos, n_neg), 1) / n_samples
-            vinit = np.asarray([self.violation_init_.get(k, 0)
-                                for k in xrange(n_vectors)]) * self.C / self.C_init
 
             jobs = (delayed(_primal_cd)(self, self.coef_, self.errors_,
                                         ds, y, Y, k, False,
@@ -308,7 +317,10 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
                                         rs, tol[k], self.callback, self.n_calls,
                                         self.verbose)
                     for k in xrange(n_vectors))
-            viol = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(jobs)
+            model = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(jobs)
+            viol, coefs, errors = zip(*model)
+            self.coef_ = np.asarray(coefs)
+            self.errors_ = np.asarray(errors)
 
             for k in range(n_vectors):
                 if self.warm_start and not k in self.violation_init_:
@@ -321,18 +333,24 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
                 self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
                 self._init_errors(Y)
 
-            for k in xrange(n_vectors):
-                indices = np.arange(n_features, dtype=np.int32)[nz[k]]
-                _primal_cd(self, self.coef_, self.errors_,
+            indices = np.arange(n_features, dtype=np.int32)
+            jobs = (delayed(_primal_cd)(
+                           self, self.coef_, self.errors_,
                            ds, y, Y, k, False,
-                           indices, 2, self._get_loss(),
+                           indices[nz[k]], 2, self._get_loss(),
                            "cyclic", self.permute,
                            "violation_sum",
                            self.Cd, 1.0, 1e12,
                            self.max_iter, max_steps,
                            False, 0,
                            rs, self.tol, self.callback, self.n_calls,
-                           self.verbose)
+                           self.verbose
+                            )
+                    for k in xrange(n_vectors))
+            model = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(jobs)
+            viol, coefs, errors = zip(*model)
+            self.coef_ = np.asarray(coefs)
+            self.errors_ = np.asarray(errors)
 
         return self
 
@@ -376,7 +394,7 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
                  warm_debiasing=False,
                  selection="cyclic", permute=True,
                  callback=None, n_calls=100,
-                 random_state=None, verbose=0):
+                 random_state=None, verbose=0, n_jobs=-1):
         self.C = C
         self.alpha = alpha
         self.U = U
@@ -401,6 +419,7 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
         self.verbose = verbose
         self.coef_ = None
         self.violation_init_ = {}
+        self.n_jobs = n_jobs
 
     def fit(self, X, y):
         """Fit model according to X and y.
@@ -446,7 +465,7 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
 
         if self.penalty == "l1/l2":
             vinit = self.violation_init_.get(0, 0) * self.C / self.C_init
-            viol = _primal_cd(self, self.coef_, self.errors_,
+            model = _primal_cd(self, self.coef_, self.errors_,
                               ds, y, Y, -1, False,
                               indices, 12, self._get_loss(),
                               self.selection, self.permute, self.termination,
@@ -455,22 +474,30 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
                               self.shrinking, vinit,
                               rs, self.tol, self.callback, self.n_calls,
                               self.verbose)
+            viol = model[0]
             if self.warm_start and len(self.violation_init_) == 0:
                 self.violation_init_[0] = viol
         else:
             penalty = self._get_penalty()
-            for k in xrange(n_vectors):
-                vinit = self.violation_init_.get(k, 0) * self.C / self.C_init
-                viol = _primal_cd(self, self.coef_, self.errors_,
-                                  ds, y, Y, k, False,
-                                  indices, penalty, self._get_loss(),
-                                  self.selection, self.permute,
-                                  self.termination,
-                                  self.C, self.alpha, self.U,
-                                  self.max_iter, self.max_steps,
-                                  self.shrinking, vinit,
-                                  rs, self.tol, self.callback, self.n_calls,
-                                  self.verbose)
+            vinit = np.asarray([self.violation_init_.get(k, 0)
+                    for k in xrange(n_vectors)]) * self.C / self.C_init
+
+            jobs = (delayed(_primal_cd)(self, self.coef_, self.errors_,
+                                       ds, y, Y, k, False,
+                                       indices, penalty, self._get_loss(),
+                                       self.selection, self.permute,
+                                       self.termination,
+                                       self.C, self.alpha, self.U,
+                                       self.max_iter, self.max_steps,
+                                       self.shrinking, vinit[k],
+                                       rs, self.tol, self.callback, self.n_calls,
+                                       self.verbose)
+                    for k in xrange(n_vectors))
+
+            model = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(jobs)
+            viol, self.coef_, self.error_ = zip(*model)
+            self.coef_ = np.asarray(self.coef_)
+            self.error_ = np.asarray(self.error_)
 
             if self.warm_start and not k in self.violation_init_:
                 self.violation_init_[k] = viol

@@ -1458,4 +1458,7 @@ def _primal_cd(self,
     if verbose >= 1:
         print
 
-    return violation_init
+    if k == -1:
+        return violation_init, w, b
+    else:
+        return violation_init, w[k], b[k]
