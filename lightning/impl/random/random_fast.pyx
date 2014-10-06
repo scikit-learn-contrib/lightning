@@ -40,7 +40,7 @@ cdef class RandomState:
 
     def __init__(self, seed=None):
         self.internal_state = <rk_state*>stdlib.malloc(sizeof(rk_state))
-        self.state = seed
+        self.initial_seed = seed
         self.seed(seed)
 
     def __dealloc__(self):
@@ -94,4 +94,4 @@ cdef class RandomState:
                     i = i - 1
 
     def __reduce__(self):
-        return (RandomState, (self.state, ))
+        return (RandomState, (self.initial_seed, ))

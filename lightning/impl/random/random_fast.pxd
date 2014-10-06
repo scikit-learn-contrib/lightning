@@ -10,5 +10,5 @@ cdef extern from "randomkit.h":
 cdef class RandomState:
 
     cdef rk_state *internal_state
-    cdef object state
+    cdef object initial_seed
     cpdef long randint(self, unsigned long high)
