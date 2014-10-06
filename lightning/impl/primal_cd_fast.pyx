@@ -43,9 +43,9 @@ cdef class LossFunction:
                        ColumnDataset X,
                        double *y,
                        double *b,
-                       double *Dp):
+                       double *violation):
 
-        cdef double Dpp, Dj_zero, z, d
+        cdef double Dp, Dpp, Dj_zero, z, d
         cdef int i, ii, step, recompute
         cdef double z_diff, z_old, Dj_z, cond
 
@@ -59,17 +59,17 @@ cdef class LossFunction:
 
         # Compute derivatives.
         self.derivatives(j, C, indices, data, n_nz, y, b,
-                         Dp, &Dpp, &Dj_zero)
+                         &Dp, &Dpp, &Dj_zero)
 
         # Add regularization term.
-        Dp[0] = alpha * w[j] + Dp[0] # first derivative
+        Dp = alpha * w[j] + Dp # first derivative
         Dpp = alpha + Dpp # second derivative
 
-        if fabs(Dp[0]/Dpp) <= 1e-12:
+        if fabs(Dp/Dpp) <= 1e-12:
             return
 
         # Newton step
-        d = -Dp[0] / Dpp
+        d = -Dp / Dpp
 
         # Perform line search.
         z_old = 0
@@ -108,6 +108,10 @@ cdef class LossFunction:
         # Recompute predictions / errors / residuals if needed.
         if recompute:
             self.recompute(X, y, w, b)
+
+        # For L2-regularized problems, we can simply use the absolute value of
+        # the gradient as violation.
+        violation[0] = fabs(Dp)
 
     cdef void derivatives(self,
                           int j,
@@ -1277,7 +1281,6 @@ def _primal_cd(self,
     cdef double violation_max
     cdef double violation
     cdef double violation_sum
-    cdef double Dpmax, Dp
     cdef double M_bar = DBL_MAX
     cdef double m_bar = -DBL_MAX
     cdef double M, m, PG
@@ -1342,7 +1345,6 @@ def _primal_cd(self,
         # Initialize violations.
         violation_max = 0
         violation_sum = 0
-        Dpmax = 0
         M = -DBL_MAX
         m = DBL_MAX
 
@@ -1372,8 +1374,7 @@ def _primal_cd(self,
                                          buf_ptr, violation_max_old,
                                          &violation, shrinking)
             elif penalty == 2:
-                loss.solve_l2(j, C, alpha, w_ptr, X, y_ptr, b_ptr, &Dp)
-                Dpmax = max(Dpmax, fabs(Dp))
+                loss.solve_l2(j, C, alpha, w_ptr, X, y_ptr, b_ptr, &violation)
 
             # Check if need to shrink.
             if shrink:
@@ -1384,7 +1385,7 @@ def _primal_cd(self,
 
             # Update violations.
             violation_max = max(violation_max, violation)
-            if penalty == 12 or penalty == 1:
+            if penalty >= 1:
                 violation_sum += violation
             elif penalty <= -1:
                 if j > 0:
@@ -1420,9 +1421,7 @@ def _primal_cd(self,
         # Verbose output.
         if verbose >= 2:
             print "\nActive size:", active_size
-            if penalty == 2:
-                print "Dpmax: %f (tol=%f)" % (Dpmax, tol)
-            elif check_violation_sum:
+            if check_violation_sum:
                 print "Violation sum ratio: %f (tol=%f)" % \
                         (violation_sum / violation_init, tol)
             elif check_violation_max:
@@ -1430,28 +1429,22 @@ def _primal_cd(self,
                         (violation_max / violation_init, tol)
 
         # Check convergence.
-        if penalty == 2:
-            if Dpmax < tol:
+        if (check_violation_sum and
+            violation_sum <= tol * violation_init) or \
+           (check_violation_max and
+            violation_max <= tol * violation_init):
+            if active_size == active_size_start:
                 if verbose >= 1:
                     print "\nConverged at iteration", t
                 break
-        else:
-            if (check_violation_sum and
-                violation_sum <= tol * violation_init) or \
-               (check_violation_max and
-                violation_max <= tol * violation_init):
-                if active_size == active_size_start:
-                    if verbose >= 1:
-                        print "\nConverged at iteration", t
-                    break
-                else:
-                    # When shrinking is enabled, we need to do one more outer
-                    # iteration on the entire optimization problem.
-                    active_size = active_size_start
-                    violation_max_old = DBL_MAX
-                    M_bar = DBL_MAX
-                    m_bar = -DBL_MAX
-                    continue
+            else:
+                # When shrinking is enabled, we need to do one more outer
+                # iteration on the entire optimization problem.
+                active_size = active_size_start
+                violation_max_old = DBL_MAX
+                M_bar = DBL_MAX
+                m_bar = -DBL_MAX
+                continue
 
         violation_max_old = violation_max
 
