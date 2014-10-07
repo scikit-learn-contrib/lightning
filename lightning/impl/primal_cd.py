@@ -161,8 +161,8 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
 
     n_jobs : int
         Number of CPU's to be used when `multiclass=False` and when
-        penalty is a non group-lasso penalty. By default use all
-        the CPU's.
+        penalty is a non group-lasso penalty. By default use one CPU.
+        If set to -1, use all CPU's
 
     Example
     -------
@@ -200,7 +200,7 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
                  warm_debiasing=False,
                  selection="cyclic", permute=True,
                  callback=None, n_calls=100,
-                 random_state=None, verbose=0, n_jobs=-1):
+                 random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.alpha = alpha
         self.loss = loss
@@ -394,7 +394,7 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
                  warm_debiasing=False,
                  selection="cyclic", permute=True,
                  callback=None, n_calls=100,
-                 random_state=None, verbose=0, n_jobs=-1):
+                 random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.alpha = alpha
         self.U = U
