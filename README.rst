@@ -33,7 +33,7 @@ Penalties supported:
 
 - L2 (Ridge)
 - L1 (Lasso)
-- L1/L2 (Group Lasso)
+- L1/L2 (Group Lasso) (multiclass and multitask only)
 
 Note: Not all solvers support all loss / penalty combinations. See the class
 references for more details.
