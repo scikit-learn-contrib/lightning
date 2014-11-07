@@ -11,7 +11,7 @@ import sys
 import numpy as np
 cimport numpy as np
 
-from lightning.impl.random.random_fast cimport RandomState
+from lightning.impl.randomkit.random_fast cimport RandomState
 from lightning.impl.dataset_fast cimport RowDataset
 
 cdef extern from "math.h":

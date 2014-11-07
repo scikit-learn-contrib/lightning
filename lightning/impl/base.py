@@ -9,7 +9,7 @@ from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import LabelEncoder
 
-from .random import RandomState
+from .randomkit import RandomState
 
 
 class BaseEstimator(_BaseEstimator):

@@ -8,7 +8,7 @@ def configuration(parent_package='', top_path=None):
 
     config = Configuration('impl', parent_package, top_path)
 
-    randomdir = os.path.join(top_path, "lightning", "impl", "random")
+    randomdir = os.path.join(top_path, "lightning", "impl", "randomkit")
 
     config.add_extension('dataset_fast',
                          sources=['dataset_fast.cpp'],
@@ -35,7 +35,7 @@ def configuration(parent_package='', top_path=None):
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_subpackage('datasets')
-    config.add_subpackage('random')
+    config.add_subpackage('randomkit')
     config.add_subpackage('tests')
 
     return config
