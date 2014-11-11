@@ -2,7 +2,7 @@ from sklearn.datasets import load_iris
 from sklearn.utils.testing import assert_equal
 from sklearn.utils.testing import assert_almost_equal
 
-from lightning.impl.prox_sdca import ProxSDCA_Classifier
+from lightning.classification import ProxSDCA_Classifier
 
 iris = load_iris()
 X, y = iris.data, iris.target
