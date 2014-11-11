@@ -3,5 +3,6 @@
 /lightning/impl/loss_fast.cpp -diff
 /lightning/impl/prank_fast.cpp -diff
 /lightning/impl/primal_cd_fast.cpp -diff
+/lightning/impl/prox_sdca_fast.cpp -diff
 /lightning/impl/random/random_fast.cpp -diff
 /lightning/impl/sgd_fast.cpp -diff
