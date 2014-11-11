@@ -244,6 +244,8 @@ def _prox_sdca_fit(self,
                 break
 
         if gap <= tol:
+            if verbose:
+                print "Converged"
             break
 
     # for it in xrange(max_iter)
