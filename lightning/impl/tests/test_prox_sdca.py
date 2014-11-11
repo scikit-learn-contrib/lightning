@@ -41,3 +41,23 @@ def test_prox_sdca_hinge():
                               random_state=0)
     clf.fit(X_bin, y_bin)
     assert_equal(clf.score(X_bin, y_bin), 1.0)
+
+
+def test_prox_sdca_callback():
+    class Callback(object):
+
+        def __init__(self, X, y):
+            self.X = X
+            self.y = y
+            self.acc = []
+
+        def __call__(self, clf):
+            score = clf.score(self.X, self.y)
+            self.acc.append(score)
+
+    cb = Callback(X_bin, y_bin)
+    clf = ProxSDCA_Classifier(alpha=0.5, l1_ratio=0.85, loss="hinge",
+                              callback=cb, random_state=0)
+    clf.fit(X_bin, y_bin)
+    assert_equal(cb.acc[0], 0.5)
+    assert_equal(cb.acc[-1], 1.0)

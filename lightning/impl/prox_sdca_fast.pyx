@@ -160,7 +160,8 @@ cdef _solve_subproblem(double*data,
             _add_l2(data, indices, n_nz, w, update * scale, regul)
 
 
-def _prox_sdca_fit(RowDataset X,
+def _prox_sdca_fit(self,
+                   RowDataset X,
                    np.ndarray[double, ndim=1]y,
                    np.ndarray[double, ndim=1]coef,
                    np.ndarray[double, ndim=1]dual_coef,
@@ -169,6 +170,7 @@ def _prox_sdca_fit(RowDataset X,
                    int loss_func,
                    int max_iter,
                    double tol,
+                   callback,
                    int verbose,
                    rng):
 
@@ -178,6 +180,7 @@ def _prox_sdca_fit(RowDataset X,
     # Variables
     cdef double sigma, scale, primal, dual, regul, gap
     cdef int it, ii, i
+    cdef int has_callback = callback is not None
 
     # Pre-compute square norms.
     cdef np.ndarray[double, ndim=1, mode='c'] sqnorms
@@ -235,9 +238,12 @@ def _prox_sdca_fit(RowDataset X,
         if verbose:
             print "iter", it + 1, gap
 
+        if has_callback:
+            ret = callback(self)
+            if ret is not None:
+                break
+
         if gap <= tol:
-            if verbose:
-                print "Converged"
             break
 
     # for it in xrange(max_iter)
