@@ -169,6 +169,7 @@ def _prox_sdca_fit(RowDataset X,
                    int loss_func,
                    int max_iter,
                    double tol,
+                   int verbose,
                    rng):
 
     cdef int n_samples = X.get_n_samples()
@@ -230,7 +231,13 @@ def _prox_sdca_fit(RowDataset X,
         # end for ii in xrange(n_samples)
 
         gap = (primal - dual) / n_samples + alpha * regul
+
+        if verbose:
+            print "iter", it + 1, gap
+
         if gap <= tol:
+            if verbose:
+                print "Converged"
             break
 
     # for it in xrange(max_iter)

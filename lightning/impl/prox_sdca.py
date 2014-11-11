@@ -10,13 +10,14 @@ from .prox_sdca_fast import _prox_sdca_fit
 
 class ProxSDCA_Classifier(BaseEstimator, ClassifierMixin):
 
-    def __init__(self, alpha=1.0, l1_ratio=0, loss="hinge", max_iter=10,
-                 tol=1e-3, random_state=None):
+    def __init__(self, alpha=1.0, l1_ratio=0, loss="hinge", max_iter=100,
+                 tol=1e-3, verbose=0, random_state=None):
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.loss = loss
         self.max_iter = max_iter
         self.tol = tol
+        self.verbose = verbose
         self.random_state = random_state
 
     def _get_loss(self):
@@ -41,7 +42,7 @@ class ProxSDCA_Classifier(BaseEstimator, ClassifierMixin):
 
         _prox_sdca_fit(ds, y, self.coef_, self.dual_coef_,
                        self.alpha, self.l1_ratio, loss, self.max_iter, self.tol,
-                       rng)
+                       self.verbose, rng)
 
         return self
 
