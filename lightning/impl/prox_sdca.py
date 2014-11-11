@@ -1,5 +1,8 @@
 import numpy as np
+
+from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils import check_random_state
+
 
 
 def _add_l2(Xi, w, update, regul):
@@ -30,9 +33,7 @@ def _add_elastic(Xi, w, v, update, regul, sigma):
         regul[0] += v[j] * w[j]
 
 
-def prox_sdca_fit(X, y, alpha, l1_ratio, loss_func, max_iter, tol,
-                  random_state=None):
-    rs = check_random_state(random_state)
+def prox_sdca_fit(X, y, alpha, l1_ratio, loss_func, max_iter, tol, rng):
     n_samples = X.shape[0]
     n_features = X.shape[1]
 
@@ -55,7 +56,7 @@ def prox_sdca_fit(X, y, alpha, l1_ratio, loss_func, max_iter, tol,
     for it in xrange(max_iter):
         primal = 0
 
-        rs.shuffle(indices)
+        rng.shuffle(indices)
 
         for ii in xrange(n_samples):
 
@@ -115,30 +116,34 @@ def prox_sdca_fit(X, y, alpha, l1_ratio, loss_func, max_iter, tol,
 
     dual_coef *= scale
 
-    return v, dual_coef
+    return v
 
 
-if __name__ == '__main__':
-    from sklearn.datasets import make_classification
-    from sklearn.datasets import load_iris
-    from sklearn.svm import LinearSVC
+class ProxSDCA_Classifier(BaseEstimator, ClassifierMixin):
 
-    X, y = make_classification(n_samples=200, n_features=50, n_classes=2,
-                               random_state=0)
-    y = y * 2 - 1
+    def __init__(self, alpha=1.0, l1_ratio=0, loss="hinge", max_iter=10,
+                 tol=1e-3, random_state=None):
+        self.alpha = alpha
+        self.l1_ratio = l1_ratio
+        self.loss = loss
+        self.max_iter = max_iter
+        self.tol = tol
+        self.random_state = random_state
 
-    #iris = load_iris()
-    #X, y = iris.data, iris.target
-    #X = X[y <= 1]
-    #y = y[y <= 1]
-    #y *= 2
-    #y -= 1
+    def _get_loss(self):
+        losses = {
+            "squared": 0,
+            "absolute": 1,
+            "hinge": 2,
+        }
+        return losses[self.loss]
 
-    print LinearSVC(C=1.0).fit(X, y).score(X, y)
+    def fit(self, X, y):
+        rng = check_random_state(self.random_state)
+        loss = self._get_loss()
+        self.coef_ = prox_sdca_fit(X, y, self.alpha, self.l1_ratio, loss,
+                                   self.max_iter, self.tol, rng)
+        return self
 
-    w, dual_coef = prox_sdca_fit(X, y, alpha=X.shape[0], l1_ratio=0,
-                                 loss_func=2, max_iter=50, tol=1e-3,
-                                 random_state=0)
-
-    y_pred = np.sign(np.dot(X, w))
-    print np.mean(y == y_pred)
+    def predict(self, X):
+        return np.sign(np.dot(X, self.coef_))
