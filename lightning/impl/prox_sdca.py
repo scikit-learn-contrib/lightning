@@ -3,12 +3,21 @@ import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
+from sklearn.preprocessing import LabelBinarizer
 
+from .base import BaseClassifier
 from .dataset_fast import get_dataset
 from .prox_sdca_fast import _prox_sdca_fit
 
 
-class ProxSDCA_Classifier(BaseEstimator, ClassifierMixin):
+class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
+    """
+    Solves the following objective by ProxSDCA:
+
+        minimize_w  1 / n_samples) * \sum_i loss(w^T x_i, y_i)
+                    + alpha * l1_ratio * ||w||_1
+                    + alpha * (1 - l1_ratio) * 0.5 * ||w||^2_2
+    """
 
     def __init__(self, alpha=1.0, l1_ratio=0, loss="hinge", max_iter=100,
                  tol=1e-3, verbose=0, random_state=None):
@@ -34,17 +43,21 @@ class ProxSDCA_Classifier(BaseEstimator, ClassifierMixin):
         rng = check_random_state(self.random_state)
         loss = self._get_loss()
 
+        self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
+        Y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
+                              dtype=np.float64)
+        n_vectors = Y.shape[1]
+
         ds = get_dataset(X, order="c")
         y = np.array(y, dtype=np.float64)
 
-        self.coef_ = np.zeros(n_features, dtype=np.float64)
-        self.dual_coef_ = np.zeros(n_samples, dtype=np.float64)
+        self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
+        self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
 
-        _prox_sdca_fit(ds, y, self.coef_, self.dual_coef_,
-                       self.alpha, self.l1_ratio, loss, self.max_iter, self.tol,
-                       self.verbose, rng)
+        for i in xrange(n_vectors): _prox_sdca_fit(ds, Y[:, i], self.coef_[i],
+                                                   self.dual_coef_[i],
+                                                   self.alpha, self.l1_ratio,
+                                                   loss, self.max_iter,
+                                                   self.tol, self.verbose, rng)
 
         return self
-
-    def predict(self, X):
-        return np.sign(safe_sparse_dot(X, self.coef_))
