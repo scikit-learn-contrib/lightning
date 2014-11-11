@@ -9,13 +9,9 @@
 import numpy as np
 cimport numpy as np
 
+from libc.math cimport fabs
+
 from lightning.impl.dataset_fast cimport RowDataset
-
-cdef extern from "math.h":
-    double fabs(double)
-
-cdef extern from "float.h":
-    double DBL_MAX
 
 
 cdef _add_l2(double* data,
