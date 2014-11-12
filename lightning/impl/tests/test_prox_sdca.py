@@ -18,10 +18,10 @@ def test_sdca_hinge():
 
 
 def test_sdca_hinge_multiclass():
-    clf = ProxSDCA_Classifier(alpha=1e-2, max_iter=200, loss="hinge",
+    clf = ProxSDCA_Classifier(alpha=1e-2, max_iter=100, loss="hinge",
                               random_state=0)
     clf.fit(X, y)
-    assert_almost_equal(clf.score(X, y), 0.933, 3)
+    assert_almost_equal(clf.score(X, y), 0.947, 3)
 
 
 def test_sdca_squared():

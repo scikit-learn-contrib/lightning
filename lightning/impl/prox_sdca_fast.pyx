@@ -145,6 +145,8 @@ cdef _solve_subproblem(double*data,
         update = y * update - dcoef_old
         dual[0] += y * update
 
+    # Use accumulated loss rather than true primal objective value, which is
+    # expensive to compute.
     primal[0] += loss
 
     if update != 0:
@@ -230,6 +232,7 @@ def _prox_sdca_fit(self,
         # end for ii in xrange(n_samples)
 
         gap = (primal - dual) / n_samples + alpha * regul
+        gap = fabs(gap)
 
         if verbose:
             print "iter", it + 1, gap
