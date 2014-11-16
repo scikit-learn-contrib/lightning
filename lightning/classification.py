@@ -1,3 +1,4 @@
+from .impl.adagrad import AdaGradClassifier
 from .impl.primal_cd import CDClassifier
 from .impl.fista import FistaClassifier
 from .impl.prox_sdca import ProxSDCA_Classifier

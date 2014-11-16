@@ -1,3 +1,4 @@
+/lightning/impl/adagrad_fast.cpp -diff
 /lightning/impl/dataset_fast.cpp -diff
 /lightning/impl/dual_cd_fast.cpp -diff
 /lightning/impl/loss_fast.cpp -diff

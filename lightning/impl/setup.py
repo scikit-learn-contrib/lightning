@@ -10,6 +10,10 @@ def configuration(parent_package='', top_path=None):
 
     randomdir = os.path.join(top_path, "lightning", "impl", "randomkit")
 
+    config.add_extension('adagrad_fast',
+                         sources=['adagrad_fast.cpp'],
+                         include_dirs=[numpy.get_include(), randomdir])
+
     config.add_extension('dataset_fast',
                          sources=['dataset_fast.cpp'],
                          include_dirs=[numpy.get_include(), randomdir])
