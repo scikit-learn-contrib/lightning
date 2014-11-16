@@ -1,8 +1,7 @@
 import numpy as np
 
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import ClassifierMixin
 from sklearn.utils import check_random_state
-from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.preprocessing import LabelBinarizer
 
 from .base import BaseClassifier
@@ -50,7 +49,6 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
         n_vectors = Y.shape[1]
 
         ds = get_dataset(X, order="c")
-        y = np.array(y, dtype=np.float64)
 
         self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
         self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
