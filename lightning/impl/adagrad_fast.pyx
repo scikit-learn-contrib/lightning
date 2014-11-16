@@ -12,6 +12,7 @@ cimport numpy as np
 from libc.math cimport sqrt
 
 from lightning.impl.dataset_fast cimport RowDataset
+from lightning.impl.sgd_fast cimport LossFunction
 
 
 cdef double _pred(double* data,
@@ -55,6 +56,7 @@ def _adagrad_fit(RowDataset X,
                  np.ndarray[double, ndim=1]coef,
                  np.ndarray[double, ndim=1]g_sum,
                  np.ndarray[double, ndim=1]g_norms,
+                 LossFunction loss,
                  double eta,
                  double delta,
                  double alpha1,
@@ -81,20 +83,21 @@ def _adagrad_fit(RowDataset X,
 
     t = 1
     for t in xrange(n_iter):
+
+        # Shuffle sample indices.
         rng.shuffle(sindices)
 
         for ii in xrange(n_samples):
             i = sindices[ii]
 
-            # Retrieve row.
+            # Retrieve sample i.
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
+            # Make prediction.
             y_pred = _pred(data, indices, n_nz, w)
 
-            if y_pred * y[i] > 1:
-                scale = 0
-            else:
-                scale = -y[i]
+            # A subgradient is given by scale * X[i].
+            scale = -loss.get_update(y_pred, y[i])
 
             # Update g_sum and g_norms
             if scale != 0:
