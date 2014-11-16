@@ -55,7 +55,6 @@ class AdaGradClassifier(BaseClassifier, ClassifierMixin):
         n_vectors = Y.shape[1]
 
         ds = get_dataset(X, order="c")
-        y = np.array(y, dtype=np.float64)
 
         self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
         g_sum = np.zeros((n_vectors, n_features), dtype=np.float64)
@@ -67,7 +66,7 @@ class AdaGradClassifier(BaseClassifier, ClassifierMixin):
         loss = self._get_loss()
 
         for i in xrange(n_vectors):
-            _adagrad_fit(ds, y, self.coef_[i], g_sum[i], g_norms[i], loss,
+            _adagrad_fit(ds, Y[:, i], self.coef_[i], g_sum[i], g_norms[i], loss,
                          self.eta, delta, alpha1, alpha2, self.n_iter, rng)
 
         return self

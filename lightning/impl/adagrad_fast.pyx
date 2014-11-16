@@ -9,6 +9,8 @@
 import numpy as np
 cimport numpy as np
 
+ctypedef np.int64_t LONG
+
 from libc.math cimport sqrt
 
 from lightning.impl.dataset_fast cimport RowDataset
@@ -31,7 +33,7 @@ cdef double _pred(double* data,
 
 
 cdef double _proj_elastic(double eta,
-                          int t,
+                          LONG t,
                           double g_sum,
                           double alpha1,
                           double alpha2,
@@ -68,7 +70,8 @@ def _adagrad_fit(RowDataset X,
     cdef int n_features = X.get_n_features()
 
     # Variables
-    cdef int it, t, ii, i, jj, j
+    cdef LONG t
+    cdef int it, ii, i, jj, j
     cdef double y_pred, tmp, scale
     cdef np.ndarray[int, ndim=1] sindices
     sindices = np.arange(n_samples, dtype=np.int32)
@@ -99,7 +102,7 @@ def _adagrad_fit(RowDataset X,
             # A subgradient is given by scale * X[i].
             scale = -loss.get_update(y_pred, y[i])
 
-            # Update g_sum and g_norms
+            # Update g_sum and g_norms.
             if scale != 0:
                 for jj in xrange(n_nz):
                     j = indices[jj]
@@ -107,7 +110,7 @@ def _adagrad_fit(RowDataset X,
                     g_sum[j] += tmp
                     g_norms[j] += tmp * tmp
 
-            # Update w
+            # Update w.
             for jj in xrange(n_nz):
                 j = indices[jj]
                 w[j] = _proj_elastic(eta, t, g_sum[j], alpha1, alpha2, delta,
