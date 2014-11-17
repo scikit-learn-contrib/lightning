@@ -30,4 +30,4 @@ def test_adagrad_elastic_log():
 def test_adagrad_hinge_multiclass():
     clf = AdaGradClassifier(alpha=1e-2, n_iter=100, loss="hinge", random_state=0)
     clf.fit(X, y)
-    assert_almost_equal(clf.score(X, y), 0.953, 3)
+    assert_almost_equal(clf.score(X, y), 0.940, 3)
