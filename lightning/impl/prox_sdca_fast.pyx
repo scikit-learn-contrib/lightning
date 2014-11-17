@@ -163,8 +163,8 @@ def _prox_sdca_fit(self,
                    np.ndarray[double, ndim=1]y,
                    np.ndarray[double, ndim=1]coef,
                    np.ndarray[double, ndim=1]dual_coef,
-                   double alpha,
-                   double l1_ratio,
+                   double alpha1,
+                   double alpha2,
                    int loss_func,
                    int max_iter,
                    double tol,
@@ -199,13 +199,12 @@ def _prox_sdca_fit(self,
     cdef int* indices
     cdef int n_nz
 
-    if l1_ratio > 0:  # Elastic-net case
-        alpha = alpha * (1 - l1_ratio)
-        sigma = l1_ratio / (1 - l1_ratio)
+    if alpha1 > 0:  # Elastic-net case
+        sigma = alpha1 / alpha2
     else:  # L2-only case
         sigma = 0
 
-    scale = 1. / (alpha * n_samples)
+    scale = 1. / (alpha2 * n_samples)
 
     dual = 0
     regul = 0
@@ -231,7 +230,7 @@ def _prox_sdca_fit(self,
 
         # end for ii in xrange(n_samples)
 
-        gap = (primal - dual) / n_samples + alpha * regul
+        gap = (primal - dual) / n_samples + alpha2 * regul
         gap = fabs(gap)
 
         if verbose:

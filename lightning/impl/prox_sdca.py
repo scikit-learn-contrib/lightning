@@ -53,9 +53,12 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
         self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
         self.dual_coef_ = np.zeros((n_vectors, n_samples), dtype=np.float64)
 
+        alpha1 = self.l1_ratio * self.alpha
+        alpha2 = (1 - self.l1_ratio) * self.alpha
+
         for i in xrange(n_vectors):
             _prox_sdca_fit(self, ds, Y[:, i], self.coef_[i], self.dual_coef_[i],
-                           self.alpha, self.l1_ratio, loss, self.max_iter,
+                           alpha1, alpha2, loss, self.max_iter,
                            self.tol, self.callback, self.verbose, rng)
 
         return self
