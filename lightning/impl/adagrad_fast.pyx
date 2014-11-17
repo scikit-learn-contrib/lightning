@@ -97,10 +97,11 @@ def _adagrad_fit(RowDataset X,
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
             # Update w lazily.
-            for jj in xrange(n_nz):
-                j = indices[jj]
-                w[j] = _proj_elastic(eta, t - 1, g_sum[j], alpha1, alpha2,
-                                     delta, sqrt(g_norms[j]))
+            if t > 1:
+                for jj in xrange(n_nz):
+                    j = indices[jj]
+                    w[j] = _proj_elastic(eta, t - 1, g_sum[j], alpha1, alpha2,
+                                         delta, sqrt(g_norms[j]))
 
             # Make prediction.
             y_pred = _pred(data, indices, n_nz, w)
@@ -118,9 +119,8 @@ def _adagrad_fit(RowDataset X,
 
             # Update w by naive implementation: very slow.
             # for j in xrange(n_features):
-            #    if g_norms[j] != 0:
-            #        w[j] = _proj_elastic(eta, t, g_sum[j], alpha1, alpha2, delta,
-            #                             sqrt(g_norms[j]))
+            #    w[j] = _proj_elastic(eta, t, g_sum[j], alpha1, alpha2, delta,
+            #                         sqrt(g_norms[j]))
 
             t += 1
 
