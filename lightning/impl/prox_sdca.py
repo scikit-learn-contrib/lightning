@@ -37,6 +37,18 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
         }
         return losses[self.loss]
 
+    def _get_alpha2_lasso(self, y, alpha1):
+        if self.loss == "squared":
+            y_bar = 0.5 * np.mean(y ** 2)
+        elif self.loss == "absolute":
+            y_bar = np.mean(np.abs(y))
+        elif self.loss == "hinge":
+            y_bar = 1.0 / y.shape[0]
+        else:
+            raise ValueError("Unknown loss.")
+        return  self.tol * alpha1 ** 2 / (y_bar ** 2)
+
+
     def fit(self, X, y):
         n_samples, n_features = X.shape
 
@@ -55,10 +67,19 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
 
         alpha1 = self.l1_ratio * self.alpha
         alpha2 = (1 - self.l1_ratio) * self.alpha
+        tol = self.tol
 
         for i in xrange(n_vectors):
-            _prox_sdca_fit(self, ds, Y[:, i], self.coef_[i], self.dual_coef_[i],
+            y = Y[:, i]
+
+            if self.l1_ratio == 1.0:
+                # ProxSDCA needs a strongly convex regularizer so adds some
+                # L2 penalty (see paper).
+                alpha2 = self._get_alpha2_lasso(y, alpha1)
+                tol = self.tol * 0.5
+
+            _prox_sdca_fit(self, ds, y, self.coef_[i], self.dual_coef_[i],
                            alpha1, alpha2, loss, self.max_iter,
-                           self.tol, self.callback, self.verbose, rng)
+                           tol, self.callback, self.verbose, rng)
 
         return self

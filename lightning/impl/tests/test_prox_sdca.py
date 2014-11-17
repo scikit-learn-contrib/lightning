@@ -36,9 +36,30 @@ def test_sdca_absolute():
     assert_equal(clf.score(X_bin, y_bin), 1.0)
 
 
-def test_prox_sdca_hinge():
+def test_prox_sdca_hinge_elastic():
     clf = ProxSDCA_Classifier(alpha=0.5, l1_ratio=0.85, loss="hinge",
                               random_state=0)
+    clf.fit(X_bin, y_bin)
+    assert_equal(clf.score(X_bin, y_bin), 1.0)
+
+
+def test_prox_sdca_hinge_l1_only():
+    clf = ProxSDCA_Classifier(alpha=0.5, l1_ratio=1.0, loss="hinge", tol=1e-4,
+                              max_iter=100, random_state=0)
+    clf.fit(X_bin, y_bin)
+    assert_equal(clf.score(X_bin, y_bin), 1.0)
+
+
+def test_prox_sdca_squared_l1_only():
+    clf = ProxSDCA_Classifier(alpha=0.5, l1_ratio=1.0, loss="squared", tol=1e-2,
+                              max_iter=100, random_state=0)
+    clf.fit(X_bin, y_bin)
+    assert_equal(clf.score(X_bin, y_bin), 1.0)
+
+
+def test_prox_sdca_absolute_l1_only():
+    clf = ProxSDCA_Classifier(alpha=0.5, l1_ratio=1.0, loss="absolute",
+                              tol=1e-2, max_iter=200, random_state=0)
     clf.fit(X_bin, y_bin)
     assert_equal(clf.score(X_bin, y_bin), 1.0)
 
