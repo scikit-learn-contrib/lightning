@@ -5,7 +5,6 @@ import numpy as np
 from sklearn.datasets import fetch_20newsgroups_vectorized
 from lightning.classification import CDClassifier
 
-# Load News20 dataset from scikit-learn.
 bunch = fetch_20newsgroups_vectorized(subset="all")
 X = bunch.data
 y = bunch.target
