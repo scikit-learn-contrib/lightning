@@ -8,17 +8,21 @@
 
 import sys
 
+from libc.math cimport fabs, exp, log, sqrt
+from libc.float cimport DBL_MAX
+
 import numpy as np
 cimport numpy as np
 
 from lightning.impl.randomkit.random_fast cimport RandomState
 from lightning.impl.dataset_fast cimport RowDataset
 
-cdef extern from "math.h":
-   double fabs(double)
 
-cdef extern from "float.h":
-   double DBL_MAX
+cdef inline void _swap(int* arr, int a, int b):
+    cdef int tmp
+    tmp = arr[a]
+    arr[a] = arr[b]
+    arr[b] = tmp
 
 
 cdef double _sparse_dot(double* data1,
@@ -131,6 +135,7 @@ def _dual_cd(self,
     cdef np.ndarray[int, ndim=1, mode='c'] A
     A = np.arange(n_samples, dtype=np.int32)
     cdef Py_ssize_t active_size = n_samples
+    cdef int* A_ptr = <int*>A.data
 
     # Data pointers.
     cdef double* data
@@ -145,9 +150,6 @@ def _dual_cd(self,
 
 
     for t in xrange(max_iter):
-        if verbose >= 1:
-            print "\nIteration", t
-
         if permute:
             rs.shuffle(A[:active_size])
 
@@ -179,7 +181,7 @@ def _dual_cd(self,
                     PG = G
                 elif G > M_bar and shrinking:
                     active_size -= 1
-                    A[s], A[active_size] = A[active_size], A[s]
+                    _swap(A_ptr, s, active_size)
                     # Jump w/o incrementing s so as to use the swapped sample.
                     continue
             elif alpha_i == U:
@@ -187,7 +189,7 @@ def _dual_cd(self,
                     PG = G
                 elif G < m_bar and shrinking:
                     active_size -= 1
-                    A[s], A[active_size] = A[active_size], A[s]
+                    _swap(A_ptr, s, active_size)
                     continue
             else:
                 PG = G
@@ -215,14 +217,13 @@ def _dual_cd(self,
                     stop = 1
                     break
 
-            # Output progress.
-            if verbose >= 1 and s % 100 == 0:
-                sys.stdout.write(".")
-                sys.stdout.flush()
-
             s += 1
 
         # end while
+
+        # Verbose output.
+        if verbose >= 1:
+            print "iter", t + 1, M - m, "(%d)" % active_size
 
         if stop:
             break
@@ -248,9 +249,6 @@ def _dual_cd(self,
         if m >= 0: m_bar = -DBL_MAX
 
     # end for
-
-    if verbose >= 1:
-        print
 
     return w, alpha
 
