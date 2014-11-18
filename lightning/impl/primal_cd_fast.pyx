@@ -21,6 +21,13 @@ DEF LOWER = 1e-2
 DEF UPPER = 1e9
 
 
+cdef inline void _swap(int* arr, int a, int b):
+    cdef int tmp
+    tmp = arr[a]
+    arr[a] = arr[b]
+    arr[b] = tmp
+
+
 cdef class LossFunction:
 
     cdef int max_steps
@@ -1171,9 +1178,6 @@ def _primal_cd(self,
     if uniform:
         permute = 0
         shrinking = 0
-    cdef double* b_ptr
-    cdef double* y_ptr
-    cdef double* w_ptr
 
     # Lipschitz constants
     cdef np.ndarray[double, ndim=1, mode='c'] Lcst
@@ -1185,6 +1189,10 @@ def _primal_cd(self,
             loss.lipschitz_constant_mt(n_vectors, X, C, <double*>Lcst.data)
 
     # Vector containers
+    cdef double* b_ptr
+    cdef double* y_ptr
+    cdef double* w_ptr
+    cdef int* active_set_ptr = <int*>active_set.data
     cdef np.ndarray[double, ndim=1, mode='c'] g  # Partial gradient
     cdef np.ndarray[double, ndim=1, mode='c'] d  # Block update
     cdef np.ndarray[double, ndim=1, mode='c'] d_old  # Block update (old)
@@ -1244,8 +1252,7 @@ def _primal_cd(self,
             # Check if need to shrink.
             if shrink:
                 active_size -= 1
-                active_set[s], active_set[active_size] = \
-                    active_set[active_size], active_set[s]
+                _swap(active_set_ptr, s, active_size)
                 continue
 
             # Update violations.
