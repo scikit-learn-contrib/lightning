@@ -9,7 +9,7 @@ from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import LabelEncoder
 
-from .random import RandomState
+from .randomkit import RandomState
 
 
 class BaseEstimator(_BaseEstimator):
@@ -18,12 +18,10 @@ class BaseEstimator(_BaseEstimator):
         return RandomState(seed=self.random_state)
 
     def n_nonzero(self, percentage=False):
-        if hasattr(self, "dual_coef_"):
-            coef = self.dual_coef_
-        elif hasattr(self, "coef_avg_"):
-            coef = self.coef_avg_
-        else:
+        if hasattr(self, "coef_"):
             coef = self.coef_
+        else:
+            coef = self.dual_coef_
 
         n_nz = np.sum(np.sum(coef != 0, axis=0, dtype=bool))
 
@@ -98,12 +96,7 @@ class BaseClassifier(BaseEstimator):
 class BaseRegressor(BaseEstimator):
 
     def predict(self, X):
-        if hasattr(self, "coef_avg_"):
-            coef = self.coef_avg_
-        else:
-            coef = self.coef_
-
-        pred = safe_sparse_dot(X, coef.T)
+        pred = safe_sparse_dot(X, self.coef_.T)
 
         if hasattr(self, "intercept_"):
             pred += self.intercept_

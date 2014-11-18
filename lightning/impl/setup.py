@@ -8,7 +8,11 @@ def configuration(parent_package='', top_path=None):
 
     config = Configuration('impl', parent_package, top_path)
 
-    randomdir = os.path.join(top_path, "lightning", "impl", "random")
+    randomdir = os.path.join(top_path, "lightning", "impl", "randomkit")
+
+    config.add_extension('adagrad_fast',
+                         sources=['adagrad_fast.cpp'],
+                         include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('dataset_fast',
                          sources=['dataset_fast.cpp'],
@@ -26,6 +30,10 @@ def configuration(parent_package='', top_path=None):
                          sources=['prank_fast.cpp'],
                          include_dirs=[numpy.get_include(), randomdir])
 
+    config.add_extension('prox_sdca_fast',
+                         sources=['prox_sdca_fast.cpp'],
+                         include_dirs=[numpy.get_include(), randomdir])
+
     config.add_extension('primal_cd_fast',
                          sources=['primal_cd_fast.cpp'],
                          include_dirs=[numpy.get_include(), randomdir])
@@ -35,7 +43,7 @@ def configuration(parent_package='', top_path=None):
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_subpackage('datasets')
-    config.add_subpackage('random')
+    config.add_subpackage('randomkit')
     config.add_subpackage('tests')
 
     return config

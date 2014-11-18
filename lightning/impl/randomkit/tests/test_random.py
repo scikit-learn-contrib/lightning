@@ -2,7 +2,7 @@ import pickle
 import numpy as np
 from numpy.testing import (assert_almost_equal, assert_array_equal,
                            assert_equal)
-from lightning.impl.random import RandomState
+from lightning.impl.randomkit import RandomState
 
 
 def test_randint():

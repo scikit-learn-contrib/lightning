@@ -3,7 +3,7 @@ import numpy
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
 
-    config = Configuration('random', parent_package, top_path)
+    config = Configuration('randomkit', parent_package, top_path)
 
     config.add_extension('random_fast',
          sources=['random_fast.cpp', 'randomkit.c'],
