@@ -11,20 +11,15 @@ import sys
 import numpy as np
 cimport numpy as np
 
+from libc.math cimport fabs, exp, log, sqrt
+from libc.float cimport DBL_MAX
+
 from lightning.impl.randomkit.random_fast cimport RandomState
 from lightning.impl.dataset_fast cimport ColumnDataset
 
 DEF LOWER = 1e-2
 DEF UPPER = 1e9
 
-cdef extern from "math.h":
-   double fabs(double)
-   double exp(double x)
-   double log(double x)
-   double sqrt(double x)
-
-cdef extern from "float.h":
-   double DBL_MAX
 
 cdef class LossFunction:
 
