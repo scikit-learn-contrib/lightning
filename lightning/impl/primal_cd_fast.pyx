@@ -81,7 +81,7 @@ cdef class LossFunction:
 
             if step >= self.max_steps:
                 if self.max_steps > 1:
-                    if self.verbose >= 3:
+                    if self.verbose >= 2:
                         print "Max steps reached during line search..."
                     recompute = 1
                 break
@@ -218,7 +218,7 @@ cdef class LossFunction:
                  Lp_p > violation_old / n_samples and \
                  Lp_n < -violation_old / n_samples:
                 # Shrink!
-                if self.verbose >= 4:
+                if self.verbose >= 3:
                     print "Shrink variable", j
                 return 1
         elif w[j] > 0:
@@ -257,7 +257,7 @@ cdef class LossFunction:
 
             if step >= self.max_steps:
                 if self.max_steps > 1:
-                    if self.verbose >= 3:
+                    if self.verbose >= 2:
                         print "Max steps reached during line search..."
                     recompute = 1
                 break
@@ -369,7 +369,7 @@ cdef class LossFunction:
             elif shrinking and \
                  g_norm + violation_old / nv <= 0:
                 # Shrink!
-                if self.verbose >= 4:
+                if self.verbose >= 2:
                     print "Shrink variable", j
                 return 1
         else:
@@ -424,7 +424,7 @@ cdef class LossFunction:
 
             if step >= self.max_steps:
                 if self.max_steps > 1:
-                    if self.verbose >= 3:
+                    if self.verbose >= 2:
                         print "Max steps reached during line search..."
                     recompute = 1
                 break
@@ -1208,9 +1208,6 @@ def _primal_cd(self,
         buf_ptr = <double*>buf.data
 
     for t in xrange(max_iter):
-        if verbose >= 2:
-            print "\nIteration", t
-
         # Permute features (cyclic case only)
         if permute:
             rs.shuffle(active_set[:active_size])
@@ -1262,11 +1259,6 @@ def _primal_cd(self,
                     stop = 1
                     break
 
-            # Output progress.
-            if verbose >= 2 and s % 100 == 0:
-                sys.stdout.write(".")
-                sys.stdout.flush()
-
             s += 1
         # end while active_size
 
@@ -1281,14 +1273,13 @@ def _primal_cd(self,
                 violation_init = violation_max
 
         # Verbose output.
-        if verbose >= 2:
-            print "\nActive size:", active_size
+        if verbose >= 1:
             if check_violation_sum:
-                print "Violation sum ratio: %f (tol=%f)" % \
-                        (violation_sum / violation_init, tol)
+                print "iter", t + 1, violation_sum / violation_init, \
+                      "(%d)" % active_size
             elif check_violation_max:
-                print "Violation max ratio: %f (tol=%f)" % \
-                        (violation_max / violation_init, tol)
+                print "iter", t + 1, violation_max / violation_init, \
+                      "(%d)" % active_size
 
         # Check convergence.
         if (check_violation_sum and
@@ -1307,9 +1298,6 @@ def _primal_cd(self,
                 continue
 
         violation_max_old = violation_max
-
-    if verbose >= 1:
-        print
 
     if k == -1:
         return violation_init, w, b
