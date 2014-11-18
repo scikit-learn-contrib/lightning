@@ -58,9 +58,6 @@ class _BaseCD(object):
         penalties = {
             "l1": 1,
             "l2": 2,
-            "nn": -1,
-            "nnl1": -1,
-            "nnl2": -2
         }
         return penalties[self.penalty]
 
@@ -286,7 +283,7 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
                               ds, y, Y, -1, self.multiclass,
                               indices, 12, self._get_loss(),
                               self.selection, self.permute, self.termination,
-                              self.C, self.alpha, 1e12,
+                              self.C, self.alpha,
                               self.max_iter, max_steps,
                               self.shrinking, vinit,
                               rs, tol, self.callback, self.n_calls,
@@ -311,7 +308,7 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
                                         indices, penalty, self._get_loss(),
                                         self.selection, self.permute,
                                         self.termination,
-                                        self.C, self.alpha, 1e12,
+                                        self.C, self.alpha,
                                         self.max_iter, max_steps,
                                         self.shrinking, vinit[k],
                                         rs, tol[k], self.callback, self.n_calls,
@@ -340,7 +337,7 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
                            indices[nz[k]], 2, self._get_loss(),
                            "cyclic", self.permute,
                            "violation_sum",
-                           self.Cd, 1.0, 1e12,
+                           self.Cd, 1.0,
                            self.max_iter, max_steps,
                            False, 0,
                            rs, self.tol, self.callback, self.n_calls,
@@ -378,14 +375,10 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
         - nnl1: non-negative constraints + l1 penalty
         - nnl2: non-negative constraints + l2 penalty
 
-    U : float
-        Upper bound on the weights (only when penalty='nnl1' or 'nnl2').
-
-
     For other parameters, see `CDClassifier`.
     """
 
-    def __init__(self, C=1.0, alpha=1.0, U=1e12,
+    def __init__(self, C=1.0, alpha=1.0,
                  loss="squared", penalty="l2",
                  max_iter=50, tol=1e-3, termination="violation_sum",
                  shrinking=True,
@@ -397,7 +390,6 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
                  random_state=None, verbose=0, n_jobs=1):
         self.C = C
         self.alpha = alpha
-        self.U = U
         self.loss = loss
         self.penalty = penalty
         self.max_iter = max_iter
@@ -469,7 +461,7 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
                               ds, y, Y, -1, False,
                               indices, 12, self._get_loss(),
                               self.selection, self.permute, self.termination,
-                              self.C, self.alpha, 1e12,
+                              self.C, self.alpha,
                               self.max_iter, self.max_steps,
                               self.shrinking, vinit,
                               rs, self.tol, self.callback, self.n_calls,
@@ -487,7 +479,7 @@ class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
                                        indices, penalty, self._get_loss(),
                                        self.selection, self.permute,
                                        self.termination,
-                                       self.C, self.alpha, self.U,
+                                       self.C, self.alpha,
                                        self.max_iter, self.max_steps,
                                        self.shrinking, vinit[k],
                                        rs, self.tol, self.callback, self.n_calls,

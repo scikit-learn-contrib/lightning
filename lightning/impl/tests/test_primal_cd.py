@@ -368,26 +368,6 @@ def test_fit_reg_squared_l1():
     assert_almost_equal(acc, 1.0, 3)
 
 
-def test_fit_reg_squared_loss_nn_l1():
-    K = pairwise_kernels(digit.data, metric="poly", degree=4)
-    clf = CDRegressor(C=1.0, random_state=0, penalty="nn",
-                      loss="squared", max_iter=100)
-    clf.fit(K, digit.target)
-    y_pred = (clf.predict(K) > 0.5).astype(int)
-    acc = np.mean(digit.target == y_pred)
-    assert_almost_equal(acc, 0.9444, 3)
-
-
-def test_fit_reg_squared_loss_nn_l2():
-    K = pairwise_kernels(digit.data, metric="poly", degree=4)
-    clf = CDRegressor(C=1, random_state=0, penalty="nnl2",
-                      loss="squared", max_iter=100)
-    clf.fit(K, digit.target)
-    y_pred = (clf.predict(K) > 0.5).astype(int)
-    acc = np.mean(digit.target == y_pred)
-    assert_almost_equal(acc, 0.9444, 3)
-
-
 def test_fit_reg_squared_multiple_outputs():
     reg = CDRegressor(C=1.0, random_state=0, penalty="l2",
                       loss="squared", max_iter=100)

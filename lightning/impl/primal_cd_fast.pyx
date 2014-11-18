@@ -167,124 +167,6 @@ cdef class LossFunction:
 
                 out[j] += scale * data[ii] * data[ii]
 
-    # NN regularization
-
-    cdef int solve_nn(self,
-                      int j,
-                      double C,
-                      double alpha,
-                      double U,
-                      int penalty,
-                      double *w,
-                      int n_samples,
-                      ColumnDataset X,
-                      double *y,
-                      double *b,
-                      double Lcst,
-                      double *PG,
-                      double m_bar,
-                      double M_bar,
-                      int shrinking):
-        cdef double Lj_zero = 0
-        cdef double Lp = 0
-        cdef double Lpp = 0
-        cdef double d
-        cdef double Lj_z
-        cdef double reg_z
-        cdef int step, recompute
-
-        # Data pointers
-        cdef double* data
-        cdef int* indices
-        cdef int n_nz
-
-        # Retrieve column.
-        X.get_column_ptr(j, &indices, &data, &n_nz)
-
-        # Compute derivatives
-        self.derivatives(j, C, indices, data, n_nz, y, b,
-                         &Lp, &Lpp, &Lj_zero)
-
-        # User chose to run the algorithm without line search.
-        if self.max_steps == 0:
-            Lpp_max = Lcst
-
-        Lpp = max(Lpp, 1e-12)
-
-        # Add regularization term.
-        if penalty == -1: # L1-regularization
-            Lp += alpha
-        else: # L2-regularization
-            Lp += alpha * w[j]
-            Lpp += alpha
-
-        PG[0] = 0
-        # Projected gradient and shrinking.
-        if w[j] == 0:
-            if Lp < 0:
-                PG[0] = Lp
-            elif Lp > M_bar and shrinking:
-                return 1
-        elif w[j] == U:
-            if Lp > 0:
-                PG[0] = Lp
-            elif Lp < m_bar and shrinking:
-                return 1
-        else:
-            PG[0] = Lp
-
-        # Projected gradient update.
-        d = max(0, min(U, w[j] - Lp/Lpp)) - w[j]
-
-        if fabs(PG[0]) < 1.0e-12:
-            return 0
-
-        delta = Lp * d
-        z_old = 0
-        z = d
-
-        # Check z = lambda*d for lambda = 1, beta, beta^2 such that
-        # sufficient decrease condition is met.
-        step = 1
-        recompute = 0
-        while True:
-            # Reversed because of the minus in b[i] = 1 - y_i w^T x_i.
-            z_diff = z_old - z
-
-            # Compute objective function value.
-            self.update(j, z_diff, C, indices, data, n_nz, y, b, &Lj_z)
-
-            if step >= self.max_steps:
-                if self.max_steps > 1:
-                    if self.verbose >= 3:
-                        print "Max steps reached during line search..."
-                    recompute = 1
-                break
-
-            # Check stopping condition.
-            if penalty == -1:
-                reg_z = z
-            else:
-                reg_z = z * (w[j] + z)
-            if Lj_z - Lj_zero + alpha * reg_z - self.sigma * delta <= 0:
-                break
-
-            z_old = z
-            z *= self.beta
-            delta *= self.beta
-            step += 1
-
-        # end for num_linesearch
-
-        # Update weight w[j].
-        w[j] += z
-
-        # Recompute predictions / errors / residuals if needed.
-        if recompute:
-            self.recompute(X, y, w, b)
-
-        return 0
-
     # L1 regularization
 
     cdef int solve_l1(self,
@@ -1255,7 +1137,6 @@ def _primal_cd(self,
                termination,
                double C,
                double alpha,
-               double U,
                int max_iter,
                int max_steps,
                int shrinking,
@@ -1281,9 +1162,6 @@ def _primal_cd(self,
     cdef double violation_max
     cdef double violation
     cdef double violation_sum
-    cdef double M_bar = DBL_MAX
-    cdef double m_bar = -DBL_MAX
-    cdef double M, m, PG
 
     # Convergence
     cdef int check_violation_sum = termination == "violation_sum"
@@ -1357,12 +1235,7 @@ def _primal_cd(self,
                 j = active_set[rs.randint(active_size - 1)]
 
             # Solve sub-problem.
-            if penalty <= -1:
-                shrink = loss.solve_nn(j, C, alpha, U, penalty,
-                                       w_ptr, n_samples, X,
-                                       y_ptr, b_ptr, Lcst[j], &PG,
-                                       m_bar, M_bar, shrinking)
-            elif penalty == 1:
+            if penalty == 1:
                 shrink = loss.solve_l1(j, C, alpha, w_ptr, n_samples, X,
                                        y_ptr, b_ptr, Lcst[j], violation_max_old,
                                        &violation, shrinking)
@@ -1385,13 +1258,7 @@ def _primal_cd(self,
 
             # Update violations.
             violation_max = max(violation_max, violation)
-            if penalty >= 1:
-                violation_sum += violation
-            elif penalty <= -1:
-                if j > 0:
-                    M = max(M, PG)
-                    m = min(m, PG)
-                violation_sum += PG * PG
+            violation_sum += violation
 
             # Callback
             if has_callback and s % n_calls == 0:
@@ -1442,18 +1309,9 @@ def _primal_cd(self,
                 # iteration on the entire optimization problem.
                 active_size = active_size_start
                 violation_max_old = DBL_MAX
-                M_bar = DBL_MAX
-                m_bar = -DBL_MAX
                 continue
 
         violation_max_old = violation_max
-
-        # For non-negativity constraints.
-        if penalty <= -1:
-            M_bar = M
-            m_bar = m
-            if M <= 0: M_bar = DBL_MAX
-            if m >= 0: m_bar = -DBL_MAX
 
     if verbose >= 1:
         print
