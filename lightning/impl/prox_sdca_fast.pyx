@@ -39,7 +39,7 @@ cdef inline double _truncate(double v,
     elif v < -sigma:
         return v + sigma
     else:
-        0
+        return 0
 
 
 cdef _add_elastic(double* data,
