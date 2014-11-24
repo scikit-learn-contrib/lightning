@@ -8,7 +8,6 @@ from .base import BaseClassifier
 from .dataset_fast import get_dataset
 from .adagrad_fast import _adagrad_fit
 
-
 from .sgd_fast import ModifiedHuber
 from .sgd_fast import Hinge
 from .sgd_fast import SquaredHinge
@@ -26,12 +25,14 @@ class AdaGradClassifier(BaseClassifier, ClassifierMixin):
     """
 
     def __init__(self, eta=1.0, alpha=1.0, l1_ratio=0, loss="hinge", n_iter=10,
-                 random_state=None):
+                 callback=None, n_calls=None, random_state=None):
         self.eta = eta
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.loss = loss
         self.n_iter = n_iter
+        self.callback = callback
+        self.n_calls = n_calls
         self.random_state = random_state
 
     def _get_loss(self):
@@ -57,16 +58,18 @@ class AdaGradClassifier(BaseClassifier, ClassifierMixin):
         ds = get_dataset(X, order="c")
 
         self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
-        g_sum = np.zeros((n_vectors, n_features), dtype=np.float64)
-        g_norms = np.zeros((n_vectors, n_features), dtype=np.float64)
+        self.g_sum_ = np.zeros((n_vectors, n_features), dtype=np.float64)
+        self.g_norms_ = np.zeros((n_vectors, n_features), dtype=np.float64)
 
         delta = 0
         alpha1 = self.l1_ratio * self.alpha
         alpha2 = (1 - self.l1_ratio) * self.alpha
         loss = self._get_loss()
+        n_calls = n_samples if self.n_calls is None else self.n_calls
 
         for i in xrange(n_vectors):
-            _adagrad_fit(ds, Y[:, i], self.coef_[i], g_sum[i], g_norms[i], loss,
-                         self.eta, delta, alpha1, alpha2, self.n_iter, rng)
+            _adagrad_fit(self, ds, Y[:, i], self.coef_[i], self.g_sum_[i],
+                         self.g_norms_[i], loss, self.eta, delta, alpha1,
+                         alpha2, self.n_iter, self.callback, n_calls, rng)
 
         return self

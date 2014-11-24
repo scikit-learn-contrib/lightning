@@ -35,13 +35,13 @@ cdef double _pred(double* data,
 cdef double _proj_elastic(double eta,
                           LONG t,
                           double g_sum,
+                          double g_norm,
                           double alpha1,
                           double alpha2,
-                          double delta,
-                          double s):
+                          double delta):
 
     cdef double eta_t = eta * t
-    cdef double denom = (delta + s + eta_t * alpha2)
+    cdef double denom = (delta + sqrt(g_norm) + eta_t * alpha2)
     cdef double wj_new1 = eta_t * (-g_sum / t - alpha1) / denom
     cdef double wj_new2 = eta_t * (-g_sum / t + alpha1) / denom
 
@@ -53,7 +53,23 @@ cdef double _proj_elastic(double eta,
         return 0
 
 
-def _adagrad_fit(RowDataset X,
+cpdef double _proj_elastic_all(double eta,
+                               LONG t,
+                               np.ndarray[double, ndim=1] g_sum,
+                               np.ndarray[double, ndim=1] g_norms,
+                               double alpha1,
+                               double alpha2,
+                               double delta,
+                               np.ndarray[double, ndim=1] w):
+    cdef int n_features = w.shape[0]
+    cdef int j
+    for j in xrange(n_features):
+        w[j] = _proj_elastic(eta, t, g_sum[j], g_norms[j], alpha1, alpha2,
+                             delta)
+
+
+def _adagrad_fit(self,
+                 RowDataset X,
                  np.ndarray[double, ndim=1]y,
                  np.ndarray[double, ndim=1]coef,
                  np.ndarray[double, ndim=1]g_sum,
@@ -64,6 +80,8 @@ def _adagrad_fit(RowDataset X,
                  double alpha1,
                  double alpha2,
                  int n_iter,
+                 callback,
+                 int n_calls,
                  rng):
 
     cdef int n_samples = X.get_n_samples()
@@ -75,6 +93,7 @@ def _adagrad_fit(RowDataset X,
     cdef double y_pred, tmp, scale
     cdef np.ndarray[int, ndim=1] sindices
     sindices = np.arange(n_samples, dtype=np.int32)
+    cdef int has_callback = callback is not None
 
     # Data pointers.
     cdef double* data
@@ -100,8 +119,8 @@ def _adagrad_fit(RowDataset X,
             if t > 1:
                 for jj in xrange(n_nz):
                     j = indices[jj]
-                    w[j] = _proj_elastic(eta, t - 1, g_sum[j], alpha1, alpha2,
-                                         delta, sqrt(g_norms[j]))
+                    w[j] = _proj_elastic(eta, t - 1, g_sum[j], g_norms[j],
+                                         alpha1, alpha2, delta)
 
             # Make prediction.
             y_pred = _pred(data, indices, n_nz, w)
@@ -119,12 +138,17 @@ def _adagrad_fit(RowDataset X,
 
             # Update w by naive implementation: very slow.
             # for j in xrange(n_features):
-            #    w[j] = _proj_elastic(eta, t, g_sum[j], alpha1, alpha2, delta,
-            #                         sqrt(g_norms[j]))
+            #    w[j] = _proj_elastic(eta, t, g_sum[j], g_norms[j], alpha1,
+            #                         alpha2, delta)
+
+            # Callback.
+            if has_callback and t % n_calls == 0:
+                ret = callback(self, t)
+                if ret is not None:
+                    break
 
             t += 1
 
+
     # Finalize.
-    for j in xrange(n_features):
-        w[j] = _proj_elastic(eta, t - 1, g_sum[j], alpha1, alpha2, delta,
-                             sqrt(g_norms[j]))
+    _proj_elastic_all(eta, t - 1, g_sum, g_norms, alpha1, alpha2, delta, coef)
