@@ -19,13 +19,15 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
     """
 
     def __init__(self, alpha=1.0, l1_ratio=0, loss="hinge", max_iter=100,
-                 tol=1e-3, callback=None, verbose=0, random_state=None):
+                 tol=1e-3, callback=None, n_calls=None, verbose=0,
+                 random_state=None):
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.loss = loss
         self.max_iter = max_iter
         self.tol = tol
         self.callback = callback
+        self.n_calls = n_calls
         self.verbose = verbose
         self.random_state = random_state
 
@@ -68,6 +70,7 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
         alpha1 = self.l1_ratio * self.alpha
         alpha2 = (1 - self.l1_ratio) * self.alpha
         tol = self.tol
+        n_calls = n_samples if self.n_calls is None else self.n_calls
 
         for i in xrange(n_vectors):
             y = Y[:, i]
@@ -80,6 +83,6 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
 
             _prox_sdca_fit(self, ds, y, self.coef_[i], self.dual_coef_[i],
                            alpha1, alpha2, loss, self.max_iter,
-                           tol, self.callback, self.verbose, rng)
+                           tol, self.callback, n_calls, self.verbose, rng)
 
         return self

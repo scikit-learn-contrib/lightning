@@ -9,6 +9,8 @@
 import numpy as np
 cimport numpy as np
 
+ctypedef np.int64_t LONG
+
 from libc.math cimport fabs
 
 from lightning.impl.dataset_fast cimport RowDataset
@@ -169,6 +171,7 @@ def _prox_sdca_fit(self,
                    int max_iter,
                    double tol,
                    callback,
+                   int n_calls,
                    int verbose,
                    rng):
 
@@ -179,6 +182,7 @@ def _prox_sdca_fit(self,
     cdef double sigma, scale, primal, dual, regul, gap
     cdef int it, ii, i
     cdef int has_callback = callback is not None
+    cdef LONG t
 
     # Pre-compute square norms.
     cdef np.ndarray[double, ndim=1, mode='c'] sqnorms
@@ -209,6 +213,7 @@ def _prox_sdca_fit(self,
     dual = 0
     regul = 0
 
+    t = 0
     for it in xrange(max_iter):
         primal = 0
 
@@ -228,6 +233,13 @@ def _prox_sdca_fit(self,
                               loss_func, sqnorms[i], scale, sigma, &primal,
                               &dual, &regul)
 
+            if has_callback and t % n_calls == 0:
+                ret = callback(self)
+                if ret is not None:
+                    break
+
+            t += 1
+
         # end for ii in xrange(n_samples)
 
         gap = (primal - dual) / n_samples + alpha2 * regul
@@ -235,11 +247,6 @@ def _prox_sdca_fit(self,
 
         if verbose:
             print "iter", it + 1, gap
-
-        if has_callback:
-            ret = callback(self)
-            if ret is not None:
-                break
 
         if gap <= tol:
             if verbose:
