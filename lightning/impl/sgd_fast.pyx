@@ -74,27 +74,6 @@ cdef class Hinge(LossFunction):
         return 0.0
 
 
-
-cdef class Hinge01(LossFunction):
-
-    cdef double threshold
-
-    def __init__(self, double threshold=1.0):
-        self.threshold = threshold
-
-    cpdef double loss(self, double p, double y):
-        cdef double z = self.threshold - 4 * (y - 0.5) * (p - 0.5)
-        if z >= 0:
-            return z
-        return 0.0
-
-    cpdef double get_update(self, double p, double y):
-        cdef double z = self.threshold - 4 * (y - 0.5) * (p - 0.5)
-        if z >= 0:
-            return 4 * y - 2
-        return 0.0
-
-
 cdef class SquaredHinge(LossFunction):
 
     cdef double threshold
@@ -112,26 +91,6 @@ cdef class SquaredHinge(LossFunction):
         cdef double z = self.threshold - p * y
         if z > 0:
             return 2 * y * z
-        return 0.0
-
-
-cdef class SquaredHinge01(LossFunction):
-
-    cdef double threshold
-
-    def __init__(self, double threshold=1.0):
-        self.threshold = threshold
-
-    cpdef double loss(self, double p, double y):
-        cdef double z = self.threshold - 4 * (y - 0.5) * (p - 0.5)
-        if z >= 0:
-            return z * z
-        return 0.0
-
-    cpdef double get_update(self, double p, double y):
-        cdef double z = self.threshold - 4 * (y - 0.5) * (p - 0.5)
-        if z >= 0:
-            return 2 * (4 * y - 2) * z
         return 0.0
 
 
