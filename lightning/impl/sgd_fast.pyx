@@ -156,32 +156,6 @@ cdef class Log(LossFunction):
         return y / (exp(z) + 1.0)
 
 
-cdef class SparseLog(LossFunction):
-
-    cdef double threshold, gamma
-
-    def __init__(self, double threshold=0.99):
-        self.threshold = threshold
-        self.gamma = -log((1 - threshold)/threshold)
-
-    cpdef double loss(self, double p, double y):
-        cdef double z = p * y
-        # approximately equal and saves the computation of the log
-        if z > self.threshold:
-            return 0
-        else:
-            return log(1.0 + exp(-self.gamma * z))
-
-    cpdef double get_update(self, double p, double y):
-        cdef double z = p * y
-        if z > self.threshold:
-            return 0
-        return self.gamma * y / (exp(self.gamma * z) + 1.0)
-
-    cpdef double get_gamma(self):
-        return self.gamma
-
-
 cdef class SquaredLoss(LossFunction):
 
     cpdef double loss(self, double p, double y):

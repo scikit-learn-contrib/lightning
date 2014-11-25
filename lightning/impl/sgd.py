@@ -31,7 +31,6 @@ from .sgd_fast import ModifiedHuber
 from .sgd_fast import Hinge
 from .sgd_fast import SquaredHinge
 from .sgd_fast import Log
-from .sgd_fast import SparseLog
 from .sgd_fast import SquaredLoss
 from .sgd_fast import Huber
 from .sgd_fast import EpsilonInsensitive
@@ -167,7 +166,6 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, _BaseSGD):
                 "squared_hinge": SquaredHinge(1.0),
                 "perceptron": Hinge(0.0),
                 "log": Log(),
-                "sparse_log": SparseLog(),
                 "squared": SquaredLoss(),
                 "huber": Huber(self.epsilon),
                 "epsilon_insensitive": EpsilonInsensitive(self.epsilon)
