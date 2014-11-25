@@ -23,6 +23,7 @@ from .dataset_fast import get_dataset
 from .primal_cd_fast import _primal_cd
 
 from .primal_cd_fast import Squared
+from .primal_cd_fast import SmoothHinge
 from .primal_cd_fast import SquaredHinge
 from .primal_cd_fast import ModifiedHuber
 from .primal_cd_fast import Log
@@ -35,8 +36,10 @@ class _BaseCD(object):
                   "sigma": self.sigma,
                   "beta": self.beta,
                   "verbose": self.verbose}
+
         losses = {
             "squared": Squared(verbose=self.verbose),
+            "smooth_hinge": SmoothHinge(**params),
             "squared_hinge": SquaredHinge(**params),
             "modified_huber": ModifiedHuber(**params),
             "log": Log(**params),

@@ -789,6 +789,86 @@ cdef class SquaredHinge(LossFunction):
         self._lipschitz_constant(X, scale, out)
 
 
+cdef class SmoothHinge(LossFunction):
+
+    def __init__(self,
+                 int max_steps=20,
+                 double sigma=0.01,
+                 double beta=0.5,
+                 int verbose=0):
+        self.max_steps = max_steps
+        self.sigma = sigma
+        self.beta = beta
+        self.verbose = verbose
+
+    cdef void derivatives(self,
+                          int j,
+                          double C,
+                          int *indices,
+                          double *data,
+                          int n_nz,
+                          double *y,
+                          double *b,
+                          double *Lp,
+                          double *Lpp,
+                          double *L):
+        cdef int i, ii
+        cdef double val, tmp
+        cdef double gamma = 1.0
+
+        # First derivative
+        Lp[0] = 0
+        # Second derivative
+        Lpp[0] = 0
+        # Objective value
+        L[0] = 0
+
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            val = data[ii] * y[i]
+
+            if 0 <= b[i] and b[i] <= 1:
+                tmp = val * C
+                Lp[0] -= b[i] * tmp / gamma
+                Lpp[0] += val * tmp / gamma
+                L[0] += C * 0.5 / gamma * b[i] * b[i]
+            elif b[i] >= gamma:
+                tmp = val * C
+                Lp[0] -= tmp
+                L[0] += C * (b[i] - 0.5 * gamma)
+
+
+    cdef void update(self,
+                     int j,
+                     double z_diff,
+                     double C,
+                     int *indices,
+                     double *data,
+                     int n_nz,
+                     double *y,
+                     double *b,
+                     double *L_new):
+        cdef int i, ii
+        cdef double b_new
+        cdef double gamma = 1.0
+
+        # New objective value
+        L_new[0] = 0
+
+        for ii in xrange(n_nz):
+            i = indices[ii]
+            b_new = b[i] + z_diff * data[ii] * y[i]
+            # b[i] = 1 - y[i] * np.dot(w, X[i])
+            b[i] = b_new
+
+            if 0 <= b_new and b_new <= 1:
+                L_new[0] += 0.5 / gamma * b_new * b_new
+            elif b_new >= gamma:
+                L_new[0] += b_new - 0.5 * gamma
+
+        L_new[0] *= C
+
+
 cdef class ModifiedHuber(LossFunction):
 
     def __init__(self,

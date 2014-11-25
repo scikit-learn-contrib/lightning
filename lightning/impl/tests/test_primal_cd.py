@@ -47,6 +47,13 @@ def test_fit_linear_binary_l1r():
     assert_true(n_nz > n_nz2)
 
 
+def test_fit_linear_binary_l1r_smooth_hinge():
+    clf = CDClassifier(C=1.0, loss="smooth_hinge", random_state=0, penalty="l1")
+    clf.fit(bin_dense, bin_target)
+    acc = clf.score(bin_dense, bin_target)
+    assert_almost_equal(acc, 1.0)
+
+
 def test_fit_linear_binary_l1r_no_linesearch():
     clf = CDClassifier(C=1.0, selection="uniform", max_steps=0,
                        random_state=0, penalty="l1")
