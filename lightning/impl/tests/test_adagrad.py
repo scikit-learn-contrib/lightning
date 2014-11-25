@@ -21,6 +21,13 @@ def test_adagrad_elastic_hinge():
     assert_equal(clf.score(X_bin, y_bin), 1.0)
 
 
+def test_adagrad_elastic_smooth_hinge():
+    clf = AdaGradClassifier(alpha=0.5, l1_ratio=0.85, loss="smooth_hinge",
+                            n_iter=10, random_state=0)
+    clf.fit(X_bin, y_bin)
+    assert_equal(clf.score(X_bin, y_bin), 1.0)
+
+
 def test_adagrad_elastic_log():
     clf = AdaGradClassifier(alpha=0.5, l1_ratio=0.85, loss="log", n_iter=10,
                             random_state=0)

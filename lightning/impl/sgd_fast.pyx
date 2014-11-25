@@ -74,6 +74,36 @@ cdef class Hinge(LossFunction):
         return 0.0
 
 
+cdef class SmoothHinge(LossFunction):
+
+    cdef double gamma
+
+    def __init__(self, double gamma=1.0):
+        self.gamma = gamma  # the larger, the smoother
+
+    cpdef double loss(self, double p, double y):
+        cdef double z = p * y
+        cdef double diff
+
+        if z >= 1:
+            return 0
+        elif z <= 1 - self.gamma:
+            return 1 - z - 0.5 * self.gamma
+        else:
+            diff = 1 - z
+            return 0.5 / self.gamma * diff * diff
+
+    cpdef double get_update(self, double p, double y):
+        cdef double z = p * y
+
+        if z >= 1:
+            return 0
+        elif z <= 1 - self.gamma:
+            return y
+        else:
+            return 1 / self.gamma * (1 - z) * y
+
+
 cdef class SquaredHinge(LossFunction):
 
     cdef double threshold

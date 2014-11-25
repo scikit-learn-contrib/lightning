@@ -10,6 +10,7 @@ from .adagrad_fast import _adagrad_fit
 
 from .sgd_fast import ModifiedHuber
 from .sgd_fast import Hinge
+from .sgd_fast import SmoothHinge
 from .sgd_fast import SquaredHinge
 from .sgd_fast import Log
 from .sgd_fast import SquaredLoss
@@ -24,12 +25,13 @@ class AdaGradClassifier(BaseClassifier, ClassifierMixin):
                     + alpha * (1 - l1_ratio) * 0.5 * ||w||^2_2
     """
 
-    def __init__(self, eta=1.0, alpha=1.0, l1_ratio=0, loss="hinge", n_iter=10,
-                 callback=None, n_calls=None, random_state=None):
+    def __init__(self, eta=1.0, alpha=1.0, l1_ratio=0, loss="hinge", gamma=1.0,
+                 n_iter=10, callback=None, n_calls=None, random_state=None):
         self.eta = eta
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.loss = loss
+        self.gamma = gamma
         self.n_iter = n_iter
         self.callback = callback
         self.n_calls = n_calls
@@ -39,6 +41,7 @@ class AdaGradClassifier(BaseClassifier, ClassifierMixin):
         losses = {
             "modified_huber": ModifiedHuber(),
             "hinge": Hinge(1.0),
+            "smooth_hinge": SmoothHinge(self.gamma),
             "squared_hinge": SquaredHinge(1.0),
             "perceptron": Hinge(0.0),
             "log": Log(),
