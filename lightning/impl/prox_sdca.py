@@ -18,12 +18,13 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
                     + alpha * (1 - l1_ratio) * 0.5 * ||w||^2_2
     """
 
-    def __init__(self, alpha=1.0, l1_ratio=0, loss="hinge", max_iter=100,
-                 tol=1e-3, callback=None, n_calls=None, verbose=0,
+    def __init__(self, alpha=1.0, l1_ratio=0, loss="hinge", gamma=1.0,
+                 max_iter=100, tol=1e-3, callback=None, n_calls=None, verbose=0,
                  random_state=None):
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.loss = loss
+        self.gamma = gamma
         self.max_iter = max_iter
         self.tol = tol
         self.callback = callback
@@ -36,19 +37,30 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
             "squared": 0,
             "absolute": 1,
             "hinge": 2,
+            "smooth_hinge": 3,
         }
         return losses[self.loss]
 
     def _get_alpha2_lasso(self, y, alpha1):
         if self.loss == "squared":
             y_bar = 0.5 * np.mean(y ** 2)
+
         elif self.loss == "absolute":
             y_bar = np.mean(np.abs(y))
+
         elif self.loss == "hinge":
-            y_bar = 1.0 / y.shape[0]
+            y_bar = 1.0
+
+        elif self.loss == "smooth_hinge":
+            if self.gamma < 1:
+                y_bar = 1 - 0.5 * self.gamma
+            else:
+                y_bar = 0.5 / self.gamma
+
         else:
             raise ValueError("Unknown loss.")
-        return  self.tol * alpha1 ** 2 / (y_bar ** 2)
+
+        return  self.tol * (alpha1 / y_bar) ** 2
 
 
     def fit(self, X, y):
@@ -82,7 +94,7 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
                 tol = self.tol * 0.5
 
             _prox_sdca_fit(self, ds, y, self.coef_[i], self.dual_coef_[i],
-                           alpha1, alpha2, loss, self.max_iter,
+                           alpha1, alpha2, loss, self.gamma, self.max_iter,
                            tol, self.callback, n_calls, self.verbose, rng)
 
         return self

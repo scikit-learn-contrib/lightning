@@ -113,6 +113,7 @@ cdef _solve_subproblem(double*data,
                        double sqnorm,
                        double scale,
                        double sigma,
+                       double gamma,
                        double* primal,
                        double* dual,
                        double* regul):
@@ -147,6 +148,25 @@ cdef _solve_subproblem(double*data,
         update = y * update - dcoef_old
         dual[0] += y * update
 
+    elif loss_func == 3:  # smooth hinge loss
+        margin = 1 - y * pred
+
+        if margin < 0:
+            loss = 0
+        elif margin > gamma:
+            loss = margin - 0.5 * gamma
+        else:
+            loss = 0.5 / gamma * margin * margin
+
+        update = (margin - gamma * dcoef_old * y) / (sqnorm * scale + gamma)
+        update += dcoef_old * y
+        update = min(1.0, update)
+        update = max(0.0, update)
+        update = y * update - dcoef_old
+        dual[0] += y * update
+        dual[0] -= gamma * dcoef_old * update
+        dual[0] -= 0.5 * gamma * update * update
+
     # Use accumulated loss rather than true primal objective value, which is
     # expensive to compute.
     primal[0] += loss
@@ -168,6 +188,7 @@ def _prox_sdca_fit(self,
                    double alpha1,
                    double alpha2,
                    int loss_func,
+                   double gamma,
                    int max_iter,
                    double tol,
                    callback,
@@ -230,8 +251,8 @@ def _prox_sdca_fit(self,
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
             _solve_subproblem(data, indices, n_nz, y[i], w, v, dcoef + i,
-                              loss_func, sqnorms[i], scale, sigma, &primal,
-                              &dual, &regul)
+                              loss_func, sqnorms[i], scale, sigma, gamma,
+                              &primal, &dual, &regul)
 
             if has_callback and t % n_calls == 0:
                 ret = callback(self)
