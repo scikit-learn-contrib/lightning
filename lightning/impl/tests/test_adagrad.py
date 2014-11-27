@@ -29,7 +29,7 @@ def test_adagrad_elastic_smooth_hinge():
 
 
 def test_adagrad_elastic_log():
-    clf = AdaGradClassifier(alpha=0.5, l1_ratio=0.85, loss="log", n_iter=10,
+    clf = AdaGradClassifier(alpha=0.1, l1_ratio=0.85, loss="log", n_iter=10,
                             random_state=0)
     clf.fit(X_bin, y_bin)
     assert_equal(clf.score(X_bin, y_bin), 1.0)
@@ -38,7 +38,7 @@ def test_adagrad_elastic_log():
 def test_adagrad_hinge_multiclass():
     clf = AdaGradClassifier(alpha=1e-2, n_iter=100, loss="hinge", random_state=0)
     clf.fit(X, y)
-    assert_almost_equal(clf.score(X, y), 0.940, 3)
+    assert_almost_equal(clf.score(X, y), 0.960, 3)
 
 
 def test_adagrad_callback():

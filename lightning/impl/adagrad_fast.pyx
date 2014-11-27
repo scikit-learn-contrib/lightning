@@ -104,7 +104,7 @@ def _adagrad_fit(self,
     cdef double* w = <double*>coef.data
 
     t = 1
-    for t in xrange(n_iter):
+    for it in xrange(n_iter):
 
         # Shuffle sample indices.
         rng.shuffle(sindices)
