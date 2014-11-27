@@ -64,8 +64,9 @@ cpdef double _proj_elastic_all(double eta,
     cdef int n_features = w.shape[0]
     cdef int j
     for j in xrange(n_features):
-        w[j] = _proj_elastic(eta, t, g_sum[j], g_norms[j], alpha1, alpha2,
-                             delta)
+        if g_norms[j] != 0:
+            w[j] = _proj_elastic(eta, t, g_sum[j], g_norms[j], alpha1, alpha2,
+                                 delta)
 
 
 def _adagrad_fit(self,
@@ -119,8 +120,9 @@ def _adagrad_fit(self,
             if t > 1:
                 for jj in xrange(n_nz):
                     j = indices[jj]
-                    w[j] = _proj_elastic(eta, t - 1, g_sum[j], g_norms[j],
-                                         alpha1, alpha2, delta)
+                    if g_norms[j] != 0:
+                        w[j] = _proj_elastic(eta, t - 1, g_sum[j], g_norms[j],
+                                             alpha1, alpha2, delta)
 
             # Make prediction.
             y_pred = _pred(data, indices, n_nz, w)
