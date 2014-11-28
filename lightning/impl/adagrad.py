@@ -26,13 +26,15 @@ class AdaGradClassifier(BaseClassifier, ClassifierMixin):
     """
 
     def __init__(self, eta=1.0, alpha=1.0, l1_ratio=0, loss="hinge", gamma=1.0,
-                 n_iter=10, callback=None, n_calls=None, random_state=None):
+                 n_iter=10, shuffle=True, callback=None, n_calls=None,
+                 random_state=None):
         self.eta = eta
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.loss = loss
         self.gamma = gamma
         self.n_iter = n_iter
+        self.shuffle = shuffle
         self.callback = callback
         self.n_calls = n_calls
         self.random_state = random_state
@@ -73,6 +75,7 @@ class AdaGradClassifier(BaseClassifier, ClassifierMixin):
         for i in xrange(n_vectors):
             _adagrad_fit(self, ds, Y[:, i], self.coef_[i], self.g_sum_[i],
                          self.g_norms_[i], loss, self.eta, delta, alpha1,
-                         alpha2, self.n_iter, self.callback, n_calls, rng)
+                         alpha2, self.n_iter, self.shuffle, self.callback,
+                         n_calls, rng)
 
         return self

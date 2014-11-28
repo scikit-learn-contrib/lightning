@@ -81,6 +81,7 @@ def _adagrad_fit(self,
                  double alpha1,
                  double alpha2,
                  int n_iter,
+                 int shuffle,
                  callback,
                  int n_calls,
                  rng):
@@ -108,7 +109,8 @@ def _adagrad_fit(self,
     for it in xrange(n_iter):
 
         # Shuffle sample indices.
-        rng.shuffle(sindices)
+        if shuffle:
+            rng.shuffle(sindices)
 
         for ii in xrange(n_samples):
             i = sindices[ii]
