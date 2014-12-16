@@ -29,8 +29,8 @@ cdef class RowDataset(Dataset):
                           int i,
                           int** indices,
                           double** data,
-                          int* n_nz):
-        raise NotImplementedError()
+                          int* n_nz) nogil:
+        pass
 
     cpdef get_row(self, int i):
         cdef double* data
@@ -53,8 +53,8 @@ cdef class ColumnDataset(Dataset):
                              int j,
                              int** indices,
                              double** data,
-                             int* n_nz):
-        raise NotImplementedError()
+                             int* n_nz) nogil:
+        pass
 
     cpdef get_column(self, int j):
         cdef double* data
@@ -97,7 +97,7 @@ cdef class ContiguousDataset(RowDataset):
                           int i,
                           int** indices,
                           double** data,
-                          int* n_nz):
+                          int* n_nz) nogil:
         indices[0] = self.indices
         data[0] = self.data + i * self.n_features
         n_nz[0] = self.n_features
@@ -129,7 +129,7 @@ cdef class FortranDataset(ColumnDataset):
                              int j,
                              int** indices,
                              double** data,
-                             int* n_nz):
+                             int* n_nz) nogil:
         indices[0] = self.indices
         data[0] = self.data + j * self.n_samples
         n_nz[0] = self.n_samples
@@ -158,7 +158,7 @@ cdef class CSRDataset(RowDataset):
                           int i,
                           int** indices,
                           double** data,
-                          int* n_nz):
+                          int* n_nz) nogil:
         indices[0] = self.indices + self.indptr[i]
         data[0] = self.data + self.indptr[i]
         n_nz[0] = self.indptr[i + 1] - self.indptr[i]
@@ -187,7 +187,7 @@ cdef class CSCDataset(ColumnDataset):
                              int j,
                              int** indices,
                              double** data,
-                             int* n_nz):
+                             int* n_nz) nogil:
         indices[0] = self.indices + self.indptr[j]
         data[0] = self.data + self.indptr[j]
         n_nz[0] = self.indptr[j + 1] - self.indptr[j]

@@ -16,7 +16,7 @@ cdef class RowDataset(Dataset):
                              int i,
                              int** indices,
                              double** data,
-                             int* n_nz)
+                             int* n_nz) nogil
 
     cpdef get_row(self, int i)
 
@@ -27,7 +27,7 @@ cdef class ColumnDataset(Dataset):
                              int j,
                              int** indices,
                              double** data,
-                             int* n_nz)
+                             int* n_nz) nogil
 
     cpdef get_column(self, int j)
 
@@ -42,7 +42,7 @@ cdef class ContiguousDataset(RowDataset):
                           int i,
                           int** indices,
                           double** data,
-                          int* n_nz)
+                          int* n_nz) nogil
 
 
 cdef class FortranDataset(ColumnDataset):
@@ -55,7 +55,7 @@ cdef class FortranDataset(ColumnDataset):
                              int j,
                              int** indices,
                              double** data,
-                             int* n_nz)
+                             int* n_nz) nogil
 
 
 cdef class CSRDataset(RowDataset):
@@ -69,7 +69,7 @@ cdef class CSRDataset(RowDataset):
                           int i,
                           int** indices,
                           double** data,
-                          int* n_nz)
+                          int* n_nz) nogil
 
 
 cdef class CSCDataset(ColumnDataset):
@@ -83,4 +83,4 @@ cdef class CSCDataset(ColumnDataset):
                              int j,
                              int** indices,
                              double** data,
-                             int* n_nz)
+                             int* n_nz) nogil
