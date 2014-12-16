@@ -9,19 +9,12 @@
 import numpy as np
 cimport numpy as np
 
+from libc.math cimport exp, log, sqrt
+
 from lightning.impl.dataset_fast cimport RowDataset
 
 DEF LOWER = 1e-2
 DEF UPPER = 1e9
-
-cdef extern from "math.h":
-   double fabs(double)
-   double exp(double x)
-   double log(double x)
-   double sqrt(double x)
-
-cdef extern from "float.h":
-   double DBL_MAX
 
 
 cdef double _l2_norm_sums(RowDataset X, int squared):
