@@ -64,20 +64,20 @@ class FistaClassifier(BaseClassifier, ClassifierMixin):
         }
         return penalties[self.penalty]
 
-    def _get_objective(self, df, y, Y, loss, penalty, coef):
+    def _get_objective(self, df, y, Y, loss):
         if self.multiclass:
             obj = self.C * loss.objective(df, y)
         else:
             obj = self.C * loss.objective(df, Y)
+        return obj
+
+    def _get_regularized_objective(self, df, y, Y, loss, penalty, coef):
+        obj = self._get_objective(df, y, Y, loss)
         obj += self.alpha * penalty.regularization(coef)
         return obj
 
-    def _get_quad_approx(self, coefa, coefb, gradb, dfb, y, Y, L,
-                         loss, penalty):
-        if self.multiclass:
-            approx = self.C * loss.objective(dfb, y)
-        else:
-            approx = self.C * loss.objective(dfb, Y)
+    def _get_quad_approx(self, coefa, coefb, objb, gradb, L, penalty):
+        approx = objb
         diff = coefa - coefb
         approx += np.sum(diff * gradb)
         approx += L / 2 * np.sum(diff ** 2)
@@ -100,7 +100,7 @@ class FistaClassifier(BaseClassifier, ClassifierMixin):
         coefx = coef
         G = np.zeros((n_vectors, n_features), dtype=np.float64)
 
-        obj = self._get_objective(df, y, Y, loss, penalty, coef)
+        obj = self._get_regularized_objective(df, y, Y, loss, penalty, coef)
 
         if self.max_steps == 0:
             # No line search, need to use constant step size.
@@ -127,15 +127,18 @@ class FistaClassifier(BaseClassifier, ClassifierMixin):
             G *= self.C
 
             # Line search
+            if self.max_steps > 0:
+                objb = self._get_objective(df, y, Y, loss)
+
             for tt in xrange(self.max_steps):
                 # Solve
                 coefx = coef - G / L
                 coefx = penalty.projection(coefx, self.alpha, L)
 
                 dfx = safe_sparse_dot(X, coefx.T)
-                obj = self._get_objective(dfx, y, Y, loss, penalty, coefx)
-                approx = self._get_quad_approx(coefx, coef, G, df, y, Y, L,
-                                               loss, penalty)
+                obj = self._get_regularized_objective(dfx, y, Y, loss, penalty,
+                                                      coefx)
+                approx = self._get_quad_approx(coefx, coef, objb, G, L, penalty)
 
                 accepted = obj <= approx
 
