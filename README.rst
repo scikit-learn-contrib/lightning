@@ -14,10 +14,10 @@ Highlights:
 
 Solvers supported:
 
-- coordinate descent
-- FISTA
-- stochastic gradient descent
-- SpaRSA
+- primal coordinate descent
+- dual coordinate descent (SDCA, Prox-SDCA)
+- AdaGrad, SGD
+- FISTA, SpaRSA
 
 Loss functions supported:
 
