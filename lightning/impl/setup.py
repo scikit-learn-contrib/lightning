@@ -42,6 +42,10 @@ def configuration(parent_package='', top_path=None):
                          sources=['sgd_fast.cpp'],
                          include_dirs=[numpy.get_include(), randomdir])
 
+    config.add_extension('svrg_fast',
+                         sources=['svrg_fast.cpp'],
+                         include_dirs=[numpy.get_include(), randomdir])
+
     config.add_subpackage('datasets')
     config.add_subpackage('randomkit')
     config.add_subpackage('tests')
