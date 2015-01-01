@@ -11,6 +11,8 @@ cimport numpy as np
 
 ctypedef np.int64_t LONG
 
+from libc.math cimport sqrt
+
 from lightning.impl.randomkit.random_fast cimport RandomState
 from lightning.impl.dataset_fast cimport RowDataset
 from lightning.impl.sgd_fast cimport LossFunction
@@ -103,6 +105,7 @@ def _svrg_fit(self,
         violation = 0
         for j in xrange(n_features):
             violation += fg[j] * fg[j]
+        violation = sqrt(violation)
 
         # Inner loop.
         for t in xrange(n_inner):
@@ -124,7 +127,6 @@ def _svrg_fit(self,
 
             # Add stochastic part.
             _add(data, indices, n_nz, eta * (g[i] - scale), w)
-
 
         # Convergence monitoring.
         if it == 0:
