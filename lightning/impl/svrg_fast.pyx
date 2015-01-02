@@ -49,6 +49,7 @@ def _svrg_fit(self,
               RowDataset X,
               np.ndarray[double, ndim=1]y,
               np.ndarray[double, ndim=1]coef,
+              np.ndarray[double, ndim=1]coef_scale,
               np.ndarray[double, ndim=1]full_grad,
               np.ndarray[double, ndim=1]grad,
               double eta,
@@ -58,6 +59,7 @@ def _svrg_fit(self,
               int n_inner,
               double tol,
               int verbose,
+              callback,
               RandomState rng):
 
     cdef int n_samples = X.get_n_samples()
@@ -69,7 +71,7 @@ def _svrg_fit(self,
     cdef double violation, violation_init, violation_ratio
     cdef double eta_avg = eta / n_samples
     cdef double eta_alpha = eta * alpha
-    cdef double w_scale = 1.0
+    cdef int has_callback = callback is not None
 
     # Data pointers.
     cdef double* data
@@ -79,9 +81,9 @@ def _svrg_fit(self,
     # Buffers and pointers.
     cdef np.ndarray[int, ndim=1]last = np.zeros(n_features, dtype=np.int32)
     cdef double* w = <double*>coef.data
+    cdef double* w_scale = <double*>coef_scale.data
     cdef double* fg = <double*>full_grad.data
     cdef double* g = <double*>grad.data
-
 
     for it in xrange(max_iter):
 
@@ -96,7 +98,7 @@ def _svrg_fit(self,
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
             # Make prediction.
-            y_pred = _pred(data, indices, n_nz, w) * w_scale
+            y_pred = _pred(data, indices, n_nz, w) * w_scale[0]
 
             # A gradient is given by g[i] * X[i].
             g[i] = -loss.get_update(y_pred, y[i])
@@ -134,35 +136,41 @@ def _svrg_fit(self,
             if t > 0:
                 for jj in xrange(n_nz):
                     j = indices[jj]
-                    w[j] -= eta_avg / w_scale * (t - last[j]) * fg[j]
+                    w[j] -= eta_avg / w_scale[0] * (t - last[j]) * fg[j]
                     last[j] = t
 
             # Make prediction.
-            y_pred = _pred(data, indices, n_nz, w) * w_scale
+            y_pred = _pred(data, indices, n_nz, w) * w_scale[0]
 
             # A gradient is given by scale * X[i].
             scale = -loss.get_update(y_pred, y[i])
 
-            w_scale *= (1 - eta_alpha)
+            w_scale[0] *= (1 - eta_alpha)
 
             # Add deterministic part.
             #for j in xrange(n_features):
                 #w[j] -= eta_avg / w_scale * fg[j]
 
             # Add stochastic part.
-            _add(data, indices, n_nz, eta * (g[i] - scale) / w_scale, w)
+            _add(data, indices, n_nz, eta * (g[i] - scale) / w_scale[0], w)
 
             # Take care of possible underflows.
-            if w_scale < 1e-9:
+            if w_scale[0] < 1e-9:
                 for j in xrange(n_features):
-                    w[j] *= w_scale
-                w_scale = 1.0
+                    w[j] *= w_scale[0]
+                w_scale[0] = 1.0
 
         # Finalize.
         for j in xrange(n_features):
-            w[j] -= eta_avg / w_scale * (n_inner - last[j]) * fg[j]
+            w[j] -= eta_avg / w_scale[0] * (n_inner - last[j]) * fg[j]
             last[j] = 0
+
+        # Callback.
+        if has_callback:
+            ret = callback(self)
+            if ret is not None:
+                break
 
     # Rescale coefficients.
     for j in xrange(n_features):
-        w[j] *= w_scale
+        w[j] *= w_scale[0]

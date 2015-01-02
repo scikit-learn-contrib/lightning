@@ -19,7 +19,7 @@ class SVRGClassifier(BaseClassifier, ClassifierMixin):
 
     def __init__(self, eta=1.0, alpha=1.0, loss="smooth_hinge", gamma=1.0,
                  max_iter=10, n_inner=1.0, tol=1e-3, verbose=0,
-                 random_state=None):
+                 callback=None, random_state=None):
         self.eta = eta
         self.alpha = alpha
         self.loss = loss
@@ -28,6 +28,7 @@ class SVRGClassifier(BaseClassifier, ClassifierMixin):
         self.n_inner = n_inner
         self.tol = tol
         self.verbose = verbose
+        self.callback = callback
         self.random_state = random_state
 
     def _get_loss(self):
@@ -40,6 +41,9 @@ class SVRGClassifier(BaseClassifier, ClassifierMixin):
         }
         return losses[self.loss]
 
+    def _finalize_coef(self):
+        self.coef_ *= self.coef_scale_
+        self.coef_scale_.fill(1.0)
 
     def fit(self, X, y):
         n_samples, n_features = X.shape
@@ -58,12 +62,14 @@ class SVRGClassifier(BaseClassifier, ClassifierMixin):
         self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
         full_grad = np.zeros_like(self.coef_)
         grad = np.zeros((n_vectors, n_samples), dtype=np.float64)
+        self.coef_scale_ = np.ones(n_vectors, dtype=np.float64)
 
         for i in xrange(n_vectors):
             y = Y[:, i]
 
-            _svrg_fit(self, ds, y, self.coef_[i], full_grad[i], grad[i],
-                      self.eta, self.alpha, loss, self.max_iter, n_inner,
-                      self.tol, self.verbose, rng)
+            _svrg_fit(self, ds, y, self.coef_[i], self.coef_scale_[i:],
+                      full_grad[i], grad[i], self.eta, self.alpha, loss,
+                      self.max_iter, n_inner, self.tol, self.verbose,
+                      self.callback, rng)
 
         return self
