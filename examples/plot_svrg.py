@@ -1,16 +1,18 @@
 """
-======================================
-Sensitivity to hyper-parameters in SVG
-======================================
+=======================================
+Sensitivity to hyper-parameters in SVRG
+=======================================
 """
 print __doc__
 
+import sys
 import time
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.datasets import make_classification
+from sklearn.datasets import fetch_20newsgroups_vectorized
 
 from lightning.classification import SVRGClassifier
 
@@ -36,17 +38,33 @@ class Callback(object):
         self.test_time += time.clock() - test_time
         self.times.append(time.clock() -  self.start_time - self.test_time)
 
-X, y = make_classification(n_samples=10000,
-                           n_features=100,
-                           n_classes=2,
-                           random_state=0)
-y = y * 2 - 1
+try:
+    dataset = sys.argv[1]
+except:
+    dataset = "synthetic"
 
+if dataset == "news20":
+    bunch = fetch_20newsgroups_vectorized(subset="all")
+    X = bunch.data
+    y = bunch.target
+    y[y >= 1] = 1
+
+    etas = (0.5, 1e-1, 1e-2)
+    n_inners = (1.0, 2.0, 3.0)
+else:
+    X, y = make_classification(n_samples=10000,
+                               n_features=100,
+                               n_classes=2,
+                               random_state=0)
+    etas = (1e-3, 1e-4, 1e-5)
+    n_inners = (0.25, 0.5, 1.0, 1.5)
+
+y = y * 2 - 1
 
 
 plt.figure()
 
-for eta in (1e-3, 1e-4, 1e-5):
+for eta in etas:
     print "eta =", eta
     cb = Callback(X, y)
     clf = SVRGClassifier(loss="squared_hinge", alpha=1e-5, eta=eta,
@@ -60,7 +78,7 @@ plt.legend()
 
 plt.figure()
 
-for n_inner in (0.25, 0.5, 1.0, 1.5):
+for n_inner in n_inners:
     print "n_inner =", n_inner
     cb = Callback(X, y)
     clf = SVRGClassifier(loss="squared_hinge", alpha=1e-5, eta=1e-4,
@@ -69,7 +87,6 @@ for n_inner in (0.25, 0.5, 1.0, 1.5):
     clf.fit(X, y)
     plt.plot(cb.times, cb.obj, label="n_inner=" + str(n_inner))
 
-plt.ylim((None, 0.55))
 plt.xlabel("CPU time")
 plt.ylabel("Objective value")
 plt.legend()
