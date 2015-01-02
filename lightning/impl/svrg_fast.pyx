@@ -63,8 +63,8 @@ def _svrg_fit(self,
     cdef int n_samples = X.get_n_samples()
     cdef int n_features = X.get_n_features()
 
-    # Variables
-    cdef int i, j, it, t
+    # Variables.
+    cdef int i, jj, j, it, t
     cdef double y_pred, scale
     cdef double violation, violation_init, violation_ratio
     cdef double eta_avg = eta / n_samples
@@ -76,7 +76,8 @@ def _svrg_fit(self,
     cdef int* indices
     cdef int n_nz
 
-    # Pointers
+    # Buffers and pointers.
+    cdef np.ndarray[int, ndim=1]last = np.zeros(n_features, dtype=np.int32)
     cdef double* w = <double*>coef.data
     cdef double* fg = <double*>full_grad.data
     cdef double* g = <double*>grad.data
@@ -129,6 +130,13 @@ def _svrg_fit(self,
             # Retrieve sample i.
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
+            # Add deterministic part, just in time.
+            if t > 0:
+                for jj in xrange(n_nz):
+                    j = indices[jj]
+                    w[j] -= eta_avg / w_scale * (t - last[j]) * fg[j]
+                    last[j] = t
+
             # Make prediction.
             y_pred = _pred(data, indices, n_nz, w) * w_scale
 
@@ -138,14 +146,23 @@ def _svrg_fit(self,
             w_scale *= (1 - eta_alpha)
 
             # Add deterministic part.
-            for j in xrange(n_features):
-                w[j] -= eta_avg / w_scale * fg[j]
+            #for j in xrange(n_features):
+                #w[j] -= eta_avg / w_scale * fg[j]
 
             # Add stochastic part.
             _add(data, indices, n_nz, eta * (g[i] - scale) / w_scale, w)
 
-            # Take care of possible overflows.
+            # Take care of possible underflows.
             if w_scale < 1e-9:
                 for j in xrange(n_features):
                     w[j] *= w_scale
                 w_scale = 1.0
+
+        # Finalize.
+        for j in xrange(n_features):
+            w[j] -= eta_avg / w_scale * (n_inner - last[j]) * fg[j]
+            last[j] = 0
+
+    # Rescale coefficients.
+    for j in xrange(n_features):
+        w[j] *= w_scale
