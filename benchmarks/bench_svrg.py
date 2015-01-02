@@ -10,7 +10,8 @@ X = bunch.data
 y = bunch.target
 y[y >= 1] = 1
 
-clf = SVRGClassifier(alpha=1e-3, max_iter=5, verbose=1, random_state=0)
+clf = SVRGClassifier(eta=0.1, alpha=1e-5, tol=1e-3, max_iter=20, verbose=1,
+                     random_state=0)
 start = time.time()
 clf.fit(X, y)
 
