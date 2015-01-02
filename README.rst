@@ -16,7 +16,7 @@ Solvers supported:
 
 - primal coordinate descent
 - dual coordinate descent (SDCA, Prox-SDCA)
-- AdaGrad, SGD
+- AdaGrad, SGD, SVRG
 - FISTA, SpaRSA
 
 Loss functions supported:
