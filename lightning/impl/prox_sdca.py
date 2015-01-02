@@ -41,6 +41,7 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
             "absolute": 1,
             "hinge": 2,
             "smooth_hinge": 3,
+            "squared_hinge": 4,
         }
         return losses[self.loss]
 
@@ -51,7 +52,7 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
         elif self.loss == "absolute":
             y_bar = np.mean(np.abs(y))
 
-        elif self.loss == "hinge":
+        elif self.loss in ("hinge", "squared_hinge"):
             y_bar = 1.0
 
         elif self.loss == "smooth_hinge":
@@ -84,6 +85,12 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
 
         alpha1 = self.l1_ratio * self.alpha
         alpha2 = (1 - self.l1_ratio) * self.alpha
+
+        if self.loss == "squared_hinge":
+            # For consistency with the rest of lightning.
+            alpha1 *= 0.5
+            alpha2 *= 0.5
+
         tol = self.tol
         n_calls = n_samples if self.n_calls is None else self.n_calls
 

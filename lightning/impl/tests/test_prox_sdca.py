@@ -50,6 +50,13 @@ def test_prox_sdca_smooth_hinge_elastic():
     assert_equal(clf.score(X_bin, y_bin), 1.0)
 
 
+def test_prox_sdca_squared_hinge_elastic():
+    clf = ProxSDCA_Classifier(alpha=0.5, l1_ratio=0.85, loss="squared_hinge",
+                              random_state=0, verbose=1)
+    clf.fit(X_bin, y_bin)
+    assert_equal(clf.score(X_bin, y_bin), 1.0)
+
+
 def test_prox_sdca_hinge_l1_only():
     clf = ProxSDCA_Classifier(alpha=0.5, l1_ratio=1.0, loss="hinge", tol=1e-2,
                               max_iter=200, random_state=0)

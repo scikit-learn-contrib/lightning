@@ -167,6 +167,19 @@ cdef _solve_subproblem(double*data,
         dual[0] -= gamma * dcoef_old * update
         dual[0] -= 0.5 * gamma * update * update
 
+    elif loss_func == 4:  # squared hinge loss
+        # Update is the same as squared loss but with a truncation.
+        residual = pred - y
+        update = -(dcoef_old + residual) / (1 + sqnorm * scale)
+        if (dcoef_old + update) * y < 0:
+            update = -dcoef_old
+
+        margin = 1 - y * pred
+        if margin >= 0:
+            loss = residual * residual
+
+        dual[0] += (y - dcoef_old) * update - 0.5 * update * update
+
     # Use accumulated loss rather than true primal objective value, which is
     # expensive to compute.
     primal[0] += loss
