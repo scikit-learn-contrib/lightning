@@ -118,7 +118,7 @@ cdef _solve_subproblem(double*data,
                        double* dual,
                        double* regul):
 
-    cdef double pred, dcoef_old, residual, margin, loss, update
+    cdef double pred, dcoef_old, residual, error, loss, update
 
     pred = _pred(data, indices, n_nz, w)
 
@@ -140,25 +140,25 @@ cdef _solve_subproblem(double*data,
         dual[0] += y * update
 
     elif loss_func == 2:  # hinge loss
-        margin = 1 - y * pred
-        loss = max(0.0, margin)
-        update = margin / (sqnorm * scale) + dcoef_old * y
+        error = 1 - y * pred
+        loss = max(0.0, error)
+        update = error / (sqnorm * scale) + dcoef_old * y
         update = min(1.0, update)
         update = max(0.0, update)
         update = y * update - dcoef_old
         dual[0] += y * update
 
     elif loss_func == 3:  # smooth hinge loss
-        margin = 1 - y * pred
+        error = 1 - y * pred
 
-        if margin < 0:
+        if error < 0:
             loss = 0
-        elif margin > gamma:
-            loss = margin - 0.5 * gamma
+        elif error > gamma:
+            loss = error - 0.5 * gamma
         else:
-            loss = 0.5 / gamma * margin * margin
+            loss = 0.5 / gamma * error * error
 
-        update = (margin - gamma * dcoef_old * y) / (sqnorm * scale + gamma)
+        update = (error - gamma * dcoef_old * y) / (sqnorm * scale + gamma)
         update += dcoef_old * y
         update = min(1.0, update)
         update = max(0.0, update)
@@ -174,8 +174,8 @@ cdef _solve_subproblem(double*data,
         if (dcoef_old + update) * y < 0:
             update = -dcoef_old
 
-        margin = 1 - y * pred
-        if margin >= 0:
+        error = 1 - y * pred
+        if error >= 0:
             loss = residual * residual
 
         dual[0] += (y - dcoef_old) * update - 0.5 * update * update
