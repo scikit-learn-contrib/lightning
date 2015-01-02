@@ -18,7 +18,7 @@ from .sgd_fast import SquaredLoss
 class SVRGClassifier(BaseClassifier, ClassifierMixin):
 
     def __init__(self, eta=1.0, alpha=1.0, loss="smooth_hinge", gamma=1.0,
-                 max_iter=10, n_inner=1.0, tol=1e-3, verbose=0,
+                 max_iter=10, n_inner=1.0, tol=1e-2, verbose=0,
                  random_state=None):
         self.eta = eta
         self.alpha = alpha
