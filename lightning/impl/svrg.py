@@ -1,3 +1,6 @@
+# Author: Mathieu Blondel
+# License: BSD
+
 import numpy as np
 
 from sklearn.base import ClassifierMixin
