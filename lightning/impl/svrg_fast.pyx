@@ -69,6 +69,7 @@ def _svrg_fit(self,
     cdef double violation, violation_init, violation_ratio
     cdef double eta_avg = eta / n_samples
     cdef double eta_alpha = eta * alpha
+    cdef double w_scale = 1.0
 
     # Data pointers.
     cdef double* data
@@ -94,7 +95,7 @@ def _svrg_fit(self,
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
             # Make prediction.
-            y_pred = _pred(data, indices, n_nz, w)
+            y_pred = _pred(data, indices, n_nz, w) * w_scale
 
             # A gradient is given by g[i] * X[i].
             g[i] = -loss.get_update(y_pred, y[i])
@@ -129,15 +130,22 @@ def _svrg_fit(self,
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
             # Make prediction.
-            y_pred = _pred(data, indices, n_nz, w)
+            y_pred = _pred(data, indices, n_nz, w) * w_scale
 
             # A gradient is given by scale * X[i].
             scale = -loss.get_update(y_pred, y[i])
 
+            w_scale *= (1 - eta_alpha)
+
             # Add deterministic part.
             for j in xrange(n_features):
-                w[j] -= eta_alpha * w[j]
-                w[j] -= eta_avg * fg[j]
+                w[j] -= eta_avg / w_scale * fg[j]
 
             # Add stochastic part.
-            _add(data, indices, n_nz, eta * (g[i] - scale), w)
+            _add(data, indices, n_nz, eta * (g[i] - scale) / w_scale, w)
+
+            # Take care of possible overflows.
+            if w_scale < 1e-9:
+                for j in xrange(n_features):
+                    w[j] *= w_scale
+                w_scale = 1.0
