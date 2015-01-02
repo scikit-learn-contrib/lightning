@@ -29,7 +29,7 @@ class Callback(object):
 
     def __call__(self, clf):
         test_time = time.clock()
-        #clf._finalize_coef()
+        clf._finalize_coef()
         y_pred = clf.decision_function(self.X).ravel()
         loss = (np.maximum(1 - self.y * y_pred, 0) ** 2).mean()
         coef = clf.coef_.ravel()
