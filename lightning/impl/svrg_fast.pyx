@@ -101,11 +101,25 @@ def _svrg_fit(self,
 
             _add(data, indices, n_nz, g[i], fg)
 
-        # Compute optimality violation
+        # Compute optimality violation.
         violation = 0
         for j in xrange(n_features):
             violation += fg[j] * fg[j]
         violation = sqrt(violation)
+
+        # Convergence monitoring.
+        if it == 0:
+            violation_init = violation
+
+        violation_ratio = violation / violation_init
+
+        if verbose:
+            print it + 1, violation_ratio
+
+        if violation_ratio <= tol:
+            if verbose:
+                print "Converged"
+            break
 
         # Inner loop.
         for t in xrange(n_inner):
@@ -127,17 +141,3 @@ def _svrg_fit(self,
 
             # Add stochastic part.
             _add(data, indices, n_nz, eta * (g[i] - scale), w)
-
-        # Convergence monitoring.
-        if it == 0:
-            violation_init = violation
-
-        violation_ratio = violation / violation_init
-
-        if verbose:
-            print it + 1, violation_ratio
-
-        if violation_ratio <= tol:
-            if verbose:
-                print "Converged"
-            break
