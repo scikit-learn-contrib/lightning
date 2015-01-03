@@ -174,3 +174,4 @@ def _sag_fit(self,
     # Rescale coefficients.
     for j in xrange(n_features):
         w[j] *= w_scale[0]
+    w_scale[0] = 1.0
