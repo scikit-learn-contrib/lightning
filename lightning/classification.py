@@ -3,6 +3,7 @@ from .impl.primal_cd import CDClassifier
 from .impl.fista import FistaClassifier
 from .impl.prox_sdca import ProxSDCA_Classifier
 from .impl.sparsa import SparsaClassifier
+from .impl.sag import SAGClassifier
 from .impl.sgd import SGDClassifier
 from .impl.svrg import SVRGClassifier
 from .impl.dual_cd import LinearSVC

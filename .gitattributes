@@ -6,5 +6,6 @@
 /lightning/impl/primal_cd_fast.cpp -diff
 /lightning/impl/prox_sdca_fast.cpp -diff
 /lightning/impl/randomkit/random_fast.cpp -diff
+/lightning/impl/sag_fast.cpp -diff
 /lightning/impl/sgd_fast.cpp -diff
 /lightning/impl/svrg_fast.cpp -diff
