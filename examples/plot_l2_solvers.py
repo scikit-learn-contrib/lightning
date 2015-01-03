@@ -65,6 +65,7 @@ if dataset == "news20":
     alpha = 1e-4
     eta_svrg = 1e-1
     eta_sag = 1
+    eta_adagrad = 1
     xlim = (0, 4)
     ylim = (0.04, 0.1)
 
@@ -76,6 +77,7 @@ else:
     alpha = 1e-2
     eta_svrg = 1e-3
     eta_sag = 1e-3
+    eta_adagrad = 1e-2
     xlim = None
     ylim = (0.5, 0.6)
 
@@ -88,7 +90,7 @@ clf2 = ProxSDCA_Classifier(loss="squared_hinge", alpha=alpha,
                            max_iter=50, n_calls=X.shape[0]/2, random_state=0)
 clf3 = CDClassifier(loss="squared_hinge", alpha=alpha, C=1.0/X.shape[0],
                     max_iter=50, n_calls=X.shape[1]/3, random_state=0)
-clf4 = AdaGradClassifier(loss="squared_hinge", alpha=alpha,
+clf4 = AdaGradClassifier(loss="squared_hinge", alpha=alpha, eta=eta_adagrad,
                     n_iter=50, n_calls=X.shape[0]/2, random_state=0)
 clf5 = SAGClassifier(loss="squared_hinge", alpha=alpha, eta=eta_sag,
                     max_iter=50, random_state=0)
