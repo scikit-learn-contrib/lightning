@@ -67,7 +67,7 @@ def _svrg_fit(self,
 
     # Variables.
     cdef int i, jj, j, it, t
-    cdef double y_pred, scale
+    cdef double y_pred, scale, tmp, alpha_scaled
     cdef double violation, violation_init, violation_ratio
     cdef double eta_avg = eta / n_samples
     cdef double eta_alpha = eta * alpha
@@ -107,8 +107,10 @@ def _svrg_fit(self,
 
         # Compute optimality violation.
         violation = 0
+        alpha_scaled = alpha * w_scale[0]
         for j in xrange(n_features):
-            violation += fg[j] * fg[j]
+            tmp = fg[j] / n_samples + alpha_scaled * w[j]
+            violation += tmp * tmp
         violation = sqrt(violation)
 
         # Convergence monitoring.
