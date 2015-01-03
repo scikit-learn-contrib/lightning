@@ -264,7 +264,7 @@ html_theme_options = {
     # A list of tuples containting pages to link to.  The value should
     # be in the form [(name, page), ..]
     'navbar_links': [
-        #('Introduction', 'intro'),
+        ('Introduction', 'intro'),
         ('References', 'references'),
         ('Examples', 'auto_examples/index'),
     ],

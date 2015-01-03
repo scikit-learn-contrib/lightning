@@ -5,3 +5,4 @@
 
     auto_examples/index
     references.rst
+    intro.rst
