@@ -3,8 +3,8 @@
 lightning
 ==========
 
-lightning is a library for large-scale linear classification and regression in
-Python.
+lightning is a library for large-scale linear classification, regression and
+ranking in Python.
 
 Highlights:
 
@@ -18,25 +18,6 @@ Solvers supported:
 - dual coordinate descent (SDCA, Prox-SDCA)
 - SGD, AdaGrad, SAG, SVRG
 - FISTA, SpaRSA
-
-Loss functions supported:
-
-- hinge
-- squared hinge
-- logistic
-- multiclass logistic
-- squared
-- epsilon-insensitive
-- modified-huber
-
-Penalties supported:
-
-- L2 (Ridge)
-- L1 (Lasso)
-- L1/L2 (Group Lasso) (multiclass and multitask only)
-
-Note: Not all solvers support all loss / penalty combinations. See the class
-references for more details.
 
 Example
 -------

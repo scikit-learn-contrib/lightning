@@ -6,8 +6,8 @@ import sys
 import os
 
 DISTNAME = 'lightning'
-DESCRIPTION = "Large-scale sparse linear classification and " + \
-              "regression in Python/Cython"
+DESCRIPTION = "Large-scale sparse linear classification, " + \
+              "regression and ranking in Python"
 LONG_DESCRIPTION = open('README.rst').read()
 MAINTAINER = 'Mathieu Blondel'
 MAINTAINER_EMAIL = 'mathieu@mblondel.org'
