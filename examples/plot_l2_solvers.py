@@ -18,6 +18,7 @@ from lightning.classification import SVRGClassifier
 from lightning.classification import ProxSDCA_Classifier
 from lightning.classification import CDClassifier
 from lightning.classification import AdaGradClassifier
+from lightning.classification import SAGClassifier
 
 from lightning.impl.adagrad_fast import _proj_elastic_all
 
@@ -63,6 +64,7 @@ if dataset == "news20":
     y[y >= 1] = 1
     alpha = 1e-4
     eta_svrg = 1e-1
+    eta_sag = 1
     xlim = (0, 4)
     ylim = (0.04, 0.1)
 
@@ -73,6 +75,7 @@ else:
                                random_state=0)
     alpha = 1e-2
     eta_svrg = 1e-3
+    eta_sag = 1e-3
     xlim = None
     ylim = (0.5, 0.6)
 
@@ -87,13 +90,16 @@ clf3 = CDClassifier(loss="squared_hinge", alpha=alpha, C=1.0/X.shape[0],
                     max_iter=50, n_calls=X.shape[1]/3, random_state=0)
 clf4 = AdaGradClassifier(loss="squared_hinge", alpha=alpha,
                     n_iter=50, n_calls=X.shape[0]/2, random_state=0)
+clf5 = SAGClassifier(loss="squared_hinge", alpha=alpha, eta=eta_sag,
+                    max_iter=50, random_state=0)
 
 plt.figure()
 
 for clf, name in ((clf1, "SVRG"),
                   (clf2, "SDCA"),
                   (clf3, "PCD"),
-                  (clf4, "AdaGrad")):
+                  (clf4, "AdaGrad"),
+                  (clf5, "SAG")):
     print name
     cb = Callback(X, y)
     clf.callback = cb
