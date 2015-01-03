@@ -15,7 +15,7 @@ y_bin = y[y <= 1] * 2 - 1
 
 
 def test_sag():
-    clf = SAGClassifier(eta=1e-3, max_iter=20, verbose=1, random_state=0)
+    clf = SAGClassifier(eta=1e-3, max_iter=20, verbose=0, random_state=0)
     clf.fit(X_bin, y_bin)
     assert_equal(clf.score(X_bin, y_bin), 1.0)
 
@@ -29,7 +29,7 @@ def test_sag_callback():
             self.obj = []
 
         def __call__(self, clf):
-            #clf._finalize_coef()
+            clf._finalize_coef()
             y_pred = clf.decision_function(self.X).ravel()
             loss = (np.maximum(1 - self.y * y_pred, 0) ** 2).mean()
             coef = clf.coef_.ravel()

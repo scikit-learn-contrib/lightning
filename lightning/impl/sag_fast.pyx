@@ -49,11 +49,13 @@ def _sag_fit(self,
              RowDataset X,
              np.ndarray[double, ndim=1]y,
              np.ndarray[double, ndim=1]coef,
+             np.ndarray[double, ndim=1]coef_scale,
              np.ndarray[double, ndim=1]grad,
              double eta,
              double alpha,
              LossFunction loss,
              int max_iter,
+             int n_inner,
              double tol,
              int verbose,
              callback,
@@ -63,8 +65,8 @@ def _sag_fit(self,
     cdef int n_features = X.get_n_features()
 
     # Variables.
-    cdef int ii, i, jj, j, it, t
-    cdef double y_pred, scale, g_old, tmp
+    cdef int i, jj, j, it, t
+    cdef double y_pred, scale, g_old, tmp, alpha_scaled
     cdef double violation, violation_init, violation_ratio
     cdef double eta_avg = eta / n_samples
     cdef double eta_alpha = eta * alpha
@@ -76,10 +78,12 @@ def _sag_fit(self,
     cdef int n_nz
 
     # Buffers and pointers.
+    cdef np.ndarray[int, ndim=1]last = np.zeros(n_features, dtype=np.int32)
     cdef np.ndarray[double, ndim=1] g_sum_
     g_sum_ = np.zeros(n_features, dtype=np.float64)
     cdef double* g_sum = <double*>g_sum_.data
     cdef double* w = <double*>coef.data
+    cdef double* w_scale = <double*>coef_scale.data
     cdef double* g = <double*>grad.data
 
     # Initialize gradient memory.
@@ -88,7 +92,7 @@ def _sag_fit(self,
         X.get_row_ptr(i, &indices, &data, &n_nz)
 
         # Make prediction.
-        y_pred = _pred(data, indices, n_nz, w)
+        y_pred = _pred(data, indices, n_nz, w) * w_scale[0]
 
         # A gradient is given by g[i] * X[i].
         g[i] = -loss.get_update(y_pred, y[i])
@@ -99,14 +103,22 @@ def _sag_fit(self,
     # Outer loop.
     for it in xrange(max_iter):
 
-        for ii in xrange(n_samples):
+        # Inner loop.
+        for t in xrange(n_inner):
             i = rng.randint(n_samples - 1)
 
             # Retrieve sample i.
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
+            # Update coefficients, just in time.
+            if t > 0:
+                for jj in xrange(n_nz):
+                    j = indices[jj]
+                    w[j] -= eta_avg / w_scale[0] * (t - last[j]) * g_sum[j]
+                    last[j] = t
+
             # Make prediction.
-            y_pred = _pred(data, indices, n_nz, w)
+            y_pred = _pred(data, indices, n_nz, w) * w_scale[0]
 
             # Make copy of old gradient value.
             g_old = g[i]
@@ -117,10 +129,19 @@ def _sag_fit(self,
             # Update g_sum.
             _add(data, indices, n_nz, (g[i] - g_old), g_sum)
 
-            # Update coefficients.
-            for j in xrange(n_features):
-                w[j] -= eta_alpha * w[j]
-                w[j] -= eta_avg * g_sum[j]
+            # Update coefficient scale (l2 regularization).
+            w_scale[0] *= (1 - eta_alpha)
+
+            # Take care of possible underflows.
+            if w_scale[0] < 1e-9:
+                for j in xrange(n_features):
+                    w[j] *= w_scale[0]
+                w_scale[0] = 1.0
+
+        # Finalize.
+        for j in xrange(n_features):
+            w[j] -= eta_avg / w_scale[0] * (n_inner - last[j]) * g_sum[j]
+            last[j] = 0
 
         # Callback.
         if has_callback:
@@ -130,8 +151,9 @@ def _sag_fit(self,
 
         # Compute optimality violation.
         violation = 0
+        alpha_scaled = alpha * w_scale[0]
         for j in xrange(n_features):
-            tmp = g_sum[j] / n_samples + alpha * w[j]
+            tmp = g_sum[j] / n_samples + alpha_scaled * w[j]
             violation += tmp * tmp
         violation = sqrt(violation)
 
@@ -148,3 +170,7 @@ def _sag_fit(self,
             if verbose:
                 print "Converged"
             break
+
+    # Rescale coefficients.
+    for j in xrange(n_features):
+        w[j] *= w_scale[0]
