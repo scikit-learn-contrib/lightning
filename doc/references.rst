@@ -18,11 +18,15 @@ This module contains algorithms for solving classification problems.
    :toctree: generated/
    :template: class.rst
 
+    classification.AdaGradClassifier
     classification.CDClassifier
     classification.FistaClassifier
     classification.KernelSVC
     classification.LinearSVC
+    classification.ProxSDCA_Classifier
+    classification.SAGClassifier
     classification.SGDClassifier
+    classification.SVRGClassifier
     classification.SparsaClassifier
 
 .. _regression:
