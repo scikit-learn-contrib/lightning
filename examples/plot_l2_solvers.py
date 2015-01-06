@@ -15,7 +15,7 @@ from sklearn.datasets import make_classification
 from sklearn.datasets import fetch_20newsgroups_vectorized
 
 from lightning.classification import SVRGClassifier
-from lightning.classification import ProxSDCA_Classifier
+from lightning.classification import SDCAClassifier
 from lightning.classification import CDClassifier
 from lightning.classification import AdaGradClassifier
 from lightning.classification import SAGClassifier
@@ -86,8 +86,8 @@ y = y * 2 - 1
 
 clf1 = SVRGClassifier(loss="squared_hinge", alpha=alpha, eta=eta_svrg,
                       n_inner=1.0, max_iter=50, random_state=0)
-clf2 = ProxSDCA_Classifier(loss="squared_hinge", alpha=alpha,
-                           max_iter=50, n_calls=X.shape[0]/2, random_state=0)
+clf2 = SDCAClassifier(loss="squared_hinge", alpha=alpha,
+                      max_iter=50, n_calls=X.shape[0]/2, random_state=0)
 clf3 = CDClassifier(loss="squared_hinge", alpha=alpha, C=1.0/X.shape[0],
                     max_iter=50, n_calls=X.shape[1]/3, random_state=0)
 clf4 = AdaGradClassifier(loss="squared_hinge", alpha=alpha, eta=eta_adagrad,

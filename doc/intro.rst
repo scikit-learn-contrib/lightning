@@ -20,7 +20,7 @@ Dual coordinate ascent
 
 :class:`LinearSVC`, :class:`LinearSVR` (L2-regularization, supports shrinking)
 
-:class:`ProxSDCA_Classifier` (Elastic-net, supports many losses)
+:class:`SDCAClassifier` (Elastic-net, supports many losses)
 
 - Main idea: update a single dual coordinate at a time (closed-form solution available for many loss functions)
 - Non-smooth losses: Yes

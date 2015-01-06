@@ -30,16 +30,16 @@ def configuration(parent_package='', top_path=None):
                          sources=['prank_fast.cpp'],
                          include_dirs=[numpy.get_include(), randomdir])
 
-    config.add_extension('prox_sdca_fast',
-                         sources=['prox_sdca_fast.cpp'],
-                         include_dirs=[numpy.get_include(), randomdir])
-
     config.add_extension('primal_cd_fast',
                          sources=['primal_cd_fast.cpp'],
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('sag_fast',
                          sources=['sag_fast.cpp'],
+                         include_dirs=[numpy.get_include(), randomdir])
+
+    config.add_extension('sdca_fast',
+                         sources=['sdca_fast.cpp'],
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('sgd_fast',

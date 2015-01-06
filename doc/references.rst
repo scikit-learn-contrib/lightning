@@ -23,7 +23,7 @@ This module contains algorithms for solving classification problems.
     classification.FistaClassifier
     classification.KernelSVC
     classification.LinearSVC
-    classification.ProxSDCA_Classifier
+    classification.SDCAClassifier
     classification.SAGClassifier
     classification.SGDClassifier
     classification.SVRGClassifier

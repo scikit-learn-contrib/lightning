@@ -9,12 +9,12 @@ from sklearn.preprocessing import LabelBinarizer
 
 from .base import BaseClassifier
 from .dataset_fast import get_dataset
-from .prox_sdca_fast import _prox_sdca_fit
+from .sdca_fast import _prox_sdca_fit
 
 
-class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
+class SDCAClassifier(BaseClassifier, ClassifierMixin):
     """
-    Solves the following objective by ProxSDCA:
+    Solves the following objective by (proximal) SDCA:
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * l1_ratio * ||w||_1
@@ -98,7 +98,7 @@ class ProxSDCA_Classifier(BaseClassifier, ClassifierMixin):
             y = Y[:, i]
 
             if self.l1_ratio == 1.0:
-                # ProxSDCA needs a strongly convex regularizer so adds some
+                # Prox-SDCA needs a strongly convex regularizer so adds some
                 # L2 penalty (see paper).
                 alpha2 = self._get_alpha2_lasso(y, alpha1)
                 tol = self.tol * 0.5
