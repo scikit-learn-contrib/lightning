@@ -18,7 +18,7 @@ Primal coordinate descent
 Dual coordinate ascent
 -----------------------
 
-:class:`LinearSVC`, :class:`LinearSVR`, :class:`LinearRidge` (L2-regularization, supports shrinking)
+:class:`LinearSVC`, :class:`LinearSVR` (L2-regularization, supports shrinking)
 
 :class:`ProxSDCA_Classifier` (Elastic-net, supports many losses)
 
