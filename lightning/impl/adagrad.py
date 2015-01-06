@@ -3,7 +3,6 @@
 
 import numpy as np
 
-from sklearn.base import ClassifierMixin
 from sklearn.utils import check_random_state
 from sklearn.preprocessing import LabelBinarizer
 
@@ -19,7 +18,7 @@ from .sgd_fast import Log
 from .sgd_fast import SquaredLoss
 
 
-class AdaGradClassifier(BaseClassifier, ClassifierMixin):
+class AdaGradClassifier(BaseClassifier):
     """
     Solves the following objective by AdaGrad:
 

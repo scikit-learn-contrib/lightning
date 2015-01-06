@@ -13,8 +13,6 @@ import warnings
 
 import numpy as np
 
-from sklearn.base import ClassifierMixin
-from sklearn.base import RegressorMixin
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import assert_all_finite
@@ -58,7 +56,7 @@ class _BaseSGD(object):
         return learning_rates[self.learning_rate]
 
 
-class SGDClassifier(BaseClassifier, ClassifierMixin, _BaseSGD):
+class SGDClassifier(BaseClassifier, _BaseSGD):
     """Estimator for learning linear classifiers by SGD.
 
     Parameters
@@ -240,7 +238,7 @@ class SGDClassifier(BaseClassifier, ClassifierMixin, _BaseSGD):
         return self
 
 
-class SGDRegressor(BaseRegressor, RegressorMixin, _BaseSGD):
+class SGDRegressor(BaseRegressor, _BaseSGD):
     """Estimator for learning linear regressors by SGD.
 
     Parameters

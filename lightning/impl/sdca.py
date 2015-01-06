@@ -3,7 +3,6 @@
 
 import numpy as np
 
-from sklearn.base import ClassifierMixin
 from sklearn.utils import check_random_state
 from sklearn.preprocessing import LabelBinarizer
 
@@ -12,7 +11,7 @@ from .dataset_fast import get_dataset
 from .sdca_fast import _prox_sdca_fit
 
 
-class SDCAClassifier(BaseClassifier, ClassifierMixin):
+class SDCAClassifier(BaseClassifier):
     """
     Solves the following objective by (proximal) SDCA:
 

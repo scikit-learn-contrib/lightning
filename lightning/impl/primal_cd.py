@@ -12,8 +12,6 @@ functions and penalties.
 
 import numpy as np
 
-from sklearn.base import ClassifierMixin
-from sklearn.base import RegressorMixin
 from sklearn.externals.joblib import Parallel, delayed
 
 from .base import BaseClassifier
@@ -72,7 +70,7 @@ class _BaseCD(object):
             self.errors_ = np.ones((n_vectors, n_samples), dtype=np.float64)
 
 
-class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
+class CDClassifier(_BaseCD, BaseClassifier):
     """Estimator for learning linear classifiers by (block) coordinate descent.
 
     The objective functions considered take the form
@@ -355,7 +353,7 @@ class CDClassifier(_BaseCD, BaseClassifier, ClassifierMixin):
         return self
 
 
-class CDRegressor(_BaseCD, BaseRegressor, RegressorMixin):
+class CDRegressor(_BaseCD, BaseRegressor):
     """Estimator for learning linear regressors by (block) coordinate descent.
 
     The objective functions considered take the form

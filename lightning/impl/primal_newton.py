@@ -14,7 +14,6 @@ import numpy as np
 from scipy.sparse.linalg import cg
 from scipy.linalg import solve
 
-from sklearn.base import ClassifierMixin
 from sklearn.utils import safe_mask
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
@@ -23,7 +22,7 @@ from sklearn.metrics.pairwise import pairwise_kernels
 from .base import BaseClassifier
 
 
-class KernelSVC(BaseClassifier, ClassifierMixin):
+class KernelSVC(BaseClassifier):
     """Estimator for learning kernel SVMs by Newton's method.
 
     Parameters

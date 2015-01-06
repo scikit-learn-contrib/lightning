@@ -3,7 +3,6 @@
 
 import numpy as np
 
-from sklearn.base import ClassifierMixin
 from sklearn.utils.extmath import safe_sparse_dot
 
 from .base import BaseClassifier
@@ -20,7 +19,7 @@ from .penalty import L1L2Penalty
 from .penalty import TracePenalty
 
 
-class SparsaClassifier(BaseClassifier, ClassifierMixin):
+class SparsaClassifier(BaseClassifier):
     """Estimator for learning linear classifiers by SpaRSA.
     """
 

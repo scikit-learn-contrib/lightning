@@ -12,7 +12,6 @@ This module provides coordinate descent solvers for support vector machines
 
 import numpy as np
 
-from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import add_dummy_feature
 
@@ -23,7 +22,7 @@ from .dual_cd_fast import _dual_cd_auc
 from .dual_cd_fast import _dual_cd_svr
 
 
-class LinearSVC(BaseClassifier, ClassifierMixin):
+class LinearSVC(BaseClassifier):
     """Estimator for learning linear support vector machine by coordinate
     descent in the dual.
 
@@ -152,7 +151,7 @@ class LinearSVC(BaseClassifier, ClassifierMixin):
         return self
 
 
-class LinearSVR(BaseRegressor, RegressorMixin):
+class LinearSVR(BaseRegressor):
     """Estimator for learning a linear support vector regressor by coordinate
     descent in the dual.
 

@@ -3,8 +3,6 @@
 
 import numpy as np
 
-from sklearn.base import ClassifierMixin
-from sklearn.utils import check_random_state
 from sklearn.preprocessing import LabelBinarizer
 
 from .base import BaseClassifier
@@ -18,7 +16,7 @@ from .sgd_fast import Log
 from .sgd_fast import SquaredLoss
 
 
-class SVRGClassifier(BaseClassifier, ClassifierMixin):
+class SVRGClassifier(BaseClassifier):
 
     def __init__(self, eta=1.0, alpha=1.0, loss="smooth_hinge", gamma=1.0,
                  max_iter=10, n_inner=1.0, tol=1e-3, verbose=0,

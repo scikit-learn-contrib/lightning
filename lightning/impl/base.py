@@ -5,6 +5,7 @@ import numpy as np
 import scipy.sparse as sp
 
 from sklearn.base import BaseEstimator as _BaseEstimator
+from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import LabelEncoder
@@ -35,7 +36,7 @@ class BaseEstimator(_BaseEstimator):
         return n_nz
 
 
-class BaseClassifier(BaseEstimator):
+class BaseClassifier(BaseEstimator, ClassifierMixin):
 
     def predict_proba(self, X):
         if len(self.classes_) != 2:
@@ -93,7 +94,7 @@ class BaseClassifier(BaseEstimator):
         return out
 
 
-class BaseRegressor(BaseEstimator):
+class BaseRegressor(BaseEstimator, RegressorMixin):
 
     def predict(self, X):
         pred = safe_sparse_dot(X, self.coef_.T)
