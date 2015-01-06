@@ -26,29 +26,29 @@ digit = load_digits(2)
 
 def test_fista_multiclass_l1l2():
     for data in (mult_dense, mult_csr):
-        clf = FistaClassifier(max_iter=500, penalty="l1/l2", multiclass=True)
+        clf = FistaClassifier(max_iter=200, penalty="l1/l2", multiclass=True)
         clf.fit(data, mult_target)
         assert_almost_equal(clf.score(data, mult_target), 0.99, 2)
 
 
 def test_fista_multiclass_l1l2_log():
     for data in (mult_dense, mult_csr):
-        clf = FistaClassifier(max_iter=500, penalty="l1/l2", loss="log",
+        clf = FistaClassifier(max_iter=200, penalty="l1/l2", loss="log",
                               multiclass=True)
         clf.fit(data, mult_target)
-        assert_almost_equal(clf.score(data, mult_target), 0.91)
+        assert_almost_equal(clf.score(data, mult_target), 0.90, 2)
 
 def test_fista_multiclass_l1l2_log_margin():
     for data in (mult_dense, mult_csr):
-        clf = FistaClassifier(max_iter=500, penalty="l1/l2", loss="log_margin",
+        clf = FistaClassifier(max_iter=200, penalty="l1/l2", loss="log_margin",
                               multiclass=True)
         clf.fit(data, mult_target)
-        assert_almost_equal(clf.score(data, mult_target), 0.95)
+        assert_almost_equal(clf.score(data, mult_target), 0.95, 2)
 
 
 def test_fista_multiclass_l1():
     for data in (mult_dense, mult_csr):
-        clf = FistaClassifier(max_iter=500, penalty="l1", multiclass=True)
+        clf = FistaClassifier(max_iter=200, penalty="l1", multiclass=True)
         clf.fit(data, mult_target)
         assert_almost_equal(clf.score(data, mult_target), 0.98)
 
@@ -71,7 +71,7 @@ def test_fista_multiclass_l1_no_line_search():
 
 def test_fista_bin_l1():
     for data in (bin_dense, bin_csr):
-        clf = FistaClassifier(max_iter=500, penalty="l1")
+        clf = FistaClassifier(max_iter=200, penalty="l1")
         clf.fit(data, bin_target)
         assert_almost_equal(clf.score(data, bin_target), 1.0, 2)
 
