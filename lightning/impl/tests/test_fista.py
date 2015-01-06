@@ -1,6 +1,8 @@
 import numpy as np
 import scipy.sparse as sp
 
+from scipy.linalg import svd, diagsvd
+
 from sklearn.utils.testing import assert_almost_equal
 
 from sklearn.datasets import load_digits
@@ -93,3 +95,24 @@ def test_fista_regression():
     reg.fit(bin_dense, bin_target)
     y_pred = np.sign(reg.predict(bin_dense))
     assert_almost_equal(np.mean(bin_target == y_pred), 0.985)
+
+
+def test_fista_regression_trace():
+    rng = np.random.RandomState(0)
+    def _make_data(n_samples, n_features, n_tasks, n_components):
+        W = rng.rand(n_tasks, n_features) - 0.5
+        U, S, V = svd(W, full_matrices=True)
+        S[n_components:] = 0
+        S = diagsvd(S, U.shape[0], V.shape[0])
+        W = np.dot(np.dot(U, S), V)
+        X = rng.rand(n_samples, n_features) - 0.5
+        Y = np.dot(X, W.T)
+        return X, Y, W
+
+    X, Y, W = _make_data(200, 50,30, 5)
+    reg = FistaRegressor(max_iter=15, verbose=0)
+    reg.fit(X, Y)
+    Y_pred = reg.predict(X)
+    error = (Y_pred - Y).ravel()
+    error = np.dot(error, error)
+    assert_almost_equal(error, 77.45, 2)
