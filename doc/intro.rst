@@ -53,7 +53,7 @@ Stochastic gradient method (SGD)
 AdaGrad
 -------
 
-:class:`AdaGradClassifier`
+:class:`AdaGradClassifier`, :class:`AdaGradRegressor`
 
 - Main idea: use per-feature learning rates (frequently occurring features in the gradients get small learning rates and infrequent features get higher ones)
 - Non-smooth losses: Yes

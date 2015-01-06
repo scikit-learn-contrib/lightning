@@ -6,13 +6,14 @@ from sklearn.utils.testing import assert_equal
 from sklearn.utils.testing import assert_almost_equal
 
 from lightning.classification import AdaGradClassifier
+from lightning.regression import AdaGradRegressor
 from lightning.impl.adagrad_fast import _proj_elastic_all
 
 iris = load_iris()
 X, y = iris.data, iris.target
 
 X_bin = X[y <= 1]
-y_bin = y[y <= 1]
+y_bin = y[y <= 1] * 2 - 1
 
 
 def test_adagrad_elastic_hinge():
@@ -62,3 +63,11 @@ def test_adagrad_callback():
                             callback=cb, random_state=0)
     clf.fit(X_bin, y_bin)
     assert_equal(cb.acc[-1], 1.0)
+
+
+def test_adagrad_regression():
+    for loss in ("squared", "absolute"):
+        reg = AdaGradRegressor(loss=loss)
+        reg.fit(X_bin, y_bin)
+        y_pred = np.sign(reg.predict(X_bin))
+        assert_equal(np.mean(y_bin == y_pred), 1.0)

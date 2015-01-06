@@ -46,6 +46,7 @@ This module contains algorithms for solving regression problems.
    :toctree: generated/
    :template: class.rst
 
+    regression.AdaGradRegressor
     regression.CDRegressor
     regression.KernelRidge
     regression.LinearSVR
