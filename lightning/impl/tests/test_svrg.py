@@ -6,6 +6,7 @@ from sklearn.utils.testing import assert_true
 from sklearn.utils.testing import assert_equal
 
 from lightning.classification import SVRGClassifier
+from lightning.regression import SVRGRegressor
 from lightning.impl.sgd_fast import SmoothHinge
 
 iris = load_iris()
@@ -42,3 +43,10 @@ def test_svrg_callback():
                          random_state=0, callback=cb)
     clf.fit(X_bin, y_bin)
     assert_true(np.all(np.diff(cb.obj) <= 0))
+
+
+def test_svrg_regression():
+    reg = SVRGRegressor(eta=1e-3)
+    reg.fit(X_bin, y_bin)
+    y_pred = np.sign(reg.predict(X_bin))
+    assert_equal(np.mean(y_bin == y_pred), 1.0)

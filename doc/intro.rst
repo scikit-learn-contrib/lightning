@@ -75,7 +75,7 @@ Stochastic averaged gradient (SAG)
 Stochastic variance-reduced gradient (SVRG)
 -------------------------------------------
 
-:class:`SVRGClassifier`
+:class:`SVRGClassifier`, :class:`SVRGRegressor`
 
 - Main idea: compute full gradient periodically and use it to center the gradient estimate (this can be shown to reduce the variance)
 - Non-smooth losses: No

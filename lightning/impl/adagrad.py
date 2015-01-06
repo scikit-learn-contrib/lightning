@@ -102,8 +102,8 @@ class AdaGradRegressor(BaseRegressor, _BaseAdagrad):
                     + alpha * (1 - l1_ratio) * 0.5 * ||w||^2_2
     """
 
-    def __init__(self, eta=1.0, alpha=1.0, l1_ratio=0, loss="hinge", gamma=1.0,
-                 epsilon=0, n_iter=10, shuffle=True, callback=None,
+    def __init__(self, eta=1.0, alpha=1.0, l1_ratio=0, loss="squared",
+                 gamma=1.0, epsilon=0, n_iter=10, shuffle=True, callback=None,
                  n_calls=None, random_state=None):
         self.eta = eta
         self.alpha = alpha

@@ -52,6 +52,7 @@ This module contains algorithms for solving regression problems.
     regression.LinearSVR
     regression.SDCARegressor
     regression.SGDRegressor
+    regression.SVRGRegressor
 
 Ranking
 =======
