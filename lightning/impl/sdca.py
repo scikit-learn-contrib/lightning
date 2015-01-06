@@ -110,7 +110,6 @@ class SDCAClassifier(BaseClassifier, _BaseSDCA):
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
                               dtype=np.float64)
-
         return self._fit(X, Y)
 
 
@@ -150,6 +149,4 @@ class SDCARegressor(BaseRegressor, _BaseSDCA):
         self.outputs_2d_ = len(y.shape) > 1
         Y = y.reshape(-1, 1) if not self.outputs_2d_ else y
         Y = Y.astype(np.float64)
-
         return self._fit(X, Y)
-

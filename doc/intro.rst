@@ -64,7 +64,7 @@ AdaGrad
 Stochastic averaged gradient (SAG)
 ---------------------------------
 
-:class:`SAGClassifier`
+:class:`SAGClassifier`, :class:`SAGRegressor`
 
 - Main idea: instead of using the full gradient (average of sample-wise gradients), compute gradient for a randomly selected sample and use out-dated gradients for other samples
 - Non-smooth losses: No
