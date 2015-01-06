@@ -45,6 +45,14 @@ class _BaseSAG(object):
 
 
 class SAGClassifier(BaseClassifier, _BaseSAG):
+    """
+    Estimator for learning linear classifiers by SAG.
+
+    Solves the following objective:
+
+        minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
+                    + alpha * 0.5 * ||w||^2_2
+    """
 
     def __init__(self, eta=1.0, alpha=1.0, loss="smooth_hinge", gamma=1.0,
                  max_iter=10, n_inner=1.0, tol=1e-3, verbose=0,
@@ -78,6 +86,14 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
 
 
 class SAGRegressor(BaseRegressor, _BaseSAG):
+    """
+    Estimator for learning linear regressors by SAG.
+
+    Solves the following objective:
+
+        minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
+                    + alpha * 0.5 * ||w||^2_2
+    """
 
     def __init__(self, eta=1.0, alpha=1.0, loss="smooth_hinge", gamma=1.0,
                  max_iter=10, n_inner=1.0, tol=1e-3, verbose=0,
