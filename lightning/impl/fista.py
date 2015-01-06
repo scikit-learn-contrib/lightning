@@ -5,73 +5,35 @@ import numpy as np
 
 from sklearn.utils.extmath import safe_sparse_dot
 
-from .base import BaseClassifier
+from .base import BaseClassifier, BaseRegressor
 
 from .dataset_fast import get_dataset
 
+from .loss_fast import Squared
 from .loss_fast import SquaredHinge
 from .loss_fast import MulticlassSquaredHinge
 from .loss_fast import MulticlassLog
 
-from .penalty import NNConstraint
 from .penalty import L1Penalty
 from .penalty import L1L2Penalty
 from .penalty import TracePenalty
 
 
-class FistaClassifier(BaseClassifier):
-    """Estimator for learning linear classifiers by FISTA.
-    """
-
-    def __init__(self, C=1.0, alpha=1.0,
-                 loss="squared_hinge", penalty="l1", multiclass=False,
-                 max_iter=100,
-                 max_steps=30, eta=2.0, sigma=1e-5,
-                 callback=None, verbose=0):
-        self.C = C
-        self.alpha = alpha
-        self.loss = loss
-        self.penalty = penalty
-        self.multiclass = multiclass
-        self.max_iter = max_iter
-        self.max_steps = max_steps
-        self.eta = eta
-        self.sigma = 1e-5
-        self.callback = callback
-        self.verbose = verbose
-
-    def _get_loss(self):
-        if self.multiclass:
-            losses = {
-                "squared_hinge": MulticlassSquaredHinge(),
-                "log": MulticlassLog(),
-                "log_margin": MulticlassLog(margin=1),
-            }
-        else:
-            losses = {
-                "squared_hinge": SquaredHinge(),
-            }
-
-        return losses[self.loss]
+class _BaseFista(object):
 
     def _get_penalty(self):
         penalties = {
-            "nn": NNConstraint(),
             "l1": L1Penalty(),
             "l1/l2": L1L2Penalty(),
             "trace": TracePenalty(),
         }
         return penalties[self.penalty]
 
-    def _get_objective(self, df, y, Y, loss):
-        if self.multiclass:
-            obj = self.C * loss.objective(df, y)
-        else:
-            obj = self.C * loss.objective(df, Y)
-        return obj
+    def _get_objective(self, df, y, loss):
+        return self.C * loss.objective(df, y)
 
-    def _get_regularized_objective(self, df, y, Y, loss, penalty, coef):
-        obj = self._get_objective(df, y, Y, loss)
+    def _get_regularized_objective(self, df, y, loss, penalty, coef):
+        obj = self._get_objective(df, y, loss)
         obj += self.alpha * penalty.regularization(coef)
         return obj
 
@@ -83,13 +45,8 @@ class FistaClassifier(BaseClassifier):
         approx += self.alpha * penalty.regularization(coefa)
         return approx
 
-    def fit(self, X, y):
+    def _fit(self, X, y, n_vectors):
         n_samples, n_features = X.shape
-        y, n_classes, n_vectors = self._set_label_transformers(y,
-                                                               reencode=True)
-        Y = np.asfortranarray(self.label_binarizer_.transform(y),
-                              dtype=np.float64)
-
         loss = self._get_loss()
         penalty = self._get_penalty()
         ds = get_dataset(X)
@@ -99,7 +56,7 @@ class FistaClassifier(BaseClassifier):
         coefx = coef
         G = np.zeros((n_vectors, n_features), dtype=np.float64)
 
-        obj = self._get_regularized_objective(df, y, Y, loss, penalty, coef)
+        obj = self._get_regularized_objective(df, y, loss, penalty, coef)
 
         if self.max_steps == 0:
             # No line search, need to use constant step size.
@@ -111,7 +68,7 @@ class FistaClassifier(BaseClassifier):
         t = 1.0
         for it in xrange(self.max_iter):
             if self.verbose >= 1:
-                print "Iter", it + 1
+                print "Iter", it + 1, obj
 
             # Save current values
             t_old = t
@@ -119,15 +76,12 @@ class FistaClassifier(BaseClassifier):
 
             # Gradient
             G.fill(0.0)
-            if self.multiclass:
-                loss.gradient(df, ds, y, G)
-            else:
-                loss.gradient(df, ds, Y, G)
+            loss.gradient(df, ds, y, G)
             G *= self.C
 
             # Line search
             if self.max_steps > 0:
-                objb = self._get_objective(df, y, Y, loss)
+                objb = self._get_objective(df, y, loss)
 
             for tt in xrange(self.max_steps):
                 # Solve
@@ -135,7 +89,7 @@ class FistaClassifier(BaseClassifier):
                 coefx = penalty.projection(coefx, self.alpha, L)
 
                 dfx = safe_sparse_dot(X, coefx.T)
-                obj = self._get_regularized_objective(dfx, y, Y, loss, penalty,
+                obj = self._get_regularized_objective(dfx, y, loss, penalty,
                                                       coefx)
                 approx = self._get_quad_approx(coefx, coef, objb, G, L, penalty)
 
@@ -165,3 +119,76 @@ class FistaClassifier(BaseClassifier):
                     break
 
         return self
+
+
+class FistaClassifier(BaseClassifier, _BaseFista):
+    """Estimator for learning linear classifiers by FISTA.
+    """
+
+    def __init__(self, C=1.0, alpha=1.0, loss="squared_hinge", penalty="l1",
+                 multiclass=False, max_iter=100, max_steps=30, eta=2.0,
+                 sigma=1e-5, callback=None, verbose=0):
+        self.C = C
+        self.alpha = alpha
+        self.loss = loss
+        self.penalty = penalty
+        self.multiclass = multiclass
+        self.max_iter = max_iter
+        self.max_steps = max_steps
+        self.eta = eta
+        self.sigma = 1e-5
+        self.callback = callback
+        self.verbose = verbose
+
+    def _get_loss(self):
+        if self.multiclass:
+            losses = {
+                "squared_hinge": MulticlassSquaredHinge(),
+                "log": MulticlassLog(),
+                "log_margin": MulticlassLog(margin=1),
+            }
+        else:
+            losses = {
+                "squared_hinge": SquaredHinge(),
+            }
+
+        return losses[self.loss]
+
+    def fit(self, X, y):
+        y, _, n_vectors = self._set_label_transformers(y, reencode=True)
+
+        if not self.multiclass:
+            y = np.asfortranarray(self.label_binarizer_.transform(y),
+                                  dtype=np.float64)
+            n_vectors = y.shape[1]
+
+        return self._fit(X, y, n_vectors)
+
+
+class FistaRegressor(BaseRegressor, _BaseFista):
+    """Estimator for learning linear classifiers by FISTA.
+    """
+
+    def __init__(self, C=1.0, alpha=1.0, penalty="l1", multiclass=False,
+                 max_iter=100, max_steps=30, eta=2.0, sigma=1e-5, callback=None,
+                 verbose=0):
+        self.C = C
+        self.alpha = alpha
+        self.penalty = penalty
+        self.multiclass = multiclass
+        self.max_iter = max_iter
+        self.max_steps = max_steps
+        self.eta = eta
+        self.sigma = 1e-5
+        self.callback = callback
+        self.verbose = verbose
+
+    def _get_loss(self):
+        return Squared()
+
+    def fit(self, X, y):
+        self.outputs_2d_ = len(y.shape) > 1
+        Y = y.reshape(-1, 1) if not self.outputs_2d_ else y
+        Y = np.asfortranarray(Y.astype(np.float64))
+        n_vectors = Y.shape[1]
+        return self._fit(X, Y, n_vectors)

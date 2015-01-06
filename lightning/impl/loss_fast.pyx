@@ -41,6 +41,54 @@ cdef double _l2_norm_sums(RowDataset X, int squared):
         return G
 
 
+cdef class Squared:
+
+    cpdef gradient(self,
+                   np.ndarray[double, ndim=2] df,
+                   RowDataset X,
+                   np.ndarray[double, ndim=2, mode='fortran'] y,
+                   np.ndarray[double, ndim=2, mode='c'] G):
+
+        cdef double* data
+        cdef int* indices
+        cdef int n_nz
+
+        cdef int n_samples = df.shape[0]
+        cdef int n_vectors = df.shape[1]
+        cdef int i, k, j, jj
+        cdef double residual
+
+        for i in xrange(n_samples):
+            for k in xrange(n_vectors):
+                residual = y[i, k] - df[i, k]
+                X.get_row_ptr(i, &indices, &data, &n_nz)
+                for jj in xrange(n_nz):
+                    j = indices[jj]
+                    G[k, j] -= residual * data[jj]
+
+    cpdef objective(self,
+                    np.ndarray[double, ndim=2] df,
+                    np.ndarray[double, ndim=2, mode='fortran'] y):
+
+        cdef int n_samples = df.shape[0]
+        cdef int n_vectors = df.shape[1]
+
+        cdef int i, k
+        cdef double obj, residual
+
+        obj = 0
+
+        for i in xrange(n_samples):
+            for k in xrange(n_vectors):
+                residual = y[i, k] - df[i, k]
+                obj += residual * residual
+
+        return 0.5 * obj
+
+    cpdef double lipschitz_constant(self, RowDataset X, int n_vectors):
+        return 1.0  # TODO: return maximum eigen value of X^T X
+
+
 cdef class SquaredHinge:
 
     cpdef gradient(self,

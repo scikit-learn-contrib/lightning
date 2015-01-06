@@ -31,7 +31,7 @@ Dual coordinate ascent
 FISTA
 -----
 
-:class:`FistaClassifier`
+:class:`FistaClassifier`, :class:`FistaRegressor`
 
 - Main idea: accelerated proximal gradient method (uses full gradients)
 - Non-smooth losses: No

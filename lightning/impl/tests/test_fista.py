@@ -1,3 +1,4 @@
+import numpy as np
 import scipy.sparse as sp
 
 from sklearn.utils.testing import assert_almost_equal
@@ -5,11 +6,13 @@ from sklearn.utils.testing import assert_almost_equal
 from sklearn.datasets import load_digits
 
 from lightning.impl.datasets.samples_generator import make_classification
-from lightning.impl.fista import FistaClassifier
+from lightning.classification import FistaClassifier
+from lightning.regression import FistaRegressor
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
                                             n_classes=2, random_state=0)
+bin_target = bin_target * 2 - 1
 
 mult_dense, mult_target = make_classification(n_samples=300, n_features=100,
                                               n_informative=5,
@@ -83,3 +86,10 @@ def test_fista_multiclass_trace():
         clf = FistaClassifier(max_iter=100, penalty="trace", multiclass=True)
         clf.fit(data, mult_target)
         assert_almost_equal(clf.score(data, mult_target), 0.98, 2)
+
+
+def test_fista_regression():
+    reg = FistaRegressor(max_iter=100, verbose=0)
+    reg.fit(bin_dense, bin_target)
+    y_pred = np.sign(reg.predict(bin_dense))
+    assert_almost_equal(np.mean(bin_target == y_pred), 0.985)
