@@ -2,7 +2,6 @@ import numpy as np
 import scipy.sparse as sp
 
 from sklearn.metrics.pairwise import linear_kernel
-from sklearn.metrics import roc_auc_score
 from sklearn.datasets.samples_generator import make_regression
 
 from sklearn.utils.testing import assert_equal
