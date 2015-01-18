@@ -1,7 +1,6 @@
 from .impl.adagrad import AdaGradClassifier
 from .impl.primal_cd import CDClassifier
 from .impl.fista import FistaClassifier
-from .impl.sparsa import SparsaClassifier
 from .impl.sag import SAGClassifier
 from .impl.sdca import SDCAClassifier
 from .impl.sgd import SGDClassifier

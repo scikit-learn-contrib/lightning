@@ -5,7 +5,6 @@ import pickle
 
 from lightning.classification import CDClassifier
 from lightning.classification import FistaClassifier
-from lightning.classification import SparsaClassifier
 from lightning.classification import SGDClassifier
 
 
@@ -18,7 +17,7 @@ parser = OptionParser("lightning_train [options] train_file model_file")
 
 parser.add_option("", "--solver",
                   action="store", type="str", dest="solver", default="bcd-ls",
-                  help="Solver to use (bcd-ls, bcd-cst, fista, sparsa, sgd). "
+                  help="Solver to use (bcd-ls, bcd-cst, fista, sgd). "
                   "Default: bcd-ls.")
 
 parser.add_option("", "--loss",
@@ -85,13 +84,6 @@ elif opts.solver == "fista":
                           max_iter=opts.max_iter,
                           alpha=opts.alpha,
                           C=1.0 / X.shape[0])
-elif opts.solver == "sparsa":
-    clf = SparsaClassifier(penalty=opts.penalty,
-                           loss=opts.loss,
-                           multiclass=multiclass,
-                           max_iter=opts.max_iter,
-                           alpha=opts.alpha,
-                           C=1.0 / X.shape[0])
 elif opts.solver == "sgd":
     clf = SGDClassifier(penalty=opts.penalty,
                         loss=opts.loss,

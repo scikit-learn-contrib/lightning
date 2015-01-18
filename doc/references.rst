@@ -27,7 +27,6 @@ This module contains algorithms for solving classification problems.
     classification.SAGClassifier
     classification.SGDClassifier
     classification.SVRGClassifier
-    classification.SparsaClassifier
 
 .. _regression:
 
