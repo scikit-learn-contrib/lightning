@@ -49,7 +49,6 @@ This module contains algorithms for solving regression problems.
     regression.AdaGradRegressor
     regression.CDRegressor
     regression.FistaRegressor
-    regression.KernelRidge
     regression.LinearSVR
     regression.SAGRegressor
     regression.SDCARegressor

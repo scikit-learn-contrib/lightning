@@ -6,4 +6,3 @@ from .impl.sag import SAGRegressor
 from .impl.sdca import SDCARegressor
 from .impl.sgd import SGDRegressor
 from .impl.svrg import SVRGRegressor
-from .impl.kernel_ridge import KernelRidge
