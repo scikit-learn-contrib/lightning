@@ -2,7 +2,11 @@ Introduction
 =============
 
 lightning is composed of three modules: classification, regression and ranking.
-Several solvers are available from these modules.
+Several solvers are available from each.
+
+If you're not sure what solver to use, just go for :class:`CDClassifier` /
+:class:`CDRegressor` or :class:`SDCAClassifier` / :class:`SDCARegressor`. They
+are very fast and do not require any tedious tuning of a learning rate.
 
 Primal coordinate descent
 -------------------------
