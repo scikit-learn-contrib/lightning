@@ -6,7 +6,7 @@ from lightning.classification import SDCAClassifier
 
 if len(sys.argv) == 1:
     print """
-    Please enter the path to amazon7_uncompressed_pkl/ folder.
+    Please enter the path to amazon7_uncompressed_pkl/amazon7.pkl
 
     Download data from
     http://www.mblondel.org/data/amazon7_uncompressed_pkl.tar.bz2
