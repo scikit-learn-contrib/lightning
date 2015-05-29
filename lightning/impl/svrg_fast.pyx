@@ -147,7 +147,8 @@ def _svrg_fit(self,
             # A gradient is given by scale * X[i].
             scale = -loss.get_update(y_pred, y[i])
 
-            w_scale[0] *= (1 - eta_alpha)
+            # Apply the l_2 regularization proximal operator (not tested at all!)
+            w_scale[0] /= 1 + eta_alpha
 
             # Add deterministic part.
             #for j in xrange(n_features):
