@@ -19,6 +19,12 @@ from .sgd_fast import SquaredLoss
 from .sgd_fast import EpsilonInsensitive
 from .sgd_fast import Huber
 
+# fix for missing xrange in Python3
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 class _BaseAdagrad(object):
 

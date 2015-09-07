@@ -8,6 +8,11 @@ from sklearn.cross_validation import ShuffleSplit
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import Normalizer
 
+# fix for missing xrange in Python3
+try:
+    xrange
+except NameError:
+    xrange = range
 
 def _make_nn_regression(n_samples=100, n_features=100, n_informative=10,
                         shuffle=True, random_state=None):

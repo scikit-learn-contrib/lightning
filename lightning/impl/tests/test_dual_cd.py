@@ -28,6 +28,12 @@ mult_sparse = sp.csr_matrix(mult_dense)
 reg_dense, reg_target = make_regression(n_samples=200, n_features=100,
                                         n_informative=5, random_state=0)
 
+# fix for missing xrange in Python3
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 def test_sparse_dot():
     for data in (bin_dense, bin_csr):

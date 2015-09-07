@@ -21,6 +21,12 @@ from sklearn.metrics.pairwise import pairwise_kernels
 
 from .base import BaseClassifier
 
+# fix for missing xrange in Python3
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 class KernelSVC(BaseClassifier):
     """Estimator for learning kernel SVMs by Newton's method.

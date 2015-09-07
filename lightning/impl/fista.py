@@ -18,6 +18,12 @@ from .penalty import L1Penalty
 from .penalty import L1L2Penalty
 from .penalty import TracePenalty
 
+# fix for missing xrange in Python3
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 class _BaseFista(object):
 

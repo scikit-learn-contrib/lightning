@@ -32,6 +32,13 @@ fds = FortranDataset(np.asfortranarray(X))
 csr_ds = CSRDataset(X_csr)
 csc_ds = CSCDataset(X_csc)
 
+# fix for missing xrange in Python3
+try:
+    xrange
+except NameError:
+    xrange = range
+
+
 def test_contiguous_get_row():
     ind = np.arange(X.shape[1])
     for i in xrange(X.shape[0]):

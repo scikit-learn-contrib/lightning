@@ -21,6 +21,12 @@ from .dual_cd_fast import _dual_cd
 from .dual_cd_fast import _dual_cd_auc
 from .dual_cd_fast import _dual_cd_svr
 
+# fix for missing xrange in Python3
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 class LinearSVC(BaseClassifier):
     """Estimator for learning linear support vector machine by coordinate

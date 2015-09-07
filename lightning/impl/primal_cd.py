@@ -26,6 +26,12 @@ from .primal_cd_fast import SquaredHinge
 from .primal_cd_fast import ModifiedHuber
 from .primal_cd_fast import Log
 
+# fix for missing xrange in Python3
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 class _BaseCD(object):
 

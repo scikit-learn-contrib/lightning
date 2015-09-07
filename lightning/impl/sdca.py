@@ -10,6 +10,12 @@ from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
 from .sdca_fast import _prox_sdca_fit
 
+# fix for missing xrange in Python3
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 class _BaseSDCA(object):
 

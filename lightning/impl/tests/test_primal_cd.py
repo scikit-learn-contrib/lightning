@@ -26,6 +26,12 @@ mult_csc = sp.csc_matrix(mult_dense)
 
 digit = load_digits(2)
 
+# fix for missing xrange in Python3
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 def test_fit_linear_binary_l1r():
     clf = CDClassifier(C=1.0, random_state=0, penalty="l1")

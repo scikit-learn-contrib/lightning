@@ -37,6 +37,12 @@ from .sgd_fast import MulticlassLog
 from .sgd_fast import MulticlassHinge
 from .sgd_fast import MulticlassSquaredHinge
 
+# fix for missing xrange in Python3
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 class _BaseSGD(object):
 
