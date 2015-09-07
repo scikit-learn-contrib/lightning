@@ -112,7 +112,7 @@ class KernelSVC(BaseClassifier):
 
         for t in xrange(1, self.max_iter + 1):
             if self.verbose:
-                print "Iteration", t, "#SV=", np.sum(sv)
+                print("Iteration", t, "#SV=", np.sum(sv))
 
             K_sv = K[sv][:, sv]
             I = np.diag(self.alpha * np.ones(K_sv.shape[0]))
@@ -128,7 +128,7 @@ class KernelSVC(BaseClassifier):
 
             if np.array_equal(last_sv, sv):
                 if self.verbose:
-                    print "Converged at iteration", t
+                    print("Converged at iteration", t)
                 break
 
         return coef
@@ -146,7 +146,7 @@ class KernelSVC(BaseClassifier):
                 self.n_samples_ = X.shape[0]
 
             if self.verbose >= 1:
-                print "Number of support vectors:", np.sum(sv)
+                print("Number of support vectors:", np.sum(sv))
 
     def fit(self, X, y):
         """Fit model according to X and y.
@@ -174,7 +174,7 @@ class KernelSVC(BaseClassifier):
         n_vectors = Y.shape[1]
 
         if self.verbose:
-            print "Pre-computing kernel matrix..."
+            print("Pre-computing kernel matrix...")
 
         K = pairwise_kernels(X, filter_params=True, n_jobs=self.n_jobs,
                              metric=self.kernel, **self._kernel_params())

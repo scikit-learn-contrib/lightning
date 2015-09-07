@@ -15,6 +15,12 @@ from .sgd_fast import SquaredHinge
 from .sgd_fast import Log
 from .sgd_fast import SquaredLoss
 
+# fix for missing xrange in Python3
+try:
+    xrange
+except NameError:
+    xrange = range
+
 
 class _BaseSAG(object):
 
