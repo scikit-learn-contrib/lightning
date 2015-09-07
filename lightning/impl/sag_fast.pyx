@@ -81,6 +81,8 @@ def _sag_fit(self,
     cdef np.ndarray[int, ndim=1]last = np.zeros(n_features, dtype=np.int32)
     cdef np.ndarray[double, ndim=1] g_sum_
     g_sum_ = np.zeros(n_features, dtype=np.float64)
+    cdef np.ndarray[double, ndim=1] scale_cumm
+    scale_cumm = np.zeros(n_inner, dtype=np.float64)
     cdef double* g_sum = <double*>g_sum_.data
     cdef double* w = <double*>coef.data
     cdef double* w_scale = <double*>coef_scale.data
@@ -112,9 +114,11 @@ def _sag_fit(self,
 
             # Update coefficients, just in time.
             if t > 0:
+                scale_cumm[t] = scale_cumm[t-1] + (1./w_scale[0])
                 for jj in xrange(n_nz):
                     j = indices[jj]
-                    w[j] -= eta_avg / w_scale[0] * (t - last[j]) * g_sum[j]
+                    tmp = scale_cumm[t] - scale_cumm[last[j]]
+                    w[j] -= eta_avg * tmp * g_sum[j]
                     last[j] = t
 
             # Make prediction.
