@@ -4,6 +4,7 @@
 import numpy as np
 
 from sklearn.utils.extmath import safe_sparse_dot
+from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 
@@ -17,12 +18,6 @@ from .loss_fast import MulticlassLog
 from .penalty import L1Penalty
 from .penalty import L1L2Penalty
 from .penalty import TracePenalty
-
-# fix for missing xrange in Python3
-try:
-    xrange
-except NameError:
-    xrange = range
 
 
 class _BaseFista(object):

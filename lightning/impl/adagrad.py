@@ -5,6 +5,7 @@ import numpy as np
 
 from sklearn.utils import check_random_state
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
@@ -18,12 +19,6 @@ from .sgd_fast import Log
 from .sgd_fast import SquaredLoss
 from .sgd_fast import EpsilonInsensitive
 from .sgd_fast import Huber
-
-# fix for missing xrange in Python3
-try:
-    xrange
-except NameError:
-    xrange = range
 
 
 class _BaseAdagrad(object):

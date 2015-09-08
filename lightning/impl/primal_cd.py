@@ -13,6 +13,7 @@ functions and penalties.
 import numpy as np
 
 from sklearn.externals.joblib import Parallel, delayed
+from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier
 from .base import BaseRegressor
@@ -25,12 +26,6 @@ from .primal_cd_fast import SmoothHinge
 from .primal_cd_fast import SquaredHinge
 from .primal_cd_fast import ModifiedHuber
 from .primal_cd_fast import Log
-
-# fix for missing xrange in Python3
-try:
-    xrange
-except NameError:
-    xrange = range
 
 
 class _BaseCD(object):
@@ -498,7 +493,7 @@ class CDRegressor(_BaseCD, BaseRegressor):
             self.coef_ = np.asarray(self.coef_)
             self.error_ = np.asarray(self.error_)
 
-            if self.warm_start and not k in self.violation_init_:
-                self.violation_init_[k] = viol
+            if self.warm_start and not n_vectors in self.violation_init_:
+                self.violation_init_[n_vectors] = viol
 
         return self

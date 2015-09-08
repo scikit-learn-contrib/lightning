@@ -4,6 +4,7 @@
 import numpy as np
 
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
@@ -14,12 +15,6 @@ from .sgd_fast import SmoothHinge
 from .sgd_fast import SquaredHinge
 from .sgd_fast import Log
 from .sgd_fast import SquaredLoss
-
-# fix for missing xrange in Python3
-try:
-    xrange
-except NameError:
-    xrange = range
 
 
 class _BaseSVRG(object):

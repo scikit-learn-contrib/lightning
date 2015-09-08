@@ -16,6 +16,7 @@ import numpy as np
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import assert_all_finite
+from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier
 from .base import BaseRegressor
@@ -36,12 +37,6 @@ from .sgd_fast import EpsilonInsensitive
 from .sgd_fast import MulticlassLog
 from .sgd_fast import MulticlassHinge
 from .sgd_fast import MulticlassSquaredHinge
-
-# fix for missing xrange in Python3
-try:
-    xrange
-except NameError:
-    xrange = range
 
 
 class _BaseSGD(object):

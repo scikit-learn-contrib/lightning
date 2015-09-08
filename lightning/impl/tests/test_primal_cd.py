@@ -11,6 +11,7 @@ from sklearn.utils.testing import assert_raises
 from sklearn.datasets import load_digits
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.externals.six.moves import xrange
 
 from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.primal_cd import CDClassifier, CDRegressor
@@ -25,12 +26,6 @@ mult_dense, mult_target = make_classification(n_samples=300, n_features=100,
 mult_csc = sp.csc_matrix(mult_dense)
 
 digit = load_digits(2)
-
-# fix for missing xrange in Python3
-try:
-    xrange
-except NameError:
-    xrange = range
 
 
 def test_fit_linear_binary_l1r():

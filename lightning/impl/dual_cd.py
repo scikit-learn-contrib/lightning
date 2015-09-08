@@ -14,18 +14,13 @@ import numpy as np
 
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import add_dummy_feature
+from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
 from .dual_cd_fast import _dual_cd
 from .dual_cd_fast import _dual_cd_auc
 from .dual_cd_fast import _dual_cd_svr
-
-# fix for missing xrange in Python3
-try:
-    xrange
-except NameError:
-    xrange = range
 
 
 class LinearSVC(BaseClassifier):
