@@ -4,6 +4,7 @@
 import numpy as np
 
 from sklearn.utils.extmath import safe_sparse_dot
+from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 
@@ -68,7 +69,7 @@ class _BaseFista(object):
         t = 1.0
         for it in xrange(self.max_iter):
             if self.verbose >= 1:
-                print "Iter", it + 1, obj
+                print("Iter", it + 1, obj)
 
             # Save current values
             t_old = t
@@ -98,7 +99,7 @@ class _BaseFista(object):
                 # Sufficient decrease condition
                 if accepted:
                     if self.verbose >= 2:
-                        print "Accepted at", tt + 1
+                        print("Accepted at", tt + 1)
                     break
                 else:
                     L *= self.eta

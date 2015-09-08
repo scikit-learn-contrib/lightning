@@ -3,6 +3,7 @@ import scipy.sparse as sp
 
 from sklearn.metrics.pairwise import linear_kernel
 from sklearn.datasets.samples_generator import make_regression
+from sklearn.externals.six.moves import xrange
 
 from sklearn.utils.testing import assert_equal
 from sklearn.utils.testing import assert_almost_equal

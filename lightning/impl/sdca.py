@@ -5,6 +5,7 @@ import numpy as np
 
 from sklearn.utils import check_random_state
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset

@@ -11,6 +11,7 @@ from sklearn.utils.testing import assert_raises
 from sklearn.datasets import load_digits
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.externals.six.moves import xrange
 
 from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.primal_cd import CDClassifier, CDRegressor

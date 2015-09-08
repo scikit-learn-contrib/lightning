@@ -14,6 +14,7 @@ import numpy as np
 
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import add_dummy_feature
+from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
