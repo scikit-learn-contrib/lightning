@@ -4,7 +4,7 @@ from scipy import sparse
 from sklearn.datasets import load_iris
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.testing import assert_true
-from sklearn.utils.testing import assert_equal
+from sklearn.utils.testing import assert_equal, assert_array_equal
 
 from lightning.classification import SAGClassifier
 from lightning.regression import SAGRegressor
@@ -55,8 +55,9 @@ def test_sag_sparse():
     # FIX for https://github.com/mblondel/lightning/issues/33
     # check that SAG has the same results with dense
     # and sparse data
-    X = sparse.rand(100, 50)
-    y = np.random.randint(0, high=1, size=100)
-    clf_sparse = SAGClassifier(max_iter=1).fit(X, y)
-    clf_dense = SAGClassifier().fit(X.toarray(), y)
-    assert_equal(clf_sparse.coef_, clf_dense.coef_)
+    X = sparse.rand(100, 50, density=.8)
+    y = np.random.randint(0, high=2, size=100)
+    clf_sparse = SAGClassifier(loss="squared_hinge", max_iter=1, random_state=0).fit(X, y)
+    clf_dense = SAGClassifier(loss="squared_hinge", max_iter=1, random_state=0).fit(
+        X.toarray(), y)
+    assert_array_equal(clf_sparse.coef_, clf_dense.coef_)
