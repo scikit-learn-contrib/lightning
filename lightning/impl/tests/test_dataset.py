@@ -5,6 +5,7 @@ import scipy.sparse as sp
 from sklearn.utils.testing import assert_array_equal
 from sklearn.utils.testing import assert_array_almost_equal
 from sklearn.utils.testing import assert_equal
+from sklearn.externals.six.moves import xrange
 
 from sklearn.datasets.samples_generator import make_classification
 from sklearn.utils import check_random_state
@@ -31,6 +32,7 @@ cds = ContiguousDataset(X)
 fds = FortranDataset(np.asfortranarray(X))
 csr_ds = CSRDataset(X_csr)
 csc_ds = CSCDataset(X_csc)
+
 
 def test_contiguous_get_row():
     ind = np.arange(X.shape[1])
