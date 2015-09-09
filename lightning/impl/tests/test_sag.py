@@ -39,8 +39,9 @@ def test_sag_callback():
             self.obj.append(loss + regul)
 
     cb = Callback(X_bin, y_bin)
-    clf = SAGClassifier(loss="squared_hinge", eta=1e-3, max_iter=20,
-                         random_state=0, callback=cb)
+    clf = SAGClassifier(
+        loss="squared_hinge", eta=1e-3, max_iter=20,
+        random_state=0, callback=cb)
     clf.fit(X_bin, y_bin)
     assert_true(np.all(np.diff(cb.obj) <= 0))
 
@@ -50,6 +51,7 @@ def test_sag_regression():
     reg.fit(X_bin, y_bin)
     y_pred = np.sign(reg.predict(X_bin))
     assert_equal(np.mean(y_bin == y_pred), 1.0)
+
 
 def test_sag_sparse():
     # FIX for https://github.com/mblondel/lightning/issues/33

@@ -82,7 +82,7 @@ def _sag_fit(self,
     cdef np.ndarray[double, ndim=1] g_sum_
     g_sum_ = np.zeros(n_features, dtype=np.float64)
     cdef np.ndarray[double, ndim=1] scale_cumm
-    scale_cumm = np.zeros(n_inner, dtype=np.float64)
+    scale_cumm = np.zeros(n_inner+1, dtype=np.float64)
     cdef double* g_sum = <double*>g_sum_.data
     cdef double* w = <double*>coef.data
     cdef double* w_scale = <double*>coef_scale.data
@@ -139,12 +139,19 @@ def _sag_fit(self,
             # Take care of possible underflows.
             if w_scale[0] < 1e-9:
                 for j in xrange(n_features):
+                    if last[j] != t:
+                        # need to update the coefficient
+                        tmp = scale_cumm[t] - scale_cumm[last[j]]
+                        w[j] -= eta_avg * tmp * g_sum[j]
+                        last[j] = t
                     w[j] *= w_scale[0]
                 w_scale[0] = 1.0
 
         # Finalize.
+        scale_cumm[n_inner] = scale_cumm[n_inner-1] + (1./w_scale[0])
         for j in xrange(n_features):
-            w[j] -= eta_avg / w_scale[0] * (n_inner - last[j]) * g_sum[j]
+            tmp = scale_cumm[n_inner] - scale_cumm[last[j]]
+            w[j] -= eta_avg * tmp * g_sum[j]
             last[j] = 0
 
         # Callback.
