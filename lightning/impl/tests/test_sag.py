@@ -47,7 +47,7 @@ def test_sag_callback():
 
 
 def test_sag_regression():
-    reg = SAGRegressor()
+    reg = SAGRegressor(random_state=0)
     reg.fit(X_bin, y_bin)
     y_pred = np.sign(reg.predict(X_bin))
     assert_equal(np.mean(y_bin == y_pred), 1.0)
