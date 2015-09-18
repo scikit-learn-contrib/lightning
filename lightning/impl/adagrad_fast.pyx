@@ -53,14 +53,14 @@ cdef double _proj_elastic(double eta,
         return 0
 
 
-cpdef double _proj_elastic_all(double eta,
-                               LONG t,
-                               np.ndarray[double, ndim=1] g_sum,
-                               np.ndarray[double, ndim=1] g_norms,
-                               double alpha1,
-                               double alpha2,
-                               double delta,
-                               np.ndarray[double, ndim=1] w):
+cpdef _proj_elastic_all(double eta,
+                        LONG t,
+                        np.ndarray[double, ndim=1] g_sum,
+                        np.ndarray[double, ndim=1] g_norms,
+                        double alpha1,
+                        double alpha2,
+                        double delta,
+                        np.ndarray[double, ndim=1] w):
     cdef int n_features = w.shape[0]
     cdef int j
     for j in xrange(n_features):
