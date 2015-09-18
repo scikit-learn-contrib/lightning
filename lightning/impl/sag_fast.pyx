@@ -12,6 +12,7 @@ cimport numpy as np
 ctypedef np.int64_t LONG
 
 from libc.math cimport sqrt
+from libc.float cimport DBL_EPSILON
 
 from lightning.impl.randomkit.random_fast cimport RandomState
 from lightning.impl.dataset_fast cimport RowDataset
@@ -170,7 +171,11 @@ def _sag_fit(self,
 
         # Convergence monitoring.
         if it == 0:
-            violation_init = violation
+            if violation != 0:
+                violation_init = violation
+            else:
+                # assign something small non-zero
+                violation_init = DBL_EPSILON
 
         violation_ratio = violation / violation_init
 
