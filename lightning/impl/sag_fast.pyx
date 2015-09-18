@@ -3,7 +3,8 @@
 # cython: boundscheck=False
 # cython: wraparound=False
 #
-# Author: Mathieu Blondel
+# Authors: Mathieu Blondel
+#          Fabian Pedregosa
 # License: BSD
 
 import numpy as np
