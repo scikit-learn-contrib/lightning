@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import sparse
 
 from sklearn.datasets import load_iris
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -38,14 +39,29 @@ def test_sag_callback():
             self.obj.append(loss + regul)
 
     cb = Callback(X_bin, y_bin)
-    clf = SAGClassifier(loss="squared_hinge", eta=1e-3, max_iter=20,
-                         random_state=0, callback=cb)
+    clf = SAGClassifier(
+        loss="squared_hinge", eta=1e-3, max_iter=20,
+        random_state=0, callback=cb)
     clf.fit(X_bin, y_bin)
     assert_true(np.all(np.diff(cb.obj) <= 0))
 
 
 def test_sag_regression():
-    reg = SAGRegressor()
+    reg = SAGRegressor(random_state=0)
     reg.fit(X_bin, y_bin)
     y_pred = np.sign(reg.predict(X_bin))
     assert_equal(np.mean(y_bin == y_pred), 1.0)
+
+
+def test_sag_sparse():
+    # FIX for https://github.com/mblondel/lightning/issues/33
+    # check that SAG has the same results with dense
+    # and sparse data
+    X = sparse.rand(100, 50, density=.5, random_state=0)
+    y = np.random.randint(0, high=2, size=100)
+    for alpha in np.logspace(-3, 3, 10):
+        clf_sparse = SAGClassifier(max_iter=1, random_state=0, alpha=alpha)
+        clf_sparse.fit(X, y)
+        clf_dense = SAGClassifier(max_iter=1, random_state=0, alpha=alpha)
+        clf_dense.fit(X.toarray(), y)
+        assert_equal(clf_sparse.score(X, y), clf_dense.score(X, y))

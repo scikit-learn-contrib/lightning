@@ -12,6 +12,7 @@ cimport numpy as np
 ctypedef np.int64_t LONG
 
 from libc.math cimport sqrt
+from libc.float cimport DBL_EPSILON
 
 from lightning.impl.randomkit.random_fast cimport RandomState
 from lightning.impl.dataset_fast cimport RowDataset
@@ -81,6 +82,8 @@ def _sag_fit(self,
     cdef np.ndarray[int, ndim=1]last = np.zeros(n_features, dtype=np.int32)
     cdef np.ndarray[double, ndim=1] g_sum_
     g_sum_ = np.zeros(n_features, dtype=np.float64)
+    cdef np.ndarray[double, ndim=1] scale_cumm
+    scale_cumm = np.zeros(n_inner+1, dtype=np.float64)
     cdef double* g_sum = <double*>g_sum_.data
     cdef double* w = <double*>coef.data
     cdef double* w_scale = <double*>coef_scale.data
@@ -112,9 +115,11 @@ def _sag_fit(self,
 
             # Update coefficients, just in time.
             if t > 0:
+                scale_cumm[t] = scale_cumm[t-1] + (1./w_scale[0])
                 for jj in xrange(n_nz):
                     j = indices[jj]
-                    w[j] -= eta_avg / w_scale[0] * (t - last[j]) * g_sum[j]
+                    tmp = scale_cumm[t] - scale_cumm[last[j]]
+                    w[j] -= eta_avg * tmp * g_sum[j]
                     last[j] = t
 
             # Make prediction.
@@ -135,12 +140,19 @@ def _sag_fit(self,
             # Take care of possible underflows.
             if w_scale[0] < 1e-9:
                 for j in xrange(n_features):
+                    if last[j] != t:
+                        # need to update the coefficient
+                        tmp = scale_cumm[t] - scale_cumm[last[j]]
+                        w[j] -= eta_avg * tmp * g_sum[j]
+                        last[j] = t
                     w[j] *= w_scale[0]
                 w_scale[0] = 1.0
 
         # Finalize.
+        scale_cumm[n_inner] = scale_cumm[n_inner-1] + (1./w_scale[0])
         for j in xrange(n_features):
-            w[j] -= eta_avg / w_scale[0] * (n_inner - last[j]) * g_sum[j]
+            tmp = scale_cumm[n_inner] - scale_cumm[last[j]]
+            w[j] -= eta_avg * tmp * g_sum[j]
             last[j] = 0
 
         # Callback.
@@ -159,7 +171,11 @@ def _sag_fit(self,
 
         # Convergence monitoring.
         if it == 0:
-            violation_init = violation
+            if violation != 0:
+                violation_init = violation
+            else:
+                # assign something small non-zero
+                violation_init = DBL_EPSILON
 
         violation_ratio = violation / violation_init
 
