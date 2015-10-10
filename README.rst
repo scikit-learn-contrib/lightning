@@ -17,7 +17,7 @@ Solvers supported:
 - primal coordinate descent
 - dual coordinate descent (SDCA, Prox-SDCA)
 - SGD, AdaGrad, SAG, SVRG
-- FISTA, SpaRSA
+- FISTA
 
 Example
 -------
