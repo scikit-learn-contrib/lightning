@@ -40,7 +40,7 @@ class _BaseSAG(object):
 
             _sag_fit(self, ds, y, self.coef_[i], self.coef_scale_[i:], grad[i],
                      self.eta, self.alpha, loss, self.max_iter, n_inner,
-                     self.tol, self.verbose, self.callback, rng)
+                     self.tol, self.verbose, self.callback, rng, self.is_saga)
 
         return self
 
@@ -68,6 +68,7 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
         self.verbose = verbose
         self.callback = callback
         self.random_state = random_state
+        self.is_saga = False
 
     def _get_loss(self):
         losses = {
@@ -84,6 +85,27 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
         Y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
                               dtype=np.float64)
         return self._fit(X, Y)
+
+
+class SAGAClassifier(SAGClassifier):
+    """
+    Estimator for learning linear classifiers by SAGA.
+
+    Solves the following objective:
+
+        minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
+                    + alpha * 0.5 * ||w||^2_2
+
+    """
+
+    def __init__(self, eta=1.0, alpha=1.0, loss="smooth_hinge", gamma=1.0,
+                 max_iter=10, n_inner=1.0, tol=1e-3, verbose=0,
+                 callback=None, random_state=None):
+            super(SAGAClassifier, self).__init__(
+                eta=eta, alpha=alpha, loss=loss, gamma=gamma,
+                max_iter=max_iter, n_inner=n_inner, tol=tol, verbose=verbose,
+                callback=callback, random_state=random_state)
+            self.is_saga = True
 
 
 class SAGRegressor(BaseRegressor, _BaseSAG):
@@ -109,6 +131,7 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
         self.verbose = verbose
         self.callback = callback
         self.random_state = random_state
+        self.is_saga = False
 
     def _get_loss(self):
         losses = {
@@ -125,3 +148,23 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
         Y = y.reshape(-1, 1) if not self.outputs_2d_ else y
         Y = Y.astype(np.float64)
         return self._fit(X, Y)
+
+
+class SAGARegressor(SAGRegressor):
+    """
+    Estimator for learning linear regressors by SAG.
+
+    Solves the following objective:
+
+        minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
+                    + alpha * 0.5 * ||w||^2_2
+    """
+
+    def __init__(self, eta=1.0, alpha=1.0, loss="smooth_hinge", gamma=1.0,
+                 max_iter=10, n_inner=1.0, tol=1e-3, verbose=0,
+                 callback=None, random_state=None):
+            super(SAGARegressor, self).__init__(
+                eta=eta, alpha=alpha, loss=loss, gamma=gamma,
+                max_iter=max_iter, n_inner=n_inner, tol=tol, verbose=verbose,
+                callback=callback, random_state=random_state)
+            self.is_saga = True

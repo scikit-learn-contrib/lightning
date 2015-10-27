@@ -6,8 +6,8 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.testing import assert_true
 from sklearn.utils.testing import assert_equal
 
-from lightning.classification import SAGClassifier
-from lightning.regression import SAGRegressor
+from lightning.classification import SAGClassifier, SAGAClassifier
+from lightning.regression import SAGRegressor, SAGARegressor
 
 iris = load_iris()
 X, y = iris.data, iris.target
@@ -17,9 +17,12 @@ y_bin = y[y <= 1] * 2 - 1
 
 
 def test_sag():
-    clf = SAGClassifier(eta=1e-3, max_iter=20, verbose=0, random_state=0)
-    clf.fit(X_bin, y_bin)
-    assert_equal(clf.score(X_bin, y_bin), 1.0)
+    for clf in (
+        SAGClassifier(eta=1e-3, max_iter=20, verbose=0, random_state=0),
+        SAGAClassifier(eta=1e-3, max_iter=20, verbose=0, random_state=0)
+            ):
+        clf.fit(X_bin, y_bin)
+        assert_equal(clf.score(X_bin, y_bin), 1.0)
 
 
 def test_sag_callback():
@@ -39,18 +42,26 @@ def test_sag_callback():
             self.obj.append(loss + regul)
 
     cb = Callback(X_bin, y_bin)
-    clf = SAGClassifier(
-        loss="squared_hinge", eta=1e-3, max_iter=20,
-        random_state=0, callback=cb)
-    clf.fit(X_bin, y_bin)
-    assert_true(np.all(np.diff(cb.obj) <= 0))
+    for clf in (
+        SAGClassifier(loss="squared_hinge", eta=1e-3, max_iter=20,
+                      random_state=0, callback=cb),
+        SAGAClassifier(loss="squared_hinge", eta=1e-3, max_iter=20,
+                       random_state=0, callback=cb)
+            ):
+        clf.fit(X_bin, y_bin)
+        # its not a descent method, just check that most of
+        # updates are decreasing the objective function
+        assert_true(np.mean(np.diff(cb.obj) <= 0) > 0.9)
 
 
 def test_sag_regression():
-    reg = SAGRegressor(random_state=0)
-    reg.fit(X_bin, y_bin)
-    y_pred = np.sign(reg.predict(X_bin))
-    assert_equal(np.mean(y_bin == y_pred), 1.0)
+    for reg in (
+        SAGRegressor(random_state=0),
+        SAGARegressor(random_state=0, eta=.1)
+            ):
+        reg.fit(X_bin, y_bin)
+        y_pred = np.sign(reg.predict(X_bin))
+        assert_equal(np.mean(y_bin == y_pred), 1.0)
 
 
 def test_sag_sparse():
@@ -63,5 +74,11 @@ def test_sag_sparse():
         clf_sparse = SAGClassifier(max_iter=1, random_state=0, alpha=alpha)
         clf_sparse.fit(X, y)
         clf_dense = SAGClassifier(max_iter=1, random_state=0, alpha=alpha)
+        clf_dense.fit(X.toarray(), y)
+        assert_equal(clf_sparse.score(X, y), clf_dense.score(X, y))
+
+        clf_sparse = SAGAClassifier(max_iter=1, random_state=0, alpha=alpha)
+        clf_sparse.fit(X, y)
+        clf_dense = SAGAClassifier(max_iter=1, random_state=0, alpha=alpha)
         clf_dense.fit(X.toarray(), y)
         assert_equal(clf_sparse.score(X, y), clf_dense.score(X, y))
