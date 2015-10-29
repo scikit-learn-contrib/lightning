@@ -45,6 +45,26 @@ cdef void _add(double* data,
         j = indices[jj]
         w[j] += scale * data[jj]
 
+cdef void _lagged_update(int t,
+                         double* w,
+                         double* g_sum,
+                         double* scale_cumm,
+                         int* indices,
+                         double w_scale,
+                         int n_nz,
+                         int* last,
+                         double eta_avg):
+    """
+    Apply missing updates to w, just-in-time.
+    """
+    cdef double incr_scale
+    scale_cumm[t] = scale_cumm[t-1] + (1./w_scale)
+    for jj in xrange(n_nz):
+        j = indices[jj]
+        incr_scale = scale_cumm[t] - scale_cumm[last[j]]
+        w[j] -= eta_avg * incr_scale * g_sum[j]
+        last[j] = t
+
 
 def _sag_fit(self,
              RowDataset X,
@@ -60,7 +80,8 @@ def _sag_fit(self,
              double tol,
              int verbose,
              callback,
-             RandomState rng):
+             RandomState rng,
+             bint saga):
 
     cdef int n_samples = X.get_n_samples()
     cdef int n_features = X.get_n_features()
@@ -71,6 +92,7 @@ def _sag_fit(self,
     cdef double violation, violation_init, violation_ratio
     cdef double eta_avg = eta / n_samples
     cdef double eta_alpha = eta * alpha
+    cdef double g_change = 0.
     cdef int has_callback = callback is not None
 
     # Data pointers.
@@ -79,15 +101,19 @@ def _sag_fit(self,
     cdef int n_nz
 
     # Buffers and pointers.
-    cdef np.ndarray[int, ndim=1]last = np.zeros(n_features, dtype=np.int32)
+    cdef np.ndarray[int, ndim=1]last_ = np.zeros(n_features, dtype=np.int32)
     cdef np.ndarray[double, ndim=1] g_sum_
+    cdef np.ndarray[int, ndim=1] all_indices_ = np.arange(n_features, dtype=np.int32)
     g_sum_ = np.zeros(n_features, dtype=np.float64)
-    cdef np.ndarray[double, ndim=1] scale_cumm
-    scale_cumm = np.zeros(n_inner+1, dtype=np.float64)
+    cdef np.ndarray[double, ndim=1] scale_cumm_
+    scale_cumm_ = np.zeros(n_inner+2, dtype=np.float64)
     cdef double* g_sum = <double*>g_sum_.data
     cdef double* w = <double*>coef.data
     cdef double* w_scale = <double*>coef_scale.data
     cdef double* g = <double*>grad.data
+    cdef double* scale_cumm = <double*> scale_cumm_.data
+    cdef int* last = <int*> last_.data
+    cdef int* all_indices = <int*> all_indices_.data
 
     # Initialize gradient memory.
     for i in xrange(n_samples):
@@ -113,14 +139,10 @@ def _sag_fit(self,
             # Retrieve sample i.
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
-            # Update coefficients, just in time.
+            # Apply missed updates, just in time.
             if t > 0:
-                scale_cumm[t] = scale_cumm[t-1] + (1./w_scale[0])
-                for jj in xrange(n_nz):
-                    j = indices[jj]
-                    tmp = scale_cumm[t] - scale_cumm[last[j]]
-                    w[j] -= eta_avg * tmp * g_sum[j]
-                    last[j] = t
+                _lagged_update(t, w, g_sum, scale_cumm, indices,
+                               w_scale[0], n_nz, last, eta_avg)
 
             # Make prediction.
             y_pred = _pred(data, indices, n_nz, w) * w_scale[0]
@@ -130,12 +152,23 @@ def _sag_fit(self,
 
             # A gradient is given by g[i] * X[i].
             g[i] = -loss.get_update(y_pred, y[i])
-
-            # Update g_sum.
-            _add(data, indices, n_nz, (g[i] - g_old), g_sum)
+            g_change = g[i] - g_old
 
             # Update coefficient scale (l2 regularization).
             w_scale[0] *= (1 - eta_alpha)
+            if saga:
+                # update w with sparse step bit
+                _add(data, indices, n_nz, g_change * eta_avg, w)
+
+                ## gradient-average part of the step
+                _lagged_update(t+1, w, g_sum, scale_cumm, indices,
+                               w_scale[0], n_nz, last, eta_avg)
+
+                # prox step
+                # XXX TODO
+
+            # Update g_sum.
+            _add(data, indices, n_nz, g_change, g_sum)
 
             # Take care of possible underflows.
             if w_scale[0] < 1e-9:
@@ -149,10 +182,9 @@ def _sag_fit(self,
                 w_scale[0] = 1.0
 
         # Finalize.
-        scale_cumm[n_inner] = scale_cumm[n_inner-1] + (1./w_scale[0])
-        for j in xrange(n_features):
-            tmp = scale_cumm[n_inner] - scale_cumm[last[j]]
-            w[j] -= eta_avg * tmp * g_sum[j]
+        _lagged_update(n_inner, w, g_sum, scale_cumm, all_indices,
+                       w_scale[0], n_features, last, eta_avg)
+        for j in range(n_features):
             last[j] = 0
 
         # Callback.
