@@ -5,6 +5,7 @@
 #
 # Authors: Mathieu Blondel
 #          Fabian Pedregosa
+#          Arnaud Rachez
 # License: BSD
 
 import numpy as np
@@ -12,11 +13,47 @@ cimport numpy as np
 
 ctypedef np.int64_t LONG
 
-from libc.math cimport sqrt
+from libc.math cimport sqrt, fabs, fmax
 
 from lightning.impl.randomkit.random_fast cimport RandomState
 from lightning.impl.dataset_fast cimport RowDataset
 from lightning.impl.sgd_fast cimport LossFunction
+
+
+cdef class Penalty:
+
+    cdef void projection(self, double* w, int* indices, int n_nz):
+        raise NotImplementedError()
+
+    cdef double regularization(self, double* w, int* indices, int n_nz):
+        raise NotImplementedError()
+
+
+cdef class L1Penalty(Penalty):
+
+    cdef double l1
+
+    def __init__(self, double l1=1.):
+        self.l1 = l1
+
+    cdef void projection(self, double* w, int* indices, int n_nz):
+
+        cdef int j, jj
+
+        for jj in xrange(n_nz):
+            j = indices[jj]
+            w[j] = fmax(w[j] - self.l1, 0) - fmax(-w[j] - self.l1, 0)
+
+    cdef double regularization(self, double* w, int* indices, int n_nz):
+
+        cdef int j, jj
+        cdef double reg = 0
+
+        for jj in xrange(n_nz):
+            j = indices[jj]
+            reg += fabs(w[j])
+        
+        return reg
 
 
 cdef double _pred(double* data,
@@ -74,7 +111,9 @@ def _sag_fit(self,
              np.ndarray[double, ndim=1]grad,
              double eta,
              double alpha,
+             double beta,
              LossFunction loss,
+             Penalty penalty,
              int max_iter,
              int n_inner,
              double tol,
@@ -165,7 +204,10 @@ def _sag_fit(self,
                                w_scale[0], n_nz, last, eta_avg)
 
                 # prox step
-                # XXX TODO
+                if penalty is not None:
+                    _lagged_update(n_inner, w, g_sum, scale_cumm, all_indices,
+                       w_scale[0], n_features, last, eta_avg)
+                    penalty.projection(w, all_indices, n_features)
 
             # Update g_sum.
             _add(data, indices, n_nz, g_change, g_sum)
