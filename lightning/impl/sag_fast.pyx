@@ -197,7 +197,7 @@ def _sag_fit(self,
             w_scale[0] *= (1 - eta_alpha)
             if saga:
                 # update w with sparse step bit
-                _add(data, indices, n_nz, g_change * eta_avg, w)
+                _add(data, indices, n_nz, -g_change * eta / w_scale[0], w)
 
                 ## gradient-average part of the step
                 _lagged_update(t+1, w, g_sum, scale_cumm, indices,
@@ -207,6 +207,9 @@ def _sag_fit(self,
                 if penalty is not None:
                     _lagged_update(n_inner, w, g_sum, scale_cumm, all_indices,
                        w_scale[0], n_features, last, eta_avg)
+                    for j in xrange(n_features):
+                        w[j] *= w_scale[0]
+                    w_scale[0] = 1.0
                     penalty.projection(w, all_indices, n_features)
 
             # Update g_sum.

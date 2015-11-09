@@ -35,7 +35,7 @@ class L1Penalty(object):
         return np.maximum(coef - self.l1, 0) - np.maximum(-coef - self.l1, 0)
 
     def regularization(self, coef):
-        return np.sum(np.abs(coef))
+        return self.l1 * np.sum(np.abs(coef))
 
 
 class L2Penalty(object):
@@ -47,10 +47,10 @@ class L2Penalty(object):
         return coef / (1. + self.l2)
 
     def regularization(self, coef):
-        return np.sum(coef**2)
+        return self.l2 * np.sum(coef**2)
 
 
-def _fit_sag(X, y, eta, loss, penalty, max_iter, rng):
+def _fit_sag(X, y, eta, alpha, loss, penalty, max_iter, rng):
 
     n_samples, n_features = X.shape
     n_vectors = y.shape[1]
@@ -69,17 +69,15 @@ def _fit_sag(X, y, eta, loss, penalty, max_iter, rng):
             i = rng.randint(n_samples - 1)
             p = coef_.dot(X[i])
             gi = -loss.get_update(p, y[i]) * X[i]
+            coef_ -= eta * ((gi - g[i] + d) / n_samples + alpha * coef_)
             if penalty is not None:
-                coef_ = penalty.projection(
-                    coef_ - eta * (gi - g[i] + d) / n_samples)
-            else:
-                coef_ -= eta * (gi - g[i] + d) / n_samples
+                coef_ = penalty.projection(coef_)
             d += gi - g[i]
             g[i] = gi
     return coef_
 
 
-def _fit_saga(X, y, eta, loss, penalty, max_iter, rng):
+def _fit_saga(X, y, eta, alpha, loss, penalty, max_iter, rng):
 
     n_samples, n_features = X.shape
     n_vectors = y.shape[1]
@@ -98,11 +96,9 @@ def _fit_saga(X, y, eta, loss, penalty, max_iter, rng):
             i = rng.randint(n_samples - 1)
             p = coef_.dot(X[i])
             gi = -loss.get_update(p, y[i]) * X[i]
+            coef_ -= eta * ((gi - g[i] + d / n_samples) + alpha * coef_)
             if penalty is not None:
-                coef_ = penalty.projection(
-                    coef_ - eta * (gi - g[i] + d / n_samples))
-            else:
-                coef_ -= eta * (gi - g[i] + d / n_samples)
+                coef_ = penalty.projection(coef_)
             d += gi - g[i]
             g[i] = gi
     return coef_
@@ -124,7 +120,7 @@ class PySAGClassifier(BaseClassifier):
         if isinstance(penalty, str):
             penalties = {
                 "l1": L1Penalty(self.beta),
-                "l2": L2Penalty(self.alpha),
+                "l2": None, # Updated inside SAG.
             }
             return penalties[penalty]
         else:
@@ -148,7 +144,7 @@ class PySAGClassifier(BaseClassifier):
 
     def fit(self, X, y):
 
-        if not self.is_saga and not isinstance(self.penalty, L2Penalty):
+        if not self.is_saga and self.penalty is not None:
             raise ValueError("PySAGClassifier only accepts l2 penalty. Please "
                              "use `saga=True` or PySAGAClassifier.")
 
@@ -157,11 +153,11 @@ class PySAGClassifier(BaseClassifier):
                               dtype=np.float64)
 
         if self.is_saga:
-            self.coef_ = _fit_saga(X, y, self.eta, self.loss, self.penalty,
-                                   self.max_iter, self.rng)
+            self.coef_ = _fit_saga(X, y, self.eta, self.alpha, self.loss,
+                                   self.penalty, self.max_iter, self.rng)
         else:
-            self.coef_ = _fit_sag(X, y, self.eta, self.loss, self.penalty,
-                                  self.max_iter, self.rng)
+            self.coef_ = _fit_sag(X, y, self.eta, self.alpha, self.loss, 
+                                  self.penalty, self.max_iter, self.rng)
 
 
 class PySAGAClassifier(PySAGClassifier):
@@ -180,7 +176,7 @@ def test_sag():
     for clf in (
         SAGClassifier(eta=1e-3, max_iter=20, verbose=0, random_state=0),
         SAGAClassifier(eta=1e-3, max_iter=20, verbose=0, random_state=0),
-        PySAGAClassifier(eta=1e-3, max_iter=20, penalty=None, random_state=0)
+        PySAGClassifier(eta=1e-3, max_iter=20, alpha=0.1, random_state=0)
             ):
         clf.fit(X_bin, y_bin)
         assert_equal(clf.score(X_bin, y_bin), 1.0)
@@ -216,7 +212,7 @@ def test_l2_regularized_sag():
 
     pysag.fit(X_bin, y_bin)
     sag.fit(X_bin, y_bin)
-    assert_array_equal(pysag.coef_, sag.coef_)
+    np.testing.assert_array_almost_equal(pysag.coef_, sag.coef_)
 
 
 def test_saga_score():
@@ -233,13 +229,13 @@ def test_saga_score():
 
 
 def test_l1_regularized_saga():
-    pysaga = PySAGAClassifier(eta=1e-3, alpha=0.0, beta=1e-3, max_iter=10,
+    pysaga = PySAGAClassifier(eta=1e-3, alpha=0.0, beta=1e-4, max_iter=10,
                               penalty='l1', random_state=0)
-    saga = SAGAClassifier(eta=1e-3, alpha=0.0, beta=1e-3, max_iter=10,
+    saga = SAGAClassifier(eta=1e-3, alpha=0.0, beta=1e-4, max_iter=10,
                           penalty='l1', random_state=0)
     pysaga.fit(X_bin, y_bin)
     saga.fit(X_bin, y_bin)
-    assert_array_equal(pysaga.coef_, saga.coef_)
+    np.testing.assert_array_almost_equal(pysaga.coef_, saga.coef_)
 
 
 def test_l2_regularized_saga():
@@ -249,10 +245,10 @@ def test_l2_regularized_saga():
                           penalty='l2', random_state=0)
     pysaga.fit(X_bin, y_bin)
     saga.fit(X_bin, y_bin)
-    assert_array_equal(pysaga.coef_, saga.coef_)
+    np.testing.assert_array_almost_equal(pysaga.coef_, saga.coef_)
 
 
-def test_saga_coef_equality():
+def test_no_reg_saga():
     # Using no regularisation at all
     pysaga = PySAGAClassifier(eta=1e-3, alpha=0.0, beta=0.0, max_iter=10,
                               penalty=None, random_state=0)
@@ -284,8 +280,12 @@ def test_sag_callback():
     for clf in (
         SAGClassifier(loss="squared_hinge", eta=1e-3, max_iter=20,
                       random_state=0, callback=cb),
+        PySAGClassifier(loss="squared_hinge", eta=1e-3, max_iter=20,
+                        random_state=0, callback=cb),
         SAGAClassifier(loss="squared_hinge", eta=1e-3, max_iter=20,
-                       random_state=0, callback=cb)
+                       random_state=0, callback=cb),
+        PySAGAClassifier(loss="squared_hinge", eta=1e-3, max_iter=20,
+                        random_state=0, callback=cb)
             ):
         clf.fit(X_bin, y_bin)
         # its not a descent method, just check that most of
@@ -296,7 +296,7 @@ def test_sag_callback():
 def test_sag_regression():
     for reg in (
         SAGRegressor(random_state=0),
-        SAGARegressor(random_state=0, eta=.1)
+        SAGARegressor(random_state=0, eta=.05)
             ):
         reg.fit(X_bin, y_bin)
         y_pred = np.sign(reg.predict(X_bin))
