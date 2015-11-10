@@ -31,9 +31,10 @@ class L1Penalty(object):
     def __init__(self, l1=1.0):
         self.l1 = l1
 
-    def projection(self, coef):
-        return np.maximum(coef - self.l1, 0) - np.maximum(-coef - self.l1, 0)
-
+    def projection(self, coef, stepsize):
+        return np.fmax(coef - stepsize * self.l1, 0) \
+                -  np.fmax(-coef - stepsize * self.l1, 0)
+        
     def regularization(self, coef):
         return self.l1 * np.sum(np.abs(coef))
 
@@ -71,7 +72,7 @@ def _fit_sag(X, y, eta, alpha, loss, penalty, max_iter, rng):
             gi = -loss.get_update(p, y[i]) * X[i]
             coef_ -= eta * ((gi - g[i] + d) / n_samples + alpha * coef_)
             if penalty is not None:
-                coef_ = penalty.projection(coef_)
+                coef_ = penalty.projection(coef_, eta)
             d += gi - g[i]
             g[i] = gi
     return coef_
@@ -98,7 +99,7 @@ def _fit_saga(X, y, eta, alpha, loss, penalty, max_iter, rng):
             gi = -loss.get_update(p, y[i]) * X[i]
             coef_ -= eta * ((gi - g[i] + d / n_samples) + alpha * coef_)
             if penalty is not None:
-                coef_ = penalty.projection(coef_)
+                coef_ = penalty.projection(coef_, eta)
             d += gi - g[i]
             g[i] = gi
     return coef_
@@ -172,11 +173,23 @@ class PySAGAClassifier(PySAGClassifier):
         self.is_saga = True
 
 
+def test_l1_prox():
+    x = np.ones(5)
+    for l1 in [0.1, 0.5, .99, 1.]:
+        penalty = L1Penalty(l1=l1)
+        assert_array_equal(penalty.projection(x, stepsize=1.), x - l1)
+        assert_array_equal(penalty.projection(-x, stepsize=1.), -x + l1)
+    
+    penalty = L1Penalty(l1=2.)
+    assert_array_equal(penalty.projection(x, stepsize=1.), 0)
+    assert_array_equal(penalty.projection(-x, stepsize=1.), 0)
+    
+
 def test_sag():
     for clf in (
         SAGClassifier(eta=1e-3, max_iter=20, verbose=0, random_state=0),
         SAGAClassifier(eta=1e-3, max_iter=20, verbose=0, random_state=0),
-        PySAGClassifier(eta=1e-3, max_iter=20, alpha=0.1, random_state=0)
+        PySAGClassifier(eta=1e-3, max_iter=20, random_state=0)
             ):
         clf.fit(X_bin, y_bin)
         assert_equal(clf.score(X_bin, y_bin), 1.0)
@@ -229,9 +242,9 @@ def test_saga_score():
 
 
 def test_l1_regularized_saga():
-    pysaga = PySAGAClassifier(eta=1e-3, alpha=0.0, beta=1e-4, max_iter=10,
+    pysaga = PySAGAClassifier(eta=1e-3, alpha=0.0, beta=1e-3, max_iter=10,
                               penalty='l1', random_state=0)
-    saga = SAGAClassifier(eta=1e-3, alpha=0.0, beta=1e-4, max_iter=10,
+    saga = SAGAClassifier(eta=1e-3, alpha=0.0, beta=1e-3, max_iter=10,
                           penalty='l1', random_state=0)
     pysaga.fit(X_bin, y_bin)
     saga.fit(X_bin, y_bin)

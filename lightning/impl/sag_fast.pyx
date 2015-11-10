@@ -22,7 +22,7 @@ from lightning.impl.sgd_fast cimport LossFunction
 
 cdef class Penalty:
 
-    cdef void projection(self, double* w, int* indices, int n_nz):
+    cdef void projection(self, double* w, int* indices, int n_nz, double step):
         raise NotImplementedError()
 
     cdef double regularization(self, double* w, int* indices, int n_nz):
@@ -36,13 +36,18 @@ cdef class L1Penalty(Penalty):
     def __init__(self, double l1=1.):
         self.l1 = l1
 
-    cdef void projection(self, double* w, int* indices, int n_nz):
+    cdef void projection(self,
+                         double* w,
+                         int* indices,
+                         int n_nz,
+                         double stepsize):
 
         cdef int j, jj
 
         for jj in xrange(n_nz):
             j = indices[jj]
-            w[j] = fmax(w[j] - self.l1, 0) - fmax(-w[j] - self.l1, 0)
+            w[j] = fmax(w[j] - stepsize * self.l1, 0) \
+                    - fmax(-w[j] - stepsize * self.l1, 0)
 
     cdef double regularization(self, double* w, int* indices, int n_nz):
 
@@ -70,7 +75,6 @@ cdef double _pred(double* data,
 
     return dot
 
-
 cdef void _add(double* data,
                int* indices,
                int n_nz,
@@ -81,6 +85,7 @@ cdef void _add(double* data,
     for jj in xrange(n_nz):
         j = indices[jj]
         w[j] += scale * data[jj]
+
 
 cdef void _lagged_update(int t,
                          double* w,
@@ -207,10 +212,8 @@ def _sag_fit(self,
                 if penalty is not None:
                     _lagged_update(n_inner, w, g_sum, scale_cumm, all_indices,
                        w_scale[0], n_features, last, eta_avg)
-                    for j in xrange(n_features):
-                        w[j] *= w_scale[0]
-                    w_scale[0] = 1.0
-                    penalty.projection(w, all_indices, n_features)
+                    penalty.projection(w, all_indices, n_features,
+                                       eta / w_scale[0])
 
             # Update g_sum.
             _add(data, indices, n_nz, g_change, g_sum)
