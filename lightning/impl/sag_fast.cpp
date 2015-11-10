@@ -3099,7 +3099,7 @@ static PyObject *__pyx_pf_9lightning_4impl_8sag_fast__sag_fit(CYTHON_UNUSED PyOb
  * 
  *                 # prox step
  *                 if penalty is not None:             # <<<<<<<<<<<<<<
- *                     _lagged_update(n_inner, w, g_sum, scale_cumm, all_indices,
+ *                     _lagged_update(t+1, w, g_sum, scale_cumm, all_indices,
  *                        w_scale[0], n_features, last, eta_avg)
  */
         __pyx_t_1 = (((PyObject *)__pyx_v_penalty) != Py_None);
@@ -3109,14 +3109,14 @@ static PyObject *__pyx_pf_9lightning_4impl_8sag_fast__sag_fit(CYTHON_UNUSED PyOb
           /* "lightning/impl/sag_fast.pyx":213
  *                 # prox step
  *                 if penalty is not None:
- *                     _lagged_update(n_inner, w, g_sum, scale_cumm, all_indices,             # <<<<<<<<<<<<<<
+ *                     _lagged_update(t+1, w, g_sum, scale_cumm, all_indices,             # <<<<<<<<<<<<<<
  *                        w_scale[0], n_features, last, eta_avg)
  *                     penalty.projection(w, all_indices, n_features,
  */
-          __pyx_f_9lightning_4impl_8sag_fast__lagged_update(__pyx_v_n_inner, __pyx_v_w, __pyx_v_g_sum, __pyx_v_scale_cumm, __pyx_v_all_indices, (__pyx_v_w_scale[0]), __pyx_v_n_features, __pyx_v_last, __pyx_v_eta_avg);
+          __pyx_f_9lightning_4impl_8sag_fast__lagged_update((__pyx_v_t + 1), __pyx_v_w, __pyx_v_g_sum, __pyx_v_scale_cumm, __pyx_v_all_indices, (__pyx_v_w_scale[0]), __pyx_v_n_features, __pyx_v_last, __pyx_v_eta_avg);
 
           /* "lightning/impl/sag_fast.pyx":215
- *                     _lagged_update(n_inner, w, g_sum, scale_cumm, all_indices,
+ *                     _lagged_update(t+1, w, g_sum, scale_cumm, all_indices,
  *                        w_scale[0], n_features, last, eta_avg)
  *                     penalty.projection(w, all_indices, n_features,             # <<<<<<<<<<<<<<
  *                                        eta / w_scale[0])
