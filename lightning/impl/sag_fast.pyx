@@ -229,7 +229,7 @@ def _sag_fit(self,
                 # prox step
                 if penalty is not None:
                     penalty.projection_lagged(w, indices, eta, w_scale,
-                                              scale_cumm, t, n_nz,
+                                              scale_cumm, t + 1, n_nz,
                                               last_penalty_update)
 
             # Update g_sum.
