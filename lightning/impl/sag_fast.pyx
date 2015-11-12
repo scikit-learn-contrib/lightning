@@ -21,8 +21,16 @@ from lightning.impl.sgd_fast cimport LossFunction
 
 
 cdef class Penalty:
-
-    cdef void projection(self, double* w, int* indices, int n_nz, double step):
+    
+    cdef void projection_lagged(self,
+                                double* w,
+                                int* indices,
+                                double stepsize,
+                                double* w_scale,
+                                double* scale_cumm,
+                                int t,
+                                int n_nz,
+                                int* last):
         raise NotImplementedError()
 
     cdef double regularization(self, double* w, int* indices, int n_nz):
@@ -36,18 +44,26 @@ cdef class L1Penalty(Penalty):
     def __init__(self, double l1=1.):
         self.l1 = l1
 
-    cdef void projection(self,
-                         double* w,
-                         int* indices,
-                         int n_nz,
-                         double stepsize):
+    cdef void projection_lagged(self,
+                                double* w,
+                                int* indices,
+                                double stepsize,
+                                double* w_scale,
+                                double* scale_cumm,
+                                int t,
+                                int n_nz,
+                                int* last):
 
         cdef int j, jj
+        cdef double incr_scale
 
         for jj in xrange(n_nz):
             j = indices[jj]
-            w[j] = fmax(w[j] - stepsize * self.l1, 0) \
-                    - fmax(-w[j] - stepsize * self.l1, 0)
+            incr_scale = scale_cumm[t] - scale_cumm[last[j]]
+            w[j] = fmax(w[j] - stepsize * incr_scale * self.l1, 0) \
+                    - fmax(-w[j] - stepsize * incr_scale * self.l1, 0)
+            last[j] = t
+
 
     cdef double regularization(self, double* w, int* indices, int n_nz):
 
@@ -146,6 +162,7 @@ def _sag_fit(self,
 
     # Buffers and pointers.
     cdef np.ndarray[int, ndim=1]last_ = np.zeros(n_features, dtype=np.int32)
+    cdef np.ndarray[int, ndim=1] last__ = np.zeros(n_features, dtype=np.int32)
     cdef np.ndarray[double, ndim=1] g_sum_
     cdef np.ndarray[int, ndim=1] all_indices_ = np.arange(n_features, dtype=np.int32)
     g_sum_ = np.zeros(n_features, dtype=np.float64)
@@ -157,6 +174,7 @@ def _sag_fit(self,
     cdef double* g = <double*>grad.data
     cdef double* scale_cumm = <double*> scale_cumm_.data
     cdef int* last = <int*> last_.data
+    cdef int* last_penalty_update = <int*> last__.data
     cdef int* all_indices = <int*> all_indices_.data
 
     # Initialize gradient memory.
@@ -210,10 +228,9 @@ def _sag_fit(self,
 
                 # prox step
                 if penalty is not None:
-                    _lagged_update(t+1, w, g_sum, scale_cumm, all_indices,
-                       w_scale[0], n_features, last, eta_avg)
-                    penalty.projection(w, all_indices, n_features,
-                                       eta / w_scale[0])
+                    penalty.projection_lagged(w, indices, eta, w_scale,
+                                              scale_cumm, t, n_nz,
+                                              last_penalty_update)
 
             # Update g_sum.
             _add(data, indices, n_nz, g_change, g_sum)
@@ -232,8 +249,13 @@ def _sag_fit(self,
         # Finalize.
         _lagged_update(n_inner, w, g_sum, scale_cumm, all_indices,
                        w_scale[0], n_features, last, eta_avg)
+        if penalty is not None:
+            penalty.projection_lagged(w, all_indices, eta, w_scale,
+                                      scale_cumm, n_inner, n_features,
+                                      last_penalty_update)
         for j in range(n_features):
             last[j] = 0
+            last_penalty_update[j] = 0
 
         # Callback.
         if has_callback:
