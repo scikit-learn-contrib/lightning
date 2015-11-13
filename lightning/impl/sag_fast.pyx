@@ -39,10 +39,7 @@ cdef class Penalty:
 
 cdef class L1Penalty(Penalty):
 
-    cdef double l1
-
-    def __cinit__(self, double l1=1.):
-        self.l1 = l1
+    # amount of regularization
 
     cdef void projection_lagged(self,
                                 double* w,
@@ -60,8 +57,8 @@ cdef class L1Penalty(Penalty):
         for jj in xrange(n_nz):
             j = indices[jj]
             incr_scale = scale_cumm[t] - scale_cumm[last[j]]
-            w[j] = fmax(w[j] - stepsize * incr_scale * self.l1, 0) \
-                    - fmax(-w[j] - stepsize * incr_scale * self.l1, 0)
+            w[j] = fmax(w[j] - stepsize * incr_scale, 0) \
+                    - fmax(-w[j] - stepsize * incr_scale, 0)
             last[j] = t
 
 
@@ -162,7 +159,7 @@ def _sag_fit(self,
 
     # Buffers and pointers.
     cdef np.ndarray[int, ndim=1]last_ = np.zeros(n_features, dtype=np.int32)
-    cdef np.ndarray[int, ndim=1] last__ = np.zeros(n_features, dtype=np.int32)
+    cdef np.ndarray[int, ndim=1] last_penalty_ = np.zeros(n_features, dtype=np.int32)
     cdef np.ndarray[double, ndim=1] g_sum_
     cdef np.ndarray[int, ndim=1] all_indices_ = np.arange(n_features, dtype=np.int32)
     g_sum_ = np.zeros(n_features, dtype=np.float64)
@@ -174,7 +171,7 @@ def _sag_fit(self,
     cdef double* g = <double*>grad.data
     cdef double* scale_cumm = <double*> scale_cumm_.data
     cdef int* last = <int*> last_.data
-    cdef int* last_penalty_update = <int*> last__.data
+    cdef int* last_penalty_update = <int*> last_penalty_.data
     cdef int* all_indices = <int*> all_indices_.data
 
     # Initialize gradient memory.
@@ -218,23 +215,6 @@ def _sag_fit(self,
 
             # Update coefficient scale (l2 regularization).
             w_scale[0] *= (1 - eta_alpha)
-            if saga:
-                # update w with sparse step bit
-                _add(data, indices, n_nz, -g_change * eta / w_scale[0], w)
-
-                ## gradient-average part of the step
-                _lagged_update(t+1, w, g_sum, scale_cumm, indices,
-                               w_scale[0], n_nz, last, eta_avg)
-
-                # prox step
-                if penalty is not None:
-                    penalty.projection_lagged(w, indices, eta, w_scale,
-                                              scale_cumm, t + 1, n_nz,
-                                              last_penalty_update)
-
-            # Update g_sum.
-            _add(data, indices, n_nz, g_change, g_sum)
-
             # Take care of possible underflows.
             if w_scale[0] < 1e-9:
                 for j in xrange(n_features):
@@ -246,11 +226,28 @@ def _sag_fit(self,
                     w[j] *= w_scale[0]
                 w_scale[0] = 1.0
 
+            if saga:
+                # update w with sparse step bit
+                _add(data, indices, n_nz, -g_change * eta / w_scale[0], w)
+
+                ## gradient-average part of the step
+                _lagged_update(t+1, w, g_sum, scale_cumm, indices,
+                               w_scale[0], n_nz, last, eta_avg)
+
+                # prox step
+                if penalty is not None:
+                    penalty.projection_lagged(w, indices, beta * eta, w_scale,
+                                              scale_cumm, t + 1, n_nz,
+                                              last_penalty_update)
+
+            # Update g_sum.
+            _add(data, indices, n_nz, g_change, g_sum)
+
         # Finalize.
         _lagged_update(n_inner, w, g_sum, scale_cumm, all_indices,
                        w_scale[0], n_features, last, eta_avg)
         if penalty is not None:
-            penalty.projection_lagged(w, all_indices, eta, w_scale,
+            penalty.projection_lagged(w, all_indices, beta * eta, w_scale,
                                       scale_cumm, n_inner, n_features,
                                       last_penalty_update)
         for j in range(n_features):
