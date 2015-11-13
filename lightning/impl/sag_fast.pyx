@@ -41,7 +41,7 @@ cdef class L1Penalty(Penalty):
 
     cdef double l1
 
-    def __init__(self, double l1=1.):
+    def __cinit__(self, double l1=1.):
         self.l1 = l1
 
     cdef void projection_lagged(self,
