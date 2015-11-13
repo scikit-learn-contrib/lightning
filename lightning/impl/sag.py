@@ -88,7 +88,7 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
         amount of regularization for the penalty term
     loss : string
         loss to use in the objective function. Can be one of
-        "smooth_hinge", "squared_hinge" or "log".
+        "smooth_hinge", "squared_hinge" or "log" (for logistic loss).
     gamma : float
         gamma parameter in the "smooth_hinge" loss (not used for other
         loss functions)
@@ -152,7 +152,7 @@ class SAGAClassifier(SAGClassifier):
         amount of regularization for the penalty term
     loss : string
         loss to use in the objective function. Can be one of
-        "smooth_hinge", "squared_hinge" or "log".
+        "smooth_hinge", "squared_hinge" or "log" (for logistic loss).
     penalty : string or Penalty object
         penalty term to use in the objective function. Can be "l1"
         or a custom Penalty object (object defined in
