@@ -253,10 +253,10 @@ def test_l1_regularized_saga():
 
 
 def test_l2_regularized_saga():
-    pysaga = PySAGAClassifier(eta=1e-3, alpha=1.0, beta=0.0, max_iter=10,
-                              penalty='l2', random_state=0)
-    saga = SAGAClassifier(eta=1e-3, alpha=1.0, beta=0.0, max_iter=10,
-                          penalty='l2', random_state=0)
+    pysaga = PySAGAClassifier(eta=1e-3, alpha=1.0, max_iter=10,
+                              penalty=None, random_state=0)
+    saga = SAGAClassifier(eta=1e-3, alpha=1.0, max_iter=10,
+                          penalty=None, random_state=0)
     pysaga.fit(X_bin, y_bin)
     saga.fit(X_bin, y_bin)
     np.testing.assert_array_almost_equal(pysaga.coef_, saga.coef_)

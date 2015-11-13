@@ -35,8 +35,7 @@ class _BaseSAG(object):
             # l2 penalty is governed by the alpha keyword in `_sag_fit`.
             # beta governs the strength of the penalties below.
             penalties = {
-                "l1": L1Penalty(l1=self.beta),
-                "l2": None  # l2 is present by default in `_sag_fit`.
+                "l1": L1Penalty(),
             }
             return penalties[self.penalty]
         else:
@@ -78,6 +77,32 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2
+
+    Parameters
+    ----------
+    eta : float
+        step size for the gradient updates
+    alpha : float
+        amount of squared L2 regularization
+    beta : float
+        amount of regularization for the penalty term
+    loss : string
+        loss to use in the objective function. Can be one of
+        "smooth_hinge", "squared_hinge" or "log" (for logistic loss).
+    gamma : float
+        gamma parameter in the "smooth_hinge" loss (not used for other
+        loss functions)
+    max_iter : int
+        maximum number of outer iterations (also known as epochs).
+    tol : float
+        stopping criterion tolerance.
+    verbose : int
+        verbosity level. Set positive to print progress information.
+    callback : callable or None
+        if given, callback(self) will be called on each outer iteration
+        (epoch).
+    random_state: int or RandomState
+        Pseudo-random number generator state used for random sampling.
     """
 
     def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
@@ -117,6 +142,35 @@ class SAGAClassifier(SAGClassifier):
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2
 
+    Parameters
+    ----------
+    eta : float
+        step size for the gradient updates
+    alpha : float
+        amount of squared L2 regularization
+    beta : float
+        amount of regularization for the penalty term
+    loss : string
+        loss to use in the objective function. Can be one of
+        "smooth_hinge", "squared_hinge" or "log" (for logistic loss).
+    penalty : string or Penalty object
+        penalty term to use in the objective function. Can be "l1"
+        or a custom Penalty object (object defined in
+        lightning/impl/sag_fast.pxd)
+    gamma : float
+        gamma parameter in the "smooth_hinge" loss (not used for other
+        loss functions)
+    max_iter : int
+        maximum number of outer iterations (also known as epochs).
+    tol : float
+        stopping criterion tolerance.
+    verbose : int
+        verbosity level. Set positive to print progress information.
+    callback : callable or None
+        if given, callback(self) will be called on each outer iteration
+        (epoch).
+    random_state: int or RandomState
+        Pseudo-random number generator state used for random sampling.
     """
 
     def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
@@ -137,6 +191,29 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2
+
+    Parameters
+    ----------
+    eta : float
+        step size for the gradient updates.
+    alpha : float
+        amount of squared L2 regularization.
+    beta : float
+        amount of regularization for the penalty term.
+    loss : string
+        loss to use in the objective function. Can be "modified_huber" or
+        "squared".
+    max_iter : int
+        maximum number of outer iterations (also known as epochs).
+    tol : float
+        stopping criterion tolerance.
+    verbose : int
+        verbosity level. Set positive to print progress information.
+    callback : callable or None
+        if given, callback(self) will be called on each outer iteration
+        (epoch).
+    random_state: int or RandomState
+        Pseudo-random number generator state used for random sampling.
     """
 
     def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
@@ -173,14 +250,41 @@ class SAGARegressor(SAGRegressor):
     Solves the following objective:
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
-                    + alpha * 0.5 * ||w||^2_2
+                    + alpha * 0.5 * ||w||^2_2 + beta * penalty(w)
+
+    Parameters
+    ----------
+    eta : float
+        step size for the gradient updates
+    alpha : float
+        amount of squared L2 regularization
+    beta : float
+        amount of regularization for the penalty term
+    loss : string
+        loss to use in the objective function. Can be "modified_huber" or
+        "squared".
+    penalty : string or Penalty object
+        penalty term to use in the objective function. Can be "l1"
+        or a custom Penalty object (object defined in
+        lightning/impl/sag_fast.pxd)
+    max_iter : int
+        maximum number of outer iterations (also known as epochs).
+    tol : float
+        stopping criterion tolerance.
+    verbose : int
+        verbosity level. Set positive to print progress information.
+    callback : callable or None
+        if given, callback(self) will be called on each outer iteration
+        (epoch).
+    random_state: int or RandomState
+        Pseudo-random number generator state used for random sampling.
     """
 
     def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
-                 penalty='l2', gamma=1.0, max_iter=10, n_inner=1.0, tol=1e-3,
+                 penalty="l1", max_iter=10, n_inner=1.0, tol=1e-3,
                  verbose=0, callback=None, random_state=None):
             super(SAGARegressor, self).__init__(
                 eta=eta, alpha=alpha, beta=beta, loss=loss, penalty=penalty,
-                gamma=gamma, max_iter=max_iter, n_inner=n_inner, tol=tol,
+                gamma=1.0, max_iter=max_iter, n_inner=n_inner, tol=tol,
                 verbose=verbose, callback=callback, random_state=random_state)
             self.is_saga = True
