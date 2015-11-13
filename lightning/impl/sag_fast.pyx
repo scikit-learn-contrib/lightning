@@ -33,7 +33,7 @@ cdef class Penalty:
                                 int* last):
         raise NotImplementedError()
 
-    cdef double regularization(self, double* w, int* indices, int n_nz):
+    cdef double regularization(self, np.ndarray[double, ndim=1] coef):
         raise NotImplementedError()
 
 
@@ -62,15 +62,13 @@ cdef class L1Penalty(Penalty):
             last[j] = t
 
 
-    cdef double regularization(self, double* w, int* indices, int n_nz):
+    cdef double regularization(self, np.ndarray[double, ndim=1] coef):
 
         cdef int j, jj
         cdef double reg = 0
 
-        for jj in xrange(n_nz):
-            j = indices[jj]
-            reg += fabs(w[j])
-        
+        for j in range(coef.size):
+            reg += fabs(coef[j])
         return reg
 
 

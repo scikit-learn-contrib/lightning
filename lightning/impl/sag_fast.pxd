@@ -1,4 +1,5 @@
 
+cimport numpy as np
 
 cdef class Penalty:
     
@@ -12,4 +13,4 @@ cdef class Penalty:
                                 int n_nz,
                                 int* last)
 
-    cdef double regularization(self, double*, int*, int)
+    cdef double regularization(self, np.ndarray[double, ndim=1]coef)
