@@ -231,9 +231,9 @@ def test_l2_regularized_sag():
 def test_saga_score():
     X, y = make_classification(1000, random_state=0)
 
-    pysaga = PySAGAClassifier(eta=1e-3, alpha=0.0, beta=0.0, max_iter=10,
+    pysaga = PySAGAClassifier(eta=1e-3, alpha=0.0, beta=0.0, max_iter=1,
                               penalty=None, random_state=0)
-    saga = SAGAClassifier(eta=1e-3, alpha=0.0, beta=0.0, max_iter=10,
+    saga = SAGAClassifier(eta=1e-3, alpha=0.0, beta=0.0, max_iter=1,
                           penalty=None, random_state=0)
 
     pysaga.fit(X, y)
