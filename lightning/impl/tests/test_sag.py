@@ -200,8 +200,7 @@ def test_sag_score():
 
     pysag = PySAGClassifier(eta=1e-3, alpha=0.0, beta=0.0, max_iter=10,
                             random_state=0)
-    sag = SAGClassifier(eta=1e-3, alpha=0.0, beta=0.0, max_iter=10,
-                        random_state=0)
+    sag = SAGClassifier(eta=1e-3, alpha=0.0, max_iter=10, random_state=0)
 
     pysag.fit(X, y)
     sag.fit(X, y)
