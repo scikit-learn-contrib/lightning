@@ -21,6 +21,14 @@ from lightning.impl.sgd_fast cimport LossFunction
 
 
 cdef class Penalty:
+
+    cdef void projection(self,
+                         double* w,
+                         int* indices,
+                         double stepsize,
+                         double w_scale,
+                         int n_nz):
+        raise NotImplementedError()
     
     cdef void projection_lagged(self,
                                 double* w,
@@ -39,7 +47,20 @@ cdef class Penalty:
 
 cdef class L1Penalty(Penalty):
 
-    # amount of regularization
+
+    cdef void projection(self,
+                         double* w,
+                         int* indices,
+                         double stepsize,
+                         double w_scale,
+                         int n_nz):
+
+        cdef int j, jj
+
+        for jj in xrange(n_nz):
+            j = indices[jj]
+            w[j] = fmax(w[j] - stepsize * w_scale, 0) \
+                    - fmax(-w[j] - stepsize * w_scale, 0)
 
     cdef void projection_lagged(self,
                                 double* w,
@@ -163,9 +184,12 @@ def _sag_fit(self,
     g_sum_ = np.zeros(n_features, dtype=np.float64)
     cdef np.ndarray[double, ndim=1] scale_cumm_
     scale_cumm_ = np.zeros(n_inner+2, dtype=np.float64)
+    cdef np.ndarray[double, ndim=1] w_violation_
+    w_violation_ = np.zeros(n_features, dtype=np.float64)
     cdef double* g_sum = <double*>g_sum_.data
     cdef double* w = <double*>coef.data
     cdef double* w_scale = <double*>coef_scale.data
+    cdef double* w_violation = <double*>w_violation_.data
     cdef double* g = <double*>grad.data
     cdef double* scale_cumm = <double*> scale_cumm_.data
     cdef int* last = <int*> last_.data
@@ -262,8 +286,20 @@ def _sag_fit(self,
         violation = 0
         alpha_scaled = alpha * w_scale[0]
         for j in xrange(n_features):
-            tmp = g_sum[j] / n_samples + alpha_scaled * w[j]
-            violation += tmp * tmp
+            if penalty is not None:
+                w_violation[j] = w[j] - g_sum[j] / n_samples - alpha_scaled * w[j]
+            else:
+                w_violation[j] = g_sum[j] / n_samples + alpha_scaled * w[j]
+
+        if penalty is not None:
+            penalty.projection(w_violation, all_indices, beta * eta,
+                               w_scale[0], n_features)
+     
+        for j in xrange(n_features):
+            if penalty is not None:
+                violation += (w[j] - w_violation[j])**2
+            else:
+                violation += w_violation[j]**2
         violation = sqrt(violation)
 
         # Convergence monitoring.

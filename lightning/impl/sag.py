@@ -174,7 +174,7 @@ class SAGAClassifier(SAGClassifier):
     """
 
     def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
-                 penalty=None, gamma=1.0,  max_iter=10, n_inner=1.0,
+                 penalty="l1", gamma=1.0,  max_iter=10, n_inner=1.0,
                  tol=1e-3, verbose=0, callback=None, random_state=None):
             super(SAGAClassifier, self).__init__(
                 eta=eta, alpha=alpha, beta=beta, loss=loss, penalty=penalty,
