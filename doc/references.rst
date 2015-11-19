@@ -25,6 +25,7 @@ This module contains algorithms for solving classification problems.
     classification.LinearSVC
     classification.SDCAClassifier
     classification.SAGClassifier
+    classification.SAGAClassifier
     classification.SGDClassifier
     classification.SVRGClassifier
 
@@ -50,6 +51,7 @@ This module contains algorithms for solving regression problems.
     regression.FistaRegressor
     regression.LinearSVR
     regression.SAGRegressor
+    regression.SAGARegressor
     regression.SDCARegressor
     regression.SGDRegressor
     regression.SVRGRegressor
