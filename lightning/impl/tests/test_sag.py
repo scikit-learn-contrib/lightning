@@ -17,6 +17,7 @@ from lightning.impl.sgd_fast import SmoothHinge
 from lightning.impl.sgd_fast import SquaredHinge
 from lightning.impl.sgd_fast import Log
 from lightning.impl.sgd_fast import SquaredLoss
+from lightning.impl.sag import get_auto_step_size
 
 
 iris = load_iris()
@@ -33,8 +34,8 @@ class L1Penalty(object):
 
     def projection(self, coef, stepsize):
         return np.fmax(coef - stepsize * self.l1, 0) \
-                -  np.fmax(-coef - stepsize * self.l1, 0)
-        
+                - np.fmax(-coef - stepsize * self.l1, 0)
+
     def regularization(self, coef):
         return self.l1 * np.sum(np.abs(coef))
 
@@ -121,21 +122,21 @@ class PySAGClassifier(BaseClassifier):
         if isinstance(penalty, str):
             penalties = {
                 "l1": L1Penalty(self.beta),
-                "l2": None, # Updated inside SAG.
+                "l2": None,  # Updated inside SAG.
             }
             return penalties[penalty]
         else:
             return penalty
 
-    def __init__(self, eta, alpha=1.0, beta=0.0, loss="smooth_hinge",
+    def __init__(self, eta='auto', alpha=1.0, beta=0.0, loss="smooth_hinge",
                  penalty='l2', gamma=1.0, max_iter=100, random_state=None,
                  callback=None):
         self.eta = eta
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
-        self.loss = self._get_loss(loss)
-        self.penalty = self._get_penalty(penalty)
+        self.loss = loss
+        self.penalty = penalty
         self.max_iter = max_iter
         self.random_state = random_state
         self.rng = self._get_random_state()
@@ -145,19 +146,26 @@ class PySAGClassifier(BaseClassifier):
 
     def fit(self, X, y):
 
-        if not self.is_saga and self.penalty is not None:
-            raise ValueError("PySAGClassifier only accepts l2 penalty. Please "
-                             "use `saga=True` or PySAGAClassifier.")
-
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
                               dtype=np.float64)
+
+        if self.eta is None or self.eta == 'auto':
+            self.eta = get_auto_step_size(
+                    X, self.alpha, self.loss, self.is_saga)
+
+        self.loss = self._get_loss(self.loss)
+        self.penalty = self._get_penalty(self.penalty)
+
+        if not self.is_saga and self.penalty is not None:
+            raise ValueError("PySAGClassifier only accepts l2 penalty. Please "
+                             "use `saga=True` or PySAGAClassifier.")
 
         if self.is_saga:
             self.coef_ = _fit_saga(X, y, self.eta, self.alpha, self.loss,
                                    self.penalty, self.max_iter, self.rng)
         else:
-            self.coef_ = _fit_sag(X, y, self.eta, self.alpha, self.loss, 
+            self.coef_ = _fit_sag(X, y, self.eta, self.alpha, self.loss,
                                   self.penalty, self.max_iter, self.rng)
 
 
@@ -179,11 +187,11 @@ def test_l1_prox():
         penalty = L1Penalty(l1=l1)
         assert_array_equal(penalty.projection(x, stepsize=1.), x - l1)
         assert_array_equal(penalty.projection(-x, stepsize=1.), -x + l1)
-    
+
     penalty = L1Penalty(l1=2.)
     assert_array_equal(penalty.projection(x, stepsize=1.), 0)
     assert_array_equal(penalty.projection(-x, stepsize=1.), 0)
-    
+
 
 def test_sag():
     for clf in (
@@ -209,7 +217,7 @@ def test_sag_score():
 
 
 def test_no_reg_sag():
-    
+
     pysag = PySAGClassifier(eta=1e-3, alpha=0.0, max_iter=10, random_state=0)
     sag = SAGClassifier(eta=1e-3, alpha=0.0, max_iter=10, random_state=0)
 
@@ -219,7 +227,7 @@ def test_no_reg_sag():
 
 
 def test_l2_regularized_sag():
-    
+
     pysag = PySAGClassifier(eta=1e-3, alpha=1.0, max_iter=10, random_state=0)
     sag = SAGClassifier(eta=1e-3, alpha=1.0, max_iter=10, random_state=0)
 
@@ -260,7 +268,7 @@ def test_l2_regularized_saga():
     pysaga.fit(X_bin, y_bin)
     saga.fit(X_bin, y_bin)
     np.testing.assert_array_almost_equal(pysaga.coef_, saga.coef_)
-    
+
 
 def test_elastic_saga():
     ab = [1e-5, 1e-2, 1e-1, 1.]
@@ -311,7 +319,7 @@ def test_sag_callback():
         SAGAClassifier(loss="squared_hinge", eta=1e-3, max_iter=20,
                        random_state=0, callback=cb),
         PySAGAClassifier(loss="squared_hinge", eta=1e-3, max_iter=20,
-                        random_state=0, callback=cb)
+                         random_state=0, callback=cb)
             ):
         clf.fit(X_bin, y_bin)
         # its not a descent method, just check that most of
@@ -319,10 +327,21 @@ def test_sag_callback():
         assert_true(np.mean(np.diff(cb.obj) <= 0) > 0.9)
 
 
+def test_auto_stepsize():
+
+    for clf in (
+        SAGClassifier(loss='log', max_iter=20, verbose=0, random_state=0),
+        SAGAClassifier(loss='log', max_iter=20, verbose=0, random_state=0),
+        PySAGClassifier(loss='log', max_iter=20, random_state=0)
+            ):
+        clf.fit(X_bin, y_bin)
+        assert_equal(clf.score(X_bin, y_bin), 1.0)
+
+
 def test_sag_regression():
     for reg in (
-        SAGRegressor(random_state=0),
-        SAGARegressor(random_state=0, eta=.05)
+        SAGRegressor(random_state=0, loss='squared'),
+        SAGARegressor(random_state=0, loss='squared')
             ):
         reg.fit(X_bin, y_bin)
         y_pred = np.sign(reg.predict(X_bin))
@@ -336,14 +355,18 @@ def test_sag_sparse():
     X = sparse.rand(100, 50, density=.5, random_state=0)
     y = np.random.randint(0, high=2, size=100)
     for alpha in np.logspace(-3, 3, 10):
-        clf_sparse = SAGClassifier(max_iter=1, random_state=0, alpha=alpha)
+        clf_sparse = SAGClassifier(eta=1., max_iter=1, random_state=0,
+                                   alpha=alpha)
         clf_sparse.fit(X, y)
-        clf_dense = SAGClassifier(max_iter=1, random_state=0, alpha=alpha)
+        clf_dense = SAGClassifier(eta=1., max_iter=1, random_state=0,
+                                  alpha=alpha)
         clf_dense.fit(X.toarray(), y)
         assert_equal(clf_sparse.score(X, y), clf_dense.score(X, y))
 
-        clf_sparse = SAGAClassifier(max_iter=1, random_state=0, alpha=alpha)
+        clf_sparse = SAGAClassifier(eta=1.,
+                                    max_iter=1, random_state=0, alpha=alpha)
         clf_sparse.fit(X, y)
-        clf_dense = SAGAClassifier(max_iter=1, random_state=0, alpha=alpha)
+        clf_dense = SAGAClassifier(eta=1.,
+                                   max_iter=1, random_state=0, alpha=alpha)
         clf_dense.fit(X.toarray(), y)
         assert_equal(clf_sparse.score(X, y), clf_dense.score(X, y))

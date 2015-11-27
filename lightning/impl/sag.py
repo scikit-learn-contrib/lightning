@@ -3,6 +3,13 @@
 
 import numpy as np
 
+try:
+    from sklearn.linear_model.sag_fast import get_max_squared_sum
+except:
+    def get_max_squared_sum(X):
+        n = X.shape[0]
+        return np.max(X.dot(X.T)[range(n), range(n)])
+
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.externals.six.moves import xrange
 
@@ -16,6 +23,48 @@ from .sgd_fast import SquaredHinge
 from .sgd_fast import Log
 from .sgd_fast import SquaredLoss
 from .sag_fast import L1Penalty
+
+
+def get_auto_step_size(X, alpha, loss, is_saga=False):
+    """Compute automatic step size for SAG solver
+
+    Stepsize computed using the following objective:
+
+        minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
+                    + alpha * 0.5 * ||w||^2_2
+
+    Parameters
+    ----------
+    X : ndarray
+        Array of samples x_i.
+
+    alpha : float
+        Constant that multiplies the l2 penalty term.
+
+    loss : string, in {"log", "squared"}
+        The loss function used in SAG solver.
+
+
+    Returns
+    -------
+    step_size : float
+        Step size used in SAG/SAGA solver.
+
+    """
+    L = get_max_squared_sum(X)
+
+    if loss == 'log':
+        # inverse Lipschitz constant for log loss
+        stepsize = 4.0 / (L + 4.0 * alpha)
+    elif loss == 'squared':
+        # inverse Lipschitz constant for squared loss
+        stepsize = 1.0 / (L + alpha)
+    else:
+        raise ValueError("`auto` stepsize is only available for `squared` or "
+                         "`log` losses (got `%s` loss). Please specify a "
+                         "stepsize." % loss)
+
+    return stepsize
 
 
 class _BaseSAG(object):
@@ -48,6 +97,13 @@ class _BaseSAG(object):
     def _fit(self, X, Y):
         n_samples, n_features = X.shape
         rng = self._get_random_state()
+
+        if self.eta is None or self.eta == 'auto':
+            self.eta = get_auto_step_size(
+                    X, self.alpha, self.loss, self.is_saga)
+            if self.verbose > 0:
+                print "Auto stepsize: %s" % self.eta
+
         loss = self._get_loss()
         penalty = self._get_penalty()
         n_vectors = Y.shape[1]
@@ -105,7 +161,7 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
         Pseudo-random number generator state used for random sampling.
     """
 
-    def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
+    def __init__(self, eta='auto', alpha=1.0, beta=0.0, loss="smooth_hinge",
                  penalty=None, gamma=1.0, max_iter=10, n_inner=1.0, tol=1e-3,
                  verbose=0, callback=None, random_state=None):
         self.eta = eta
@@ -173,7 +229,7 @@ class SAGAClassifier(SAGClassifier):
         Pseudo-random number generator state used for random sampling.
     """
 
-    def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
+    def __init__(self, eta='auto', alpha=1.0, beta=0.0, loss="smooth_hinge",
                  penalty=None, gamma=1.0,  max_iter=10, n_inner=1.0,
                  tol=1e-3, verbose=0, callback=None, random_state=None):
             super(SAGAClassifier, self).__init__(
@@ -216,7 +272,7 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
         Pseudo-random number generator state used for random sampling.
     """
 
-    def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
+    def __init__(self, eta='auto', alpha=1.0, beta=0.0, loss="smooth_hinge",
                  penalty=None, gamma=1.0, max_iter=10, n_inner=1.0, tol=1e-3,
                  verbose=0, callback=None, random_state=None):
         self.eta = eta
@@ -280,7 +336,7 @@ class SAGARegressor(SAGRegressor):
         Pseudo-random number generator state used for random sampling.
     """
 
-    def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
+    def __init__(self, eta='auto', alpha=1.0, beta=0.0, loss="smooth_hinge",
                  penalty="l1", max_iter=10, n_inner=1.0, tol=1e-3,
                  verbose=0, callback=None, random_state=None):
             super(SAGARegressor, self).__init__(
