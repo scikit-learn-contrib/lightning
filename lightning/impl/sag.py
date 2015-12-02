@@ -25,7 +25,7 @@ from .sgd_fast import SquaredLoss
 from .sag_fast import L1Penalty
 
 
-def get_auto_step_size(X, alpha, loss, is_saga=False):
+def get_auto_step_size(X, alpha, loss, gamma, is_saga=False):
     """Compute automatic step size for SAG solver
 
     Stepsize computed using the following objective:
@@ -59,6 +59,12 @@ def get_auto_step_size(X, alpha, loss, is_saga=False):
     elif loss == 'squared':
         # inverse Lipschitz constant for squared loss
         stepsize = 1.0 / (L + alpha)
+    elif loss == 'modified_huber':
+        stepsize = 1.0 / (2 * L + alpha)
+    elif loss == 'smooth_hinge':
+        stepsize = gamma / (L + gamma * alpha)
+    elif loss == 'squared_hinge':
+        stepsize = 1.0 /(2 * L + alpha)  
     else:
         raise ValueError("`auto` stepsize is only available for `squared` or "
                          "`log` losses (got `%s` loss). Please specify a "
@@ -100,7 +106,7 @@ class _BaseSAG(object):
 
         if self.eta is None or self.eta == 'auto':
             self.eta = get_auto_step_size(
-                    X, self.alpha, self.loss, self.is_saga)
+                    X, self.alpha, self.loss, self.gamma, self.is_saga)
             if self.verbose > 0:
                 print "Auto stepsize: %s" % self.eta
 
