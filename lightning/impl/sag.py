@@ -4,6 +4,7 @@
 # License: BSD
 
 import numpy as np
+from scipy import sparse
 
 try:
     from sklearn.linear_model.sag_fast import get_max_squared_sum
@@ -12,8 +13,11 @@ except ImportError:
     # this is orders of magnitude slower than the one in scikit-learn,
     # but does not need to convert X to a dense matrix
     def get_max_squared_sum(X):
-        n = X.shape[0]
-        return np.max(np.diag(X.dot(X.T)[range(n), range(n)]))
+        if sparse.issparse(X):
+            n = X.shape[0]
+            return np.max(np.diag(X.dot(X.T)[range(n), range(n)]))
+        else:
+            return np.sum(X ** 2, axis=1).max()
 
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.externals.six.moves import xrange
