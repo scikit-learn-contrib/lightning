@@ -13,7 +13,7 @@ except ImportError:
     # but does not need to convert X to a dense matrix
     def get_max_squared_sum(X):
         n = X.shape[0]
-        return np.max(X.dot(X.T)[range(n), range(n)])
+        return np.max(np.diag(X.dot(X.T)[range(n), range(n)]))
 
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.externals.six.moves import xrange
