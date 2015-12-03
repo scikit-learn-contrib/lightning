@@ -25,7 +25,7 @@ from .sgd_fast import SquaredLoss
 from .sag_fast import L1Penalty
 
 
-def get_auto_step_size(X, alpha, loss, gamma, is_saga=False):
+def get_auto_step_size(X, alpha, loss, gamma):
     """Compute automatic step size for SAG solver
 
     Stepsize computed using the following objective:
@@ -106,7 +106,7 @@ class _BaseSAG(object):
 
         if self.eta is None or self.eta == 'auto':
             self.eta = get_auto_step_size(
-                    X, self.alpha, self.loss, self.gamma, self.is_saga)
+                    X, self.alpha, self.loss, self.gamma)
             if self.verbose > 0:
                 print("Auto stepsize: %s" % self.eta)
 
