@@ -147,8 +147,9 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
 
     Parameters
     ----------
-    eta : float
-        step size for the gradient updates
+    eta : float or string, defaults to 'auto'
+        step size for the gradient updates. If set to 'auto',
+        this will calculate a step size based on the input data.
     alpha : float
         amount of squared L2 regularization
     beta : float
@@ -211,8 +212,9 @@ class SAGAClassifier(SAGClassifier):
 
     Parameters
     ----------
-    eta : float
-        step size for the gradient updates
+    eta : float or string, defaults to 'auto'
+        step size for the gradient updates. If set to 'auto',
+        this will calculate a step size based on the input data.
     alpha : float
         amount of squared L2 regularization
     beta : float
@@ -261,8 +263,9 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
 
     Parameters
     ----------
-    eta : float
-        step size for the gradient updates.
+    eta : float or string, defaults to 'auto'
+        step size for the gradient updates. If set to 'auto',
+        this will calculate a step size based on the input data.
     alpha : float
         amount of squared L2 regularization.
     beta : float
@@ -321,8 +324,9 @@ class SAGARegressor(SAGRegressor):
 
     Parameters
     ----------
-    eta : float
-        step size for the gradient updates
+    eta : float or string, defaults to 'auto'
+        step size for the gradient updates. If set to 'auto',
+        this will calculate a step size based on the input data.
     alpha : float
         amount of squared L2 regularization
     beta : float
