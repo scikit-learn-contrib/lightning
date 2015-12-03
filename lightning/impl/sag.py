@@ -64,7 +64,7 @@ def get_auto_step_size(X, alpha, loss, gamma, is_saga=False):
     elif loss == 'smooth_hinge':
         stepsize = gamma / (L + gamma * alpha)
     elif loss == 'squared_hinge':
-        stepsize = 1.0 /(2 * L + alpha)  
+        stepsize = 1.0 / (2 * L + alpha)
     else:
         raise ValueError("`auto` stepsize is only available for `squared` or "
                          "`log` losses (got `%s` loss). Please specify a "
