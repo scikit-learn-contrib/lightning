@@ -1,11 +1,16 @@
 # Author: Mathieu Blondel
+#         Arnaud Rachez
+#         Fabian Pedregosa
 # License: BSD
 
 import numpy as np
 
 try:
     from sklearn.linear_model.sag_fast import get_max_squared_sum
-except:
+except ImportError:
+    # compatibility for older scikit-learn
+    # this is orders of magnitude slower than the one in scikit-learn,
+    # but does not need to convert X to a dense matrix
     def get_max_squared_sum(X):
         n = X.shape[0]
         return np.max(X.dot(X.T)[range(n), range(n)])
