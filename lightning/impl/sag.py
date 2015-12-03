@@ -108,7 +108,7 @@ class _BaseSAG(object):
             self.eta = get_auto_step_size(
                     X, self.alpha, self.loss, self.gamma, self.is_saga)
             if self.verbose > 0:
-                print "Auto stepsize: %s" % self.eta
+                print("Auto stepsize: %s" % self.eta)
 
         loss = self._get_loss()
         penalty = self._get_penalty()
