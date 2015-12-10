@@ -9,13 +9,11 @@ from scipy import sparse
 try:
     from sklearn.linear_model.sag_fast import get_max_squared_sum
 except ImportError:
-    # compatibility for older scikit-learn
-    # this is orders of magnitude slower than the one in scikit-learn,
-    # but does not need to convert X to a dense matrix
+    # compatibility for scikit-learn 0.15
     def get_max_squared_sum(X):
         if sparse.issparse(X):
-            n = X.shape[0]
-            return np.max(np.diag(X.dot(X.T)[range(n), range(n)]))
+            from sklearn.utils import sparsefuncs_fast
+            return sparsefuncs_fast.csr_row_norms(X).max()
         else:
             return np.sum(X ** 2, axis=1).max()
 
