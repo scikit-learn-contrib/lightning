@@ -1,5 +1,8 @@
 .. -*- mode: rst -*-
 
+.. image:: https://travis-ci.org/mblondel/lightning.svg?branch=master
+    :target: https://travis-ci.org/mblondel/lightning
+
 lightning
 ==========
 
