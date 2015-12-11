@@ -49,10 +49,10 @@ penalty on the News20 dataset (c.f., `Blondel et al. 2013
     clf.fit(X, y)
 
     # Accuracy
-    print clf.score(X, y)
+    print(clf.score(X, y))
 
     # Percentage of selected features
-    print clf.n_nonzero(percentage=True)
+    print(clf.n_nonzero(percentage=True))
 
 Dependencies
 ------------
