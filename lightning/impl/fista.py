@@ -124,6 +124,54 @@ class _BaseFista(object):
 
 class FistaClassifier(BaseClassifier, _BaseFista):
     """Estimator for learning linear classifiers by FISTA.
+
+    The objective functions considered take the form
+
+    minimize F(W) = C * L(W) + alpha * R(W),
+
+    where L(W) is a loss term and R(W) is a penalty term.
+
+    Parameters
+    ----------
+    loss : str, 'squared_hinge', 'log', 'modified_huber', 'squared'
+        The loss function to be used.
+
+    penalty : str, 'l2', 'l1', 'l1/l2'
+        The penalty to be used.
+
+        - l2: ridge
+        - l1: lasso
+        - l1/l2: group lasso
+
+    multiclass : bool
+        Whether to use a direct multiclass formulation (True) or one-vs-rest
+        (False).
+
+    C : float
+        Weight of the loss term.
+
+    alpha : float
+        Weight of the penalty term.
+
+    max_iter : int
+        Maximum number of iterations to perform.
+
+    max_steps : int
+        Maximum number of steps to use during the line search.
+
+    sigma : float
+        Constant used in the line search sufficient decrease condition.
+
+    eta : float
+         Decrease factor for line-search procedure. For example, eta=2.
+         will decrease the step size by a factor of 2 at each iteration
+         of the line-search routine.
+
+    callback : callable
+        Callback function.
+
+    verbose : int
+        Verbosity level.
     """
 
     def __init__(self, C=1.0, alpha=1.0, loss="squared_hinge", penalty="l1",
@@ -137,7 +185,7 @@ class FistaClassifier(BaseClassifier, _BaseFista):
         self.max_iter = max_iter
         self.max_steps = max_steps
         self.eta = eta
-        self.sigma = 1e-5
+        self.sigma = sigma
         self.callback = callback
         self.verbose = verbose
 
@@ -168,6 +216,51 @@ class FistaClassifier(BaseClassifier, _BaseFista):
 
 class FistaRegressor(BaseRegressor, _BaseFista):
     """Estimator for learning linear classifiers by FISTA.
+
+    The objective functions considered take the form
+
+    minimize F(W) = C * L(W) + alpha * R(W),
+
+    where L(W) is a loss term and R(W) is a penalty term.
+
+    Parameters
+    ----------
+    penalty : str, 'l2', 'l1', 'l1/l2'
+        The penalty to be used.
+
+        - l2: ridge
+        - l1: lasso
+        - l1/l2: group lasso
+
+    multiclass : bool
+        Whether to use a direct multiclass formulation (True) or one-vs-rest
+        (False).
+
+    C : float
+        Weight of the loss term.
+
+    alpha : float
+        Weight of the penalty term.
+
+    max_iter : int
+        Maximum number of iterations to perform.
+
+    max_steps : int
+        Maximum number of steps to use during the line search.
+
+    sigma : float
+        Constant used in the line search sufficient decrease condition.
+
+    eta : float
+         Decrease factor for line-search procedure. For example, eta=2.
+         will decrease the step size by a factor of 2 at each iteration
+         of the line-search routine.
+
+    callback : callable
+        Callback function.
+
+    verbose : int
+        Verbosity level.
     """
 
     def __init__(self, C=1.0, alpha=1.0, penalty="l1", multiclass=False,
@@ -180,7 +273,7 @@ class FistaRegressor(BaseRegressor, _BaseFista):
         self.max_iter = max_iter
         self.max_steps = max_steps
         self.eta = eta
-        self.sigma = 1e-5
+        self.sigma = sigma
         self.callback = callback
         self.verbose = verbose
 
