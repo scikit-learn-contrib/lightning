@@ -194,8 +194,6 @@ def _sag_fit(self,
     cdef np.ndarray[double, ndim=1] g_sum_
     cdef np.ndarray[int, ndim=1] all_indices_ = np.arange(n_features, dtype=np.int32)
     g_sum_ = np.zeros(n_features, dtype=np.float64)
-    cdef np.ndarray[double, ndim=1] scale_cumm_
-    scale_cumm_ = np.zeros(n_inner+2, dtype=np.float64)
     cdef np.ndarray[double, ndim=1] lag_scaling_
     lag_scaling_ = np.zeros(n_inner+2, dtype=np.float64)
     cdef np.ndarray[double, ndim=1] scaling_seq_
@@ -208,7 +206,6 @@ def _sag_fit(self,
     cdef double* w_scale = <double*>coef_scale.data
     
     cdef double* g = <double*>grad.data
-    cdef double* scale_cumm = <double*> scale_cumm_.data
     cdef double* lag_scaling = <double*> lag_scaling_.data
 
     cdef int* last = <int*> last_.data
@@ -321,7 +318,7 @@ def _sag_fit(self,
             if nontrivial_prox:
                 penalty.projection_lagged(n_inner, w, g_sum, all_indices, beta * eta / w_scale[0],
                                           eta_avg / w_scale[0],
-                                          scale_cumm, n_features, last,
+                                          lag_scaling, n_features, last,
                                           scaling_seq)
             else:
                 _lagged_update(n_inner, w, g_sum, lag_scaling, all_indices,
