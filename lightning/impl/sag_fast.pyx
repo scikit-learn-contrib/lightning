@@ -81,7 +81,7 @@ cdef class L1Penalty(Penalty):
         for jj in range(n_nz):
             ind = indices[jj]
             missed_updates = t - last[ind]
-            if np.abs(g_sum[ind]) <= stepsize_prox:
+            if fabs(g_sum[ind]) <= stepsize_prox:
                 tmp = w[ind] - stepsize_grad * lag_scaling[missed_updates] * g_sum[ind]
                 w[ind] = fmax(tmp - missed_updates * stepsize_prox, 0) \
                         - fmax(-tmp - missed_updates * stepsize_prox, 0)
@@ -216,16 +216,14 @@ def _sag_fit(self,
     cdef int* all_indices = <int*> all_indices_.data
     cdef double geosum = 1.0
     cdef bint support_lagged = True
+    cdef bint nontrivial_prox = saga and (penalty is not None)
 
-    if not saga:
-        # do not allow penalty with SAG
-        penalty = None
-    if penalty is not None:
+    if nontrivial_prox:
         w_violation_ = np.zeros(n_features, dtype=np.float64)
         w_violation = <double*>w_violation_.data
         support_lagged = penalty.support_lagged
-        # XXX comment
         if support_lagged:
+            # L1 lagged updates requires to have the array of scalings
             scaling_seq_ = np.zeros(n_inner, dtype=np.float64)
             scaling_seq = <double*> scaling_seq_.data
 
@@ -233,7 +231,7 @@ def _sag_fit(self,
     lag_scaling[1] = 1.
     for i in range(2, n_inner + 2):
         geosum *= (1 - eta_alpha)
-        if support_lagged and (penalty is not None):
+        if nontrivial_prox and support_lagged:
             scaling_seq[i-2] = geosum
         lag_scaling[i] = lag_scaling[i-1] + geosum
 
@@ -263,7 +261,7 @@ def _sag_fit(self,
 
             # Apply missed updates.
             if t > 0 and support_lagged:
-                if penalty is not None:
+                if nontrivial_prox:
                     # SAGA with non-trivial prox
                     penalty.projection_lagged(t, w, g_sum, indices, beta * eta / w_scale[0],
                                               eta_avg / w_scale[0],
@@ -300,7 +298,7 @@ def _sag_fit(self,
                     # gradient-average part of the step
                     _lagged_update(t + 1, w, g_sum, lag_scaling, indices,
                                    n_nz, last, eta_avg / w_scale[0])
-                    if penalty is not None:
+                    if nontrivial_prox:
                         # prox update
                         penalty.projection(w, indices, beta * eta / w_scale[0],
                                            n_nz)
@@ -310,7 +308,7 @@ def _sag_fit(self,
                     # using the last array anywhere else
                     _lagged_update(t + 1, w, g_sum, lag_scaling, all_indices,
                                    n_features, last, eta_avg / w_scale[0])
-                    if penalty is not None:
+                    if nontrivial_prox:
                         # prox update
                         penalty.projection(w, all_indices, beta * eta / w_scale[0],
                                            n_features)
@@ -320,7 +318,7 @@ def _sag_fit(self,
 
         # Finalize.
         if support_lagged:
-            if penalty is not None:
+            if nontrivial_prox:
                 penalty.projection_lagged(n_inner, w, g_sum, all_indices, beta * eta / w_scale[0],
                                           eta_avg / w_scale[0],
                                           scale_cumm, n_features, last,
@@ -341,7 +339,7 @@ def _sag_fit(self,
         # Compute optimality violation.
         violation = 0
         alpha_scaled = alpha * w_scale[0]
-        if penalty is not None:
+        if nontrivial_prox:
             for j in xrange(n_features):
                     w_violation[j] = w_scale[0] * w[j] - \
                             eta * (g_sum[j] / n_samples + alpha_scaled * w[j])
