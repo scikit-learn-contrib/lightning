@@ -255,20 +255,22 @@ def test_saga_score():
     assert_equal(pysaga.score(X, y), saga.score(X, y))
 
 
-def test_l1_regularized_saga():
+def test_enet_regularized_saga():
     X_sparse = sparse.rand(100, 50, density=.5, random_state=0).tocsr()
-
     y_sparse = np.random.randint(0, high=2, size=100)
 
     for (X, y) in ((X_bin, y_bin), (X_sparse, y_sparse)):
-        for beta in np.logspace(-3, 3, 10):
-            pysaga = PySAGAClassifier(eta=1e-3, alpha=0.0, beta=beta,
-                                      max_iter=5, penalty='l1', random_state=0)
-            saga = SAGAClassifier(eta=1e-3, alpha=0.0, beta=beta, max_iter=5,
-                                  penalty='l1', random_state=0, tol=1e-24)
-            pysaga.fit(X, y)
-            saga.fit(X, y)
-            np.testing.assert_array_almost_equal(pysaga.coef_, saga.coef_)
+        for alpha in np.logspace(-3, 3, 10):
+            for beta in np.logspace(-3, 3, 10):
+                pysaga = PySAGAClassifier(
+                    eta=1e-3, alpha=alpha, beta=beta,
+                    max_iter=5, penalty='l1', random_state=0)
+                saga = SAGAClassifier(
+                    eta=1e-3, alpha=alpha, beta=beta, max_iter=5,
+                    penalty='l1', random_state=0, tol=1e-24)
+                pysaga.fit(X, y)
+                saga.fit(X, y)
+                np.testing.assert_array_almost_equal(pysaga.coef_, saga.coef_)
 
 
 def test_l2_regularized_saga():
