@@ -82,13 +82,14 @@ cdef class L1Penalty(Penalty):
             ind = indices[jj]
             missed_updates = t - last[ind]
             if fabs(g_sum[ind]) <= stepsize_prox:
-                tmp = w[ind] - stepsize_grad * lag_scaling[missed_updates] * g_sum[ind]
-                w[ind] = fmax(tmp - missed_updates * stepsize_prox, 0) \
-                        - fmax(-tmp - missed_updates * stepsize_prox, 0)
+                w[ind] -= stepsize_grad * lag_scaling[missed_updates] * g_sum[ind]
+                w[ind] = fmax(w[ind] - lag_scaling[missed_updates] * stepsize_prox, 0) \
+                        - fmax(-w[ind] - lag_scaling[missed_updates] * stepsize_prox, 0)
             else:
                 for i in range(missed_updates, 0, -1):
-                    tmp = w[ind] / scaling_seq[i-1] - stepsize_grad * g_sum[ind]
-                    w[ind] = fmax(tmp - stepsize_prox, 0) - fmax(-tmp - stepsize_prox, 0)
+                    w[ind] -= scaling_seq[i-1] * stepsize_grad * g_sum[ind]
+                    tmp = stepsize_prox * scaling_seq[i-1]
+                    w[ind] = fmax(w[ind] - tmp, 0) - fmax(-w[ind] - tmp, 0)
             last[ind] = t
         return
 
@@ -178,8 +179,14 @@ def _sag_fit(self,
     cdef int i, jj, j, it, t
     cdef double y_pred, scale, g_old, tmp, alpha_scaled
     cdef double violation, violation_init, violation_ratio
-    cdef double eta_avg = eta / n_samples
     cdef double eta_alpha = eta * alpha
+    if eta_alpha == 1.:
+        # this is a problem because then w_scale[0]
+        # becomes zero. Solution: decrease slightly eta
+        eta = 0.9 * eta
+        eta_alpha = eta * alpha
+
+    cdef double eta_avg = eta / n_samples
     cdef double g_change = 0.
     cdef int has_callback = callback is not None
 
@@ -221,15 +228,16 @@ def _sag_fit(self,
         support_lagged = penalty.support_lagged
         if support_lagged:
             # L1 lagged updates requires to have the array of scalings
-            scaling_seq_ = np.zeros(n_inner, dtype=np.float64)
+            scaling_seq_ = np.zeros(n_inner+1, dtype=np.float64)
             scaling_seq = <double*> scaling_seq_.data
+            scaling_seq[0] = 1.
 
     lag_scaling[0] = 0.
     lag_scaling[1] = 1.
     for i in range(2, n_inner + 2):
         geosum *= (1 - eta_alpha)
         if nontrivial_prox and support_lagged:
-            scaling_seq[i-2] = geosum
+            scaling_seq[i-1] = geosum
         lag_scaling[i] = lag_scaling[i-1] + geosum
 
     # Initialize gradient memory.
@@ -281,11 +289,11 @@ def _sag_fit(self,
             # Update coefficient scale (l2 regularization).
             w_scale[0] *= (1 - eta_alpha)
             # Take care of possible underflows.
+
             if w_scale[0] < 1e-9:
                 for j in xrange(n_features):
                     w[j] *= w_scale[0]
                 w_scale[0] = 1.0
-
 
             if saga:
                 # update w with sparse step bit
@@ -323,6 +331,7 @@ def _sag_fit(self,
             else:
                 _lagged_update(n_inner, w, g_sum, lag_scaling, all_indices,
                                n_features, last, eta_avg / w_scale[0])
+
         for j in range(n_features):
             last[j] = 0
             last_penalty_update[j] = 0
@@ -341,7 +350,7 @@ def _sag_fit(self,
                     w_violation[j] = w_scale[0] * w[j] - \
                             eta * (g_sum[j] / n_samples + alpha_scaled * w[j])
 
-            penalty.projection(w_violation, all_indices, beta * eta,
+            penalty.projection(w_violation, all_indices, beta * eta / w_scale[0],
                                n_features)
 
             for j in xrange(n_features):
