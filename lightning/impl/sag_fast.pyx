@@ -268,9 +268,10 @@ def _sag_fit(self,
             if t > 0 and support_lagged:
                 if nontrivial_prox:
                     # SAGA with non-trivial prox
-                    penalty.projection_lagged(t, w, g_sum, indices, beta * eta / w_scale[0],
-                                              eta_avg / w_scale[0],
-                                              lag_scaling, n_nz, last, scaling_seq)
+                    penalty.projection_lagged(
+                        t, w, g_sum, indices, beta * eta / w_scale[0],
+                        eta_avg / w_scale[0], lag_scaling, n_nz, last,
+                        scaling_seq)
                 else:
                     # SAG or SAGA with trivial prox
                     _lagged_update(t, w, g_sum, lag_scaling, indices,
@@ -324,10 +325,10 @@ def _sag_fit(self,
         # Finalize.
         if support_lagged:
             if nontrivial_prox:
-                penalty.projection_lagged(n_inner, w, g_sum, all_indices, beta * eta / w_scale[0],
-                                          eta_avg / w_scale[0],
-                                          lag_scaling, n_features, last,
-                                          scaling_seq)
+                penalty.projection_lagged(
+                    n_inner, w, g_sum, all_indices, beta * eta / w_scale[0],
+                    eta_avg / w_scale[0], lag_scaling, n_features, last,
+                    scaling_seq)
             else:
                 _lagged_update(n_inner, w, g_sum, lag_scaling, all_indices,
                                n_features, last, eta_avg / w_scale[0])
