@@ -52,7 +52,10 @@ class L2Penalty(object):
         return self.l2 * np.sum(coef**2)
 
 
-def _fit_sag(X, y, eta, alpha, loss, penalty, max_iter, rng):
+def _fit_sag(X, y, eta, alpha, loss, max_iter, rng):
+
+    if sparse.issparse(X):
+        X = X.toarray()
 
     n_samples, n_features = X.shape
     n_vectors = y.shape[1]
@@ -72,14 +75,15 @@ def _fit_sag(X, y, eta, alpha, loss, penalty, max_iter, rng):
             p = coef_.dot(X[i])
             gi = -loss.get_update(p, y[i]) * X[i]
             coef_ -= eta * ((gi - g[i] + d) / n_samples + alpha * coef_)
-            if penalty is not None:
-                coef_ = penalty.projection(coef_, eta)
             d += gi - g[i]
             g[i] = gi
     return coef_
 
 
 def _fit_saga(X, y, eta, alpha, loss, penalty, max_iter, rng):
+
+    if sparse.issparse(X):
+        X = X.toarray()
 
     n_samples, n_features = X.shape
     n_vectors = y.shape[1]
@@ -151,10 +155,17 @@ class PySAGClassifier(BaseClassifier):
                               dtype=np.float64)
 
         if self.eta is None or self.eta == 'auto':
-            self.eta = get_auto_step_size(
+            eta = get_auto_step_size(
                     X, self.alpha, self.loss, self.is_saga)
+        else:
+            eta = self.eta
 
-        self.loss = self._get_loss(self.loss)
+        if self.alpha * eta == 1:
+            # to match the beaviour of SAGA
+            # in this case SAGA decreases slightly eta
+            eta *= 0.9
+
+        loss = self._get_loss(self.loss)
         self.penalty = self._get_penalty(self.penalty)
 
         if not self.is_saga and self.penalty is not None:
@@ -162,11 +173,11 @@ class PySAGClassifier(BaseClassifier):
                              "use `saga=True` or PySAGAClassifier.")
 
         if self.is_saga:
-            self.coef_ = _fit_saga(X, y, self.eta, self.alpha, self.loss,
+            self.coef_ = _fit_saga(X, y, eta, self.alpha, loss,
                                    self.penalty, self.max_iter, self.rng)
         else:
-            self.coef_ = _fit_sag(X, y, self.eta, self.alpha, self.loss,
-                                  self.penalty, self.max_iter, self.rng)
+            self.coef_ = _fit_sag(X, y, eta, self.alpha, loss,
+                                  self.max_iter, self.rng)
 
 
 class PySAGAClassifier(PySAGClassifier):
@@ -249,15 +260,25 @@ def test_saga_score():
     assert_equal(pysaga.score(X, y), saga.score(X, y))
 
 
-def test_l1_regularized_saga():
-    beta = 1e-3
-    pysaga = PySAGAClassifier(eta=1e-3, alpha=0.0, beta=beta, max_iter=10,
-                              penalty='l1', random_state=0)
-    saga = SAGAClassifier(eta=1e-3, alpha=0.0, beta=beta, max_iter=10,
-                          penalty='l1', random_state=0)
-    pysaga.fit(X_bin, y_bin)
-    saga.fit(X_bin, y_bin)
-    np.testing.assert_array_almost_equal(pysaga.coef_, saga.coef_)
+def test_enet_regularized_saga():
+    X_sparse = sparse.rand(100, 50, density=.5, random_state=0).tocsr()
+    y_sparse = np.random.randint(0, high=2, size=100)
+
+    eta = 1e-3
+
+    for (X, y) in ((X_bin, y_bin), (X_sparse, y_sparse)):
+        for alpha in np.logspace(-3, 3, 5):
+            for beta in np.logspace(-3, 3, 5):
+                pysaga = PySAGAClassifier(
+                    eta=eta, alpha=alpha, beta=beta,
+                    max_iter=5, penalty='l1', random_state=0)
+                saga = SAGAClassifier(
+                    eta=eta, alpha=alpha, beta=beta, max_iter=5,
+                    penalty='l1', random_state=0, tol=1e-24)
+
+                pysaga.fit(X, y)
+                saga.fit(X, y)
+                np.testing.assert_array_almost_equal(pysaga.coef_, saga.coef_)
 
 
 def test_l2_regularized_saga():

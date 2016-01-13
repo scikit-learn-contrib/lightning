@@ -210,7 +210,7 @@ class SAGAClassifier(SAGClassifier):
     Solves the following objective:
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
-                    + alpha * 0.5 * ||w||^2_2
+                    + alpha * 0.5 * ||w||^2_2 + beta * penalty(w)
 
     Parameters
     ----------
