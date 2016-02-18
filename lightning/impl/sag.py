@@ -12,6 +12,7 @@ except ImportError:
     # compatibility for scikit-learn 0.15
     def get_max_squared_sum(X):
         if sparse.issparse(X):
+            X = X.tocsr()
             from sklearn.utils import sparsefuncs_fast
             return sparsefuncs_fast.csr_row_norms(X).max()
         else:
@@ -59,19 +60,20 @@ def get_auto_step_size(X, alpha, loss, gamma):
 
     """
     L = get_max_squared_sum(X)
+    n_samples = X.shape[0]
 
     if loss == 'log':
         # inverse Lipschitz constant for log loss
-        stepsize = 4.0 / (L + 4.0 * alpha)
+        stepsize = 4.0 / (L + 4.0 * n_samples * alpha)
     elif loss == 'squared':
         # inverse Lipschitz constant for squared loss
-        stepsize = 1.0 / (L + alpha)
+        stepsize = 1.0 / (L + n_samples * alpha)
     elif loss == 'modified_huber':
-        stepsize = 1.0 / (2 * L + alpha)
+        stepsize = 1.0 / (2 * L + n_samples * alpha)
     elif loss == 'smooth_hinge':
-        stepsize = gamma / (L + gamma * alpha)
+        stepsize = gamma / (L + gamma * n_samples * alpha)
     elif loss == 'squared_hinge':
-        stepsize = 1.0 / (2 * L + alpha)
+        stepsize = 1.0 / (2 * L + n_samples * alpha)
     else:
         raise ValueError("`auto` stepsize is only available for `squared` or "
                          "`log` losses (got `%s` loss). Please specify a "
