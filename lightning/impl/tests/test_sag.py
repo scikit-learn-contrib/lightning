@@ -227,6 +227,16 @@ def test_sag_score():
     assert_equal(pysag.score(X, y), sag.score(X, y))
 
 
+def test_sag_proba():
+    n_samples = 10
+    X, y = make_classification(n_samples, random_state=0)
+    sag = SAGClassifier(eta=1e-3, alpha=0.0, beta=0.0, max_iter=10,
+                        loss='log', random_state=0)
+    sag.fit(X, y)
+    probas = sag.predict_proba(X)
+    assert_equal(probas.sum(), n_samples)
+
+
 def test_no_reg_sag():
 
     pysag = PySAGClassifier(eta=1e-3, alpha=0.0, max_iter=10, random_state=0)
