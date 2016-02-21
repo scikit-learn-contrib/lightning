@@ -1,8 +1,7 @@
 .. -*- mode: rst -*-
 
-.. image:: https://travis-ci.org/mblondel/lightning.svg?branch=master
-    :target: https://travis-ci.org/mblondel/lightning
-
+.. image:: https://travis-ci.org/scikit-learn-contrib/lightning.svg?branch=master
+    :target: https://travis-ci.org/scikit-learn-contrib/lightning
 lightning
 ==========
 
