@@ -4,7 +4,7 @@ Trace norm
 ===========
 
 """
-print __doc__
+print(__doc__)
 import numpy as np
 from scipy.linalg import svd
 
@@ -38,8 +38,8 @@ clf = FistaClassifier(C=1.0 / X_train.shape[0],
                       multiclass=True)
 
 for alpha in (1e-3, 1e-2, 0.1, 0.2, 0.3):
-    print "alpha=", alpha
+    print("alpha=", alpha)
     clf.alpha = alpha
     clf.fit(X_train, y_train)
-    print clf.score(X_test, y_test)
-    print rank(clf.coef_)
+    print(clf.score(X_test, y_test))
+    print(rank(clf.coef_))

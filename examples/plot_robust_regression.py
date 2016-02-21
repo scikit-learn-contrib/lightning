@@ -4,7 +4,7 @@ Robust regression
 ==================
 
 """
-print __doc__
+print(__doc__)
 
 import numpy as np
 import pylab as pl

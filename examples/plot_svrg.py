@@ -2,8 +2,11 @@
 =======================================
 Sensitivity to hyper-parameters in SVRG
 =======================================
+
+This example shows the sensitivity of SVRG with respect
+to different hyperparameters.
 """
-print __doc__
+print(__doc__)
 
 import sys
 import time
@@ -65,7 +68,7 @@ y = y * 2 - 1
 plt.figure()
 
 for eta in etas:
-    print "eta =", eta
+    print("eta =", eta)
     cb = Callback(X, y)
     clf = SVRGClassifier(loss="squared_hinge", alpha=1e-5, eta=eta,
                          n_inner=1.0, max_iter=20, random_state=0, callback=cb)
@@ -79,7 +82,7 @@ plt.legend()
 plt.figure()
 
 for n_inner in n_inners:
-    print "n_inner =", n_inner
+    print("n_inner =", n_inner)
     cb = Callback(X, y)
     clf = SVRGClassifier(loss="squared_hinge", alpha=1e-5, eta=1e-4,
                          n_inner=n_inner, max_iter=20, random_state=0,

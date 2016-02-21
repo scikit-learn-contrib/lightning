@@ -44,6 +44,6 @@ clfs = (CDClassifier(loss="squared_hinge",
                       random_state=0))
 
 for clf in clfs:
-    print clf.__class__.__name__
+    print(clf.__class__.__name__)
     clf.fit(X_tr, y_tr)
-    print clf.score(X_te, y_te)
+    print(clf.score(X_te, y_te))

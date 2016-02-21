@@ -2,8 +2,10 @@
 =====================
 L2 solver comparison
 =====================
+
+This example compares different solvers with L2 regularization.
 """
-print __doc__
+print(__doc__)
 
 import sys
 import time
@@ -102,7 +104,7 @@ for clf, name in ((clf1, "SVRG"),
                   (clf3, "PCD"),
                   (clf4, "AdaGrad"),
                   (clf5, "SAG")):
-    print name
+    print(name)
     cb = Callback(X, y)
     clf.callback = cb
 
