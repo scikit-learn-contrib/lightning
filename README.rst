@@ -81,12 +81,12 @@ To install lightning from source, type::
 Documentation
 -------------
 
-http://www.mblondel.org/lightning/
+http://scikit-learn-contrib.github.io/lightning/
 
 On Github
 ---------
 
-https://github.com/mblondel/lightning
+https://github.com/scikit-learn-contrib/lightning
 
 
 Author
