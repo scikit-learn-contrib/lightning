@@ -69,11 +69,11 @@ Installation
 
 To install lightning from pip, type::
 
-    pip install https://github.com/mblondel/lightning/archive/master.zip
+    pip install https://github.com/scikit-learn-contrib/lightning/archive/master.zip
 
 To install lightning from source, type::
 
-  git clone https://github.com/mblondel/lightning.git
+  git clone https://github.com/scikit-learn-contrib/lightning.git
   cd lightning
   python setup.py build
   sudo python setup.py install
