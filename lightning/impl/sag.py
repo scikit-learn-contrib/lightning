@@ -12,6 +12,7 @@ except ImportError:
     # compatibility for scikit-learn 0.15
     def get_max_squared_sum(X):
         if sparse.issparse(X):
+            X = X.tocsr()
             from sklearn.utils import sparsefuncs_fast
             return sparsefuncs_fast.csr_row_norms(X).max()
         else:
