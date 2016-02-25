@@ -81,7 +81,7 @@ To install lightning from source, type::
 Documentation
 -------------
 
-http://scikit-learn-contrib.github.io/lightning/
+http://contrib.scikit-learn.org/lightning/
 
 On Github
 ---------
