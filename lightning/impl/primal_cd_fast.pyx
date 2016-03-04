@@ -6,13 +6,10 @@
 # Author: Mathieu Blondel
 # License: BSD
 
-import sys
-
 import numpy as np
 cimport numpy as np
 
 from libc.math cimport fabs, exp, log, sqrt
-from libc.float cimport DBL_MAX
 
 from lightning.impl.randomkit.random_fast cimport RandomState
 from lightning.impl.dataset_fast cimport ColumnDataset
@@ -323,6 +320,11 @@ cdef class LossFunction:
         cdef double* w_ptr = <double*>w.data
         cdef double z_diff, g_norm
         cdef int nv = n_samples * n_vectors
+
+        # getting DBL_MAX from float.h fails for some reason on
+        # MSVC 9.0 (which is needed to compile on Python 2.7)
+        # To avoid it we take this constant from numpy
+        cdef double DBL_MAX = np.finfo(np.double).max
 
         # Data pointers
         cdef double* data
@@ -691,6 +693,7 @@ cdef class SquaredHinge(LossFunction):
         cdef int ii, i, k
         cdef double tmp, tmp2, b_val
         cdef double* b_ptr = b
+        cdef double DBL_MAX = np.finfo(np.double).max
 
         # Largest second derivative.
         Lpp_max[0] = 0
@@ -1034,6 +1037,7 @@ cdef class Log(LossFunction):
         cdef int ii, i, k
         cdef double Lpp, tmp, tmp2
         cdef double* b_ptr
+        cdef double DBL_MAX = np.finfo(np.double).max
 
         # Objective value
         L[0] = 0
@@ -1235,6 +1239,7 @@ def _primal_cd(self,
     cdef int n_vectors = w.shape[0]
     cdef int active_size = active_set.shape[0]
     cdef int active_size_start = active_size
+    cdef double DBL_MAX = np.finfo(np.double).max
 
     # Counters
     cdef int t, s, i, j, n
