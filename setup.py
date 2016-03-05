@@ -8,7 +8,7 @@ import setuptools
 from numpy.distutils.core import setup
 
 
-DISTNAME = 'skcontrib-lightning'
+DISTNAME = 'sklearn-contrib-lightning'
 DESCRIPTION = "Large-scale sparse linear classification, " + \
               "regression and ranking in Python"
 LONG_DESCRIPTION = open('README.rst').read()

@@ -86,7 +86,7 @@ cache:
   - '%APPDATA%\pip\Cache'
 
 deploy:
-  release: sklearn-v0.1-pre
+  release: sklearn-contrib-lightning-v0.1.dev0
   description: 'Release description'
   provider: GitHub
   auth_token:
