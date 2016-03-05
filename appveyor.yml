@@ -46,7 +46,7 @@ install:
   - ps: "ls dist"
 
   # Install the generated wheel package to test it
-  - "pip install --pre --no-index --find-links dist/ skcontrib-lightning"
+  - "pip install --pre --no-index --find-links dist/ sklearn-contrib-lightning"
 
 # Not a .NET project, we build scikit-learn in the install step instead
 build: false
