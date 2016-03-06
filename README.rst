@@ -93,7 +93,10 @@ On Github
 https://github.com/scikit-learn-contrib/lightning
 
 
-Author
-------
+Authors
+-------
 
-Mathieu Blondel, 2012-present
+- Mathieu Blondel, 2012-present
+- Manoj Kumar, 2015-present
+- Arnaud Rachez, 2016-present
+- Fabian Pedregosa, 2016-present
