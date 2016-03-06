@@ -1,4 +1,2 @@
 
-#__all__ = ["datasets", ...]
-
-__version__ = "0.1-git"
+__version__ = "0.1.dev0"

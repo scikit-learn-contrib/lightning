@@ -13,11 +13,15 @@ cimport numpy as np
 
 ctypedef np.int64_t LONG
 
-from libc.math cimport sqrt, fabs, fmax
+from libc.math cimport sqrt, fabs
 
 from lightning.impl.randomkit.random_fast cimport RandomState
 from lightning.impl.dataset_fast cimport RowDataset
 from lightning.impl.sgd_fast cimport LossFunction
+
+# Reimplementation for MSVC support
+cdef inline double fmax(double a, double b) nogil:
+    return max(a, b)
 
 
 cdef class Penalty:
