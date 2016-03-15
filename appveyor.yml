@@ -51,7 +51,8 @@ install:
   - ps: "ls dist"
   # build the conda package
   - "%CMD_IN_ENV% conda build build_tools/conda-recipe --quiet"
-  # Move the conda package into the current directory, to register it
+
+  # Move the conda package into the dist directory, to register it
   # as an "artifact" for Appveyor. cmd.exe does't have good globbing, so
   # we'll use a simple python script.
   - python build_tools/move-conda-package.py build_tools/conda-recipe
