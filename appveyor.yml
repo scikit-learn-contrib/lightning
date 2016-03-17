@@ -1,7 +1,6 @@
 # AppVeyor.com is a Continuous Integration service to build and run tests under
 # Windows
-# XXX link
-# TODO: conda build https://github.com/rmcgibbo/python-appveyor-conda-example
+# https://ci.appveyor.com/project/fabianp/lightning-bpc6r
 environment:
   global:
     # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
@@ -13,26 +12,28 @@ environment:
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.8"
       PYTHON_ARCH: "32"
+      MINICONDA: "C:\\Miniconda"
 
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.8"
       PYTHON_ARCH: "64"
+      MINICONDA: "C:\\Miniconda-x64"
 
     - PYTHON: "C:\\Python35"
       PYTHON_VERSION: "3.5.0"
       PYTHON_ARCH: "32"
+      MINICONDA: "C:\\Miniconda35"
 
     - PYTHON: "C:\\Python35-x64"
       PYTHON_VERSION: "3.5.0"
       PYTHON_ARCH: "64"
+      MINICONDA: "C:\\Miniconda35-x64"
 
 
 
 install:
-  # Install Python (from the official .msi of http://python.org) and pip when
-  # not already installed.
-  - "powershell ./build_tools/appveyor/install.ps1"
-  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  # Miniconda is pre-installed in the worker build
+  - "SET PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
   - "python -m pip install -U pip"
 
   # Check that we have the expected version and architecture for Python
@@ -40,10 +41,21 @@ install:
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
   - "pip --version"
 
+  # Remove cygwin because it clashes with conda
+  # see http://help.appveyor.com/discussions/problems/3712-git-remote-https-seems-to-be-broken
+  - rmdir C:\\cygwin /s /q
+
   # Install the build and runtime dependencies of the project.
-  - "%CMD_IN_ENV% pip install --timeout=60 --trusted-host 28daf2247a33ed269873-7b1aad3fab3cc330e1fd9d109892382a.r6.cf2.rackcdn.com -r build_tools/appveyor/requirements.txt"
+  - conda install --quiet --yes numpy scipy cython nose scikit-learn wheel conda-build"
   - "%CMD_IN_ENV% python setup.py bdist_wheel bdist_wininst"
   - ps: "ls dist"
+  # build the conda package
+  - "%CMD_IN_ENV% conda build build_tools/conda-recipe --quiet"
+
+  # Move the conda package into the dist directory, to register it
+  # as an "artifact" for Appveyor. cmd.exe does't have good globbing, so
+  # we'll use a simple python script.
+  - python build_tools/move-conda-package.py build_tools/conda-recipe
 
   # Install the generated wheel package to test it
   - "pip install --pre --no-index --find-links dist/ sklearn-contrib-lightning"
@@ -65,35 +77,3 @@ test_script:
 artifacts:
   # Archive the generated wheel package in the ci.appveyor.com build report.
   - path: dist\*
-
-# on_success:
-#   # Upload the generated wheel package to Rackspace
-#   # On Windows, Apache Libcloud cannot find a standard CA cert bundle so we
-#   # disable the ssl checks.
-#   - "python -m wheelhouse_uploader upload --no-ssl-check --local-folder=dist skcontrib-windows-wheels"
-
-# notifications:
-#   - provider: Webhook
-#     url: https://webhooks.gitter.im/e/0dc8e57cd38105aeb1b4
-#     on_build_success: false
-#     on_build_failure: True
-
-cache:
-  # Use the appveyor cache to avoid re-downloading large archives such
-  # the MKL numpy and scipy wheels mirrored on a rackspace cloud
-  # container, speed up the appveyor jobs and reduce bandwidth
-  # usage on our rackspace account.
-  - '%APPDATA%\pip\Cache'
-
-deploy:
-  release: sklearn-contrib-lightning-v0.1.dev0
-  description: 'Release description'
-  provider: GitHub
-  auth_token:
-    secure: 0A1QzwQzJvSWKtRIW+OxpXM51F3FXBPy04fqB/lTOZeGGPMSEOO4TI91EU8vcveG # your encrypted token from GitHub
-  artifact: /.*\.exe/            # upload all executables
-  draft: false
-  prerelease: false
-  on:
-    branch: master                 # release from master branch only
-    appveyor_repo_tag: true        # deploy on tag push only
