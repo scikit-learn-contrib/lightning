@@ -1,9 +1,10 @@
+sudo: false
 language: python
 python:
   - "2.7"
   - "3.3"
+  - "3.4"
 install:
-  - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
@@ -16,12 +17,13 @@ install:
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
+  - conda install conda-build
   # Useful for debugging any issues with conda
   - conda info -a
 
-  # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy nose cython scikit-learn=0.15
   - source activate test-environment
   - make all
+  - conda build build_tools/conda-recipe --quiet
 script:
 - nosetests -v
