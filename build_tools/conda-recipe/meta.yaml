@@ -1,6 +1,6 @@
 package:
   name: lightning
-  version: "0.1"
+  version: "0.2.dev0"
 
 source:
   git_url: https://github.com/scikit-learn-contrib/lightning.git
