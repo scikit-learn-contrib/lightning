@@ -35,50 +35,42 @@ from .sag_fast import L1Penalty
 
 def get_auto_step_size(X, alpha, loss, gamma):
     """Compute automatic step size for SAG solver
-
     Stepsize computed using the following objective:
-
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2
-
     Parameters
     ----------
     X : ndarray
         Array of samples x_i.
-
     alpha : float
         Constant that multiplies the l2 penalty term.
-
     loss : string, in {"log", "squared"}
         The loss function used in SAG solver.
-
 
     Returns
     -------
     step_size : float
         Step size used in SAG/SAGA solver.
-
     """
     L = get_max_squared_sum(X)
+    n_samples = X.shape[0]
 
     if loss == 'log':
         # inverse Lipschitz constant for log loss
-        stepsize = 4.0 / (L + 4.0 * alpha)
+        lipschitz_constant = 0.25 * L + n_samples * alpha
     elif loss == 'squared':
-        # inverse Lipschitz constant for squared loss
-        stepsize = 1.0 / (L + alpha)
+        lipschitz_constant = L + n_samples * alpha
     elif loss == 'modified_huber':
-        stepsize = 1.0 / (2 * L + alpha)
+        lipschitz_constant = 2 * L + n_samples * alpha
     elif loss == 'smooth_hinge':
-        stepsize = gamma / (L + gamma * alpha)
+        lipschitz_constant = L + gamma + n_samples * alpha
     elif loss == 'squared_hinge':
-        stepsize = 1.0 / (2 * L + alpha)
+        lipschitz_constant = 2 * L + n_samples * alpha
     else:
         raise ValueError("`auto` stepsize is only available for `squared` or "
                          "`log` losses (got `%s` loss). Please specify a "
                          "stepsize." % loss)
-
-    return stepsize
+    return 1.0 / lipschitz_constant
 
 
 class _BaseSAG(object):
