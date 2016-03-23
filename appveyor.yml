@@ -57,6 +57,9 @@ install:
   # we'll use a simple python script.
   - python build_tools/move-conda-package.py build_tools/conda-recipe
 
+  # upload (only for stable branches!)
+  - anaconda -t %CONDATOKEN% upload dist/*.tar.bz2 --user scikit-learn-contrib
+
   # Install the generated wheel package to test it
   - "pip install --pre --no-index --find-links dist/ sklearn-contrib-lightning"
 
