@@ -31,7 +31,11 @@ install:
   - ls dist
   - conda install --quiet --yes anaconda-client
   - anaconda -t $ANACONDA_TOKEN upload dist/*.tar.bz2 --user scikit-learn-contrib
-  - python setup.py sdist bdist_wheel
+  - python setup.py bdist_wheel
+  # only do this once to avoid conflicts
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      python setup.py sdist
+    fi
   - pip install twine
   - twine upload --username $PYPYUSERNAME --password $PYPYPASS dist
 
