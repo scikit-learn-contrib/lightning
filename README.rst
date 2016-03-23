@@ -63,19 +63,22 @@ penalty on the News20 dataset (c.f., `Blondel et al. 2013
 Dependencies
 ------------
 
-lightning needs Python >= 2.7, setuptools, Numpy >= 1.3, SciPy >= 0.7,
-scikit-learn >= 0.15 and a working C/C++ compiler.
-
-To run the tests you will also need nose >= 0.10.
+lightning requires Python >= 2.7, setuptools, Numpy >= 1.3, SciPy >= 0.7 and
+scikit-learn >= 0.15. Building from source also requires Cython and a working C/C++ compiler. To run the tests you will also need nose >= 0.10.
 
 Installation
 ------------
 
-To install lightning from pip, type::
+Precompiled binaries for the stable version of this library are available for the main platforms and can be installed using pip::
 
-    pip install https://github.com/scikit-learn-contrib/lightning/archive/master.zip
+    pip install sklearn-contrib-lightning
 
-To install lightning from source, type::
+or conda::
+
+    conda install -c https://conda.anaconda.org/scikit-learn-contrib lightning
+
+
+The development version of lightning can be installed from its git repository. In this case it is assumed that you have the git version control system, a working C++ compiler, Cython and the numpy development libraries. In order to install this verion, type::
 
   git clone https://github.com/scikit-learn-contrib/lightning.git
   cd lightning
