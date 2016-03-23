@@ -31,6 +31,9 @@ install:
   - ls dist
   - conda install --quiet --yes anaconda-client
   - anaconda -t $ANACONDA_TOKEN upload dist/*.tar.bz2 --user scikit-learn-contrib
+  - python setup.py sdist bdist_wheel
+  - pip install twine
+  - twine upload --username $PYPYUSERNAME --password $PYPYPASS dist
 
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy nose cython scikit-learn anaconda-client
