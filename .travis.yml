@@ -39,7 +39,7 @@ install:
   # upload a distribution package to PYPI. on do this on \
   # stable branches
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      python setup.py sdist
+      python setup.py sdist;
     fi
   - python setup.py bdist_wheel
   - pip install twine
