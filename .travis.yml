@@ -2,8 +2,8 @@ sudo: false
 language: python
 python:
   - "2.7"
-  - "3.3"
   - "3.4"
+  - "3.5"
 install:
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
@@ -26,4 +26,4 @@ install:
   - make all
   - conda build build_tools/conda-recipe --quiet
 script:
-- nosetests -v
+  - nosetests -v
