@@ -69,7 +69,7 @@ scikit-learn >= 0.15. Building from source also requires Cython and a working C/
 Installation
 ------------
 
-Precompiled binaries for the stable version of this library are available for the main platforms and can be installed using pip::
+Precompiled binaries for the stable version of lightning are available for the main platforms and can be installed using pip::
 
     pip install sklearn-contrib-lightning
 
