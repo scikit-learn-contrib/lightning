@@ -29,7 +29,9 @@ from .sgd_fast import ModifiedHuber
 from .sgd_fast import SmoothHinge
 from .sgd_fast import SquaredHinge
 from .sgd_fast import Log
+from .sgd_fast import LogWeighted
 from .sgd_fast import SquaredLoss
+from .sgd_fast import SquaredLossWeighted
 from .sag_fast import L1Penalty
 
 
@@ -83,14 +85,20 @@ def get_auto_step_size(X, alpha, loss, gamma):
 
 class _BaseSAG(object):
 
-    def _get_loss(self):
-        losses = {
-            "modified_huber": ModifiedHuber(),
-            "smooth_hinge": SmoothHinge(self.gamma),
-            "squared_hinge": SquaredHinge(1.0),
-            "log": Log(),
-            "squared": SquaredLoss(),
-        }
+    def _get_loss(self, sample_weight):
+        if sample_weight is None:
+            losses = {
+                "modified_huber": ModifiedHuber(),
+                "smooth_hinge": SmoothHinge(self.gamma),
+                "squared_hinge": SquaredHinge(1.0),
+                "log": Log(),
+                "squared": SquaredLoss(),
+            }
+        else:
+            losses = {
+                "log": LogWeighted(sample_weight),
+                "squared": SquaredLossWeighted(sample_weight),
+            }
         return losses[self.loss]
 
     def _get_penalty(self):
@@ -108,9 +116,12 @@ class _BaseSAG(object):
         self.coef_ *= self.coef_scale_
         self.coef_scale_.fill(1.0)
 
-    def _fit(self, X, Y):
+    def _fit(self, X, Y, sample_weight=None):
         n_samples, n_features = X.shape
         rng = self._get_random_state()
+
+        if sample_weight is not None:
+            sample_weight = np.asarray(sample_weight, dtype=np.float64)
 
         if self.eta is None or self.eta == 'auto':
             self.eta = get_auto_step_size(
@@ -118,7 +129,7 @@ class _BaseSAG(object):
             if self.verbose > 0:
                 print("Auto stepsize: %s" % self.eta)
 
-        loss = self._get_loss()
+        loss = self._get_loss(sample_weight)
         penalty = self._get_penalty()
         n_vectors = Y.shape[1]
         n_inner = int(self.n_inner * n_samples)
@@ -193,14 +204,14 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
         self.random_state = random_state
         self.is_saga = False
 
-    def fit(self, X, y):
+    def fit(self, X, y, sample_weight=None):
         if not self.is_saga and self.penalty is not None:
             raise ValueError('Penalties in SAGClassifier. Please use '
                              'SAGAClassifier instead.'
                              '.')
         self._set_label_transformers(y, neg_label=-1)[0]
         y_binary = self.label_binarizer_.transform(y).astype(np.float64)
-        return self._fit(X, y_binary)
+        return self._fit(X, y_binary, sample_weight=sample_weight)
 
 
 class SAGAClassifier(SAGClassifier):

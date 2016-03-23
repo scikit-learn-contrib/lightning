@@ -65,7 +65,7 @@ def _fit_sag(X, y, eta, alpha, loss, max_iter, rng):
     # Initialize gradients
     for i in range(n_samples):
         p = coef_.dot(X[i])
-        g[i] = -loss.get_update(p, y[i]) * X[i]
+        g[i] = -loss.get_update(p, y[i], i) * X[i]
     d = np.sum(g, axis=0)
 
     # Main loop
@@ -73,7 +73,7 @@ def _fit_sag(X, y, eta, alpha, loss, max_iter, rng):
         for _ in range(n_samples):
             i = rng.randint(n_samples - 1)
             p = coef_.dot(X[i])
-            gi = -loss.get_update(p, y[i]) * X[i]
+            gi = -loss.get_update(p, y[i], i) * X[i]
             coef_ -= eta * ((gi - g[i] + d) / n_samples + alpha * coef_)
             d += gi - g[i]
             g[i] = gi
@@ -93,7 +93,7 @@ def _fit_saga(X, y, eta, alpha, loss, penalty, max_iter, rng):
     # Initialize gradients
     for i in range(n_samples):
         p = coef_.dot(X[i])
-        g[i] = -loss.get_update(p, y[i]) * X[i]
+        g[i] = -loss.get_update(p, y[i], i) * X[i]
     d = np.sum(g, axis=0)
 
     # Main loop
@@ -101,7 +101,7 @@ def _fit_saga(X, y, eta, alpha, loss, penalty, max_iter, rng):
         for _ in range(n_samples):
             i = rng.randint(n_samples - 1)
             p = coef_.dot(X[i])
-            gi = -loss.get_update(p, y[i]) * X[i]
+            gi = -loss.get_update(p, y[i], i) * X[i]
             coef_ -= eta * ((gi - g[i] + d / n_samples) + alpha * coef_)
             if penalty is not None:
                 coef_ = penalty.projection(coef_, eta)
@@ -213,6 +213,14 @@ def test_sag():
         clf.fit(X_bin, y_bin)
         assert_equal(clf.score(X_bin, y_bin), 1.0)
 
+
+
+def test_sag_sample_weights():
+    clf1 = SAGAClassifier(loss='log', max_iter=20, verbose=0, random_state=0)
+    clf2 = SAGAClassifier(loss='log', max_iter=20, verbose=0, random_state=0)
+    clf1.fit(X, y)
+    clf2.fit(X, y, sample_weight=np.ones(y.size))
+    np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())
 
 def test_sag_score():
     X, y = make_classification(1000, random_state=0)

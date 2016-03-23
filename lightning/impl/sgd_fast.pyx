@@ -27,15 +27,15 @@ cdef extern from "float.h":
 
 cdef class LossFunction:
 
-    cpdef double loss(self, double p, double y):
+    cpdef double loss(self, double p, double y, int i):
         raise NotImplementedError()
 
-    cpdef double get_update(self, double p, double y):
+    cpdef double get_update(self, double p, double y, int i):
         raise NotImplementedError()
 
 cdef class ModifiedHuber(LossFunction):
 
-    cpdef double loss(self, double p, double y):
+    cpdef double loss(self, double p, double y, int i):
         cdef double z = p * y
         if z >= 1.0:
             return 0.0
@@ -44,7 +44,7 @@ cdef class ModifiedHuber(LossFunction):
         else:
             return -4.0 * z
 
-    cpdef double get_update(self, double p, double y):
+    cpdef double get_update(self, double p, double y, int i):
         cdef double z = p * y
         if z >= 1.0:
             return 0.0
@@ -61,13 +61,13 @@ cdef class Hinge(LossFunction):
     def __init__(self, double threshold=1.0):
         self.threshold = threshold
 
-    cpdef double loss(self, double p, double y):
+    cpdef double loss(self, double p, double y, int i):
         cdef double z = p * y
         if z <= self.threshold:
             return (self.threshold - z)
         return 0.0
 
-    cpdef double get_update(self, double p, double y):
+    cpdef double get_update(self, double p, double y, int i):
         cdef double z = p * y
         if z <= self.threshold:
             return y
@@ -81,7 +81,7 @@ cdef class SmoothHinge(LossFunction):
     def __init__(self, double gamma=1.0):
         self.gamma = gamma  # the larger, the smoother
 
-    cpdef double loss(self, double p, double y):
+    cpdef double loss(self, double p, double y, int i):
         cdef double z = p * y
         cdef double diff
 
@@ -93,7 +93,7 @@ cdef class SmoothHinge(LossFunction):
             diff = 1 - z
             return 0.5 / self.gamma * diff * diff
 
-    cpdef double get_update(self, double p, double y):
+    cpdef double get_update(self, double p, double y, int i):
         cdef double z = p * y
 
         if z >= 1:
@@ -111,13 +111,13 @@ cdef class SquaredHinge(LossFunction):
     def __init__(self, double threshold=1.0):
         self.threshold = threshold
 
-    cpdef double loss(self, double p, double y):
+    cpdef double loss(self, double p, double y, int i):
         cdef double z = self.threshold - p * y
         if z > 0:
             return z * z
         return 0.0
 
-    cpdef double get_update(self, double p, double y):
+    cpdef double get_update(self, double p, double y, int i):
         cdef double z = self.threshold - p * y
         if z > 0:
             return 2 * y * z
@@ -126,7 +126,7 @@ cdef class SquaredHinge(LossFunction):
 
 cdef class Log(LossFunction):
 
-    cpdef double loss(self, double p, double y):
+    cpdef double loss(self, double p, double y, int i):
         cdef double z = p * y
         # approximately equal and saves the computation of the log
         if z > 18:
@@ -135,7 +135,7 @@ cdef class Log(LossFunction):
             return -z
         return log(1.0 + exp(-z))
 
-    cpdef double get_update(self, double p, double y):
+    cpdef double get_update(self, double p, double y, int i):
         cdef double z = p * y
         # approximately equal and saves the computation of the log
         if z > 18.0:
@@ -145,13 +145,53 @@ cdef class Log(LossFunction):
         return y / (exp(z) + 1.0)
 
 
+cdef class LogWeighted(LossFunction):
+
+    cdef double[:] sample_weights
+
+    def __init__(self, np.ndarray[double, ndim=1] sample_weights):
+        self.sample_weights = sample_weights
+
+    cpdef double loss(self, double p, double y, int i):
+        cdef double z = p * y
+        # approximately equal and saves the computation of the log
+        if z > 18:
+            return exp(-z) * self.sample_weights[i]
+        if z < -18:
+            return -z  * self.sample_weights[i]
+        return log(1.0 + exp(-z)) * self.sample_weights[i]
+
+    cpdef double get_update(self, double p, double y, int i):
+        cdef double z = p * y
+        # approximately equal and saves the computation of the log
+        if z > 18.0:
+            return exp(-z) * y * self.sample_weights[i]
+        if z < -18.0:
+            return y * self.sample_weights[i]
+        return y * self.sample_weights[i]/ (exp(z) + 1.0)
+
+
 cdef class SquaredLoss(LossFunction):
 
-    cpdef double loss(self, double p, double y):
+    cpdef double loss(self, double p, double y, int i):
         return 0.5 * (p - y) * (p - y)
 
-    cpdef double get_update(self, double p, double y):
+    cpdef double get_update(self, double p, double y, int i):
         return y - p
+
+
+cdef class SquaredLossWeighted(LossFunction):
+
+    cdef double[:] sample_weights
+
+    def __init__(self, np.ndarray[double, ndim=1] sample_weights):
+        self.sample_weights = sample_weights
+
+    cpdef double loss(self, double p, double y, int i):
+        return 0.5 * (p - y) * (p - y) * self.sample_weights[i]
+
+    cpdef double get_update(self, double p, double y, int i):
+        return (y - p) * self.sample_weights[i]
 
 
 cdef class Huber(LossFunction):
@@ -161,7 +201,7 @@ cdef class Huber(LossFunction):
     def __init__(self, double c):
         self.c = c
 
-    cpdef double loss(self, double p, double y):
+    cpdef double loss(self, double p, double y, int i):
         cdef double r = p - y
         cdef double abs_r = abs(r)
         if abs_r <= self.c:
@@ -169,7 +209,7 @@ cdef class Huber(LossFunction):
         else:
             return self.c * abs_r - (0.5 * self.c * self.c)
 
-    cpdef double get_update(self, double p, double y):
+    cpdef double get_update(self, double p, double y, int i):
         cdef double r = p - y
         cdef double abs_r = abs(r)
         if abs_r <= self.c:
@@ -187,11 +227,11 @@ cdef class EpsilonInsensitive(LossFunction):
     def __init__(self, double epsilon):
         self.epsilon = epsilon
 
-    cpdef double loss(self, double p, double y):
+    cpdef double loss(self, double p, double y, int i):
         cdef double ret = abs(y - p) - self.epsilon
         return ret if ret > 0 else 0
 
-    cpdef double get_update(self, double p, double y):
+    cpdef double get_update(self, double p, double y, int i):
         if y - p > self.epsilon:
             return 1
         elif p - y > self.epsilon:
@@ -386,7 +426,7 @@ def _binary_sgd(self,
         pred *= w_scale
         pred += intercepts[k]
 
-        update = loss.get_update(pred, y[i])
+        update = loss.get_update(pred, y[i], i)
 
         # Update if necessary.
         if update != 0:
