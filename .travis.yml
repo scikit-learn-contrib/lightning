@@ -25,8 +25,10 @@ install:
   - conda info -a
 
   # create conda package and upload it to anaconda, only on stable branches
+  - mkdir dist
   - conda build --python $TRAVIS_PYTHON_VERSION build_tools/conda-recipe --quiet
   - python build_tools/move-conda-package.py build_tools/conda-recipe
+  - ls dist
   - conda install --quiet --yes anaconda-client
   - anaconda -t $ANACONDA_TOKEN upload dist/*.tar.bz2 --user scikit-learn-contrib
 
