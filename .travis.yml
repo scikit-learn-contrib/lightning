@@ -20,8 +20,13 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy nose cython scikit-learn=0.15
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy nose cython scikit-learn=0.15 conda-build anaconda-client
   - source activate test-environment
+
+  # create conda package and upload it to anaconda, only on stable branches
+  - conda build build_tools/conda-recipe --quiet"
+  - python build_tools/move-conda-package.py build_tools/conda-recipe
+
   - make all
 script:
 - nosetests -v
