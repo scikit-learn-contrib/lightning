@@ -49,8 +49,9 @@ install:
   - python setup.py bdist_wheel
   - ls dist
   - pip install twine
-  - echo twine upload --username $PYPYUSERNAME --password $PYPYPASS dist/*.whl
-  - twine upload --username $PYPYUSERNAME --password $PYPYPASS dist/*.whl
+  # twine --username XXX was not working for me so I create the pypirc file
+  - echo "[server-login]\nusername:$PYPYUSERNAME\npassword:$PYPYPASS" >> $HOME/.pypirc
+  - twine upload dist/*.whl
   # end make binary package
 
   - make all
