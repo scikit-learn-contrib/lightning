@@ -50,7 +50,7 @@ install:
   - ls dist
   - pip install twine
   # twine --username XXX was not working for me so I create the pypirc file
-  - echo "[server-login]\nusername:$PYPYUSERNAME\npassword:$PYPYPASS" >> $HOME/.pypirc
+  - echo "[pypi]\nusername:$PYPYUSERNAME\npassword:$PYPYPASS" >> $HOME/.pypirc
   - twine upload dist/*.whl
   # end make binary package
 
