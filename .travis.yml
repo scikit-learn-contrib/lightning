@@ -49,6 +49,7 @@ install:
   - python setup.py bdist_wheel
   - ls dist
   - pip install twine
+  - echo twine upload --username $PYPYUSERNAME --password $PYPYPASS dist/*.whl
   - twine upload --username $PYPYUSERNAME --password $PYPYPASS dist/*.whl
   # end make binary package
 
