@@ -42,12 +42,14 @@ install:
   # upload a distribution package to PYPI. on do this on \
   # stable branches
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      # only do this once (python version does not really matter)
       python setup.py sdist;
+      twine upload --username $PYPYUSERNAME --password $PYPYPASS dist/*.tar.gz
     fi
   - python setup.py bdist_wheel
   - ls dist
   - pip install twine
-  - twine upload --username $PYPYUSERNAME --password $PYPYPASS dist/
+  - twine upload --username $PYPYUSERNAME --password $PYPYPASS dist/*.whl
   # end make binary package
 
   - make all
