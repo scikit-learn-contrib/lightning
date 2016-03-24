@@ -78,7 +78,7 @@ or conda::
     conda install -c https://conda.anaconda.org/scikit-learn-contrib lightning
 
 
-The development version of lightning can be installed from its git repository. In this case it is assumed that you have the git version control system, a working C++ compiler, Cython and the numpy development libraries. In order to install this verion, type::
+The development version of lightning can be installed from its git repository. In this case it is assumed that you have the git version control system, a working C++ compiler, Cython and the numpy development libraries. In order to install the development version, type::
 
   git clone https://github.com/scikit-learn-contrib/lightning.git
   cd lightning
