@@ -43,7 +43,7 @@ install:
     fi
   - python setup.py bdist_wheel
   - pip install twine
-  - twine upload --username $PYPYUSERNAME --password $PYPYPASS dist
+  - twine upload --username $PYPYUSERNAME --password $PYPYPASS dist/
 
   - make all
 script:
