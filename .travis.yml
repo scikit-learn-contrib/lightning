@@ -52,7 +52,7 @@ install:
   # twine --username XXX was not working for me so I create the pypirc file
   - echo -e "[pypi]\nusername:$PYPYUSERNAME\npassword:$PYPYPASS" >> $HOME/.pypirc
   - cat $HOME/.pypirc
-  - twine upload --username $PYPYUSERNAME --password $PYPYPASS dist/*.whl
+  - twine upload --config-file $HOME/.pypirc dist/*.whl
   # end make binary package
 
   - make all
