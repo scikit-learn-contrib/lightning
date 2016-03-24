@@ -24,6 +24,7 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
+  # begin make binary package
   # create conda package and upload it to anaconda, only on stable branches
   - mkdir dist
   - conda build --python $TRAVIS_PYTHON_VERSION build_tools/conda-recipe --quiet
@@ -31,19 +32,23 @@ install:
   - ls dist
   - conda install --quiet --yes anaconda-client
   - anaconda -t $ANACONDA_TOKEN upload dist/*.tar.bz2 --user scikit-learn-contrib
+  # and make binary package
 
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy nose cython scikit-learn anaconda-client
   - source activate test-environment
 
+  # begin make binary package
   # upload a distribution package to PYPI. on do this on \
   # stable branches
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       python setup.py sdist;
     fi
   - python setup.py bdist_wheel
+  - ls dist
   - pip install twine
   - twine upload --username $PYPYUSERNAME --password $PYPYPASS dist/
+  # end make binary package
 
   - make all
 script:
