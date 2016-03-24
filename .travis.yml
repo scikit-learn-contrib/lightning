@@ -38,22 +38,6 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy nose cython scikit-learn anaconda-client
   - source activate test-environment
 
-  # begin make binary package
-  # upload a distribution package to PYPI. on do this on \
-  # stable branches
-  # - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-  #     # only do this once (python version does not really matter)
-  #      twine upload --username $PYPIUSERNAME --password $PYPIPASSWORD dist/*.tar.gz
-  #   fi
-  - python setup.py bdist_wheel
-  - ls dist
-  - pip install twine
-  # twine --username XXX was not working for me so I create the pypirc file
-  # - echo -e "[pypi]\nusername:$PYPYUSERNAME\npassword:$PYPYPASS" >> $HOME/.pypirc
-  # - cat $HOME/.pypirc
-  - twine upload --username $PYPIUSERNAME --password $PYPIPASSWORD dist/*.whl
-  # end make binary package
-
   - make all
 script:
   - nosetests -v
