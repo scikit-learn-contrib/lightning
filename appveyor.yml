@@ -61,7 +61,7 @@ install:
   - conda install --quiet --yes anaconda-client
   - anaconda -t %CONDATOKEN% upload dist/*.tar.bz2 --user scikit-learn-contrib
   - pip install twine
-  - twine upload --username %PYPYUSERNAME% --password %PYPYPASS% dist/*.whl
+  - twine upload --username %PYPIUSERNAME% --password %PYPIPASSWORD% dist/*.whl
 
   # Install the generated wheel package to test it
   - "pip install --pre --no-index --find-links dist/ sklearn-contrib-lightning"
