@@ -221,6 +221,7 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
         self : object
             Returns self.
         """
+        y = np.asarray(y)
         if not self.is_saga and self.penalty is not None:
             raise ValueError('Penalties in SAGClassifier. Please use '
                              'SAGAClassifier instead.'
@@ -353,6 +354,7 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
         self : object
             Returns self.
         """
+        y = np.asarray(y)
         if not self.is_saga and self.penalty is not None:
             raise ValueError('Penalties are not supported in SAGRegressor. '
                              'Please use SAGARegressor instead.')
