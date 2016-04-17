@@ -53,6 +53,21 @@ cdef class ModifiedHuber(LossFunction):
         else:
             return 4.0 * y
 
+cdef class WeightedLoss(LossFunction):
+
+    cdef double[:] sample_weights
+    cdef LossFunction loss_func
+
+    def __init__(self, np.ndarray[double, ndim=1] sample_weights, LossFunction loss_func):
+        self.sample_weights = sample_weights
+        self.loss_func = loss_func
+
+    cpdef double loss(self, double p, double y, int i):
+        return self.loss_func.loss(p, y, i) * self.sample_weights[i]
+
+    cpdef double get_update(self, double p, double y, int i):
+        return self.loss_func.get_update(p, y, i) * self.sample_weights[i]
+
 
 cdef class Hinge(LossFunction):
 
@@ -145,32 +160,6 @@ cdef class Log(LossFunction):
         return y / (exp(z) + 1.0)
 
 
-cdef class LogWeighted(LossFunction):
-
-    cdef double[:] sample_weights
-
-    def __init__(self, np.ndarray[double, ndim=1] sample_weights):
-        self.sample_weights = sample_weights
-
-    cpdef double loss(self, double p, double y, int i):
-        cdef double z = p * y
-        # approximately equal and saves the computation of the log
-        if z > 18:
-            return exp(-z) * self.sample_weights[i]
-        if z < -18:
-            return -z  * self.sample_weights[i]
-        return log(1.0 + exp(-z)) * self.sample_weights[i]
-
-    cpdef double get_update(self, double p, double y, int i):
-        cdef double z = p * y
-        # approximately equal and saves the computation of the log
-        if z > 18.0:
-            return exp(-z) * y * self.sample_weights[i]
-        if z < -18.0:
-            return y * self.sample_weights[i]
-        return y * self.sample_weights[i]/ (exp(z) + 1.0)
-
-
 cdef class SquaredLoss(LossFunction):
 
     cpdef double loss(self, double p, double y, int i):
@@ -178,20 +167,6 @@ cdef class SquaredLoss(LossFunction):
 
     cpdef double get_update(self, double p, double y, int i):
         return y - p
-
-
-cdef class SquaredLossWeighted(LossFunction):
-
-    cdef double[:] sample_weights
-
-    def __init__(self, np.ndarray[double, ndim=1] sample_weights):
-        self.sample_weights = sample_weights
-
-    cpdef double loss(self, double p, double y, int i):
-        return 0.5 * (p - y) * (p - y) * self.sample_weights[i]
-
-    cpdef double get_update(self, double p, double y, int i):
-        return (y - p) * self.sample_weights[i]
 
 
 cdef class Huber(LossFunction):

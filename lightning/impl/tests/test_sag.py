@@ -214,13 +214,22 @@ def test_sag():
         assert_equal(clf.score(X_bin, y_bin), 1.0)
 
 
-
 def test_sag_sample_weights():
-    clf1 = SAGAClassifier(loss='log', max_iter=20, verbose=0, random_state=0)
-    clf2 = SAGAClassifier(loss='log', max_iter=20, verbose=0, random_state=0)
+    clf1 = SAGAClassifier(loss='log', max_iter=5, verbose=0, random_state=0)
+    clf2 = SAGAClassifier(loss='log', max_iter=5, verbose=0, random_state=0)
     clf1.fit(X, y)
-    clf2.fit(X, y, sample_weight=np.ones(y.size))
+    sample_weights = [1] * y.size
+    clf2.fit(X, y, sample_weight=sample_weights)
     np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())
+
+    # same thing but for a regression object
+    clf1 = SAGARegressor(loss='squared', max_iter=5, verbose=0, random_state=0)
+    clf2 = SAGARegressor(loss='squared', max_iter=5, verbose=0, random_state=0)
+    clf1.fit(X, y)
+    sample_weights = [1] * y.size
+    clf2.fit(X, y, sample_weight=sample_weights)
+    np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())
+
 
 def test_sag_score():
     X, y = make_classification(1000, random_state=0)

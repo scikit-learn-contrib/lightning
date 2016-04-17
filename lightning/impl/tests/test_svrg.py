@@ -1,13 +1,11 @@
 import numpy as np
 
 from sklearn.datasets import load_iris
-from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.testing import assert_true
 from sklearn.utils.testing import assert_equal
 
 from lightning.classification import SVRGClassifier
 from lightning.regression import SVRGRegressor
-from lightning.impl.sgd_fast import SmoothHinge
 
 iris = load_iris()
 X, y = iris.data, iris.target
@@ -50,3 +48,20 @@ def test_svrg_regression():
     reg.fit(X_bin, y_bin)
     y_pred = np.sign(reg.predict(X_bin))
     assert_equal(np.mean(y_bin == y_pred), 1.0)
+
+
+def test_sag_sample_weights():
+    clf1 = SVRGClassifier(loss='log', max_iter=5, verbose=0, random_state=0)
+    clf2 = SVRGClassifier(loss='log', max_iter=5, verbose=0, random_state=0)
+    clf1.fit(X_bin, y_bin)
+    sample_weights = [1] * y.size
+    clf2.fit(X_bin, y_bin, sample_weight=sample_weights)
+    np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())
+
+    # same thing but for a regression object
+    clf1 = SVRGRegressor(loss='squared', max_iter=5, verbose=0, random_state=0)
+    clf2 = SVRGRegressor(loss='squared', max_iter=5, verbose=0, random_state=0)
+    clf1.fit(X, y)
+    sample_weights = [1] * y.size
+    clf2.fit(X, y, sample_weight=sample_weights)
+    np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())

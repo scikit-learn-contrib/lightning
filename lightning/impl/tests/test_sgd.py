@@ -11,7 +11,7 @@ from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.datasets.samples_generator import make_nn_regression
 from lightning.impl.sgd import SGDClassifier
 from lightning.impl.sgd import SGDRegressor
-
+from nose.tools import assert_raises
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
@@ -88,6 +88,28 @@ def test_multiclass_log_sgd():
                                 random_state=0)
             clf.fit(data, mult_target)
             assert_greater(clf.score(data, mult_target), 0.78)
+
+
+def test_weighted_loss():
+    clf = SGDClassifier(loss="log", multiclass=True)
+    sample_weight = [1] * mult_dense.shape[0]
+    assert_raises(ValueError, clf.fit, mult_dense, mult_target, sample_weight=sample_weight)
+
+    clf1 = SGDClassifier(loss="log", multiclass=False, random_state=0)
+    clf2 = SGDClassifier(loss="log", multiclass=False, random_state=0)
+    for data in (bin_dense, bin_csr):
+        clf1.fit(data, bin_target, sample_weight=sample_weight)
+        clf2.fit(data, bin_target)
+        np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())
+
+
+    # same thing for regression
+    clf1 = SGDRegressor(loss="squared", random_state=0)
+    clf2 = SGDRegressor(loss="squared", random_state=0)
+    for data in (bin_dense, bin_csr):
+        clf1.fit(data, bin_target, sample_weight=sample_weight)
+        clf2.fit(data, bin_target)
+        np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())
 
 
 def test_regression_squared_loss():

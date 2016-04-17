@@ -33,6 +33,7 @@ from .sgd_fast import Log
 from .sgd_fast import SquaredLoss
 from .sgd_fast import Huber
 from .sgd_fast import EpsilonInsensitive
+from .sgd_fast import WeightedLoss
 
 from .sgd_fast import MulticlassLog
 from .sgd_fast import MulticlassHinge
@@ -151,7 +152,7 @@ class SGDClassifier(BaseClassifier, _BaseSGD):
         self.verbose = verbose
         self.coef_ = None
 
-    def _get_loss(self):
+    def _get_loss(self, sample_weight):
         if self.multiclass:
             losses = {
                 "log": MulticlassLog(),
@@ -169,9 +170,12 @@ class SGDClassifier(BaseClassifier, _BaseSGD):
                 "huber": Huber(self.epsilon),
                 "epsilon_insensitive": EpsilonInsensitive(self.epsilon)
             }
-        return losses[self.loss]
+        loss = losses[self.loss]
+        if sample_weight is not None:
+            loss = WeightedLoss(sample_weight, loss)
+        return loss
 
-    def fit(self, X, y):
+    def fit(self, X, y, sample_weight=None):
         """Fit model according to X and y.
 
         Parameters
@@ -200,7 +204,12 @@ class SGDClassifier(BaseClassifier, _BaseSGD):
 
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
 
-        loss = self._get_loss()
+        if sample_weight is not None:
+            if self.multiclass:
+                raise ValueError("Sample weight is not supported with multiclass loss functions")
+            sample_weight = np.asarray(sample_weight, dtype=np.float64)
+
+        loss = self._get_loss(sample_weight)
         penalty = self._get_penalty()
 
         if n_vectors == 1 or not self.multiclass:
@@ -317,15 +326,18 @@ class SGDRegressor(BaseRegressor, _BaseSGD):
         self.verbose = verbose
         self.coef_ = None
 
-    def _get_loss(self):
+    def _get_loss(self, sample_weight):
         losses = {
             "squared": SquaredLoss(),
             "huber": Huber(self.epsilon),
             "epsilon_insensitive": EpsilonInsensitive(self.epsilon)
         }
-        return losses[self.loss]
+        loss = losses[self.loss]
+        if sample_weight is not None:
+            loss = WeightedLoss(sample_weight, loss)
+        return loss
 
-    def fit(self, X, y):
+    def fit(self, X, y, sample_weight=None):
         """Fit model according to X and y.
 
         Parameters
@@ -336,6 +348,10 @@ class SGDRegressor(BaseRegressor, _BaseSGD):
 
         y : array-like, shape = [n_samples] or [n_samples, n_targets]
             Target values.
+
+        sample_weight : array-like, shape (n_samples,) optional
+            Array of weights that are assigned to individual samples.
+            If not provided, then each sample is given unit weight.
 
         Returns
         -------
@@ -353,12 +369,15 @@ class SGDRegressor(BaseRegressor, _BaseSGD):
             Y = y
         else:
             Y = y.reshape(-1, 1)
-        Y = np.asfortranarray(Y)
+        Y = np.asfortranarray(Y, dtype=np.float64)
         n_vectors = Y.shape[1]
         self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
 
-        loss = self._get_loss()
+        if sample_weight is not None:
+            sample_weight = np.asarray(sample_weight, dtype=np.float64)
+
+        loss = self._get_loss(sample_weight)
         penalty = self._get_penalty()
 
         for k in xrange(n_vectors):
