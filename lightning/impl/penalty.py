@@ -66,7 +66,7 @@ def project_simplex(v, z=1):
 class SimplexConstraint(object):
 
     def projection(self, coef, alpha, L):
-        return project_simplex(coef)
+        return project_simplex(coef[0]).reshape(1,-1)
 
     def regularization(self, coef):
         return 0

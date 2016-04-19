@@ -105,13 +105,13 @@ def test_fista_regression_simplex():
     X = rng.randn(1000, 10)
     y = np.dot(X, w)
 
-    reg = FistaRegressor(max_iter=100, verbose=0)
+    reg = FistaRegressor(penalty="simplex", max_iter=100, verbose=0)
     reg.fit(X, y)
     y_pred = reg.predict(X)
     error = np.sqrt(np.mean((y - y_pred) ** 2))
-    assert_almost_equal(error, 0.002, 3)
+    assert_almost_equal(error, 0.000, 3)
     assert_true(np.all(reg.coef_ >= 0))
-    assert_almost_equal(np.sum(reg.coef_), 0.995, 3)
+    assert_almost_equal(np.sum(reg.coef_), 1.0, 3)
 
 
 def test_fista_regression_trace():
