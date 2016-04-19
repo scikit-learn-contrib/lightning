@@ -232,10 +232,6 @@ class FistaRegressor(BaseRegressor, _BaseFista):
         - l1: lasso
         - l1/l2: group lasso
 
-    multiclass : bool
-        Whether to use a direct multiclass formulation (True) or one-vs-rest
-        (False).
-
     C : float
         Weight of the loss term.
 
@@ -263,13 +259,11 @@ class FistaRegressor(BaseRegressor, _BaseFista):
         Verbosity level.
     """
 
-    def __init__(self, C=1.0, alpha=1.0, penalty="l1", multiclass=False,
-                 max_iter=100, max_steps=30, eta=2.0, sigma=1e-5, callback=None,
-                 verbose=0):
+    def __init__(self, C=1.0, alpha=1.0, penalty="l1", max_iter=100,
+                 max_steps=30, eta=2.0, sigma=1e-5, callback=None, verbose=0):
         self.C = C
         self.alpha = alpha
         self.penalty = penalty
-        self.multiclass = multiclass
         self.max_iter = max_iter
         self.max_steps = max_steps
         self.eta = eta
