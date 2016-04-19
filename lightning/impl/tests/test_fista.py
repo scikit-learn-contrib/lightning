@@ -4,12 +4,14 @@ import scipy.sparse as sp
 from scipy.linalg import svd, diagsvd
 
 from sklearn.utils.testing import assert_almost_equal
+from sklearn.utils.testing import assert_true
 
 from sklearn.datasets import load_digits
 
 from lightning.impl.datasets.samples_generator import make_classification
 from lightning.classification import FistaClassifier
 from lightning.regression import FistaRegressor
+from lightning.impl.penalty import project_simplex
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
@@ -95,6 +97,21 @@ def test_fista_regression():
     reg.fit(bin_dense, bin_target)
     y_pred = np.sign(reg.predict(bin_dense))
     assert_almost_equal(np.mean(bin_target == y_pred), 0.985)
+
+
+def test_fista_regression_simplex():
+    rng = np.random.RandomState(0)
+    w = project_simplex(rng.rand(10))
+    X = rng.randn(1000, 10)
+    y = np.dot(X, w)
+
+    reg = FistaRegressor(max_iter=100, verbose=0)
+    reg.fit(X, y)
+    y_pred = reg.predict(X)
+    error = np.sqrt(np.mean((y - y_pred) ** 2))
+    assert_almost_equal(error, 0.002, 3)
+    assert_true(np.all(reg.coef_ >= 0))
+    assert_almost_equal(np.sum(reg.coef_), 0.995, 3)
 
 
 def test_fista_regression_trace():
