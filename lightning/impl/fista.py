@@ -138,12 +138,13 @@ class FistaClassifier(BaseClassifier, _BaseFista):
     loss : str, 'squared_hinge', 'log', 'modified_huber', 'squared'
         The loss function to be used.
 
-    penalty : str, 'l2', 'l1', 'l1/l2'
-        The penalty to be used.
+    penalty : str, 'l2', 'l1', 'l1/l2', 'simplex'
+        The penalty or constraint to be used.
 
         - l2: ridge
         - l1: lasso
         - l1/l2: group lasso
+        - simplex: simplex constraint
 
     multiclass : bool
         Whether to use a direct multiclass formulation (True) or one-vs-rest
@@ -227,12 +228,13 @@ class FistaRegressor(BaseRegressor, _BaseFista):
 
     Parameters
     ----------
-    penalty : str, 'l2', 'l1', 'l1/l2'
-        The penalty to be used.
+    penalty : str, 'l2', 'l1', 'l1/l2', 'simplex'
+        The penalty or constraint to be used.
 
         - l2: ridge
         - l1: lasso
         - l1/l2: group lasso
+        - simplex: simplex constraint
 
     C : float
         Weight of the loss term.
