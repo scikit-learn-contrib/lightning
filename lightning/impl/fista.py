@@ -18,6 +18,7 @@ from .loss_fast import MulticlassLog
 from .penalty import L1Penalty
 from .penalty import L1L2Penalty
 from .penalty import TracePenalty
+from .penalty import SimplexConstraint
 
 
 class _BaseFista(object):
@@ -27,6 +28,7 @@ class _BaseFista(object):
             "l1": L1Penalty(),
             "l1/l2": L1L2Penalty(),
             "trace": TracePenalty(),
+            "simplex": SimplexConstraint(),
         }
         return penalties[self.penalty]
 
