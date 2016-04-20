@@ -101,7 +101,7 @@ def _svrg_fit(self,
             y_pred = _pred(data, indices, n_nz, w) * w_scale[0]
 
             # A gradient is given by g[i] * X[i].
-            g[i] = -loss.get_update(y_pred, y[i])
+            g[i] = -loss.get_update(y_pred, y[i], i)
 
             _add(data, indices, n_nz, g[i], fg)
 
@@ -145,7 +145,7 @@ def _svrg_fit(self,
             y_pred = _pred(data, indices, n_nz, w) * w_scale[0]
 
             # A gradient is given by scale * X[i].
-            scale = -loss.get_update(y_pred, y[i])
+            scale = -loss.get_update(y_pred, y[i], i)
 
             w_scale[0] *= (1 - eta_alpha)
 

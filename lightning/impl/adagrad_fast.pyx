@@ -130,7 +130,7 @@ def _adagrad_fit(self,
             y_pred = _pred(data, indices, n_nz, w)
 
             # A subgradient is given by scale * X[i].
-            scale = -loss.get_update(y_pred, y[i])
+            scale = -loss.get_update(y_pred, y[i], i)
 
             # Update g_sum and g_norms.
             if scale != 0:

@@ -253,7 +253,7 @@ def _sag_fit(self,
         y_pred = _pred(data, indices, n_nz, w) * w_scale[0]
 
         # A gradient is given by g[i] * X[i].
-        g[i] = -loss.get_update(y_pred, y[i])
+        g[i] = -loss.get_update(y_pred, y[i], i)
 
         # Update g_sum.
         _add(data, indices, n_nz, g[i], g_sum)
@@ -288,7 +288,7 @@ def _sag_fit(self,
             g_old = g[i]
 
             # A gradient is given by g[i] * X[i].
-            g[i] = -loss.get_update(y_pred, y[i])
+            g[i] = -loss.get_update(y_pred, y[i], i)
             g_change = g[i] - g_old
 
             # Update coefficient scale (l2 regularization).

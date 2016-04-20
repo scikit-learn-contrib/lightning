@@ -15,6 +15,7 @@ from .sgd_fast import SmoothHinge
 from .sgd_fast import SquaredHinge
 from .sgd_fast import Log
 from .sgd_fast import SquaredLoss
+from .sgd_fast import WeightedLoss
 
 
 class _BaseSVRG(object):
@@ -23,10 +24,13 @@ class _BaseSVRG(object):
         self.coef_ *= self.coef_scale_
         self.coef_scale_.fill(1.0)
 
-    def _fit(self, X, Y):
+    def _fit(self, X, Y, sample_weight):
+        if sample_weight is not None:
+            sample_weight = np.asarray(sample_weight, dtype=np.float64)
+
         n_samples, n_features = X.shape
         rng = self._get_random_state()
-        loss = self._get_loss()
+        loss = self._get_loss(sample_weight)
         n_vectors = Y.shape[1]
         n_inner = int(self.n_inner * n_samples)
         ds = get_dataset(X, order="c")
@@ -71,7 +75,7 @@ class SVRGClassifier(BaseClassifier, _BaseSVRG):
         self.callback = callback
         self.random_state = random_state
 
-    def _get_loss(self):
+    def _get_loss(self, sample_weight):
         losses = {
             "modified_huber": ModifiedHuber(),
             "smooth_hinge": SmoothHinge(self.gamma),
@@ -79,13 +83,36 @@ class SVRGClassifier(BaseClassifier, _BaseSVRG):
             "log": Log(),
             "squared": SquaredLoss(),
         }
-        return losses[self.loss]
+        loss = losses[self.loss]
+        if sample_weight is not None:
+            loss = WeightedLoss(sample_weight, loss)
+        return loss
 
-    def fit(self, X, y):
+    def fit(self, X, y, sample_weight=None):
+        """Fit the model according to the given training data.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+            Training vector, where n_samples in the number of samples and
+            n_features is the number of features.
+
+        y : array-like, shape (n_samples,)
+            Target vector relative to X.
+
+        sample_weight : array-like, shape (n_samples,) optional
+            Array of weights that are assigned to individual samples.
+            If not provided, then each sample is given unit weight.
+
+        Returns
+        -------
+        self : object
+            Returns self.
+        """
         self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
         Y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
                               dtype=np.float64)
-        return self._fit(X, Y)
+        return self._fit(X, Y, sample_weight)
 
 
 class SVRGRegressor(BaseRegressor, _BaseSVRG):
@@ -112,14 +139,37 @@ class SVRGRegressor(BaseRegressor, _BaseSVRG):
         self.callback = callback
         self.random_state = random_state
 
-    def _get_loss(self):
+    def _get_loss(self, sample_weight):
         losses = {
             "squared": SquaredLoss(),
         }
-        return losses[self.loss]
+        loss = losses[self.loss]
+        if sample_weight is not None:
+            loss = WeightedLoss(sample_weight, loss)
+        return loss
 
-    def fit(self, X, y):
+    def fit(self, X, y, sample_weight=None):
+        """Fit the model according to the given training data.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+            Training vector, where n_samples in the number of samples and
+            n_features is the number of features.
+
+        y : array-like, shape (n_samples,)
+            Target vector relative to X.
+
+        sample_weight : array-like, shape (n_samples,) optional
+            Array of weights that are assigned to individual samples.
+            If not provided, then each sample is given unit weight.
+
+        Returns
+        -------
+        self : object
+            Returns self.
+        """
         self.outputs_2d_ = len(y.shape) > 1
         Y = y.reshape(-1, 1) if not self.outputs_2d_ else y
         Y = Y.astype(np.float64)
-        return self._fit(X, Y)
+        return self._fit(X, Y, sample_weight)
