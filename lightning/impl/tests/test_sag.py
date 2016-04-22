@@ -410,7 +410,7 @@ def test_sag_adaptive():
     y = np.random.randint(0, high=2, size=100)
     for alpha in np.logspace(-3, 1, 5):
         clf_adaptive = SAGClassifier(
-            eta='adaptive', random_state=0, alpha=alpha)
+            eta='line-search', random_state=0, alpha=alpha)
         clf_adaptive.fit(X, y)
         clf = SAGClassifier(
             eta='auto', random_state=0, alpha=alpha)
@@ -418,7 +418,7 @@ def test_sag_adaptive():
         assert_almost_equal(clf_adaptive.score(X, y), clf.score(X, y), 1)
 
         clf_adaptive = SAGAClassifier(
-            eta='adaptive', loss='log', random_state=0, alpha=alpha, max_iter=20)
+            eta='line-search', loss='log', random_state=0, alpha=alpha, max_iter=20)
         clf_adaptive.fit(X, y)
         assert np.isnan(clf_adaptive.coef_.sum()) == False
         clf = SAGAClassifier(
