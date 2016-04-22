@@ -401,3 +401,20 @@ def test_sag_sparse():
                                    max_iter=1, random_state=0, alpha=alpha)
         clf_dense.fit(X.toarray(), y)
         assert_equal(clf_sparse.score(X, y), clf_dense.score(X, y))
+
+
+def test_sag_sample_weights():
+    clf1 = SAGAClassifier(loss='log', max_iter=5, verbose=0, random_state=0)
+    clf2 = SAGAClassifier(loss='log', max_iter=5, verbose=0, random_state=0)
+    clf1.fit(X, y)
+    sample_weights = [1] * y.size
+    clf2.fit(X, y, sample_weight=sample_weights)
+    np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())
+
+    # same thing but for a regression object
+    clf1 = SAGARegressor(loss='squared', max_iter=5, verbose=0, random_state=0)
+    clf2 = SAGARegressor(loss='squared', max_iter=5, verbose=0, random_state=0)
+    clf1.fit(X, y)
+    sample_weights = [1] * y.size
+    clf2.fit(X, y, sample_weight=sample_weights)
+    np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())
