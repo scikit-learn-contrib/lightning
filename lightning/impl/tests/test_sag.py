@@ -6,7 +6,7 @@ from numpy.testing import assert_array_equal
 from sklearn.datasets import load_iris, make_classification
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.testing import assert_true
-from sklearn.utils.testing import assert_equal
+from sklearn.utils.testing import assert_equal, assert_almost_equal
 
 from lightning.impl.base import BaseClassifier
 from lightning.classification import SAGClassifier, SAGAClassifier
@@ -275,9 +275,8 @@ def test_enet_regularized_saga():
     y_sparse = np.random.randint(0, high=2, size=100)
 
     eta = 1e-3
-
     for (X, y) in ((X_bin, y_bin), (X_sparse, y_sparse)):
-        for alpha in np.logspace(-3, 3, 5):
+        for alpha in np.logspace(-3, 0, 5):
             for beta in np.logspace(-3, 3, 5):
                 pysaga = PySAGAClassifier(
                     eta=eta, alpha=alpha, beta=beta,
@@ -401,3 +400,32 @@ def test_sag_sparse():
                                    max_iter=1, random_state=0, alpha=alpha)
         clf_dense.fit(X.toarray(), y)
         assert_equal(clf_sparse.score(X, y), clf_dense.score(X, y))
+
+
+def test_sag_adaptive():
+    """Check that the adaptive step size strategy yields the same
+    solution as the non-adaptive"""
+    np.random.seed(0)
+    X = sparse.rand(100, 10, density=.5, random_state=0).tocsr()
+    y = np.random.randint(0, high=2, size=100)
+    for alpha in np.logspace(-3, 1, 5):
+        clf_adaptive = SAGClassifier(
+            eta='line-search', random_state=0, alpha=alpha)
+        clf_adaptive.fit(X, y)
+        clf = SAGClassifier(
+            eta='auto', random_state=0, alpha=alpha)
+        clf.fit(X, y)
+        assert_almost_equal(clf_adaptive.score(X, y), clf.score(X, y), 1)
+
+        clf_adaptive = SAGAClassifier(
+            eta='line-search', loss='log', random_state=0, alpha=alpha, max_iter=20)
+        clf_adaptive.fit(X, y)
+        assert np.isnan(clf_adaptive.coef_.sum()) == False
+        clf = SAGAClassifier(
+            eta='auto', loss='log', random_state=0, alpha=alpha, max_iter=20)
+        clf.fit(X, y)
+        assert_almost_equal(clf_adaptive.score(X, y), clf.score(X, y), 1)
+
+if __name__ == '__main__':
+    import nose
+    nose.run()

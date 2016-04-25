@@ -53,19 +53,18 @@ def get_auto_step_size(X, alpha, loss, gamma):
         Step size used in SAG/SAGA solver.
     """
     L = get_max_squared_sum(X)
-    n_samples = X.shape[0]
 
     if loss == 'log':
         # inverse Lipschitz constant for log loss
-        lipschitz_constant = 0.25 * L + n_samples * alpha
+        lipschitz_constant = 0.25 * L + alpha
     elif loss == 'squared':
-        lipschitz_constant = L + n_samples * alpha
+        lipschitz_constant = L + alpha
     elif loss == 'modified_huber':
-        lipschitz_constant = 2 * L + n_samples * alpha
+        lipschitz_constant = 2 * L + alpha
     elif loss == 'smooth_hinge':
-        lipschitz_constant = L + gamma + n_samples * alpha
+        lipschitz_constant = L + gamma + alpha
     elif loss == 'squared_hinge':
-        lipschitz_constant = 2 * L + n_samples * alpha
+        lipschitz_constant = 2 * L + alpha
     else:
         raise ValueError("`auto` stepsize is only available for `squared` or "
                          "`log` losses (got `%s` loss). Please specify a "
@@ -103,12 +102,18 @@ class _BaseSAG(object):
     def _fit(self, X, Y):
         n_samples, n_features = X.shape
         rng = self._get_random_state()
+        adaptive_step_size = False
 
-        if self.eta is None or self.eta == 'auto':
-            self.eta = get_auto_step_size(
+        if self.eta is None or self.eta in ('auto', 'line-search'):
+            step_size = get_auto_step_size(
                     X, self.alpha, self.loss, self.gamma)
             if self.verbose > 0:
                 print("Auto stepsize: %s" % self.eta)
+            if self.eta == 'line-search':
+                self.eta = step_size
+                adaptive_step_size = True
+            else:
+                self.eta = step_size
 
         loss = self._get_loss()
         penalty = self._get_penalty()
@@ -126,7 +131,7 @@ class _BaseSAG(object):
             _sag_fit(self, ds, y, self.coef_[i], self.coef_scale_[i:], grad[i],
                      self.eta, self.alpha, self.beta, loss, penalty,
                      self.max_iter, n_inner, self.tol, self.verbose,
-                     self.callback, rng, self.is_saga)
+                     self.callback, rng, self.is_saga, adaptive_step_size)
 
         return self
 
@@ -142,9 +147,11 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
 
     Parameters
     ----------
-    eta : float or string, defaults to 'auto'
+    eta : float or {'auto', 'line-search'}, defaults to 'auto'
         step size for the gradient updates. If set to 'auto',
         this will calculate a step size based on the input data.
+        If set to 'line-search', it will perform a line-search
+        to find the step size based for the current iteration.
     alpha : float
         amount of squared L2 regularization
     beta : float
@@ -206,9 +213,11 @@ class SAGAClassifier(SAGClassifier):
 
     Parameters
     ----------
-    eta : float or string, defaults to 'auto'
+    eta : float or {'auto', 'line-search'}, defaults to 'auto'
         step size for the gradient updates. If set to 'auto',
         this will calculate a step size based on the input data.
+        If set to 'line-search', it will perform a line-search
+        to find the step size based for the current iteration.
     alpha : float
         amount of squared L2 regularization
     beta : float
@@ -257,9 +266,11 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
 
     Parameters
     ----------
-    eta : float or string, defaults to 'auto'
+    eta : float or {'auto', 'line-search'}, defaults to 'auto'
         step size for the gradient updates. If set to 'auto',
         this will calculate a step size based on the input data.
+        If set to 'line-search', it will perform a line-search
+        to find the step size based for the current iteration.
     alpha : float
         amount of squared L2 regularization.
     beta : float
@@ -318,9 +329,11 @@ class SAGARegressor(SAGRegressor):
 
     Parameters
     ----------
-    eta : float or string, defaults to 'auto'
+    eta : float or {'auto', 'line-search'}, defaults to 'auto'
         step size for the gradient updates. If set to 'auto',
         this will calculate a step size based on the input data.
+        If set to 'line-search', it will perform a line-search
+        to find the step size based for the current iteration.
     alpha : float
         amount of squared L2 regularization
     beta : float
