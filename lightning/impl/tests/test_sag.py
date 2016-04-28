@@ -419,6 +419,20 @@ def test_sag_sample_weights():
     np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())
 
 
+    # check that samples with a zero weight do not have an influence on the
+    # resulting coefficients
+    X2 = np.concatenate((X, np.random.randn(*X.shape)), axis=0)   # augment with noise
+    y2 = np.concatenate((y, y), axis=0)
+    sample_weights = 2 * np.ones(y2.size, dtype=np.float)
+    sample_weights[X.shape[0]:] = 0.
+
+    clf1 = SAGARegressor(loss='squared', max_iter=20, verbose=0, random_state=0)
+    clf2 = SAGARegressor(loss='squared', max_iter=20, verbose=0, random_state=0)
+    clf1.fit(X, y)
+    clf2.fit(X2, y2, sample_weight=sample_weights)
+    np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())
+
+
 def test_sag_adaptive():
     """Check that the adaptive step size strategy yields the same
     solution as the non-adaptive"""
