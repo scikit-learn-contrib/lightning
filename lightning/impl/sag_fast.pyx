@@ -246,6 +246,7 @@ def _sag_fit(self,
     cdef int line_search_freq = 10  # frequency of line search
     # Lipschitz constant of the loss terms. Start with the double
     # of the initial Lipschitz constant
+    cdef int max_linesearch_iterations = 20
     cdef double lipschitz
     cdef double line_search_scaling
     cdef np.ndarray[double, ndim=1] square_norm_X
@@ -322,7 +323,7 @@ def _sag_fit(self,
                     # compute the norm if not done already
                     for j in range(n_nz):
                         square_norm_X[i] += (data[j] * data[j])
-                while True:
+                for j in range(max_linesearch_iterations):
                     a = loss.loss(y_pred - g[i] * square_norm_X[i] / lipschitz, y[i])
                     b = loss.loss(y_pred, y[i]) - 0.5 * square_norm_X[i] * (g[i] * g[i]) / lipschitz
                     if a <= b :
