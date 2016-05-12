@@ -3,7 +3,7 @@
 .. image:: https://travis-ci.org/scikit-learn-contrib/lightning.svg?branch=master
     :target: https://travis-ci.org/scikit-learn-contrib/lightning
 
-.. image:: https://ci.appveyor.com/api/projects/status/onn6yba9ckerlvme/branch/master?svg=true
+.. image:: https://ci.appveyor.com/api/projects/status/mmm0llccmvn5iooq?svg=true
     :target: https://ci.appveyor.com/project/fabianp/lightning-bpc6r/branch/master
 
 lightning
