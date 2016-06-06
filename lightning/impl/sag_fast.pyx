@@ -178,6 +178,7 @@ def _sag_fit(self,
              np.ndarray[double, ndim=1]coef,
              np.ndarray[double, ndim=1]coef_scale,
              np.ndarray[double, ndim=1]grad,
+             np.ndarray[double, ndim=1]sample_weight,
              double eta,
              double alpha,
              double beta,
@@ -274,7 +275,7 @@ def _sag_fit(self,
         y_pred = _pred(data, indices, n_nz, w) * w_scale[0]
 
         # A gradient is given by g[i] * X[i].
-        g[i] = -loss.get_update(y_pred, y[i])
+        g[i] = -sample_weight[i] * loss.get_update(y_pred, y[i])
 
         # Update g_sum.
         _add(data, indices, n_nz, g[i], g_sum)
@@ -310,7 +311,7 @@ def _sag_fit(self,
             g_old = g[i]
 
             # A gradient is given by g[i] * X[i].
-            g[i] = -loss.get_update(y_pred, y[i])
+            g[i] = - sample_weight[i] * loss.get_update(y_pred, y[i])
             g_change = g[i] - g_old
 
 
@@ -324,8 +325,8 @@ def _sag_fit(self,
                     for j in range(n_nz):
                         square_norm_X[i] += (data[j] * data[j])
                 for j in range(max_linesearch_iterations):
-                    a = loss.loss(y_pred - g[i] * square_norm_X[i] / lipschitz, y[i])
-                    b = loss.loss(y_pred, y[i]) - 0.5 * square_norm_X[i] * (g[i] * g[i]) / lipschitz
+                    a = sample_weight[i] * loss.loss(y_pred - g[i] * square_norm_X[i] / lipschitz, y[i])
+                    b = sample_weight[i] * loss.loss(y_pred, y[i]) - 0.5 * square_norm_X[i] * (g[i] * g[i]) / lipschitz
                     if a <= b :
                         # condition is satisfied, decrease Lipschitz constant
                         lipschitz /= line_search_scaling

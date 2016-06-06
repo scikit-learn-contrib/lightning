@@ -402,6 +402,39 @@ def test_sag_sparse():
         assert_equal(clf_sparse.score(X, y), clf_dense.score(X, y))
 
 
+def test_sag_sample_weights():
+    clf1 = SAGAClassifier(loss='log', max_iter=5, verbose=0, random_state=0)
+    clf2 = SAGAClassifier(loss='log', max_iter=5, verbose=0, random_state=0)
+    clf1.fit(X, y)
+    sample_weights = [1] * y.size
+    clf2.fit(X, y, sample_weight=sample_weights)
+    np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())
+
+    # same thing but for a regression object
+    alpha = 1.0
+    clf1 = SAGARegressor(loss='squared', alpha=alpha, max_iter=5, random_state=0)
+    clf1.fit(X, y)
+    sample_weights = [2] * y.size
+    # alpha needs to be multiplied accordingly
+    clf2 = SAGARegressor(loss='squared', alpha=2 * alpha, max_iter=5, random_state=0)
+    clf2.fit(X, y, sample_weight=sample_weights)
+    np.testing.assert_array_equal(clf1.coef_.ravel(), clf2.coef_.ravel())
+
+    #
+    # check that samples with a zero weight do not have an influence on the
+    # resulting coefficients by adding noise to original samples
+    X2 = np.concatenate((X, np.random.randn(*X.shape)), axis=0)   # augment with noise
+    y2 = np.concatenate((y, y), axis=0)
+    sample_weights = np.ones(y2.size, dtype=np.float)
+    sample_weights[X.shape[0]:] = 0.
+
+    clf1 = SAGARegressor(loss='squared', alpha=alpha,  max_iter=100, random_state=0, tol=1e-24)
+    clf1.fit(X, y)
+    clf2 = SAGARegressor(loss='squared', alpha=0.5*alpha, max_iter=100, random_state=0, tol=1e-24)
+    clf2.fit(X2, y2, sample_weight=sample_weights)
+    np.testing.assert_array_almost_equal(clf1.coef_.ravel(), clf2.coef_.ravel(), decimal=6)
+
+
 def test_sag_adaptive():
     """Check that the adaptive step size strategy yields the same
     solution as the non-adaptive"""
