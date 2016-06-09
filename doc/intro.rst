@@ -1,17 +1,19 @@
 Introduction
 =============
 
+.. currentmodule:: lightning
+
 lightning is composed of three modules: classification, regression and ranking.
 Several solvers are available from each.
 
-If you're not sure what solver to use, just go for :class:`CDClassifier` /
-:class:`CDRegressor` or :class:`SDCAClassifier` / :class:`SDCARegressor`. They
+If you're not sure what solver to use, just go for :class:`classification.CDClassifier` /
+:class:`regression.CDRegressor` or :class:`classification.SDCAClassifier` / :class:`regression.SDCARegressor`. They
 are very fast and do not require any tedious tuning of a learning rate.
 
 Primal coordinate descent
 -------------------------
 
-:class:`CDClassifier`, :class:`CDRegressor`
+:class:`classification.CDClassifier`, :class:`regression.CDRegressor`
 
 - Main idea: update a single coordinate at a time (closed-form update when possible, coordinate-wise gradient descent otherwise)
 - Non-smooth losses: No
@@ -22,9 +24,9 @@ Primal coordinate descent
 Dual coordinate ascent
 -----------------------
 
-:class:`LinearSVC`, :class:`LinearSVR` (L2-regularization, supports shrinking)
+:class:`classification.LinearSVC`, :class:`regression.LinearSVR` (L2-regularization, supports shrinking)
 
-:class:`SDCAClassifier`, :class:`SDCARegressor` (Elastic-net, supports many losses)
+:class:`classification.SDCAClassifier`, :class:`regression.SDCARegressor` (Elastic-net, supports many losses)
 
 - Main idea: update a single dual coordinate at a time (closed-form solution available for many loss functions)
 - Non-smooth losses: Yes
@@ -35,7 +37,7 @@ Dual coordinate ascent
 FISTA
 -----
 
-:class:`FistaClassifier`, :class:`FistaRegressor`
+:class:`classification.FistaClassifier`, :class:`regression.FistaRegressor`
 
 - Main idea: accelerated proximal gradient method (uses full gradients)
 - Non-smooth losses: No
@@ -46,7 +48,7 @@ FISTA
 Stochastic gradient method (SGD)
 --------------------------------
 
-:class:`SGDClassifier`, :class:`SGDRegressor`
+:class:`classification.SGDClassifier`, :class:`regression.SGDRegressor`
 
 - Main idea: replace full gradient with stochastic estimate obtained from a single sample
 - Non-smooth losses: Yes
@@ -57,7 +59,7 @@ Stochastic gradient method (SGD)
 AdaGrad
 -------
 
-:class:`AdaGradClassifier`, :class:`AdaGradRegressor`
+:class:`classification.AdaGradClassifier`, :class:`regression.AdaGradRegressor`
 
 - Main idea: use per-feature learning rates (frequently occurring features in the gradients get small learning rates and infrequent features get higher ones)
 - Non-smooth losses: Yes
@@ -65,21 +67,23 @@ AdaGrad
 - Learning rate: yes (not very sensitive)
 - Multiclass: one-vs-rest
 
-Stochastic averaged gradient (SAG)
----------------------------------
 
-:class:`SAGClassifier`, :class:`SAGRegressor`
+Stochastic averaged gradient (SAG and SAGA)
+-------------------------------------------
+
+
+:class:`classification.classification.SAGClassifier`, :class:`classification.SAGAClassifier`, :class:`regression.SAGRegressor`, :class:`regression.SAGARegressor`
 
 - Main idea: instead of using the full gradient (average of sample-wise gradients), compute gradient for a randomly selected sample and use out-dated gradients for other samples
-- Non-smooth losses: No
-- Penalties: L2
+- Non-smooth losses: Yes (:class:`classification.SAGAClassifier` and :class:`regression.SAGARegressor`)
+- Penalties: L1, L2, Elastic-net
 - Learning rate: yes (not very sensitive)
 - Multiclass: one-vs-rest
 
 Stochastic variance-reduced gradient (SVRG)
 -------------------------------------------
 
-:class:`SVRGClassifier`, :class:`SVRGRegressor`
+:class:`classification.SVRGClassifier`, :class:`regression.SVRGRegressor`
 
 - Main idea: compute full gradient periodically and use it to center the gradient estimate (this can be shown to reduce the variance)
 - Non-smooth losses: No
@@ -90,7 +94,7 @@ Stochastic variance-reduced gradient (SVRG)
 PRank
 ------
 
-:class:`PRank`, :class:`KernelPRank`
+:class:`ranking.PRank`, :class:`ranking.KernelPRank`
 
 - Main idea: Perceptron-like algorithm for ordinal regression
 - Penalties: L2
