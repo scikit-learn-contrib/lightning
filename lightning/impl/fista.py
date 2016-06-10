@@ -24,6 +24,8 @@ from .penalty import SimplexConstraint
 class _BaseFista(object):
 
     def _get_penalty(self):
+        if hasattr(self.penalty, 'projection'):
+            return self.penalty
         penalties = {
             "l1": L1Penalty(),
             "l1/l2": L1L2Penalty(),
@@ -138,13 +140,15 @@ class FistaClassifier(BaseClassifier, _BaseFista):
     loss : str, 'squared_hinge', 'log', 'modified_huber', 'squared'
         The loss function to be used.
 
-    penalty : str, 'l2', 'l1', 'l1/l2', 'simplex'
+    penalty : str or Penalty object, 'l2', 'l1', 'l1/l2', 'simplex'
         The penalty or constraint to be used.
 
         - l2: ridge
         - l1: lasso
         - l1/l2: group lasso
         - simplex: simplex constraint
+        The method can also take an arbitrary Penalty object, i.e., an instance
+        that implements methods projection regularization method (see file penalty.py)
 
     multiclass : bool
         Whether to use a direct multiclass formulation (True) or one-vs-rest
@@ -228,13 +232,16 @@ class FistaRegressor(BaseRegressor, _BaseFista):
 
     Parameters
     ----------
-    penalty : str, 'l2', 'l1', 'l1/l2', 'simplex'
+    penalty : str or Penalty object, {'l2', 'l1', 'l1/l2', 'simplex'}
         The penalty or constraint to be used.
 
         - l2: ridge
         - l1: lasso
         - l1/l2: group lasso
         - simplex: simplex constraint
+        The method can also take an arbitrary Penalty object, i.e., an instance
+        that implements methods projection regularization method (see file penalty.py)
+
 
     C : float
         Weight of the loss term.

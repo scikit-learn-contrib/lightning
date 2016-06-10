@@ -11,7 +11,7 @@ from sklearn.datasets import load_digits
 from lightning.impl.datasets.samples_generator import make_classification
 from lightning.classification import FistaClassifier
 from lightning.regression import FistaRegressor
-from lightning.impl.penalty import project_simplex
+from lightning.impl.penalty import project_simplex, L1Penalty
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
@@ -133,3 +133,15 @@ def test_fista_regression_trace():
     error = (Y_pred - Y).ravel()
     error = np.dot(error, error)
     assert_almost_equal(error, 77.45, 2)
+
+
+def test_fista_custom_prox():
+    # test FISTA with a custom prox
+    l1_pen = L1Penalty()
+    for data in (bin_dense, bin_csr):
+        clf = FistaClassifier(max_iter=500, penalty="l1", max_steps=0)
+        clf.fit(data, bin_target)
+
+        clf2 = FistaClassifier(max_iter=500, penalty=l1_pen, max_steps=0)
+        clf2.fit(data, bin_target)
+        np.testing.assert_array_almost_equal_nulp(clf.coef_.ravel(), clf2.coef_.ravel())
