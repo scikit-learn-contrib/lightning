@@ -19,6 +19,7 @@ from .penalty import L1Penalty
 from .penalty import L1L2Penalty
 from .penalty import TracePenalty
 from .penalty import SimplexConstraint
+from .penalty import TotalVariation1DPenalty
 
 
 class _BaseFista(object):
@@ -31,6 +32,7 @@ class _BaseFista(object):
             "l1/l2": L1L2Penalty(),
             "trace": TracePenalty(),
             "simplex": SimplexConstraint(),
+            "tv1d": TotalVariation1DPenalty()
         }
         return penalties[self.penalty]
 
@@ -146,6 +148,7 @@ class FistaClassifier(BaseClassifier, _BaseFista):
         - l2: ridge
         - l1: lasso
         - l1/l2: group lasso
+        - tv1d: 1-dimensional total variation (also known as fussed lasso)
         - simplex: simplex constraint
         The method can also take an arbitrary Penalty object, i.e., an instance
         that implements methods projection regularization method (see file penalty.py)

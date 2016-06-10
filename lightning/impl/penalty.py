@@ -3,6 +3,7 @@
 
 import numpy as np
 from scipy.linalg import svd
+from lightning.impl.prox_fast import prox_tv1d
 
 
 class L1Penalty(object):
@@ -70,3 +71,13 @@ class SimplexConstraint(object):
 
     def regularization(self, coef):
         return 0
+
+
+class TotalVariation1DPenalty(object):
+    def projection(self, coef, alpha, L):
+        tmp = coef.ravel().copy()
+        prox_tv1d(tmp, alpha / L)  # operates inplace
+        return tmp.reshape(coef.shape)
+
+    def regularization(self, coef):
+        return np.sum(np.abs(np.diff(coef)))
