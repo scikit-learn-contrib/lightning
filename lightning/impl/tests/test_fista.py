@@ -55,6 +55,21 @@ def test_fista_multiclass_l1():
         assert_almost_equal(clf.score(data, mult_target), 0.98)
 
 
+
+def test_fista_multiclass_tv1d():
+    for data in (mult_dense, mult_csr):
+        clf = FistaClassifier(max_iter=200, penalty="tv1d", multiclass=True)
+        clf.fit(data, mult_target)
+        assert_almost_equal(clf.score(data, mult_target), 0.97, 2)
+
+        # adding a lot of regularization coef_ should be constant
+        clf = FistaClassifier(max_iter=200, penalty="tv1d", multiclass=True, alpha=1e6)
+        clf.fit(data, mult_target)
+        for i in range(clf.coef_.shape[0]):
+            np.testing.assert_array_almost_equal(
+                clf.coef_[i], np.mean(clf.coef_[i]) * np.ones(data.shape[1]))
+
+
 def test_fista_multiclass_l1l2_no_line_search():
     for data in (mult_dense, mult_csr):
         clf = FistaClassifier(max_iter=500, penalty="l1/l2", multiclass=True,
