@@ -75,9 +75,10 @@ class SimplexConstraint(object):
 
 class TotalVariation1DPenalty(object):
     def projection(self, coef, alpha, L):
-        tmp = coef.ravel().copy()
-        prox_tv1d(tmp, alpha / L)  # operates inplace
-        return tmp.reshape(coef.shape)
+        tmp = coef.copy()
+        for i in range(tmp.shape[0]):
+            prox_tv1d(tmp[i, :], alpha / L)  # operates inplace
+        return tmp
 
     def regularization(self, coef):
         return np.sum(np.abs(np.diff(coef)))
