@@ -16,6 +16,7 @@ an optimization problem using lightning's :class:`lightning.classification.Fista
 
 The 1D total variation is also known as fused lasso.
 """
+# Author: Fabian Pedregosa <f@bianp.net>
 
 import numpy as np
 import matplotlib.pyplot as plt
