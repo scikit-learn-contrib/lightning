@@ -1,5 +1,7 @@
 """
-Signal recovery using 1D total variation (also known as fused lasso)
+=====================================
+Signal recovery by 1D total variation
+=====================================
 
 In this example, we generate a signal that is piecewise constant. We then
 observe some random and corrupted measurements from that signal and
@@ -11,6 +13,8 @@ Given a ground truth vectors, the signal that we observe is given by
 
 where X is a random matrix. We obtain the vector ground_truth by solving
 an optimization problem using lightning FistaClassifier.
+
+The 1D total variation is also known as fused lasso.
 """
 
 import numpy as np
