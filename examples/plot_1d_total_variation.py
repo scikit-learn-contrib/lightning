@@ -1,8 +1,8 @@
 """
-Signal recovery using 1D total variation (also known as fussed lasso)
+Signal recovery using 1D total variation (also known as fused lasso)
 
 In this example, we generate a signal that is piecewise constant. We then
-observe some random and corrputed measurements from that signal and
+observe some random and corrupted measurements from that signal and
 then try to recover that signal using L1 and TV1D penalties.
 
 Given a ground truth vectors, the signal that we observe is given by

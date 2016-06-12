@@ -148,7 +148,7 @@ class FistaClassifier(BaseClassifier, _BaseFista):
         - l2: ridge
         - l1: lasso
         - l1/l2: group lasso
-        - tv1d: 1-dimensional total variation (also known as fussed lasso)
+        - tv1d: 1-dimensional total variation (also known as fused lasso)
         - simplex: simplex constraint
         The method can also take an arbitrary Penalty object, i.e., an instance
         that implements methods projection regularization method (see file penalty.py)
