@@ -21,6 +21,18 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
+
+  # begin make binary package
+  # create conda package and upload it to anaconda, only on stable branches
+  - mkdir dist
+  - conda build --python $TRAVIS_PYTHON_VERSION build_tools/conda-recipe --quiet
+  - python build_tools/move-conda-package.py build_tools/conda-recipe
+  - ls dist
+  - conda install --quiet --yes anaconda-client
+  - anaconda -t $ANACONDA_TOKEN upload dist/*.tar.bz2 --user scikit-learn-contrib
+  # end make binary package
+
+
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy nose cython scikit-learn
   - source activate test-environment
   - make all
