@@ -34,6 +34,10 @@ def configuration(parent_package='', top_path=None):
                          sources=['primal_cd_fast.cpp'],
                          include_dirs=[numpy.get_include(), randomdir])
 
+    config.add_extension('prox_fast',
+                         sources=['prox_fast.cpp'],
+                         include_dirs=[numpy.get_include(), randomdir])
+
     config.add_extension('sag_fast',
                          sources=['sag_fast.cpp'],
                          include_dirs=[numpy.get_include(), randomdir])
