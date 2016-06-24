@@ -45,9 +45,14 @@ install:
   # see http://help.appveyor.com/discussions/problems/3712-git-remote-https-seems-to-be-broken
   - rmdir C:\\cygwin /s /q
 
-  # Install the build and runtime dependencies of the project.
-  - conda install --quiet --yes numpy scipy cython nose scikit-learn wheel conda-build"
+  # Update previous packages and install the build and runtime dependencies of the project.
+  - conda update --all --yes
+  - conda install --quiet --yes numpy scipy cython nose scikit-learn wheel"
+  # there seems to be a problem with conda-build 1.21.0 on python27 and win64, avoid this
+  # by using a previous version
+  - conda install --quiet --yes conda-build=1.21.0
   - "%CMD_IN_ENV% python setup.py bdist_wheel bdist_wininst"
+
   - ps: "ls dist"
   # build the conda package
   - "%CMD_IN_ENV% conda build build_tools/conda-recipe --quiet"
