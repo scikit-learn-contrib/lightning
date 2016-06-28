@@ -18,6 +18,8 @@ def configuration(parent_package='', top_path=None):
 
     config.add_subpackage('tests')
     config.add_data_files('random_fast.pxd')
+    config.add_data_files('randomkit.h')
+							
     return config
 
 if __name__ == '__main__':
