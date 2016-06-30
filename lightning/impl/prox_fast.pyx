@@ -50,7 +50,7 @@ cpdef prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):
         twolambda = 2.0 * stepsize  # auxiliary variable
         minlambda = -stepsize		# auxiliary variable
         while True:				# simple loop, the exit test is inside
-            while k == width-1: 	# we use the right boundary condition
+            while k >= width-1: 	# we use the right boundary condition
                 if umin < 0.0:			# vmin is too high -> negative jump necessary
                     while True:
                         w[k0] = vmin

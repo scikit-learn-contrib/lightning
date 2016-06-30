@@ -1054,6 +1054,8 @@ static CYTHON_INLINE PyObject* __Pyx_PyInt_From_long(long value);
 
 static int __Pyx_check_binary_version(void);
 
+static int __Pyx_ExportFunction(const char *name, void (*f)(void), const char *sig);
+
 #if !defined(__Pyx_PyIdentifier_FromString)
 #if PY_MAJOR_VERSION < 3
   #define __Pyx_PyIdentifier_FromString(s) PyString_FromString(s)
@@ -1334,7 +1336,7 @@ static PyObject *__pyx_f_9lightning_4impl_9prox_fast_prox_tv1d(PyArrayObject *__
  *         twolambda = 2.0 * stepsize  # auxiliary variable
  *         minlambda = -stepsize		# auxiliary variable             # <<<<<<<<<<<<<<
  *         while True:				# simple loop, the exit test is inside
- *             while k == width-1: 	# we use the right boundary condition
+ *             while k >= width-1: 	# we use the right boundary condition
  */
     __pyx_v_minlambda = (-__pyx_v_stepsize);
 
@@ -1342,7 +1344,7 @@ static PyObject *__pyx_f_9lightning_4impl_9prox_fast_prox_tv1d(PyArrayObject *__
  *         twolambda = 2.0 * stepsize  # auxiliary variable
  *         minlambda = -stepsize		# auxiliary variable
  *         while True:				# simple loop, the exit test is inside             # <<<<<<<<<<<<<<
- *             while k == width-1: 	# we use the right boundary condition
+ *             while k >= width-1: 	# we use the right boundary condition
  *                 if umin < 0.0:			# vmin is too high -> negative jump necessary
  */
     while (1) {
@@ -1350,17 +1352,17 @@ static PyObject *__pyx_f_9lightning_4impl_9prox_fast_prox_tv1d(PyArrayObject *__
       /* "lightning/impl/prox_fast.pyx":53
  *         minlambda = -stepsize		# auxiliary variable
  *         while True:				# simple loop, the exit test is inside
- *             while k == width-1: 	# we use the right boundary condition             # <<<<<<<<<<<<<<
+ *             while k >= width-1: 	# we use the right boundary condition             # <<<<<<<<<<<<<<
  *                 if umin < 0.0:			# vmin is too high -> negative jump necessary
  *                     while True:
  */
       while (1) {
-        __pyx_t_3 = ((__pyx_v_k == (__pyx_v_width - 1)) != 0);
+        __pyx_t_3 = ((__pyx_v_k >= (__pyx_v_width - 1)) != 0);
         if (!__pyx_t_3) break;
 
         /* "lightning/impl/prox_fast.pyx":54
  *         while True:				# simple loop, the exit test is inside
- *             while k == width-1: 	# we use the right boundary condition
+ *             while k >= width-1: 	# we use the right boundary condition
  *                 if umin < 0.0:			# vmin is too high -> negative jump necessary             # <<<<<<<<<<<<<<
  *                     while True:
  *                         w[k0] = vmin
@@ -1369,7 +1371,7 @@ static PyObject *__pyx_f_9lightning_4impl_9prox_fast_prox_tv1d(PyArrayObject *__
         if (__pyx_t_3) {
 
           /* "lightning/impl/prox_fast.pyx":55
- *             while k == width-1: 	# we use the right boundary condition
+ *             while k >= width-1: 	# we use the right boundary condition
  *                 if umin < 0.0:			# vmin is too high -> negative jump necessary
  *                     while True:             # <<<<<<<<<<<<<<
  *                         w[k0] = vmin
@@ -1474,7 +1476,7 @@ static PyObject *__pyx_f_9lightning_4impl_9prox_fast_prox_tv1d(PyArrayObject *__
 
           /* "lightning/impl/prox_fast.pyx":54
  *         while True:				# simple loop, the exit test is inside
- *             while k == width-1: 	# we use the right boundary condition
+ *             while k >= width-1: 	# we use the right boundary condition
  *                 if umin < 0.0:			# vmin is too high -> negative jump necessary             # <<<<<<<<<<<<<<
  *                     while True:
  *                         w[k0] = vmin
@@ -2221,7 +2223,7 @@ static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_prox_tv1d(CYTHON_UNUSED Py
   }
   __pyx_pybuffernd_w.diminfo[0].strides = __pyx_pybuffernd_w.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_w.diminfo[0].shape = __pyx_pybuffernd_w.rcbuffer->pybuffer.shape[0];
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_9lightning_4impl_9prox_fast_prox_tv1d(__pyx_v_w, __pyx_v_stepsize, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __pyx_f_9lightning_4impl_9prox_fast_prox_tv1d(((PyArrayObject *)__pyx_v_w), __pyx_v_stepsize, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -4605,6 +4607,7 @@ PyMODINIT_FUNC PyInit_prox_fast(void)
   /*--- Global init code ---*/
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
+  if (__Pyx_ExportFunction("prox_tv1d", (void (*)(void))__pyx_f_9lightning_4impl_9prox_fast_prox_tv1d, "PyObject *(PyArrayObject *, double, int __pyx_skip_dispatch)") < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   /*--- Type init code ---*/
   /*--- Type import code ---*/
   __pyx_ptype_7cpython_4type_type = __Pyx_ImportType(__Pyx_BUILTIN_MODULE_NAME, "type", 
@@ -6551,6 +6554,42 @@ static int __Pyx_check_binary_version(void) {
         return PyErr_WarnEx(NULL, message, 1);
     }
     return 0;
+}
+
+static int __Pyx_ExportFunction(const char *name, void (*f)(void), const char *sig) {
+    PyObject *d = 0;
+    PyObject *cobj = 0;
+    union {
+        void (*fp)(void);
+        void *p;
+    } tmp;
+    d = PyObject_GetAttrString(__pyx_m, (char *)"__pyx_capi__");
+    if (!d) {
+        PyErr_Clear();
+        d = PyDict_New();
+        if (!d)
+            goto bad;
+        Py_INCREF(d);
+        if (PyModule_AddObject(__pyx_m, (char *)"__pyx_capi__", d) < 0)
+            goto bad;
+    }
+    tmp.fp = f;
+#if PY_VERSION_HEX >= 0x02070000
+    cobj = PyCapsule_New(tmp.p, sig, 0);
+#else
+    cobj = PyCObject_FromVoidPtrAndDesc(tmp.p, (void *)sig, 0);
+#endif
+    if (!cobj)
+        goto bad;
+    if (PyDict_SetItemString(d, name, cobj) < 0)
+        goto bad;
+    Py_DECREF(cobj);
+    Py_DECREF(d);
+    return 0;
+bad:
+    Py_XDECREF(cobj);
+    Py_XDECREF(d);
+    return -1;
 }
 
 #ifndef __PYX_HAVE_RT_ImportModule
