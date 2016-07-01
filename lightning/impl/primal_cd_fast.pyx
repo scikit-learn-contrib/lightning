@@ -1308,8 +1308,6 @@ def _primal_cd(self,
         # Initialize violations.
         violation_max = 0
         violation_sum = 0
-        M = -DBL_MAX
-        m = DBL_MAX
 
         s = 0
         while s < active_size:
