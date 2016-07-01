@@ -9,10 +9,10 @@
 """
 These are some helper functions to compute the proximal operator of some common penalties
 """
-
+import numpy as np
 cimport numpy as np
 
-cpdef prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):
+def prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):
     """
     Computes the proximal operator of the 1-dimensional total variation operator.
 
@@ -34,12 +34,21 @@ cpdef prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):
     Condat, Laurent. "A direct algorithm for 1D total variation denoising."
     IEEE Signal Processing Letters (2013)
     """
-    cdef long width, k, k0, kplus, kminus
+    # make a copy as it will be modified in place
+    cdef np.ndarray[ndim=1, dtype=double] tmp = w.copy()
+    c_prox_tv1d(<double *> tmp.data, <size_t> w.size, stepsize)
+    return tmp
+
+
+cdef c_prox_tv1d(double* w, size_t size, double stepsize):
+    """
+    C API for prox_tv1d
+    """
+    cdef size_t k, k0, kplus, kminus
     cdef double umin, umax, vmin, vmax, twolambda, minlambda
-    width = w.size
 
     # /to avoid invalid memory access to input[0] and invalid lambda values
-    if width > 0 and stepsize >= 0:
+    if size > 0 and stepsize >= 0:
         k, k0 = 0, 0			# k: current sample location, k0: beginning of current segment
         umin = stepsize  # u is the dual variable
         umax = - stepsize
@@ -50,7 +59,7 @@ cpdef prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):
         twolambda = 2.0 * stepsize  # auxiliary variable
         minlambda = -stepsize		# auxiliary variable
         while True:				# simple loop, the exit test is inside
-            while k >= width-1: 	# we use the right boundary condition
+            while k >= size-1: 	# we use the right boundary condition
                 if umin < 0.0:			# vmin is too high -> negative jump necessary
                     while True:
                         w[k0] = vmin
