@@ -75,7 +75,7 @@ Precompiled binaries for the stable version of lightning are available for the m
 
 or conda::
 
-    conda install -c https://conda.anaconda.org/scikit-learn-contrib lightning
+    conda install -c conda-forge sklearn-contrib-lightning
 
 
 The development version of lightning can be installed from its git repository. In this case it is assumed that you have the git version control system, a working C++ compiler, Cython and the numpy development libraries. In order to install the development version, type::
