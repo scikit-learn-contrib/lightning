@@ -60,8 +60,8 @@ def configuration(parent_package='', top_path=None):
 
     # add .pxd files to be re-used by third party software
     config.add_data_files('sag_fast.pxd', 'dataset_fast.pxd',
-					      'sgd_fast.pxd', 'prox_fast.pxd')
-	
+                          'sgd_fast.pxd', 'prox_fast.pxd')
+
     return config
 
 if __name__ == '__main__':
