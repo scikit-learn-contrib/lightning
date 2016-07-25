@@ -1,0 +1,48 @@
+
+
+.. _example_plot_svrg.py:
+
+
+=======================================
+Sensitivity to hyper-parameters in SVRG
+=======================================
+
+This example shows the sensitivity of SVRG with respect
+to different hyperparameters.
+
+
+
+.. rst-class:: horizontal
+
+
+    *
+
+      .. image:: images/plot_svrg_001.png
+            :scale: 47
+
+    *
+
+      .. image:: images/plot_svrg_002.png
+            :scale: 47
+
+
+**Script output**::
+
+  eta = 0.001
+  eta = 0.0001
+  eta = 1e-05
+  n_inner = 0.25
+  n_inner = 0.5
+  n_inner = 1.0
+  n_inner = 1.5
+
+
+
+**Python source code:** :download:`plot_svrg.py <plot_svrg.py>`
+
+.. literalinclude:: plot_svrg.py
+    :lines: 9-
+
+**Total running time of the example:**  0.98 seconds
+( 0 minutes  0.98 seconds)
+    

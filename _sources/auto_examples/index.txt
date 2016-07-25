@@ -1,0 +1,254 @@
+
+
+
+.. raw:: html
+
+
+    <style type="text/css">
+    div#sidebarbutton {
+        /* hide the sidebar collapser, while ensuring vertical arrangement */
+        display: none;
+    }
+    </style>
+
+.. _examples-index:
+
+Examples
+========
+
+
+
+
+These are some examples using the lightning machine learning library
+
+
+
+
+.. raw:: html
+
+    <div class="thumbnailContainer" tooltip="In this example, we generate a signal that is piecewise constant. We then observe some random a...">
+
+.. only:: html
+
+  .. figure:: ./images/thumb/plot_1d_total_variation.png
+    :target: ./plot_1d_total_variation.html
+
+    :ref:`example_plot_1d_total_variation.py`
+
+
+.. raw:: html
+
+    </div>
+
+
+
+.. toctree::
+   :hidden:
+
+   ./plot_1d_total_variation
+
+
+
+.. raw:: html
+
+    <div class="thumbnailContainer" tooltip="">
+
+.. only:: html
+
+  .. figure:: ./images/thumb/plot_sgd_loss_functions.png
+    :target: ./plot_sgd_loss_functions.html
+
+    :ref:`example_plot_sgd_loss_functions.py`
+
+
+.. raw:: html
+
+    </div>
+
+
+
+.. toctree::
+   :hidden:
+
+   ./plot_sgd_loss_functions
+
+
+
+.. raw:: html
+
+    <div class="thumbnailContainer" tooltip="">
+
+.. only:: html
+
+  .. figure:: ./images/thumb/plot_robust_regression.png
+    :target: ./plot_robust_regression.html
+
+    :ref:`example_plot_robust_regression.py`
+
+
+.. raw:: html
+
+    </div>
+
+
+
+.. toctree::
+   :hidden:
+
+   ./plot_robust_regression
+
+
+
+.. raw:: html
+
+    <div class="thumbnailContainer" tooltip="">
+
+.. only:: html
+
+  .. figure:: ./images/thumb/trace.png
+    :target: ./trace.html
+
+    :ref:`example_trace.py`
+
+
+.. raw:: html
+
+    </div>
+
+
+
+.. toctree::
+   :hidden:
+
+   ./trace
+
+
+
+.. raw:: html
+
+    <div class="thumbnailContainer" tooltip="Plot decision function of a weighted dataset, where the size of points is proportional to its w...">
+
+.. only:: html
+
+  .. figure:: ./images/thumb/plot_sample_weight.png
+    :target: ./plot_sample_weight.html
+
+    :ref:`example_plot_sample_weight.py`
+
+
+.. raw:: html
+
+    </div>
+
+
+
+.. toctree::
+   :hidden:
+
+   ./plot_sample_weight
+
+
+
+.. raw:: html
+
+    <div class="thumbnailContainer" tooltip="">
+
+.. only:: html
+
+  .. figure:: ./images/thumb/document_classification_news20.png
+    :target: ./document_classification_news20.html
+
+    :ref:`example_document_classification_news20.py`
+
+
+.. raw:: html
+
+    </div>
+
+
+
+.. toctree::
+   :hidden:
+
+   ./document_classification_news20
+
+
+
+.. raw:: html
+
+    <div class="thumbnailContainer" tooltip="This example shows the sensitivity of SVRG with respect to different hyperparameters. ">
+
+.. only:: html
+
+  .. figure:: ./images/thumb/plot_svrg.png
+    :target: ./plot_svrg.html
+
+    :ref:`example_plot_svrg.py`
+
+
+.. raw:: html
+
+    </div>
+
+
+
+.. toctree::
+   :hidden:
+
+   ./plot_svrg
+
+
+
+.. raw:: html
+
+    <div class="thumbnailContainer" tooltip="This examples demonstrates how to use `CDClassifier` with L1 penalty to do sparse non-linear cl...">
+
+.. only:: html
+
+  .. figure:: ./images/thumb/plot_sparse_non_linear.png
+    :target: ./plot_sparse_non_linear.html
+
+    :ref:`example_plot_sparse_non_linear.py`
+
+
+.. raw:: html
+
+    </div>
+
+
+
+.. toctree::
+   :hidden:
+
+   ./plot_sparse_non_linear
+
+
+
+.. raw:: html
+
+    <div class="thumbnailContainer" tooltip="This example compares different solvers with L2 regularization. ">
+
+.. only:: html
+
+  .. figure:: ./images/thumb/plot_l2_solvers.png
+    :target: ./plot_l2_solvers.html
+
+    :ref:`example_plot_l2_solvers.py`
+
+
+.. raw:: html
+
+    </div>
+
+
+
+.. toctree::
+   :hidden:
+
+   ./plot_l2_solvers
+
+
+.. raw:: html
+
+    <div class="clearer"></div>
+    

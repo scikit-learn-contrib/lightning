@@ -1,0 +1,26 @@
+
+
+.. _example_plot_robust_regression.py:
+
+
+==================
+Robust regression
+==================
+
+
+
+
+.. image:: images/plot_robust_regression_001.png
+    :align: center
+
+
+
+
+**Python source code:** :download:`plot_robust_regression.py <plot_robust_regression.py>`
+
+.. literalinclude:: plot_robust_regression.py
+    :lines: 7-
+
+**Total running time of the example:**  0.15 seconds
+( 0 minutes  0.15 seconds)
+    

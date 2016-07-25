@@ -1,0 +1,670 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lightning.impl.primal_cd &mdash; lightning dev documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/lightning.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-3.3.4/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-3.3.4/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     'dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="lightning dev documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          lightning</a>
+        <span class="navbar-text navbar-version pull-left"><b>dev</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../intro.html">Introduction</a></li>
+                <li><a href="../../../references.html">References</a></li>
+                <li><a href="../../../auto_examples/index.html">Examples</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../auto_examples/index.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_robust_regression.html">Robust regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/trace.html">Trace norm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/document_classification_news20.html">Classification of text documents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_svrg.html">Sensitivity to hyper-parameters in SVRG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_l2_solvers.html">L2 solver comparison</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">Classification</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html#regression">Regression</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html#ranking">Ranking</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#primal-coordinate-descent">Primal coordinate descent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#dual-coordinate-ascent">Dual coordinate ascent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#fista">FISTA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#stochastic-gradient-method-sgd">Stochastic gradient method (SGD)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#adagrad">AdaGrad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#stochastic-averaged-gradient-sag">Stochastic averaged gradient (SAG)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#stochastic-variance-reduced-gradient-svrg">Stochastic variance-reduced gradient (SVRG)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#prank">PRank</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../auto_examples/index.html">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_robust_regression.html">Robust regression</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/trace.html">Trace norm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/document_classification_news20.html">Classification of text documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_svrg.html">Sensitivity to hyper-parameters in SVRG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_l2_solvers.html">L2 solver comparison</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../references.html">Classification</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../references.html#regression">Regression</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../references.html#ranking">Ranking</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container content-container">
+  
+  <h1>Source code for lightning.impl.primal_cd</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">==========================================</span>
+<span class="sd">Primal (Block) Coordinate Descent Solvers</span>
+<span class="sd">==========================================</span>
+
+<span class="sd">This module provides (block) coordinate descent solvers for a variety of loss</span>
+<span class="sd">functions and penalties.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># Author: Mathieu Blondel</span>
+<span class="c"># License: BSD</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.externals.joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+<span class="kn">from</span> <span class="nn">sklearn.externals.six.moves</span> <span class="kn">import</span> <span class="nb">xrange</span>
+
+<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">BaseClassifier</span>
+<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">BaseRegressor</span>
+
+<span class="kn">from</span> <span class="nn">.dataset_fast</span> <span class="kn">import</span> <span class="n">get_dataset</span>
+<span class="kn">from</span> <span class="nn">.primal_cd_fast</span> <span class="kn">import</span> <span class="n">_primal_cd</span>
+
+<span class="kn">from</span> <span class="nn">.primal_cd_fast</span> <span class="kn">import</span> <span class="n">Squared</span>
+<span class="kn">from</span> <span class="nn">.primal_cd_fast</span> <span class="kn">import</span> <span class="n">SmoothHinge</span>
+<span class="kn">from</span> <span class="nn">.primal_cd_fast</span> <span class="kn">import</span> <span class="n">SquaredHinge</span>
+<span class="kn">from</span> <span class="nn">.primal_cd_fast</span> <span class="kn">import</span> <span class="n">ModifiedHuber</span>
+<span class="kn">from</span> <span class="nn">.primal_cd_fast</span> <span class="kn">import</span> <span class="n">Log</span>
+
+
+<span class="k">class</span> <span class="nc">_BaseCD</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">_get_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;max_steps&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_max_steps</span><span class="p">(),</span>
+                  <span class="s">&quot;sigma&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">,</span>
+                  <span class="s">&quot;beta&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span>
+                  <span class="s">&quot;verbose&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">}</span>
+
+        <span class="n">losses</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&quot;squared&quot;</span><span class="p">:</span> <span class="n">Squared</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">),</span>
+            <span class="s">&quot;smooth_hinge&quot;</span><span class="p">:</span> <span class="n">SmoothHinge</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">),</span>
+            <span class="s">&quot;squared_hinge&quot;</span><span class="p">:</span> <span class="n">SquaredHinge</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">),</span>
+            <span class="s">&quot;modified_huber&quot;</span><span class="p">:</span> <span class="n">ModifiedHuber</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">),</span>
+            <span class="s">&quot;log&quot;</span><span class="p">:</span> <span class="n">Log</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">losses</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_max_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_steps</span> <span class="o">==</span> <span class="s">&quot;auto&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">==</span> <span class="s">&quot;log&quot;</span><span class="p">:</span>
+                <span class="n">max_steps</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">max_steps</span> <span class="o">=</span> <span class="mi">30</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">max_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_steps</span>
+        <span class="k">return</span> <span class="n">max_steps</span>
+
+    <span class="k">def</span> <span class="nf">_get_penalty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">penalties</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&quot;l1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&quot;l2&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">penalties</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">penalty</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_init_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+        <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_vectors</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">==</span> <span class="s">&quot;squared&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">errors_</span> <span class="o">=</span> <span class="o">-</span><span class="n">Y</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">errors_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n_vectors</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CDClassifier"><a class="viewcode-back" href="../../../generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier">[docs]</a><span class="k">class</span> <span class="nc">CDClassifier</span><span class="p">(</span><span class="n">_BaseCD</span><span class="p">,</span> <span class="n">BaseClassifier</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Estimator for learning linear classifiers by (block) coordinate descent.</span>
+
+<span class="sd">    The objective functions considered take the form</span>
+
+<span class="sd">    minimize F(W) = C * L(W) + alpha * R(W),</span>
+
+<span class="sd">    where L(W) is a loss term and R(W) is a penalty term.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    loss : str, &#39;squared_hinge&#39;, &#39;log&#39;, &#39;modified_huber&#39;, &#39;squared&#39;</span>
+<span class="sd">        The loss function to be used.</span>
+
+<span class="sd">    penalty : str, &#39;l2&#39;, &#39;l1&#39;, &#39;l1/l2&#39;</span>
+<span class="sd">        The penalty to be used.</span>
+
+<span class="sd">        - l2: ridge</span>
+<span class="sd">        - l1: lasso</span>
+<span class="sd">        - l1/l2: group lasso</span>
+
+<span class="sd">    multiclass : bool</span>
+<span class="sd">        Whether to use a direct multiclass formulation (True) or one-vs-rest</span>
+<span class="sd">        (False). Direct formulations are only available for loss=&#39;squared_hinge&#39;</span>
+<span class="sd">        and loss=&#39;log&#39;.</span>
+
+<span class="sd">    C : float</span>
+<span class="sd">        Weight of the loss term.</span>
+
+<span class="sd">    alpha : float</span>
+<span class="sd">        Weight of the penalty term.</span>
+
+<span class="sd">    max_iter : int</span>
+<span class="sd">        Maximum number of iterations to perform.</span>
+
+<span class="sd">    tol : float</span>
+<span class="sd">        Tolerance of the stopping criterion.</span>
+
+<span class="sd">    termination : str, &#39;violation_sum&#39;, &#39;violation_max&#39;</span>
+<span class="sd">        Stopping criterion to use.</span>
+
+<span class="sd">    shrinking : bool</span>
+<span class="sd">        Whether to activate shrinking or not.</span>
+
+<span class="sd">    max_steps : int or &quot;auto&quot;</span>
+<span class="sd">        Maximum number of steps to use during the line search. Use max_steps=0</span>
+<span class="sd">        to use a constant step size instead of the line search. Use</span>
+<span class="sd">        max_steps=&quot;auto&quot; to let CDClassifier choose the best value.</span>
+
+<span class="sd">    sigma : float</span>
+<span class="sd">        Constant used in the line search sufficient decrease condition.</span>
+
+<span class="sd">    beta : float</span>
+<span class="sd">        Multiplicative constant used in the backtracking line search.</span>
+
+<span class="sd">    warm_start : bool</span>
+<span class="sd">        Whether to activate warm-start or not.</span>
+
+<span class="sd">    debiasing : bool</span>
+<span class="sd">        Whether to refit the model using l2 penalty (only useful if penalty=&#39;l1&#39;</span>
+<span class="sd">        or penalty=&#39;l1/l2&#39;).</span>
+
+<span class="sd">    Cd : float</span>
+<span class="sd">        Value of `C` when doing debiasing.</span>
+
+<span class="sd">    warm_debiasing : bool</span>
+<span class="sd">        Whether to warm-start the model or not when doing debiasing.</span>
+
+<span class="sd">    selection : str, &#39;cyclic&#39;, &#39;uniform&#39;</span>
+<span class="sd">        Strategy to use for selecting coordinates.</span>
+
+<span class="sd">    permute : bool</span>
+<span class="sd">        Whether to permute coordinates or not before cycling (only when</span>
+<span class="sd">        selection=&#39;cyclic&#39;).</span>
+
+<span class="sd">    callback : callable</span>
+<span class="sd">        Callback function.</span>
+
+<span class="sd">    n_calls : int</span>
+<span class="sd">        Frequency with which `callback` must be called.</span>
+
+<span class="sd">    random_state : RandomState or int</span>
+<span class="sd">        The seed of the pseudo random number generator to use.</span>
+
+<span class="sd">    verbose : int</span>
+<span class="sd">        Verbosity level.</span>
+
+<span class="sd">    n_jobs : int</span>
+<span class="sd">        Number of CPU&#39;s to be used when `multiclass=False` and when</span>
+<span class="sd">        penalty is a non group-lasso penalty. By default use one CPU.</span>
+<span class="sd">        If set to -1, use all CPU&#39;s</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    The following example demonstrates how to learn a classification</span>
+<span class="sd">    model with a multiclass squared hinge loss and an l1/l2 penalty.</span>
+
+<span class="sd">    &gt;&gt;&gt; from sklearn.datasets import fetch_20newsgroups_vectorized</span>
+<span class="sd">    &gt;&gt;&gt; from lightning.classification import CDClassifier</span>
+<span class="sd">    &gt;&gt;&gt; bunch = fetch_20newsgroups_vectorized(subset=&quot;all&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; X, y = bunch.data, bunch.target</span>
+<span class="sd">    &gt;&gt;&gt; clf = CDClassifier(penalty=&quot;l1/l2&quot;,</span>
+<span class="sd">                           loss=&quot;squared_hinge&quot;,</span>
+<span class="sd">                           multiclass=True,</span>
+<span class="sd">                           max_iter=20,</span>
+<span class="sd">                           alpha=1e-4,</span>
+<span class="sd">                           C=1.0 / X.shape[0],</span>
+<span class="sd">                           tol=1e-3,</span>
+<span class="sd">                           random_state=0).fit(X, y)</span>
+<span class="sd">    &gt;&gt;&gt; accuracy = clf.score(X, y)</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Block Coordinate Descent Algorithms for Large-scale Sparse Multiclass</span>
+<span class="sd">    Classification.  Mathieu Blondel, Kazuhiro Seki, and Kuniaki Uehara.</span>
+<span class="sd">    Machine Learning, May 2013.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CDClassifier.__init__"><a class="viewcode-back" href="../../../generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s">&quot;squared_hinge&quot;</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s">&quot;l2&quot;</span><span class="p">,</span> <span class="n">multiclass</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">C</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">termination</span><span class="o">=</span><span class="s">&quot;violation_sum&quot;</span><span class="p">,</span>
+                 <span class="n">shrinking</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="n">max_steps</span><span class="o">=</span><span class="s">&quot;auto&quot;</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                 <span class="n">warm_start</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">debiasing</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">Cd</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">warm_debiasing</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">selection</span><span class="o">=</span><span class="s">&quot;cyclic&quot;</span><span class="p">,</span> <span class="n">permute</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_calls</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">C</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="o">=</span> <span class="n">penalty</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiclass</span> <span class="o">=</span> <span class="n">multiclass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span> <span class="o">=</span> <span class="n">max_iter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">termination</span> <span class="o">=</span> <span class="n">termination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shrinking</span> <span class="o">=</span> <span class="n">shrinking</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_steps</span> <span class="o">=</span> <span class="n">max_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">warm_start</span> <span class="o">=</span> <span class="n">warm_start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debiasing</span> <span class="o">=</span> <span class="n">debiasing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Cd</span> <span class="o">=</span> <span class="n">Cd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">warm_debiasing</span> <span class="o">=</span> <span class="n">warm_debiasing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selection</span> <span class="o">=</span> <span class="n">selection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">permute</span> <span class="o">=</span> <span class="n">permute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">callback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_calls</span> <span class="o">=</span> <span class="n">n_calls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+</div>
+<div class="viewcode-block" id="CDClassifier.fit"><a class="viewcode-back" href="../../../generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fit model according to X and y.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : array-like, shape = [n_samples, n_features]</span>
+<span class="sd">            Training vectors, where n_samples is the number of samples</span>
+<span class="sd">            and n_features is the number of features.</span>
+
+<span class="sd">        y : array-like, shape = [n_samples]</span>
+<span class="sd">            Target values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self : classifier</span>
+<span class="sd">            Returns self.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_random_state</span><span class="p">()</span>
+
+        <span class="c"># Create dataset</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">get_dataset</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s">&quot;fortran&quot;</span><span class="p">)</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">get_n_samples</span><span class="p">()</span>
+        <span class="n">n_features</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">get_n_features</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="o">!=</span> <span class="s">&quot;l1/l2&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiclass</span><span class="p">:</span>
+          <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s">&quot;True multiclass options not implemented &quot;</span>
+                                    <span class="s">&quot;for non group-lasso(l1/l2) penalties.&quot;</span><span class="p">)</span>
+
+        <span class="c"># Create label transformers</span>
+        <span class="c">#neg_label = 0 if self.penalty == &quot;nn&quot; else -1</span>
+        <span class="n">reencode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="o">==</span> <span class="s">&quot;l1/l2&quot;</span>
+        <span class="n">y</span><span class="p">,</span> <span class="n">n_classes</span><span class="p">,</span> <span class="n">n_vectors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_label_transformers</span><span class="p">(</span><span class="n">y</span><span class="p">,</span>
+                                                               <span class="n">reencode</span><span class="p">,</span>
+                                                               <span class="n">neg_label</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asfortranarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label_binarizer_</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">y</span><span class="p">),</span>
+                              <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="c"># Initialize coefficients</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">warm_start</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">C_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_vectors</span><span class="p">,</span> <span class="n">n_features</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_init_errors</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">intercept_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_features</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="n">max_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_max_steps</span><span class="p">()</span>
+
+        <span class="c"># Learning</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="o">==</span> <span class="s">&quot;l1/l2&quot;</span><span class="p">:</span>
+            <span class="n">tol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span>
+            <span class="c">#n_min = np.min(np.sum(Y == 1, axis=0))</span>
+            <span class="c">#tol *= max(n_min, 1) / n_samples</span>
+
+            <span class="n">vinit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">C_init</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">_primal_cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errors_</span><span class="p">,</span>
+                              <span class="n">ds</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiclass</span><span class="p">,</span>
+                              <span class="n">indices</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_loss</span><span class="p">(),</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">selection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">permute</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">termination</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">shrinking</span><span class="p">,</span> <span class="n">vinit</span><span class="p">,</span>
+                              <span class="n">rs</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_calls</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+            <span class="n">viol</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warm_start</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">viol</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&quot;l1&quot;</span><span class="p">,</span> <span class="s">&quot;l2&quot;</span><span class="p">,</span> <span class="s">&quot;nn&quot;</span><span class="p">):</span>
+            <span class="n">penalty</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_penalty</span><span class="p">()</span>
+
+            <span class="n">n_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">)</span>
+            <span class="n">vinit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">C_init</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">n_pos</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">):</span>
+                <span class="n">n_pos</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Y</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">vinit</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">n_neg</span> <span class="o">=</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="n">n_pos</span>
+            <span class="n">tol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">n_pos</span><span class="p">,</span> <span class="n">n_neg</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">n_samples</span>
+
+            <span class="n">jobs</span> <span class="o">=</span> <span class="p">(</span><span class="n">delayed</span><span class="p">(</span><span class="n">_primal_cd</span><span class="p">)(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errors_</span><span class="p">,</span>
+                                        <span class="n">ds</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span>
+                                        <span class="n">indices</span><span class="p">,</span> <span class="n">penalty</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_loss</span><span class="p">(),</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">selection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">permute</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">termination</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">shrinking</span><span class="p">,</span> <span class="n">vinit</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+                                        <span class="n">rs</span><span class="p">,</span> <span class="n">tol</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_calls</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">))</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)(</span><span class="n">jobs</span><span class="p">)</span>
+            <span class="n">viol</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">errors</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">model</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coefs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">errors_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warm_start</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">viol</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debiasing</span><span class="p">:</span>
+            <span class="n">nz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">!=</span> <span class="mi">0</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">warm_debiasing</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_vectors</span><span class="p">,</span> <span class="n">n_features</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_init_errors</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_features</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+            <span class="n">jobs</span> <span class="o">=</span> <span class="p">(</span><span class="n">delayed</span><span class="p">(</span><span class="n">_primal_cd</span><span class="p">)(</span>
+                           <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errors_</span><span class="p">,</span>
+                           <span class="n">ds</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span>
+                           <span class="n">indices</span><span class="p">[</span><span class="n">nz</span><span class="p">[</span><span class="n">k</span><span class="p">]],</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_loss</span><span class="p">(),</span>
+                           <span class="s">&quot;cyclic&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">permute</span><span class="p">,</span>
+                           <span class="s">&quot;violation_sum&quot;</span><span class="p">,</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">Cd</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span>
+                           <span class="bp">False</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+                           <span class="n">rs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_calls</span><span class="p">,</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
+                            <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">))</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)(</span><span class="n">jobs</span><span class="p">)</span>
+            <span class="n">viol</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">errors</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">model</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coefs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">errors_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+</div></div>
+<div class="viewcode-block" id="CDRegressor"><a class="viewcode-back" href="../../../generated/lightning.regression.CDRegressor.html#lightning.classification.CDRegressor">[docs]</a><span class="k">class</span> <span class="nc">CDRegressor</span><span class="p">(</span><span class="n">_BaseCD</span><span class="p">,</span> <span class="n">BaseRegressor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Estimator for learning linear regressors by (block) coordinate descent.</span>
+
+<span class="sd">    The objective functions considered take the form</span>
+
+<span class="sd">    minimize F(W) = C * L(W) + alpha * R(W),</span>
+
+<span class="sd">    where L(W) is a loss term and R(W) is a penalty term.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    loss : str, &#39;squared&#39;</span>
+<span class="sd">        The loss function to be used.</span>
+
+<span class="sd">    penalty : str, &#39;l2&#39;, &#39;l1&#39;, &#39;l1/l2&#39;, &#39;nnl1&#39;, &#39;nnl2&#39;</span>
+<span class="sd">        The penalty to be used.</span>
+
+<span class="sd">        - l2: ridge</span>
+<span class="sd">        - l1: lasso</span>
+<span class="sd">        - l1/l2: group lasso</span>
+<span class="sd">        - nnl1: non-negative constraints + l1 penalty</span>
+<span class="sd">        - nnl2: non-negative constraints + l2 penalty</span>
+
+<span class="sd">    For other parameters, see `CDClassifier`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CDRegressor.__init__"><a class="viewcode-back" href="../../../generated/lightning.regression.CDRegressor.html#lightning.classification.CDRegressor.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">loss</span><span class="o">=</span><span class="s">&quot;squared&quot;</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s">&quot;l2&quot;</span><span class="p">,</span>
+                 <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">termination</span><span class="o">=</span><span class="s">&quot;violation_sum&quot;</span><span class="p">,</span>
+                 <span class="n">shrinking</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="n">max_steps</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                 <span class="n">warm_start</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">debiasing</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">Cd</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">warm_debiasing</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">selection</span><span class="o">=</span><span class="s">&quot;cyclic&quot;</span><span class="p">,</span> <span class="n">permute</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_calls</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">C</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="o">=</span> <span class="n">penalty</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span> <span class="o">=</span> <span class="n">max_iter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">termination</span> <span class="o">=</span> <span class="n">termination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shrinking</span> <span class="o">=</span> <span class="n">shrinking</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_steps</span> <span class="o">=</span> <span class="n">max_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">warm_start</span> <span class="o">=</span> <span class="n">warm_start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debiasing</span> <span class="o">=</span> <span class="n">debiasing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Cd</span> <span class="o">=</span> <span class="n">Cd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">warm_debiasing</span> <span class="o">=</span> <span class="n">warm_debiasing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selection</span> <span class="o">=</span> <span class="n">selection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">permute</span> <span class="o">=</span> <span class="n">permute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">callback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_calls</span> <span class="o">=</span> <span class="n">n_calls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+</div>
+<div class="viewcode-block" id="CDRegressor.fit"><a class="viewcode-back" href="../../../generated/lightning.regression.CDRegressor.html#lightning.classification.CDRegressor.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fit model according to X and y.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : array-like, shape = [n_samples, n_features]</span>
+<span class="sd">            Training vectors, where n_samples is the number of samples</span>
+<span class="sd">            and n_features is the number of features.</span>
+
+<span class="sd">        y : array-like, shape = [n_samples] or [n_samples, n_targets]</span>
+<span class="sd">            Target values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self : regressor</span>
+<span class="sd">            Returns self.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_random_state</span><span class="p">()</span>
+
+        <span class="c"># Create dataset</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">get_dataset</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s">&quot;fortran&quot;</span><span class="p">)</span>
+        <span class="n">n_features</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">get_n_features</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">outputs_2d_</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs_2d_</span><span class="p">:</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asfortranarray</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">n_vectors</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c"># Initialize coefficients</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">warm_start</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">C_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_vectors</span><span class="p">,</span> <span class="n">n_features</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_init_errors</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">intercept_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_features</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="o">==</span> <span class="s">&quot;l1/l2&quot;</span><span class="p">:</span>
+            <span class="n">vinit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">C_init</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">_primal_cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errors_</span><span class="p">,</span>
+                              <span class="n">ds</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span>
+                              <span class="n">indices</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_loss</span><span class="p">(),</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">selection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">permute</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">termination</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_steps</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">shrinking</span><span class="p">,</span> <span class="n">vinit</span><span class="p">,</span>
+                              <span class="n">rs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_calls</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+            <span class="n">viol</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warm_start</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">viol</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">penalty</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_penalty</span><span class="p">()</span>
+            <span class="n">vinit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">)])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">C_init</span>
+
+            <span class="n">jobs</span> <span class="o">=</span> <span class="p">(</span><span class="n">delayed</span><span class="p">(</span><span class="n">_primal_cd</span><span class="p">)(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">errors_</span><span class="p">,</span>
+                                       <span class="n">ds</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span>
+                                       <span class="n">indices</span><span class="p">,</span> <span class="n">penalty</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_loss</span><span class="p">(),</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">selection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">permute</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">termination</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_steps</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">shrinking</span><span class="p">,</span> <span class="n">vinit</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+                                       <span class="n">rs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_calls</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">))</span>
+
+            <span class="n">model</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)(</span><span class="n">jobs</span><span class="p">)</span>
+            <span class="n">viol</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">model</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warm_start</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">n_vectors</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">violation_init_</span><span class="p">[</span><span class="n">n_vectors</span><span class="p">]</span> <span class="o">=</span> <span class="n">viol</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div></div>
+</pre></div>
+
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright Mathieu Blondel.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

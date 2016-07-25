@@ -1,0 +1,16 @@
+
+
+.. _trace.py:
+
+
+===========
+Trace norm
+===========
+
+
+
+**Python source code:** :download:`trace.py <trace.py>`
+
+.. literalinclude:: trace.py
+    :lines: 7-
+    

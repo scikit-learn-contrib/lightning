@@ -1,0 +1,38 @@
+
+
+.. _example_plot_1d_total_variation.py:
+
+
+=====================================
+Signal recovery by 1D total variation
+=====================================
+
+In this example, we generate a signal that is piecewise constant. We then
+observe some random and corrupted measurements from that signal and
+then try to recover that signal using L1 and TV1D penalties.
+
+Given a ground truth vectors, the signal that we observe is given by
+
+     y = sign(X ground_truth + noise)
+
+where X is a random matrix. We obtain the vector ground_truth by solving
+an optimization problem using lightning's :class:`lightning.classification.FistaClassifier`.
+
+The 1D total variation is also known as fused lasso.
+
+
+
+.. image:: images/plot_1d_total_variation_001.png
+    :align: center
+
+
+
+
+**Python source code:** :download:`plot_1d_total_variation.py <plot_1d_total_variation.py>`
+
+.. literalinclude:: plot_1d_total_variation.py
+    :lines: 19-
+
+**Total running time of the example:**  0.92 seconds
+( 0 minutes  0.92 seconds)
+    

@@ -1,0 +1,8 @@
+**Script output**::
+
+  SVRG
+  SDCA
+  PCD
+  AdaGrad
+  SAG
+

@@ -1,0 +1,5 @@
+€}q(URidgeq}q(Uobj_typeqUfunctionqUmodule_shortqUsklearn.linear_modelUnameqURidgeUmoduleqUsklearn.linear_model.ridgeq	uUnp.std}q
+(hhhUnumpyhUstdhUnumpy.core.fromnumericquUreg.fit}q(hhhUlightning.impl.dual_cdhUfithUlightning.impl.dual_cdquUpl.showq}q(hhhUmatplotlib.pyplotqhUshowqhUmatplotlib.pyplotquU
+pl.scatter}q(hhhUmatplotlib.pyplothUscatterhhuUregq}q(hUobjectqhUlightning.impl.dual_cdhU	LinearSVRqhhuU	LinearSVRq}q(hhhUlightning.impl.dual_cdhU	LinearSVRhhuUpl.plot}q(hhhUmatplotlib.pyplothUplothhuUnp.linspace}q(hhhUnumpyhUlinspacehUnumpy.core.function_basequU	pl.figure}q(hhhU
+matplotlibhUfigurehhuUreg.predict}q(hhhUlightning.impl.basehUpredicthUlightning.impl.basequU	pl.legend}q (hhhU
+matplotlibhUlegendhhuUcheck_random_stateq!}q"(hhhUsklearn.utilshUcheck_random_statehUsklearn.utils.validationq#uUmake_regressionq$}q%(hhhUsklearn.datasetshUmake_regressionhU"sklearn.datasets.samples_generatorq&uu.

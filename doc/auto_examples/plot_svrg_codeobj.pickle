@@ -1,0 +1,8 @@
+€}q(U
+plt.ylabel}q(Uobj_typeqUfunctionqUmodule_shortqUmatplotlib.pyplotUnameqUylabelUmoduleqUmatplotlib.pyplotquUclf.decision_function}q	(hhhUlightning.impl.basehUdecision_functionhUlightning.impl.baseq
+uUmake_classificationq}q(hhhUsklearn.datasetshUmake_classificationhU"sklearn.datasets.samples_generatorquUplt.plot}q(hhhUmatplotlib.pyplothUplothhuUclf._finalize_coef}q(hhhUlightning.impl.svrghU_finalize_coefhUlightning.impl.svrgquUfetch_20newsgroups_vectorizedq}q(hhhUsklearn.datasetshUfetch_20newsgroups_vectorizedhU"sklearn.datasets.twenty_newsgroupsquUclfq}q(hUobjectqhUlightning.impl.svrghUSVRGClassifierhhuU
+plt.legend}q(hhhU
+matplotlibhUlegendhhuUplt.showq}q(hhhUmatplotlib.pyplotqhUshowqhhuU
+plt.figure}q(hhhU
+matplotlibhUfigurehhuUSVRGClassifierq}q(hhhUlightning.impl.svrghUSVRGClassifierhhuUclf.fit}q(hhhUlightning.impl.svrghUfithhuUnp.dot}q (hhhUnumpyhUdothUnumpy.core._dotblasq!uU
+plt.xlabel}q"(hhhUmatplotlib.pyplothUxlabelhhuu.

@@ -1,0 +1,333 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Sensitivity to hyper-parameters in SVRG &mdash; lightning dev documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/lightning.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-3.3.4/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-3.3.4/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="lightning dev documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="next" title="Sparse non-linear classification" href="plot_sparse_non_linear.html" />
+    <link rel="prev" title="Classification of text documents" href="document_classification_news20.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          lightning</a>
+        <span class="navbar-text navbar-version pull-left"><b>dev</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../intro.html">Introduction</a></li>
+                <li><a href="../references.html">References</a></li>
+                <li><a href="index.html">Examples</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_robust_regression.html">Robust regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trace.html">Trace norm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_sample_weight.html">SAGA: Weighted samples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="document_classification_news20.html">Classification of text documents</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Sensitivity to hyper-parameters in SVRG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_l2_solvers.html">L2 solver comparison</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">Classification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.classification.AdaGradClassifier.html">lightning.classification.AdaGradClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.classification.CDClassifier.html">lightning.classification.CDClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.classification.FistaClassifier.html">lightning.classification.FistaClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.classification.KernelSVC.html">lightning.classification.KernelSVC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.classification.LinearSVC.html">lightning.classification.LinearSVC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.classification.SDCAClassifier.html">lightning.classification.SDCAClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.classification.SAGClassifier.html">lightning.classification.SAGClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.classification.SAGAClassifier.html">lightning.classification.SAGAClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.classification.SGDClassifier.html">lightning.classification.SGDClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.classification.SVRGClassifier.html">lightning.classification.SVRGClassifier</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html#regression">Regression</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.regression.AdaGradRegressor.html">lightning.regression.AdaGradRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.regression.CDRegressor.html">lightning.regression.CDRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.regression.FistaRegressor.html">lightning.regression.FistaRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.regression.LinearSVR.html">lightning.regression.LinearSVR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.regression.SAGRegressor.html">lightning.regression.SAGRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.regression.SAGARegressor.html">lightning.regression.SAGARegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.regression.SDCARegressor.html">lightning.regression.SDCARegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.regression.SGDRegressor.html">lightning.regression.SGDRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.regression.SVRGRegressor.html">lightning.regression.SVRGRegressor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html#ranking">Ranking</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.ranking.PRank.html">lightning.ranking.PRank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/lightning.ranking.KernelPRank.html">lightning.ranking.KernelPRank</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../intro.html">Introduction</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#primal-coordinate-descent">Primal coordinate descent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#dual-coordinate-ascent">Dual coordinate ascent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#fista">FISTA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#stochastic-gradient-method-sgd">Stochastic gradient method (SGD)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#adagrad">AdaGrad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#stochastic-averaged-gradient-sag-and-saga">Stochastic averaged gradient (SAG and SAGA)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#stochastic-variance-reduced-gradient-svrg">Stochastic variance-reduced gradient (SVRG)</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../intro.html#prank">PRank</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="plot_robust_regression.html">Robust regression</a></li>
+<li class="toctree-l4"><a class="reference internal" href="trace.html">Trace norm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="plot_sample_weight.html">SAGA: Weighted samples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="document_classification_news20.html">Classification of text documents</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="">Sensitivity to hyper-parameters in SVRG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="plot_l2_solvers.html">L2 solver comparison</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../references.html">Classification</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.classification.AdaGradClassifier.html">lightning.classification.AdaGradClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.classification.CDClassifier.html">lightning.classification.CDClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.classification.FistaClassifier.html">lightning.classification.FistaClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.classification.KernelSVC.html">lightning.classification.KernelSVC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.classification.LinearSVC.html">lightning.classification.LinearSVC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.classification.SDCAClassifier.html">lightning.classification.SDCAClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.classification.SAGClassifier.html">lightning.classification.SAGClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.classification.SAGAClassifier.html">lightning.classification.SAGAClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.classification.SGDClassifier.html">lightning.classification.SGDClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.classification.SVRGClassifier.html">lightning.classification.SVRGClassifier</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../references.html#regression">Regression</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.regression.AdaGradRegressor.html">lightning.regression.AdaGradRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.regression.CDRegressor.html">lightning.regression.CDRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.regression.FistaRegressor.html">lightning.regression.FistaRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.regression.LinearSVR.html">lightning.regression.LinearSVR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.regression.SAGRegressor.html">lightning.regression.SAGRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.regression.SAGARegressor.html">lightning.regression.SAGARegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.regression.SDCARegressor.html">lightning.regression.SDCARegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.regression.SGDRegressor.html">lightning.regression.SGDRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.regression.SVRGRegressor.html">lightning.regression.SVRGRegressor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../references.html#ranking">Ranking</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.ranking.PRank.html">lightning.ranking.PRank</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../generated/lightning.ranking.KernelPRank.html">lightning.ranking.KernelPRank</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container content-container">
+  
+  <div class="section" id="sensitivity-to-hyper-parameters-in-svrg">
+<span id="example-plot-svrg-py"></span><h1>Sensitivity to hyper-parameters in SVRG<a class="headerlink" href="#sensitivity-to-hyper-parameters-in-svrg" title="Permalink to this headline">¶</a></h1>
+<p>This example shows the sensitivity of SVRG with respect
+to different hyperparameters.</p>
+<ul class="horizontal">
+<li><a class="first reference internal image-reference" href="../_images/plot_svrg_001.png"><img alt="../_images/plot_svrg_001.png" src="../_images/plot_svrg_001.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_svrg_002.png"><img alt="../_images/plot_svrg_002.png" src="../_images/plot_svrg_002.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+</ul>
+<p><strong>Script output</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">eta</span> <span class="o">=</span> <span class="mf">0.001</span>
+<span class="n">eta</span> <span class="o">=</span> <span class="mf">0.0001</span>
+<span class="n">eta</span> <span class="o">=</span> <span class="mf">1e-05</span>
+<span class="n">n_inner</span> <span class="o">=</span> <span class="mf">0.25</span>
+<span class="n">n_inner</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">n_inner</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">n_inner</span> <span class="o">=</span> <span class="mf">1.5</span>
+</pre></div>
+</div>
+<p><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_svrg.py"><code class="xref download docutils literal"><span class="pre">plot_svrg.py</span></code></a></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">__doc__</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_classification</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">fetch_20newsgroups_vectorized</span>
+
+<span class="kn">from</span> <span class="nn">lightning.classification</span> <span class="kn">import</span> <span class="n">SVRGClassifier</span>
+
+
+<span class="k">class</span> <span class="nc">Callback</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_time</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clf</span><span class="p">):</span>
+        <span class="n">test_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span>
+        <span class="n">clf</span><span class="o">.</span><span class="n">_finalize_coef</span><span class="p">()</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">y_pred</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">coef</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">regul</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">clf</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.dot.html#numpy.dot"><span class="n">np</span><span class="o">.</span><span class="n">dot</span></a><span class="p">(</span><span class="n">coef</span><span class="p">,</span> <span class="n">coef</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span> <span class="o">+</span> <span class="n">regul</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_time</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span> <span class="o">-</span> <span class="n">test_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span> <span class="o">-</span>  <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_time</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="s2">&quot;synthetic&quot;</span>
+
+<span class="k">if</span> <span class="n">dataset</span> <span class="o">==</span> <span class="s2">&quot;news20&quot;</span><span class="p">:</span>
+    <span class="n">bunch</span> <span class="o">=</span> <span class="n">fetch_20newsgroups_vectorized</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">bunch</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">bunch</span><span class="o">.</span><span class="n">target</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">etas</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">)</span>
+    <span class="n">n_inners</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+                               <span class="n">n_features</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                               <span class="n">n_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                               <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">etas</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1e-3</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="mf">1e-5</span><span class="p">)</span>
+    <span class="n">n_inners</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>
+
+
+<a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">eta</span> <span class="ow">in</span> <span class="n">etas</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;eta =&quot;</span><span class="p">,</span> <span class="n">eta</span><span class="p">)</span>
+    <span class="n">cb</span> <span class="o">=</span> <span class="n">Callback</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">clf</span> <span class="o">=</span> <span class="n">SVRGClassifier</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s2">&quot;squared_hinge&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta</span><span class="p">,</span>
+                         <span class="n">n_inner</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">cb</span><span class="p">)</span>
+    <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><span class="n">cb</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">cb</span><span class="o">.</span><span class="n">obj</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;eta=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">eta</span><span class="p">))</span>
+
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xlabel"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s2">&quot;CPU time&quot;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.ylabel"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="s2">&quot;Objective value&quot;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/legend_api.html#matplotlib.legend"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">()</span>
+
+<a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">n_inner</span> <span class="ow">in</span> <span class="n">n_inners</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;n_inner =&quot;</span><span class="p">,</span> <span class="n">n_inner</span><span class="p">)</span>
+    <span class="n">cb</span> <span class="o">=</span> <span class="n">Callback</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">clf</span> <span class="o">=</span> <span class="n">SVRGClassifier</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s2">&quot;squared_hinge&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
+                         <span class="n">n_inner</span><span class="o">=</span><span class="n">n_inner</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                         <span class="n">callback</span><span class="o">=</span><span class="n">cb</span><span class="p">)</span>
+    <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><span class="n">cb</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">cb</span><span class="o">.</span><span class="n">obj</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;n_inner=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n_inner</span><span class="p">))</span>
+
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xlabel"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s2">&quot;CPU time&quot;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.ylabel"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="s2">&quot;Objective value&quot;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/legend_api.html#matplotlib.legend"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">()</span>
+
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Total running time of the example:</strong>  0.98 seconds
+( 0 minutes  0.98 seconds)</p>
+</div>
+
+
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright Mathieu Blondel.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

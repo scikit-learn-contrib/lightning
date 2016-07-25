@@ -1,0 +1,784 @@
+
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Index &mdash; lightning dev documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/lightning.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.3.4/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.3.4/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="lightning dev documentation" href="index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          lightning</a>
+        <span class="navbar-text navbar-version pull-left"><b>dev</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="intro.html">Introduction</a></li>
+                <li><a href="references.html">References</a></li>
+                <li><a href="auto_examples/index.html">Examples</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="auto_examples/index.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_robust_regression.html">Robust regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/trace.html">Trace norm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_sample_weight.html">SAGA: Weighted samples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/document_classification_news20.html">Classification of text documents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_svrg.html">Sensitivity to hyper-parameters in SVRG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_l2_solvers.html">L2 solver comparison</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">Classification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.AdaGradClassifier.html">lightning.classification.AdaGradClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.CDClassifier.html">lightning.classification.CDClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.FistaClassifier.html">lightning.classification.FistaClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.KernelSVC.html">lightning.classification.KernelSVC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.LinearSVC.html">lightning.classification.LinearSVC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.SDCAClassifier.html">lightning.classification.SDCAClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.SAGClassifier.html">lightning.classification.SAGClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.SAGAClassifier.html">lightning.classification.SAGAClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.SGDClassifier.html">lightning.classification.SGDClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.SVRGClassifier.html">lightning.classification.SVRGClassifier</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="references.html#regression">Regression</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.AdaGradRegressor.html">lightning.regression.AdaGradRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.CDRegressor.html">lightning.regression.CDRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.FistaRegressor.html">lightning.regression.FistaRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.LinearSVR.html">lightning.regression.LinearSVR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.SAGRegressor.html">lightning.regression.SAGRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.SAGARegressor.html">lightning.regression.SAGARegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.SDCARegressor.html">lightning.regression.SDCARegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.SGDRegressor.html">lightning.regression.SGDRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.SVRGRegressor.html">lightning.regression.SVRGRegressor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="references.html#ranking">Ranking</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.ranking.PRank.html">lightning.ranking.PRank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.ranking.KernelPRank.html">lightning.ranking.KernelPRank</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#primal-coordinate-descent">Primal coordinate descent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#dual-coordinate-ascent">Dual coordinate ascent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#fista">FISTA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#stochastic-gradient-method-sgd">Stochastic gradient method (SGD)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#adagrad">AdaGrad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#stochastic-averaged-gradient-sag-and-saga">Stochastic averaged gradient (SAG and SAGA)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#stochastic-variance-reduced-gradient-svrg">Stochastic variance-reduced gradient (SVRG)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#prank">PRank</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/index.html">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_robust_regression.html">Robust regression</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/trace.html">Trace norm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_sample_weight.html">SAGA: Weighted samples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/document_classification_news20.html">Classification of text documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_svrg.html">Sensitivity to hyper-parameters in SVRG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_l2_solvers.html">L2 solver comparison</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="references.html">Classification</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.AdaGradClassifier.html">lightning.classification.AdaGradClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.CDClassifier.html">lightning.classification.CDClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.FistaClassifier.html">lightning.classification.FistaClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.KernelSVC.html">lightning.classification.KernelSVC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.LinearSVC.html">lightning.classification.LinearSVC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.SDCAClassifier.html">lightning.classification.SDCAClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.SAGClassifier.html">lightning.classification.SAGClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.SAGAClassifier.html">lightning.classification.SAGAClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.SGDClassifier.html">lightning.classification.SGDClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.SVRGClassifier.html">lightning.classification.SVRGClassifier</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="references.html#regression">Regression</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.AdaGradRegressor.html">lightning.regression.AdaGradRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.CDRegressor.html">lightning.regression.CDRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.FistaRegressor.html">lightning.regression.FistaRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.LinearSVR.html">lightning.regression.LinearSVR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.SAGRegressor.html">lightning.regression.SAGRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.SAGARegressor.html">lightning.regression.SAGARegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.SDCARegressor.html">lightning.regression.SDCARegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.SGDRegressor.html">lightning.regression.SGDRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.SVRGRegressor.html">lightning.regression.SVRGRegressor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="references.html#ranking">Ranking</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.ranking.PRank.html">lightning.ranking.PRank</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.ranking.KernelPRank.html">lightning.ranking.KernelPRank</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container content-container">
+  
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#K"><strong>K</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ 
+</div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.classification.AdaGradClassifier.html#lightning.classification.AdaGradClassifier.__init__">__init__() (lightning.classification.AdaGradClassifier method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier.__init__">(lightning.classification.CDClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.FistaClassifier.html#lightning.classification.FistaClassifier.__init__">(lightning.classification.FistaClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC.__init__">(lightning.classification.KernelSVC method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.LinearSVC.html#lightning.classification.LinearSVC.__init__">(lightning.classification.LinearSVC method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SAGAClassifier.html#lightning.classification.SAGAClassifier.__init__">(lightning.classification.SAGAClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SAGClassifier.html#lightning.classification.SAGClassifier.__init__">(lightning.classification.SAGClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SDCAClassifier.html#lightning.classification.SDCAClassifier.__init__">(lightning.classification.SDCAClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SGDClassifier.html#lightning.classification.SGDClassifier.__init__">(lightning.classification.SGDClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SVRGClassifier.html#lightning.classification.SVRGClassifier.__init__">(lightning.classification.SVRGClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.ranking.KernelPRank.html#lightning.ranking.KernelPRank.__init__">(lightning.ranking.KernelPRank method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.ranking.PRank.html#lightning.ranking.PRank.__init__">(lightning.ranking.PRank method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.AdaGradRegressor.html#lightning.regression.AdaGradRegressor.__init__">(lightning.regression.AdaGradRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.CDRegressor.html#lightning.regression.CDRegressor.__init__">(lightning.regression.CDRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.FistaRegressor.html#lightning.regression.FistaRegressor.__init__">(lightning.regression.FistaRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.LinearSVR.html#lightning.regression.LinearSVR.__init__">(lightning.regression.LinearSVR method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SAGARegressor.html#lightning.regression.SAGARegressor.__init__">(lightning.regression.SAGARegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SAGRegressor.html#lightning.regression.SAGRegressor.__init__">(lightning.regression.SAGRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SDCARegressor.html#lightning.regression.SDCARegressor.__init__">(lightning.regression.SDCARegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SGDRegressor.html#lightning.regression.SGDRegressor.__init__">(lightning.regression.SGDRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SVRGRegressor.html#lightning.regression.SVRGRegressor.__init__">(lightning.regression.SVRGRegressor method)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+</tr></table>
+
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.classification.AdaGradClassifier.html#lightning.classification.AdaGradClassifier">AdaGradClassifier (class in lightning.classification)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.regression.AdaGradRegressor.html#lightning.regression.AdaGradRegressor">AdaGradRegressor (class in lightning.regression)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier">CDClassifier (class in lightning.classification)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.regression.CDRegressor.html#lightning.regression.CDRegressor">CDRegressor (class in lightning.regression)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC.decision_function">decision_function() (lightning.classification.KernelSVC method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.classification.FistaClassifier.html#lightning.classification.FistaClassifier">FistaClassifier (class in lightning.classification)</a>
+  </dt>
+
+      
+  <dt><a href="generated/lightning.regression.FistaRegressor.html#lightning.regression.FistaRegressor">FistaRegressor (class in lightning.regression)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier.fit">fit() (lightning.classification.CDClassifier method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC.fit">(lightning.classification.KernelSVC method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.LinearSVC.html#lightning.classification.LinearSVC.fit">(lightning.classification.LinearSVC method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SGDClassifier.html#lightning.classification.SGDClassifier.fit">(lightning.classification.SGDClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.ranking.KernelPRank.html#lightning.ranking.KernelPRank.fit">(lightning.ranking.KernelPRank method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.ranking.PRank.html#lightning.ranking.PRank.fit">(lightning.ranking.PRank method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.CDRegressor.html#lightning.regression.CDRegressor.fit">(lightning.regression.CDRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.LinearSVR.html#lightning.regression.LinearSVR.fit">(lightning.regression.LinearSVR method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SGDRegressor.html#lightning.regression.SGDRegressor.fit">(lightning.regression.SGDRegressor method)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.classification.AdaGradClassifier.html#lightning.classification.AdaGradClassifier.get_params">get_params() (lightning.classification.AdaGradClassifier method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier.get_params">(lightning.classification.CDClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.FistaClassifier.html#lightning.classification.FistaClassifier.get_params">(lightning.classification.FistaClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC.get_params">(lightning.classification.KernelSVC method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.LinearSVC.html#lightning.classification.LinearSVC.get_params">(lightning.classification.LinearSVC method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SAGAClassifier.html#lightning.classification.SAGAClassifier.get_params">(lightning.classification.SAGAClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SAGClassifier.html#lightning.classification.SAGClassifier.get_params">(lightning.classification.SAGClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SDCAClassifier.html#lightning.classification.SDCAClassifier.get_params">(lightning.classification.SDCAClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SGDClassifier.html#lightning.classification.SGDClassifier.get_params">(lightning.classification.SGDClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SVRGClassifier.html#lightning.classification.SVRGClassifier.get_params">(lightning.classification.SVRGClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.ranking.KernelPRank.html#lightning.ranking.KernelPRank.get_params">(lightning.ranking.KernelPRank method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.ranking.PRank.html#lightning.ranking.PRank.get_params">(lightning.ranking.PRank method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.AdaGradRegressor.html#lightning.regression.AdaGradRegressor.get_params">(lightning.regression.AdaGradRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.CDRegressor.html#lightning.regression.CDRegressor.get_params">(lightning.regression.CDRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.FistaRegressor.html#lightning.regression.FistaRegressor.get_params">(lightning.regression.FistaRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.LinearSVR.html#lightning.regression.LinearSVR.get_params">(lightning.regression.LinearSVR method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SAGARegressor.html#lightning.regression.SAGARegressor.get_params">(lightning.regression.SAGARegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SAGRegressor.html#lightning.regression.SAGRegressor.get_params">(lightning.regression.SAGRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SDCARegressor.html#lightning.regression.SDCARegressor.get_params">(lightning.regression.SDCARegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SGDRegressor.html#lightning.regression.SGDRegressor.get_params">(lightning.regression.SGDRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SVRGRegressor.html#lightning.regression.SVRGRegressor.get_params">(lightning.regression.SVRGRegressor method)</a>
+  </dt>
+
+      </dl></dd>
+  </dl></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.ranking.KernelPRank.html#lightning.ranking.KernelPRank">KernelPRank (class in lightning.ranking)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC">KernelSVC (class in lightning.classification)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="references.html#module-lightning.classification">lightning.classification (module)</a>
+  </dt>
+
+      
+  <dt><a href="references.html#module-lightning.ranking">lightning.ranking (module)</a>
+  </dt>
+
+      
+  <dt><a href="references.html#module-lightning.regression">lightning.regression (module)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.classification.LinearSVC.html#lightning.classification.LinearSVC">LinearSVC (class in lightning.classification)</a>
+  </dt>
+
+      
+  <dt><a href="generated/lightning.regression.LinearSVR.html#lightning.regression.LinearSVR">LinearSVR (class in lightning.regression)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.ranking.PRank.html#lightning.ranking.PRank">PRank (class in lightning.ranking)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.regression.SGDRegressor.html#lightning.regression.SGDRegressor.predict">predict() (lightning.regression.SGDRegressor method)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.classification.SAGAClassifier.html#lightning.classification.SAGAClassifier">SAGAClassifier (class in lightning.classification)</a>
+  </dt>
+
+      
+  <dt><a href="generated/lightning.regression.SAGARegressor.html#lightning.regression.SAGARegressor">SAGARegressor (class in lightning.regression)</a>
+  </dt>
+
+      
+  <dt><a href="generated/lightning.classification.SAGClassifier.html#lightning.classification.SAGClassifier">SAGClassifier (class in lightning.classification)</a>
+  </dt>
+
+      
+  <dt><a href="generated/lightning.regression.SAGRegressor.html#lightning.regression.SAGRegressor">SAGRegressor (class in lightning.regression)</a>
+  </dt>
+
+      
+  <dt><a href="generated/lightning.classification.AdaGradClassifier.html#lightning.classification.AdaGradClassifier.score">score() (lightning.classification.AdaGradClassifier method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier.score">(lightning.classification.CDClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.FistaClassifier.html#lightning.classification.FistaClassifier.score">(lightning.classification.FistaClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC.score">(lightning.classification.KernelSVC method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.LinearSVC.html#lightning.classification.LinearSVC.score">(lightning.classification.LinearSVC method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SAGAClassifier.html#lightning.classification.SAGAClassifier.score">(lightning.classification.SAGAClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SAGClassifier.html#lightning.classification.SAGClassifier.score">(lightning.classification.SAGClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SDCAClassifier.html#lightning.classification.SDCAClassifier.score">(lightning.classification.SDCAClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SGDClassifier.html#lightning.classification.SGDClassifier.score">(lightning.classification.SGDClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SVRGClassifier.html#lightning.classification.SVRGClassifier.score">(lightning.classification.SVRGClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.AdaGradRegressor.html#lightning.regression.AdaGradRegressor.score">(lightning.regression.AdaGradRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.CDRegressor.html#lightning.regression.CDRegressor.score">(lightning.regression.CDRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.FistaRegressor.html#lightning.regression.FistaRegressor.score">(lightning.regression.FistaRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.LinearSVR.html#lightning.regression.LinearSVR.score">(lightning.regression.LinearSVR method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SAGARegressor.html#lightning.regression.SAGARegressor.score">(lightning.regression.SAGARegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SAGRegressor.html#lightning.regression.SAGRegressor.score">(lightning.regression.SAGRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SDCARegressor.html#lightning.regression.SDCARegressor.score">(lightning.regression.SDCARegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SGDRegressor.html#lightning.regression.SGDRegressor.score">(lightning.regression.SGDRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SVRGRegressor.html#lightning.regression.SVRGRegressor.score">(lightning.regression.SVRGRegressor method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="generated/lightning.classification.SDCAClassifier.html#lightning.classification.SDCAClassifier">SDCAClassifier (class in lightning.classification)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="generated/lightning.regression.SDCARegressor.html#lightning.regression.SDCARegressor">SDCARegressor (class in lightning.regression)</a>
+  </dt>
+
+      
+  <dt><a href="generated/lightning.classification.AdaGradClassifier.html#lightning.classification.AdaGradClassifier.set_params">set_params() (lightning.classification.AdaGradClassifier method)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier.set_params">(lightning.classification.CDClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.FistaClassifier.html#lightning.classification.FistaClassifier.set_params">(lightning.classification.FistaClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC.set_params">(lightning.classification.KernelSVC method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.LinearSVC.html#lightning.classification.LinearSVC.set_params">(lightning.classification.LinearSVC method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SAGAClassifier.html#lightning.classification.SAGAClassifier.set_params">(lightning.classification.SAGAClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SAGClassifier.html#lightning.classification.SAGClassifier.set_params">(lightning.classification.SAGClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SDCAClassifier.html#lightning.classification.SDCAClassifier.set_params">(lightning.classification.SDCAClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SGDClassifier.html#lightning.classification.SGDClassifier.set_params">(lightning.classification.SGDClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.classification.SVRGClassifier.html#lightning.classification.SVRGClassifier.set_params">(lightning.classification.SVRGClassifier method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.ranking.KernelPRank.html#lightning.ranking.KernelPRank.set_params">(lightning.ranking.KernelPRank method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.ranking.PRank.html#lightning.ranking.PRank.set_params">(lightning.ranking.PRank method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.AdaGradRegressor.html#lightning.regression.AdaGradRegressor.set_params">(lightning.regression.AdaGradRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.CDRegressor.html#lightning.regression.CDRegressor.set_params">(lightning.regression.CDRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.FistaRegressor.html#lightning.regression.FistaRegressor.set_params">(lightning.regression.FistaRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.LinearSVR.html#lightning.regression.LinearSVR.set_params">(lightning.regression.LinearSVR method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SAGARegressor.html#lightning.regression.SAGARegressor.set_params">(lightning.regression.SAGARegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SAGRegressor.html#lightning.regression.SAGRegressor.set_params">(lightning.regression.SAGRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SDCARegressor.html#lightning.regression.SDCARegressor.set_params">(lightning.regression.SDCARegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SGDRegressor.html#lightning.regression.SGDRegressor.set_params">(lightning.regression.SGDRegressor method)</a>
+  </dt>
+
+        
+  <dt><a href="generated/lightning.regression.SVRGRegressor.html#lightning.regression.SVRGRegressor.set_params">(lightning.regression.SVRGRegressor method)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="generated/lightning.classification.SGDClassifier.html#lightning.classification.SGDClassifier">SGDClassifier (class in lightning.classification)</a>
+  </dt>
+
+      
+  <dt><a href="generated/lightning.regression.SGDRegressor.html#lightning.regression.SGDRegressor">SGDRegressor (class in lightning.regression)</a>
+  </dt>
+
+      
+  <dt><a href="generated/lightning.classification.SVRGClassifier.html#lightning.classification.SVRGClassifier">SVRGClassifier (class in lightning.classification)</a>
+  </dt>
+
+      
+  <dt><a href="generated/lightning.regression.SVRGRegressor.html#lightning.regression.SVRGRegressor">SVRGRegressor (class in lightning.regression)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+
+
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright Mathieu Blondel.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

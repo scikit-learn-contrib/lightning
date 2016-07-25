@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Overview: module code &mdash; lightning dev documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/lightning.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-3.3.4/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-3.3.4/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="lightning dev documentation" href="../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          lightning</a>
+        <span class="navbar-text navbar-version pull-left"><b>dev</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../intro.html">Introduction</a></li>
+                <li><a href="../references.html">References</a></li>
+                <li><a href="../auto_examples/index.html">Examples</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../auto_examples/index.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_robust_regression.html">Robust regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/trace.html">Trace norm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/document_classification_news20.html">Classification of text documents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_svrg.html">Sensitivity to hyper-parameters in SVRG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_l2_solvers.html">L2 solver comparison</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">Classification</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html#regression">Regression</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html#ranking">Ranking</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#primal-coordinate-descent">Primal coordinate descent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#dual-coordinate-ascent">Dual coordinate ascent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#fista">FISTA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#stochastic-gradient-method-sgd">Stochastic gradient method (SGD)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#adagrad">AdaGrad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#stochastic-averaged-gradient-sag">Stochastic averaged gradient (SAG)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#stochastic-variance-reduced-gradient-svrg">Stochastic variance-reduced gradient (SVRG)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro.html#prank">PRank</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../auto_examples/index.html">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../auto_examples/plot_robust_regression.html">Robust regression</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../auto_examples/trace.html">Trace norm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../auto_examples/document_classification_news20.html">Classification of text documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../auto_examples/plot_svrg.html">Sensitivity to hyper-parameters in SVRG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../auto_examples/plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../auto_examples/plot_l2_solvers.html">L2 solver comparison</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../references.html">Classification</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../references.html#regression">Regression</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../references.html#ranking">Ranking</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container content-container">
+  
+  <h1>All modules for which code is available</h1>
+<ul><li><a href="lightning/impl/adagrad.html">lightning.impl.adagrad</a></li>
+<li><a href="lightning/impl/dual_cd.html">lightning.impl.dual_cd</a></li>
+<li><a href="lightning/impl/fista.html">lightning.impl.fista</a></li>
+<li><a href="lightning/impl/prank.html">lightning.impl.prank</a></li>
+<li><a href="lightning/impl/primal_cd.html">lightning.impl.primal_cd</a></li>
+<li><a href="lightning/impl/primal_newton.html">lightning.impl.primal_newton</a></li>
+<li><a href="lightning/impl/sag.html">lightning.impl.sag</a></li>
+<li><a href="lightning/impl/sdca.html">lightning.impl.sdca</a></li>
+<li><a href="lightning/impl/sgd.html">lightning.impl.sgd</a></li>
+<li><a href="lightning/impl/svrg.html">lightning.impl.svrg</a></li>
+<li><a href="sklearn/base.html">sklearn.base</a></li>
+</ul>
+
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright Mathieu Blondel.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

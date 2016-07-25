@@ -1,0 +1,424 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lightning.impl.primal_newton &mdash; lightning dev documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/lightning.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-3.3.4/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-3.3.4/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     'dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="lightning dev documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html">
+          lightning</a>
+        <span class="navbar-text navbar-version pull-left"><b>dev</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="../../../intro.html">Introduction</a></li>
+                <li><a href="../../../references.html">References</a></li>
+                <li><a href="../../../auto_examples/index.html">Examples</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../auto_examples/index.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_robust_regression.html">Robust regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/trace.html">Trace norm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_sample_weight.html">SAGA: Weighted samples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/document_classification_news20.html">Classification of text documents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_svrg.html">Sensitivity to hyper-parameters in SVRG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_l2_solvers.html">L2 solver comparison</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">Classification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.classification.AdaGradClassifier.html">lightning.classification.AdaGradClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.classification.CDClassifier.html">lightning.classification.CDClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.classification.FistaClassifier.html">lightning.classification.FistaClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.classification.KernelSVC.html">lightning.classification.KernelSVC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.classification.LinearSVC.html">lightning.classification.LinearSVC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.classification.SDCAClassifier.html">lightning.classification.SDCAClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.classification.SAGClassifier.html">lightning.classification.SAGClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.classification.SAGAClassifier.html">lightning.classification.SAGAClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.classification.SGDClassifier.html">lightning.classification.SGDClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.classification.SVRGClassifier.html">lightning.classification.SVRGClassifier</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html#regression">Regression</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.regression.AdaGradRegressor.html">lightning.regression.AdaGradRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.regression.CDRegressor.html">lightning.regression.CDRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.regression.FistaRegressor.html">lightning.regression.FistaRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.regression.LinearSVR.html">lightning.regression.LinearSVR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.regression.SAGRegressor.html">lightning.regression.SAGRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.regression.SAGARegressor.html">lightning.regression.SAGARegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.regression.SDCARegressor.html">lightning.regression.SDCARegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.regression.SGDRegressor.html">lightning.regression.SGDRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.regression.SVRGRegressor.html">lightning.regression.SVRGRegressor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html#ranking">Ranking</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.ranking.PRank.html">lightning.ranking.PRank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/lightning.ranking.KernelPRank.html">lightning.ranking.KernelPRank</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#primal-coordinate-descent">Primal coordinate descent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#dual-coordinate-ascent">Dual coordinate ascent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#fista">FISTA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#stochastic-gradient-method-sgd">Stochastic gradient method (SGD)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#adagrad">AdaGrad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#stochastic-averaged-gradient-sag-and-saga">Stochastic averaged gradient (SAG and SAGA)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#stochastic-variance-reduced-gradient-svrg">Stochastic variance-reduced gradient (SVRG)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../intro.html#prank">PRank</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../auto_examples/index.html">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_robust_regression.html">Robust regression</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/trace.html">Trace norm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_sample_weight.html">SAGA: Weighted samples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/document_classification_news20.html">Classification of text documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_svrg.html">Sensitivity to hyper-parameters in SVRG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_l2_solvers.html">L2 solver comparison</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../references.html">Classification</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.classification.AdaGradClassifier.html">lightning.classification.AdaGradClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.classification.CDClassifier.html">lightning.classification.CDClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.classification.FistaClassifier.html">lightning.classification.FistaClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.classification.KernelSVC.html">lightning.classification.KernelSVC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.classification.LinearSVC.html">lightning.classification.LinearSVC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.classification.SDCAClassifier.html">lightning.classification.SDCAClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.classification.SAGClassifier.html">lightning.classification.SAGClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.classification.SAGAClassifier.html">lightning.classification.SAGAClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.classification.SGDClassifier.html">lightning.classification.SGDClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.classification.SVRGClassifier.html">lightning.classification.SVRGClassifier</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../references.html#regression">Regression</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.regression.AdaGradRegressor.html">lightning.regression.AdaGradRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.regression.CDRegressor.html">lightning.regression.CDRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.regression.FistaRegressor.html">lightning.regression.FistaRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.regression.LinearSVR.html">lightning.regression.LinearSVR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.regression.SAGRegressor.html">lightning.regression.SAGRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.regression.SAGARegressor.html">lightning.regression.SAGARegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.regression.SDCARegressor.html">lightning.regression.SDCARegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.regression.SGDRegressor.html">lightning.regression.SGDRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.regression.SVRGRegressor.html">lightning.regression.SVRGRegressor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../references.html#ranking">Ranking</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.ranking.PRank.html">lightning.ranking.PRank</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../generated/lightning.ranking.KernelPRank.html">lightning.ranking.KernelPRank</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container content-container">
+  
+  <h1>Source code for lightning.impl.primal_newton</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">=============================</span>
+<span class="sd">Kernel SVM by Newton&#39;s method</span>
+<span class="sd">=============================</span>
+
+<span class="sd">This module provides a kernel SVM solver using Newton&#39;s method.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># Author: Mathieu Blondel</span>
+<span class="c1"># License: BSD</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">scipy.sparse.linalg</span> <span class="kn">import</span> <span class="n">cg</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">solve</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="kn">import</span> <span class="n">safe_mask</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelBinarizer</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="kn">import</span> <span class="n">check_random_state</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics.pairwise</span> <span class="kn">import</span> <span class="n">pairwise_kernels</span>
+<span class="kn">from</span> <span class="nn">sklearn.externals.six.moves</span> <span class="kn">import</span> <span class="nb">xrange</span>
+
+<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">BaseClassifier</span>
+
+
+<div class="viewcode-block" id="KernelSVC"><a class="viewcode-back" href="../../../generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC">[docs]</a><span class="k">class</span> <span class="nc">KernelSVC</span><span class="p">(</span><span class="n">BaseClassifier</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Estimator for learning kernel SVMs by Newton&#39;s method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    alpha : float</span>
+<span class="sd">        Weight of the penalty term.</span>
+
+<span class="sd">    solver : str, &#39;cg&#39;, &#39;dense&#39;</span>
+
+<span class="sd">    max_iter : int</span>
+<span class="sd">        Maximum number of iterations to perform.</span>
+
+<span class="sd">    tol : float</span>
+<span class="sd">        Tolerance of the stopping criterion.</span>
+
+<span class="sd">    kernel: &quot;linear&quot; | &quot;poly&quot; | &quot;rbf&quot; | &quot;sigmoid&quot; | &quot;cosine&quot; | &quot;precomputed&quot;</span>
+<span class="sd">        Kernel to use.  Default: &quot;linear&quot;</span>
+
+<span class="sd">    degree : int, default=3</span>
+<span class="sd">        Degree for poly, rbf and sigmoid kernels. Ignored by other kernels.</span>
+
+<span class="sd">    gamma : float, optional</span>
+<span class="sd">        Kernel coefficient for rbf and poly kernels. Default: 1/n_features.</span>
+<span class="sd">        Ignored by other kernels.</span>
+
+<span class="sd">    coef0 : float, optional</span>
+<span class="sd">        Independent term in poly and sigmoid kernels.</span>
+<span class="sd">        Ignored by other kernels.</span>
+
+<span class="sd">    random_state : RandomState or int</span>
+<span class="sd">        The seed of the pseudo random number generator to use.</span>
+
+<span class="sd">    verbose : int</span>
+<span class="sd">        Verbosity level.</span>
+
+<span class="sd">    n_jobs : int</span>
+<span class="sd">        Number of jobs to use to compute the kernel matrix.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    &gt;&gt;&gt; from sklearn.datasets import make_classification</span>
+<span class="sd">    &gt;&gt;&gt; from lightning.classification import KernelSVC</span>
+<span class="sd">    &gt;&gt;&gt; X, y = make_classification()</span>
+<span class="sd">    &gt;&gt;&gt; clf = KernelSVC().fit(X, y)</span>
+<span class="sd">    &gt;&gt;&gt; accuracy = clf.score(X, y)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="KernelSVC.__init__"><a class="viewcode-back" href="../../../generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s2">&quot;cg&quot;</span><span class="p">,</span>
+                 <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+                 <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">coef0</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                 <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="n">solver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span> <span class="o">=</span> <span class="n">max_iter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coef0</span> <span class="o">=</span> <span class="n">coef0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">degree</span> <span class="o">=</span> <span class="n">degree</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span></div>
+
+    <span class="k">def</span> <span class="nf">_kernel_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;gamma&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span>
+                <span class="s2">&quot;degree&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">degree</span><span class="p">,</span>
+                <span class="s2">&quot;coef0&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef0</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">==</span> <span class="s2">&quot;cg&quot;</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">cg</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">==</span> <span class="s2">&quot;dense&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">sym_pos</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">_fit_binary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">rs</span><span class="p">):</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">coef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_samples</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="p">:</span>
+            <span class="n">sv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="n">sv</span><span class="p">[:</span><span class="mi">1000</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">rs</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">sv</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Iteration&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="s2">&quot;#SV=&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sv</span><span class="p">))</span>
+
+            <span class="n">K_sv</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="n">sv</span><span class="p">][:,</span> <span class="n">sv</span><span class="p">]</span>
+            <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">K_sv</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+            <span class="n">coef_sv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve</span><span class="p">(</span><span class="n">K_sv</span> <span class="o">+</span> <span class="n">I</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">sv</span><span class="p">])</span>
+
+            <span class="n">coef</span> <span class="o">*=</span> <span class="mi">0</span>
+            <span class="n">coef</span><span class="p">[</span><span class="n">sv</span><span class="p">]</span> <span class="o">=</span> <span class="n">coef_sv</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">coef</span><span class="p">)</span>
+            <span class="n">errors</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">y</span> <span class="o">*</span> <span class="n">pred</span>
+            <span class="n">last_sv</span> <span class="o">=</span> <span class="n">sv</span>
+            <span class="n">sv</span> <span class="o">=</span> <span class="n">errors</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">last_sv</span><span class="p">,</span> <span class="n">sv</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Converged at iteration&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+                <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">coef</span>
+
+    <span class="k">def</span> <span class="nf">_post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="c1"># We can&#39;t know the support vectors when using precomputed kernels.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">!=</span> <span class="s2">&quot;precomputed&quot;</span><span class="p">:</span>
+            <span class="n">sv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sv</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="p">[:,</span> <span class="n">sv</span><span class="p">])</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">safe_mask</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">sv</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">support_vectors_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">support_indices_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                  <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)[</span><span class="n">sv</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_samples_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Number of support vectors:&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sv</span><span class="p">))</span>
+
+<div class="viewcode-block" id="KernelSVC.fit"><a class="viewcode-back" href="../../../generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fit model according to X and y.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : array-like, shape = [n_samples, n_features]</span>
+<span class="sd">            Training vectors, where n_samples is the number of samples</span>
+<span class="sd">            and n_features is the number of features.</span>
+
+<span class="sd">        y : array-like, shape = [n_samples]</span>
+<span class="sd">            Target values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self : classifier</span>
+<span class="sd">            Returns self.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">rs</span> <span class="o">=</span> <span class="n">check_random_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_binarizer_</span> <span class="o">=</span> <span class="n">LabelBinarizer</span><span class="p">(</span><span class="n">neg_label</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">pos_label</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_binarizer_</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_binarizer_</span><span class="o">.</span><span class="n">classes_</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">n_vectors</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Pre-computing kernel matrix...&quot;</span><span class="p">)</span>
+
+        <span class="n">K</span> <span class="o">=</span> <span class="n">pairwise_kernels</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">filter_params</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span>
+                             <span class="n">metric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kernel_params</span><span class="p">())</span>
+
+        <span class="n">coef</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_binary</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">Y</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">rs</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intercept_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_post_process</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="KernelSVC.decision_function"><a class="viewcode-back" href="../../../generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC.decision_function">[docs]</a>    <span class="k">def</span> <span class="nf">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the decision function for test vectors X.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : array-like, shape = [n_samples, n_features]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        P : array, shape = [n_classes, n_samples]</span>
+<span class="sd">            Decision function for X</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="n">pairwise_kernels</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">support_vectors_</span><span class="p">,</span> <span class="n">filter_params</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                             <span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span>
+                             <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_kernel_params</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">T</span><span class="p">)</span></div></div>
+</pre></div>
+
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright Mathieu Blondel.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

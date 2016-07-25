@@ -1,0 +1,10 @@
+**Script output**::
+
+  eta = 0.001
+  eta = 0.0001
+  eta = 1e-05
+  n_inner = 0.25
+  n_inner = 0.5
+  n_inner = 1.0
+  n_inner = 1.5
+

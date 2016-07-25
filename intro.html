@@ -1,0 +1,313 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &mdash; lightning dev documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/lightning.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.3.4/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.3.4/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="lightning dev documentation" href="index.html" />
+    <link rel="prev" title="lightning.ranking.KernelPRank" href="generated/lightning.ranking.KernelPRank.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          lightning</a>
+        <span class="navbar-text navbar-version pull-left"><b>dev</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="#">Introduction</a></li>
+                <li><a href="references.html">References</a></li>
+                <li><a href="auto_examples/index.html">Examples</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="auto_examples/index.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_robust_regression.html">Robust regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/trace.html">Trace norm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_sample_weight.html">SAGA: Weighted samples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/document_classification_news20.html">Classification of text documents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_svrg.html">Sensitivity to hyper-parameters in SVRG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_l2_solvers.html">L2 solver comparison</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="references.html">Classification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.AdaGradClassifier.html">lightning.classification.AdaGradClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.CDClassifier.html">lightning.classification.CDClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.FistaClassifier.html">lightning.classification.FistaClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.KernelSVC.html">lightning.classification.KernelSVC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.LinearSVC.html">lightning.classification.LinearSVC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.SDCAClassifier.html">lightning.classification.SDCAClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.SAGClassifier.html">lightning.classification.SAGClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.SAGAClassifier.html">lightning.classification.SAGAClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.SGDClassifier.html">lightning.classification.SGDClassifier</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.SVRGClassifier.html">lightning.classification.SVRGClassifier</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="references.html#regression">Regression</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.AdaGradRegressor.html">lightning.regression.AdaGradRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.CDRegressor.html">lightning.regression.CDRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.FistaRegressor.html">lightning.regression.FistaRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.LinearSVR.html">lightning.regression.LinearSVR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.SAGRegressor.html">lightning.regression.SAGRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.SAGARegressor.html">lightning.regression.SAGARegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.SDCARegressor.html">lightning.regression.SDCARegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.SGDRegressor.html">lightning.regression.SGDRegressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.regression.SVRGRegressor.html">lightning.regression.SVRGRegressor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="references.html#ranking">Ranking</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.ranking.PRank.html">lightning.ranking.PRank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/lightning.ranking.KernelPRank.html">lightning.ranking.KernelPRank</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#primal-coordinate-descent">Primal coordinate descent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dual-coordinate-ascent">Dual coordinate ascent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fista">FISTA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stochastic-gradient-method-sgd">Stochastic gradient method (SGD)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adagrad">AdaGrad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stochastic-averaged-gradient-sag-and-saga">Stochastic averaged gradient (SAG and SAGA)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stochastic-variance-reduced-gradient-svrg">Stochastic variance-reduced gradient (SVRG)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#prank">PRank</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/index.html">Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_robust_regression.html">Robust regression</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/trace.html">Trace norm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_sample_weight.html">SAGA: Weighted samples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/document_classification_news20.html">Classification of text documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_svrg.html">Sensitivity to hyper-parameters in SVRG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_l2_solvers.html">L2 solver comparison</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="references.html">Classification</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.AdaGradClassifier.html">lightning.classification.AdaGradClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.CDClassifier.html">lightning.classification.CDClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.FistaClassifier.html">lightning.classification.FistaClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.KernelSVC.html">lightning.classification.KernelSVC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.LinearSVC.html">lightning.classification.LinearSVC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.SDCAClassifier.html">lightning.classification.SDCAClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.SAGClassifier.html">lightning.classification.SAGClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.SAGAClassifier.html">lightning.classification.SAGAClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.SGDClassifier.html">lightning.classification.SGDClassifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.SVRGClassifier.html">lightning.classification.SVRGClassifier</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="references.html#regression">Regression</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.AdaGradRegressor.html">lightning.regression.AdaGradRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.CDRegressor.html">lightning.regression.CDRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.FistaRegressor.html">lightning.regression.FistaRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.LinearSVR.html">lightning.regression.LinearSVR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.SAGRegressor.html">lightning.regression.SAGRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.SAGARegressor.html">lightning.regression.SAGARegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.SDCARegressor.html">lightning.regression.SDCARegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.SGDRegressor.html">lightning.regression.SGDRegressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.regression.SVRGRegressor.html">lightning.regression.SVRGRegressor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="references.html#ranking">Ranking</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.ranking.PRank.html">lightning.ranking.PRank</a></li>
+<li class="toctree-l4"><a class="reference internal" href="generated/lightning.ranking.KernelPRank.html">lightning.ranking.KernelPRank</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container content-container">
+  
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>lightning is composed of three modules: classification, regression and ranking.
+Several solvers are available from each.</p>
+<p>If you&#8217;re not sure what solver to use, just go for <a class="reference internal" href="generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier" title="lightning.classification.CDClassifier"><code class="xref py py-class docutils literal"><span class="pre">classification.CDClassifier</span></code></a> /
+<a class="reference internal" href="generated/lightning.regression.CDRegressor.html#lightning.regression.CDRegressor" title="lightning.regression.CDRegressor"><code class="xref py py-class docutils literal"><span class="pre">regression.CDRegressor</span></code></a> or <a class="reference internal" href="generated/lightning.classification.SDCAClassifier.html#lightning.classification.SDCAClassifier" title="lightning.classification.SDCAClassifier"><code class="xref py py-class docutils literal"><span class="pre">classification.SDCAClassifier</span></code></a> / <a class="reference internal" href="generated/lightning.regression.SDCARegressor.html#lightning.regression.SDCARegressor" title="lightning.regression.SDCARegressor"><code class="xref py py-class docutils literal"><span class="pre">regression.SDCARegressor</span></code></a>. They
+are very fast and do not require any tedious tuning of a learning rate.</p>
+<div class="section" id="primal-coordinate-descent">
+<h2>Primal coordinate descent<a class="headerlink" href="#primal-coordinate-descent" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier" title="lightning.classification.CDClassifier"><code class="xref py py-class docutils literal"><span class="pre">classification.CDClassifier</span></code></a>, <a class="reference internal" href="generated/lightning.regression.CDRegressor.html#lightning.regression.CDRegressor" title="lightning.regression.CDRegressor"><code class="xref py py-class docutils literal"><span class="pre">regression.CDRegressor</span></code></a></p>
+<ul class="simple">
+<li>Main idea: update a single coordinate at a time (closed-form update when possible, coordinate-wise gradient descent otherwise)</li>
+<li>Non-smooth losses: No</li>
+<li>Penalties: L2, L1, L1/L2</li>
+<li>Learning rate: no</li>
+<li>Multiclass: one-vs-rest, multiclass logistic, multiclass squared hinge</li>
+</ul>
+</div>
+<div class="section" id="dual-coordinate-ascent">
+<h2>Dual coordinate ascent<a class="headerlink" href="#dual-coordinate-ascent" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="generated/lightning.classification.LinearSVC.html#lightning.classification.LinearSVC" title="lightning.classification.LinearSVC"><code class="xref py py-class docutils literal"><span class="pre">classification.LinearSVC</span></code></a>, <a class="reference internal" href="generated/lightning.regression.LinearSVR.html#lightning.regression.LinearSVR" title="lightning.regression.LinearSVR"><code class="xref py py-class docutils literal"><span class="pre">regression.LinearSVR</span></code></a> (L2-regularization, supports shrinking)</p>
+<p><a class="reference internal" href="generated/lightning.classification.SDCAClassifier.html#lightning.classification.SDCAClassifier" title="lightning.classification.SDCAClassifier"><code class="xref py py-class docutils literal"><span class="pre">classification.SDCAClassifier</span></code></a>, <a class="reference internal" href="generated/lightning.regression.SDCARegressor.html#lightning.regression.SDCARegressor" title="lightning.regression.SDCARegressor"><code class="xref py py-class docutils literal"><span class="pre">regression.SDCARegressor</span></code></a> (Elastic-net, supports many losses)</p>
+<ul class="simple">
+<li>Main idea: update a single dual coordinate at a time (closed-form solution available for many loss functions)</li>
+<li>Non-smooth losses: Yes</li>
+<li>Penalties: L2, Elastic-net</li>
+<li>Learning rate: no</li>
+<li>Multiclass: one-vs-rest</li>
+</ul>
+</div>
+<div class="section" id="fista">
+<h2>FISTA<a class="headerlink" href="#fista" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="generated/lightning.classification.FistaClassifier.html#lightning.classification.FistaClassifier" title="lightning.classification.FistaClassifier"><code class="xref py py-class docutils literal"><span class="pre">classification.FistaClassifier</span></code></a>, <a class="reference internal" href="generated/lightning.regression.FistaRegressor.html#lightning.regression.FistaRegressor" title="lightning.regression.FistaRegressor"><code class="xref py py-class docutils literal"><span class="pre">regression.FistaRegressor</span></code></a></p>
+<ul class="simple">
+<li>Main idea: accelerated proximal gradient method (uses full gradients)</li>
+<li>Non-smooth losses: No</li>
+<li>Penalties: L1, L1/L2, Trace/Nuclear</li>
+<li>Learning rate: no</li>
+<li>Multiclass: one-vs-rest, multiclass logistic, multiclass squared hinge</li>
+</ul>
+</div>
+<div class="section" id="stochastic-gradient-method-sgd">
+<h2>Stochastic gradient method (SGD)<a class="headerlink" href="#stochastic-gradient-method-sgd" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="generated/lightning.classification.SGDClassifier.html#lightning.classification.SGDClassifier" title="lightning.classification.SGDClassifier"><code class="xref py py-class docutils literal"><span class="pre">classification.SGDClassifier</span></code></a>, <a class="reference internal" href="generated/lightning.regression.SGDRegressor.html#lightning.regression.SGDRegressor" title="lightning.regression.SGDRegressor"><code class="xref py py-class docutils literal"><span class="pre">regression.SGDRegressor</span></code></a></p>
+<ul class="simple">
+<li>Main idea: replace full gradient with stochastic estimate obtained from a single sample</li>
+<li>Non-smooth losses: Yes</li>
+<li>Penalties: L2, L1, L1/L2</li>
+<li>Learning rate: yes (very sensitive)</li>
+<li>Multiclass: one-vs-rest, multiclass logistic, multiclass squared hinge</li>
+</ul>
+</div>
+<div class="section" id="adagrad">
+<h2>AdaGrad<a class="headerlink" href="#adagrad" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="generated/lightning.classification.AdaGradClassifier.html#lightning.classification.AdaGradClassifier" title="lightning.classification.AdaGradClassifier"><code class="xref py py-class docutils literal"><span class="pre">classification.AdaGradClassifier</span></code></a>, <a class="reference internal" href="generated/lightning.regression.AdaGradRegressor.html#lightning.regression.AdaGradRegressor" title="lightning.regression.AdaGradRegressor"><code class="xref py py-class docutils literal"><span class="pre">regression.AdaGradRegressor</span></code></a></p>
+<ul class="simple">
+<li>Main idea: use per-feature learning rates (frequently occurring features in the gradients get small learning rates and infrequent features get higher ones)</li>
+<li>Non-smooth losses: Yes</li>
+<li>Penalties: L2, Elastic-net</li>
+<li>Learning rate: yes (not very sensitive)</li>
+<li>Multiclass: one-vs-rest</li>
+</ul>
+</div>
+<div class="section" id="stochastic-averaged-gradient-sag-and-saga">
+<h2>Stochastic averaged gradient (SAG and SAGA)<a class="headerlink" href="#stochastic-averaged-gradient-sag-and-saga" title="Permalink to this headline">¶</a></h2>
+<p><code class="xref py py-class docutils literal"><span class="pre">classification.classification.SAGClassifier</span></code>, <a class="reference internal" href="generated/lightning.classification.SAGAClassifier.html#lightning.classification.SAGAClassifier" title="lightning.classification.SAGAClassifier"><code class="xref py py-class docutils literal"><span class="pre">classification.SAGAClassifier</span></code></a>, <a class="reference internal" href="generated/lightning.regression.SAGRegressor.html#lightning.regression.SAGRegressor" title="lightning.regression.SAGRegressor"><code class="xref py py-class docutils literal"><span class="pre">regression.SAGRegressor</span></code></a>, <a class="reference internal" href="generated/lightning.regression.SAGARegressor.html#lightning.regression.SAGARegressor" title="lightning.regression.SAGARegressor"><code class="xref py py-class docutils literal"><span class="pre">regression.SAGARegressor</span></code></a></p>
+<ul class="simple">
+<li>Main idea: instead of using the full gradient (average of sample-wise gradients), compute gradient for a randomly selected sample and use out-dated gradients for other samples</li>
+<li>Non-smooth losses: Yes (<a class="reference internal" href="generated/lightning.classification.SAGAClassifier.html#lightning.classification.SAGAClassifier" title="lightning.classification.SAGAClassifier"><code class="xref py py-class docutils literal"><span class="pre">classification.SAGAClassifier</span></code></a> and <a class="reference internal" href="generated/lightning.regression.SAGARegressor.html#lightning.regression.SAGARegressor" title="lightning.regression.SAGARegressor"><code class="xref py py-class docutils literal"><span class="pre">regression.SAGARegressor</span></code></a>)</li>
+<li>Penalties: L1, L2, Elastic-net</li>
+<li>Learning rate: yes (not very sensitive)</li>
+<li>Multiclass: one-vs-rest</li>
+</ul>
+</div>
+<div class="section" id="stochastic-variance-reduced-gradient-svrg">
+<h2>Stochastic variance-reduced gradient (SVRG)<a class="headerlink" href="#stochastic-variance-reduced-gradient-svrg" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="generated/lightning.classification.SVRGClassifier.html#lightning.classification.SVRGClassifier" title="lightning.classification.SVRGClassifier"><code class="xref py py-class docutils literal"><span class="pre">classification.SVRGClassifier</span></code></a>, <a class="reference internal" href="generated/lightning.regression.SVRGRegressor.html#lightning.regression.SVRGRegressor" title="lightning.regression.SVRGRegressor"><code class="xref py py-class docutils literal"><span class="pre">regression.SVRGRegressor</span></code></a></p>
+<ul class="simple">
+<li>Main idea: compute full gradient periodically and use it to center the gradient estimate (this can be shown to reduce the variance)</li>
+<li>Non-smooth losses: No</li>
+<li>Penalties: L2</li>
+<li>Learning rate: yes (not very sensitive)</li>
+<li>Multiclass: one-vs-rest</li>
+</ul>
+</div>
+<div class="section" id="prank">
+<h2>PRank<a class="headerlink" href="#prank" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="generated/lightning.ranking.PRank.html#lightning.ranking.PRank" title="lightning.ranking.PRank"><code class="xref py py-class docutils literal"><span class="pre">ranking.PRank</span></code></a>, <a class="reference internal" href="generated/lightning.ranking.KernelPRank.html#lightning.ranking.KernelPRank" title="lightning.ranking.KernelPRank"><code class="xref py py-class docutils literal"><span class="pre">ranking.KernelPRank</span></code></a></p>
+<ul class="simple">
+<li>Main idea: Perceptron-like algorithm for ordinal regression</li>
+<li>Penalties: L2</li>
+<li>Learning rate: no</li>
+</ul>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+
+
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright Mathieu Blondel.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
