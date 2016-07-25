@@ -1,9 +1,0 @@
-€}q(Upl.title}q(Uobj_typeqUfunctionqUmodule_shortqUmatplotlib.pyplotUnameqUtitleUmoduleqUmatplotlib.pyplotquUnp.meshgrid}q	(hhhUnumpyhUmeshgridhUnumpy.lib.function_baseq
-uUCDClassifierq}q(hUobjectqhUlightning.impl.primal_cdhUtypehUlightning.impl.primal_cdquUnp.ravel}q(hhhUnumpyhUravelhUnumpy.core.fromnumericquU
-rbf_kernelq}q(hhhUsklearn.metrics.pairwisehU
-rbf_kernelhUsklearn.metrics.pairwisequUpl.axis}q(hhhU
-matplotlibhUaxishhuU	KernelSVCq}q(hhhUlightning.impl.primal_newtonhU	KernelSVChUlightning.impl.primal_newtonquU	np.hstack}q(hhhUnumpyhUhstackhUnumpy.core.shape_basequUnp.array}q(hhhUnumpyhUarrayhUnumpy.core.multiarrayquUclf2q}q(hhhUlightning.impl.primal_newtonhU	KernelSVCqhhuU
-pl.scatter}q(hhhUmatplotlib.pyplothUscatterhhuUnp.ones}q (hhhUnumpyhUoneshUnumpy.core.numericq!uUpl.showq"}q#(hhhUmatplotlib.pyplotq$hUshowq%hhuUpl.plot}q&(hhhUmatplotlib.pyplothUplothhuU
-pl.contour}q'(hhhU
-matplotlibhUcontourhhuUnp.linspace}q((hhhUnumpyhUlinspacehUnumpy.core.function_baseq)uU	pl.figure}q*(hhhU
-matplotlibhUfigurehhuUclf2.fit}q+(hhhUlightning.impl.primal_newtonhUfithhuU	np.vstack}q,(hhhUnumpyhUvstackhhuu.
