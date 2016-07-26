@@ -120,12 +120,14 @@ def get_auto_step_size(RowDataset X, double alpha, loss, gamma=None, sample_weig
                     + alpha * 0.5 * ||w||^2_2
     Parameters
     ----------
-    X : ndarray
-        Array of samples x_i.
+    X : RowDataset
+        Dataset.
     alpha : float
         Constant that multiplies the l2 penalty term.
-    loss : string, in {"log", "squared"}
+    loss : string, in {"log", "squared", "modified_huber", "smooth_hinge", "squared_hinge"a}
         The loss function used in SAG solver.
+    sample_weight : array of size (n_samples,)
+        relative weights of the samples
 
     Returns
     -------
