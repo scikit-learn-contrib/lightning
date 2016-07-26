@@ -145,6 +145,17 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
         self.is_saga = False
 
     def fit(self, X, y, sample_weight=None):
+        """
+        Parameters
+        ----------
+        X : numpy array, sparse matrix or RowDataset of size (n_samples, n_features)
+        y : numpy array of size (n_samples,)
+        sample_weight : numpy array of size (n_samples,), optional
+
+        Returns
+        -------
+        self
+        """
         if not self.is_saga and self.penalty is not None:
             raise ValueError('Penalties in SAGClassifier. Please use '
                              'SAGAClassifier instead.'
@@ -261,6 +272,17 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
         self.is_saga = False
 
     def fit(self, X, y, sample_weight=None):
+        """
+        Parameters
+        ----------
+        X : numpy array, sparse matrix or RowDataset of size (n_samples, n_features)
+        y : numpy array of size (n_samples,)
+        sample_weight : numpy array of size (n_samples,), optional
+
+        Returns
+        -------
+        self
+        """
         if not self.is_saga and self.penalty is not None:
             raise ValueError('Penalties are not supported in SAGRegressor. '
                              'Please use SAGARegressor instead.')
