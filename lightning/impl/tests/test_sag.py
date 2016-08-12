@@ -9,6 +9,7 @@ from sklearn.utils.testing import assert_true
 from sklearn.utils.testing import assert_equal, assert_almost_equal
 
 from lightning.impl.base import BaseClassifier
+from lightning.impl.dataset_fast import get_dataset
 from lightning.classification import SAGClassifier, SAGAClassifier
 from lightning.regression import SAGRegressor, SAGARegressor
 
@@ -156,7 +157,7 @@ class PySAGClassifier(BaseClassifier):
 
         if self.eta is None or self.eta == 'auto':
             eta = get_auto_step_size(
-                    X, self.alpha, self.loss, self.is_saga)
+                get_dataset(X, order="c"), self.alpha, self.loss, self.is_saga)
         else:
             eta = self.eta
 
@@ -212,6 +213,16 @@ def test_sag():
             ):
         clf.fit(X_bin, y_bin)
         assert_equal(clf.score(X_bin, y_bin), 1.0)
+
+
+def test_sag_dataset():
+    # make sure SAG/SAGA accept a Dataset object as argument
+    for SAG_ in (SAGAClassifier, SAGClassifier, SAGRegressor, SAGARegressor):
+        clf1 = SAG_(eta=1e-3, max_iter=20, verbose=0, random_state=0)
+        clf2 = SAG_(eta=1e-3, max_iter=20, verbose=0, random_state=0)
+        clf1.fit(get_dataset(X_bin, order='C'), y_bin)
+        clf2.fit(X_bin, y_bin)
+        assert_almost_equal(clf1.coef_, clf2.coef_)
 
 
 def test_sag_score():

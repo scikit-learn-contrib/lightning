@@ -16,7 +16,7 @@ ctypedef np.int64_t LONG
 from libc.math cimport sqrt, fabs
 
 from lightning.impl.randomkit.random_fast cimport RandomState
-from lightning.impl.dataset_fast cimport RowDataset
+from lightning.impl.dataset_fast cimport Dataset, RowDataset
 from lightning.impl.sgd_fast cimport LossFunction
 
 # Reimplementation for MSVC support
@@ -110,6 +110,70 @@ cdef class L1Penalty(Penalty):
         for j in range(coef.size):
             reg += fabs(coef[j])
         return reg
+
+
+
+def get_auto_step_size(RowDataset X, double alpha, loss, gamma=None, sample_weight=None):
+    """Compute automatic step size for SAG solver
+    Stepsize computed using the following objective:
+        minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
+                    + alpha * 0.5 * ||w||^2_2
+    Parameters
+    ----------
+    X : RowDataset
+        Dataset.
+    alpha : float
+        Constant that multiplies the l2 penalty term.
+    loss : string, in {"log", "squared", "modified_huber", "smooth_hinge", "squared_hinge"a}
+        The loss function used in SAG solver.
+    sample_weight : array of size (n_samples,)
+        relative weights of the samples
+
+    Returns
+    -------
+    step_size : float
+        Step size used in SAG/SAGA solver.
+    """
+    cdef double lipschitz_constant, row_norm, max_square_norm = 0.0
+    cdef int i, j, n_samples, n_features
+    cdef double[:] weights
+
+    # Data pointers.
+    cdef double* data
+    cdef int* indices
+    cdef int n_nz
+
+    n_samples = X.get_n_samples()
+    if sample_weight is None:
+        weights = np.ones(n_samples)
+    else:
+        weights = np.asarray(sample_weight)
+
+    for i in range(n_samples):
+        X.get_row_ptr(i, &indices, &data, &n_nz)
+        row_norm = 0.0
+        for j in range(n_nz):
+            row_norm += data[j] * data[j]
+        # keep maximum element in max_weighted_norm
+        if weights[i] * row_norm > max_square_norm:
+            max_square_norm = weights[i] * row_norm
+
+    if loss == 'log':
+        # inverse Lipschitz constant for log loss
+        lipschitz_constant = 0.25 * max_square_norm + alpha
+    elif loss == 'squared':
+        lipschitz_constant = max_square_norm + alpha
+    elif loss == 'modified_huber':
+        lipschitz_constant = 2 * max_square_norm + alpha
+    elif loss == 'smooth_hinge':
+        lipschitz_constant = max_square_norm + gamma + alpha
+    elif loss == 'squared_hinge':
+        lipschitz_constant = 2 * max_square_norm + alpha
+    else:
+        raise ValueError("`auto` stepsize is only available for `squared` or "
+                         "`log` losses (got `%s` loss). Please specify a "
+                         "stepsize." % loss)
+    return 1.0 / lipschitz_constant
 
 
 cdef double _pred(double* data,
