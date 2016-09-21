@@ -108,9 +108,22 @@ def test_sdca_callback():
     assert_equal(cb.acc[-1], 1.0)
 
 
+def test_bin_classes():
+    clf = SDCAClassifier()
+    clf.fit(X_bin, y_bin)
+    assert_equal(list(clf.classes_), [-1, 1])
+
+
+def test_multiclass_classes():
+    clf = SDCAClassifier()
+    clf.fit(X, y)
+    assert_equal(list(clf.classes_), [0, 1, 2])
+
+
 def test_sdca_regression():
     for loss in ("squared", "absolute"):
         reg = SDCARegressor(loss=loss)
         reg.fit(X_bin, y_bin)
         y_pred = np.sign(reg.predict(X_bin))
         assert_equal(np.mean(y_bin == y_pred), 1.0)
+

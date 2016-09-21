@@ -5,6 +5,7 @@ from scipy.linalg import svd, diagsvd
 
 from sklearn.utils.testing import assert_almost_equal
 from sklearn.utils.testing import assert_true
+from sklearn.utils.testing import assert_equal
 
 from sklearn.datasets import load_digits
 
@@ -105,6 +106,18 @@ def test_fista_multiclass_trace():
         clf = FistaClassifier(max_iter=100, penalty="trace", multiclass=True)
         clf.fit(data, mult_target)
         assert_almost_equal(clf.score(data, mult_target), 0.98, 2)
+
+
+def test_fista_bin_classes():
+    clf = FistaClassifier()
+    clf.fit(bin_dense, bin_target)
+    assert_equal(list(clf.classes_), [0, 1])
+
+
+def test_fista_multiclass_classes():
+    clf = FistaClassifier()
+    clf.fit(mult_dense, mult_target)
+    assert_equal(list(clf.classes_), [0, 1, 2])
 
 
 def test_fista_regression():

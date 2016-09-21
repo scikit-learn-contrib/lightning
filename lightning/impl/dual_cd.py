@@ -124,8 +124,8 @@ class LinearSVC(BaseClassifier):
         n_samples, n_features = X.shape
         rs = self._get_random_state()
 
-        self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
-        Y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
+        self._set_label_transformers(y)
+        Y = np.asfortranarray(self.label_binarizer_.transform(y),
                               dtype=np.float64)
         n_vectors = Y.shape[1]
 

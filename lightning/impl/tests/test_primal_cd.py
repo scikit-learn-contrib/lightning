@@ -403,3 +403,15 @@ def test_multiclass_error_nongrouplasso():
     for penalty in ['l1', 'l2']:
         clf = CDClassifier(multiclass=True, penalty=penalty)
         assert_raises(NotImplementedError, clf.fit, mult_dense, mult_target)
+
+
+def test_bin_classes():
+    clf = CDClassifier()
+    clf.fit(bin_dense, bin_target)
+    assert_equal(list(clf.classes_), [0, 1])
+
+
+def test_multiclass_classes():
+    clf = CDClassifier()
+    clf.fit(mult_dense, mult_target)
+    assert_equal(list(clf.classes_), [0, 1, 2])

@@ -4,6 +4,7 @@ import scipy.sparse as sp
 from sklearn.utils.testing import assert_almost_equal
 from sklearn.utils.testing import assert_false
 from sklearn.utils.testing import assert_greater
+from sklearn.utils.testing import assert_equal
 
 from sklearn.datasets.samples_generator import make_regression
 
@@ -45,12 +46,14 @@ def test_binary_linear_sgd():
 
             clf.fit(data, bin_target)
             assert_greater(clf.score(data, bin_target), 0.934)
+            assert_equal(list(clf.classes_), [0, 1])
 
 
 def test_multiclass_sgd():
     clf = SGDClassifier(random_state=0)
     clf.fit(mult_dense, mult_target)
     assert_greater(clf.score(mult_dense, mult_target), 0.80)
+    assert_equal(list(clf.classes_), [0, 1, 2])
 
 
 def test_multiclass_hinge_sgd():
@@ -140,3 +143,4 @@ def test_regression_squared_loss_multiple_output():
     reg.fit(X, Y)
     pred = reg.predict(X)
     assert_almost_equal(np.mean((pred - Y) ** 2), 4.541, 3)
+
