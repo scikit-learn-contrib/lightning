@@ -150,9 +150,8 @@ class PySAGClassifier(BaseClassifier):
         self.is_saga = False
 
     def fit(self, X, y):
-
-        self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
-        y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
+        self._set_label_transformers(y)
+        y = np.asfortranarray(self.label_binarizer_.transform(y),
                               dtype=np.float64)
 
         if self.eta is None or self.eta == 'auto':
@@ -213,6 +212,7 @@ def test_sag():
             ):
         clf.fit(X_bin, y_bin)
         assert_equal(clf.score(X_bin, y_bin), 1.0)
+        assert_equal(list(clf.classes_), [-1, 1])
 
 
 def test_sag_dataset():
@@ -246,6 +246,14 @@ def test_sag_proba():
     sag.fit(X, y)
     probas = sag.predict_proba(X)
     assert_equal(probas.sum(), n_samples)
+
+
+def test_sag_multiclass_classes():
+    X, y = make_classification(n_samples=10, random_state=0, n_classes=3,
+                               n_informative=4)
+    sag = SAGClassifier()
+    sag.fit(X, y)
+    assert_equal(list(sag.classes_), [0, 1, 2])
 
 
 def test_no_reg_sag():

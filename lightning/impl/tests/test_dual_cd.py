@@ -49,6 +49,7 @@ def test_fit_linear_binary():
         for loss in ("l1", "l2"):
             clf = LinearSVC(loss=loss, random_state=0, max_iter=10)
             clf.fit(data, bin_target)
+            assert_equal(list(clf.classes_), [0, 1])
             assert_equal(clf.score(data, bin_target), 1.0)
             y_pred = clf.decision_function(data).ravel()
 
@@ -66,6 +67,7 @@ def test_fit_linear_multi():
     for data in (mult_dense, mult_sparse):
         clf = LinearSVC(random_state=0)
         clf.fit(data, mult_target)
+        assert_equal(list(clf.classes_), [0, 1, 2])
         y_pred = clf.predict(data)
         acc = np.mean(y_pred == mult_target)
         assert_greater(acc, 0.85)

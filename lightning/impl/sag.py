@@ -160,7 +160,7 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
             raise ValueError('Penalties in SAGClassifier. Please use '
                              'SAGAClassifier instead.'
                              '.')
-        self._set_label_transformers(y, neg_label=-1)[0]
+        self._set_label_transformers(y)
         y_binary = self.label_binarizer_.transform(y).astype(np.float64)
         return self._fit(X, y_binary, sample_weight)
 

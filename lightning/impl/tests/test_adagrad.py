@@ -1,7 +1,6 @@
 import numpy as np
 
 from sklearn.datasets import load_iris
-from sklearn.preprocessing import Normalizer
 from sklearn.utils.testing import assert_equal
 from sklearn.utils.testing import assert_almost_equal
 
@@ -40,6 +39,20 @@ def test_adagrad_hinge_multiclass():
     clf = AdaGradClassifier(alpha=1e-2, n_iter=100, loss="hinge", random_state=0)
     clf.fit(X, y)
     assert_almost_equal(clf.score(X, y), 0.960, 3)
+
+
+def test_adagrad_classes_binary():
+    clf = AdaGradClassifier()
+    assert not hasattr(clf, 'classes_')
+    clf.fit(X_bin, y_bin)
+    assert_equal(list(clf.classes_), [-1, 1])
+
+
+def test_adagrad_classes_multiclass():
+    clf = AdaGradClassifier()
+    assert not hasattr(clf, 'classes_')
+    clf.fit(X, y)
+    assert_equal(list(clf.classes_), [0, 1, 2])
 
 
 def test_adagrad_callback():
