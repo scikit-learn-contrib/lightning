@@ -19,6 +19,7 @@ from .penalty import L1Penalty
 from .penalty import L1L2Penalty
 from .penalty import TracePenalty
 from .penalty import SimplexConstraint
+from .penalty import L1BallConstraint
 from .penalty import TotalVariation1DPenalty
 
 
@@ -32,6 +33,7 @@ class _BaseFista(object):
             "l1/l2": L1L2Penalty(),
             "trace": TracePenalty(),
             "simplex": SimplexConstraint(),
+            "l1-ball": L1BallConstraint(),
             "tv1d": TotalVariation1DPenalty()
         }
         return penalties[self.penalty]

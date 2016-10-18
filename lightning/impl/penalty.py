@@ -77,6 +77,15 @@ def project_l1_ball(v, z=1):
     return np.sign(v) * project_simplex(np.abs(v), z)
 
 
+class L1BallConstraint(object):
+
+    def projection(self, coef, alpha, L):
+        return project_l1_ball(coef[0], alpha).reshape(1,-1)
+
+    def regularization(self, coef):
+        return 0
+
+
 class TotalVariation1DPenalty(object):
     def projection(self, coef, alpha, L):
         tmp = coef.copy()
