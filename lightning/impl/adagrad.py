@@ -86,8 +86,8 @@ class AdaGradClassifier(BaseClassifier, _BaseAdagrad):
         return losses[self.loss]
 
     def fit(self, X, y):
-        self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
-        Y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
+        self._set_label_transformers(y)
+        Y = np.asfortranarray(self.label_binarizer_.transform(y),
                               dtype=np.float64)
         return self._fit(X, Y)
 

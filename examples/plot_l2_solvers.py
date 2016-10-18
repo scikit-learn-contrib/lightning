@@ -2,8 +2,10 @@
 =====================
 L2 solver comparison
 =====================
+
+This example compares different solvers with L2 regularization.
 """
-print __doc__
+print(__doc__)
 
 import sys
 import time
@@ -18,7 +20,7 @@ from lightning.classification import SVRGClassifier
 from lightning.classification import SDCAClassifier
 from lightning.classification import CDClassifier
 from lightning.classification import AdaGradClassifier
-from lightning.classification import SAGClassifier
+from lightning.classification import SAGAClassifier, SAGClassifier
 
 from lightning.impl.adagrad_fast import _proj_elastic_all
 
@@ -64,10 +66,8 @@ if dataset == "news20":
     y[y >= 1] = 1
     alpha = 1e-4
     eta_svrg = 1e-1
-    eta_sag = 1
     eta_adagrad = 1
-    xlim = (0, 4)
-    ylim = (0.04, 0.1)
+    xlim = (0, 20)
 
 else:
     X, y = make_classification(n_samples=10000,
@@ -76,33 +76,39 @@ else:
                                random_state=0)
     alpha = 1e-2
     eta_svrg = 1e-3
-    eta_sag = 1e-3
     eta_adagrad = 1e-2
-    xlim = None
-    ylim = (0.5, 0.6)
+    xlim = [0, 2]
 
 y = y * 2 - 1
 
+# make sure the method does not stop prematurely, we want to see
+# the full convergence path
+tol = 1e-24
 
 clf1 = SVRGClassifier(loss="squared_hinge", alpha=alpha, eta=eta_svrg,
-                      n_inner=1.0, max_iter=50, random_state=0)
+                      n_inner=1.0, max_iter=100, random_state=0, tol=1e-24)
 clf2 = SDCAClassifier(loss="squared_hinge", alpha=alpha,
-                      max_iter=50, n_calls=X.shape[0]/2, random_state=0)
+                      max_iter=100, n_calls=X.shape[0]/2, random_state=0, tol=tol)
 clf3 = CDClassifier(loss="squared_hinge", alpha=alpha, C=1.0/X.shape[0],
-                    max_iter=50, n_calls=X.shape[1]/3, random_state=0)
+                    max_iter=50, n_calls=X.shape[1]/3, random_state=0, tol=tol)
 clf4 = AdaGradClassifier(loss="squared_hinge", alpha=alpha, eta=eta_adagrad,
-                    n_iter=50, n_calls=X.shape[0]/2, random_state=0)
-clf5 = SAGClassifier(loss="squared_hinge", alpha=alpha, eta=eta_sag,
-                    max_iter=50, random_state=0)
+                    n_iter=100, n_calls=X.shape[0]/2, random_state=0)
+clf5 = SAGAClassifier(loss="squared_hinge", alpha=alpha,
+                    max_iter=100, random_state=0, tol=tol)
+clf6 = SAGClassifier(loss="squared_hinge", alpha=alpha,
+                    max_iter=100, random_state=0, tol=tol)
 
 plt.figure()
 
+data = {}
 for clf, name in ((clf1, "SVRG"),
                   (clf2, "SDCA"),
                   (clf3, "PCD"),
                   (clf4, "AdaGrad"),
-                  (clf5, "SAG")):
-    print name
+                  (clf5, "SAGA"),
+                  (clf6, "SAG")
+                  ):
+    print(name)
     cb = Callback(X, y)
     clf.callback = cb
 
@@ -110,13 +116,18 @@ for clf, name in ((clf1, "SVRG"),
         clf.fit(X.tocsc(), y)
     else:
         clf.fit(X, y)
+    data[name] = (cb.times, np.array(cb.obj))
 
-    plt.plot(cb.times, cb.obj, label=name)
+# get best value
+fmin = min([np.min(a[1]) for a in data.values()])
+for name in data:
+    plt.plot(data[name][0], data[name][1] - fmin, label=name, lw=3)
 
 plt.xlim(xlim)
-plt.ylim(ylim)
+plt.yscale('log')
 plt.xlabel("CPU time")
-plt.ylabel("Objective value")
+plt.ylabel("Objective value minus optimum")
 plt.legend()
+plt.grid()
 
 plt.show()

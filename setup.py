@@ -4,20 +4,20 @@
 
 import sys
 import os
+import setuptools
+from numpy.distutils.core import setup
 
-DISTNAME = 'lightning'
+
+DISTNAME = 'sklearn-contrib-lightning'
 DESCRIPTION = "Large-scale sparse linear classification, " + \
               "regression and ranking in Python"
 LONG_DESCRIPTION = open('README.rst').read()
 MAINTAINER = 'Mathieu Blondel'
 MAINTAINER_EMAIL = 'mathieu@mblondel.org'
-URL = 'https://github.com/mblondel/lightning'
+URL = 'https://github.com/scikit-learn-contrib/lightning'
 LICENSE = 'new BSD'
-DOWNLOAD_URL = 'https://github.com/mblondel/lightning'
-VERSION = '0.1-git'
-
-import setuptools  # we are using a setuptools namespace
-from numpy.distutils.core import setup
+DOWNLOAD_URL = 'https://github.com/scikit-learn-contrib/lightning'
+VERSION = '0.4.dev0'
 
 
 def configuration(parent_package='', top_path=None):
@@ -52,7 +52,7 @@ if __name__ == "__main__":
           version=VERSION,
           download_url=DOWNLOAD_URL,
           long_description=LONG_DESCRIPTION,
-          zip_safe=False, # the package can run out of an .egg file
+          zip_safe=False,  # the package can run out of an .egg file
           classifiers=[
               'Intended Audience :: Science/Research',
               'Intended Audience :: Developers',
@@ -66,4 +66,4 @@ if __name__ == "__main__":
               'Operating System :: Unix',
               'Operating System :: MacOS'
              ]
-    )
+          )

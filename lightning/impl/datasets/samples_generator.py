@@ -5,9 +5,13 @@ from sklearn.externals.six.moves import xrange
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils import check_random_state
 from sklearn.utils import shuffle as shuffle_func
-from sklearn.cross_validation import ShuffleSplit
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import Normalizer
+
+try:
+    from sklearn.model_selection import ShuffleSplit
+except ImportError:
+    from sklearn.cross_validation import ShuffleSplit
 
 
 def _make_nn_regression(n_samples=100, n_features=100, n_informative=10,

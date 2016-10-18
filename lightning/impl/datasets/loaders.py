@@ -11,8 +11,12 @@ except ImportError:
     from sklearn.datasets import load_svmlight_files
 
 from sklearn.datasets.base import get_data_home as _get_data_home
-from sklearn.cross_validation import StratifiedShuffleSplit
 from sklearn.utils import check_random_state
+
+try:
+    from sklearn.model_selection import StratifiedShuffleSplit
+except ImportError:
+    from sklearn.cross_validation import StratifiedShuffleSplit
 
 
 def get_data_home():

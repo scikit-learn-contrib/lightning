@@ -81,6 +81,29 @@ class SDCAClassifier(BaseClassifier, _BaseSDCA):
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * l1_ratio * ||w||_1
                     + alpha * (1 - l1_ratio) * 0.5 * ||w||^2_2
+
+    Parameters
+    ----------
+    loss: string, {'squared', 'absolute', 'hinge', 'smooth_hinge', 'squared_hinge'}
+         Loss function to use in the model.
+    alpha: float
+         Amount of regularization (see model formulation above).
+    l1_ratio: float
+         Ratio between the L1 and L2 regularization (see model formulation above).
+    gamma : float
+        gamma parameter in the "smooth_hinge" loss (not used for other
+        loss functions)
+    tol : float
+        stopping criterion tolerance.
+    max_iter : int
+        maximum number of outer iterations (also known as epochs).
+    verbose : int
+        verbosity level. Set positive to print progress information.
+    callback : callable or None
+        if given, callback(self) will be called on each outer iteration
+        (epoch).
+    random_state: int or RandomState
+        Pseudo-random number generator state used for random sampling.
     """
 
     def __init__(self, alpha=1.0, l1_ratio=0, loss="hinge", gamma=1.0,
@@ -108,8 +131,8 @@ class SDCAClassifier(BaseClassifier, _BaseSDCA):
         return losses[self.loss]
 
     def fit(self, X, y):
-        self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
-        Y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
+        self._set_label_transformers(y)
+        Y = np.asfortranarray(self.label_binarizer_.transform(y),
                               dtype=np.float64)
         return self._fit(X, Y)
 
@@ -123,15 +146,34 @@ class SDCARegressor(BaseRegressor, _BaseSDCA):
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * l1_ratio * ||w||_1
                     + alpha * (1 - l1_ratio) * 0.5 * ||w||^2_2
+    Parameters
+    ----------
+    loss: string, {'squared', 'absolute'}
+         Loss function to use in the model.
+    alpha: float
+         Amount of regularization (see model formulation above).
+    l1_ratio: float
+         Ratio between the L1 and L2 regularization (see model formulation above).
+    tol : float
+        stopping criterion tolerance.
+    max_iter : int
+        maximum number of outer iterations (also known as epochs).
+    verbose : int
+        verbosity level. Set positive to print progress information.
+    callback : callable or None
+        if given, callback(self) will be called on each outer iteration
+        (epoch).
+    random_state: int or RandomState
+        Pseudo-random number generator state used for random sampling.
     """
 
-    def __init__(self, alpha=1.0, l1_ratio=0, loss="squared", gamma=1.0,
+    def __init__(self, alpha=1.0, l1_ratio=0, loss="squared",
                  max_iter=100, tol=1e-3, callback=None, n_calls=None, verbose=0,
                  random_state=None):
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.loss = loss
-        self.gamma = gamma
+        self.gamma = 1.0
         self.max_iter = max_iter
         self.tol = tol
         self.callback = callback

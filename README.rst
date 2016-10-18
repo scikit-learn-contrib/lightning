@@ -1,5 +1,11 @@
 .. -*- mode: rst -*-
 
+.. image:: https://travis-ci.org/scikit-learn-contrib/lightning.svg?branch=master
+    :target: https://travis-ci.org/scikit-learn-contrib/lightning
+
+.. image:: https://ci.appveyor.com/api/projects/status/mmm0llccmvn5iooq?svg=true
+    :target: https://ci.appveyor.com/project/fabianp/lightning-bpc6r/branch/master
+
 lightning
 ==========
 
@@ -16,7 +22,7 @@ Solvers supported:
 
 - primal coordinate descent
 - dual coordinate descent (SDCA, Prox-SDCA)
-- SGD, AdaGrad, SAG, SVRG
+- SGD, AdaGrad, SAG, SAGA, SVRG
 - FISTA
 
 Example
@@ -49,29 +55,32 @@ penalty on the News20 dataset (c.f., `Blondel et al. 2013
     clf.fit(X, y)
 
     # Accuracy
-    print clf.score(X, y)
+    print(clf.score(X, y))
 
     # Percentage of selected features
-    print clf.n_nonzero(percentage=True)
+    print(clf.n_nonzero(percentage=True))
 
 Dependencies
 ------------
 
-lightning needs Python >= 2.7, setuptools, Numpy >= 1.3, SciPy >= 0.7,
-scikit-learn >= 0.14 and a working C/C++ compiler.
-
-To run the tests you will also need nose >= 0.10.
+lightning requires Python >= 2.7, setuptools, Numpy >= 1.3, SciPy >= 0.7 and
+scikit-learn >= 0.15. Building from source also requires Cython and a working C/C++ compiler. To run the tests you will also need nose >= 0.10.
 
 Installation
 ------------
 
-To install lightning from pip, type::
+Precompiled binaries for the stable version of lightning are available for the main platforms and can be installed using pip::
 
-    pip install https://github.com/mblondel/lightning/archive/master.zip
+    pip install sklearn-contrib-lightning
 
-To install lightning from source, type::
+or conda::
 
-  git clone https://github.com/mblondel/lightning.git
+    conda install -c conda-forge sklearn-contrib-lightning
+
+
+The development version of lightning can be installed from its git repository. In this case it is assumed that you have the git version control system, a working C++ compiler, Cython and the numpy development libraries. In order to install the development version, type::
+
+  git clone https://github.com/scikit-learn-contrib/lightning.git
   cd lightning
   python setup.py build
   sudo python setup.py install
@@ -79,15 +88,18 @@ To install lightning from source, type::
 Documentation
 -------------
 
-http://www.mblondel.org/lightning/
+http://contrib.scikit-learn.org/lightning/
 
 On Github
 ---------
 
-https://github.com/mblondel/lightning
+https://github.com/scikit-learn-contrib/lightning
 
 
-Author
-------
+Authors
+-------
 
-Mathieu Blondel, 2012-present
+- Mathieu Blondel, 2012-present
+- Manoj Kumar, 2015-present
+- Arnaud Rachez, 2016-present
+- Fabian Pedregosa, 2016-present

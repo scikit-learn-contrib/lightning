@@ -1,14 +1,15 @@
 # Author: Mathieu Blondel
+#         Arnaud Rachez
+#         Fabian Pedregosa
 # License: BSD
 
 import numpy as np
 
-from sklearn.preprocessing import LabelBinarizer
 from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
-from .sag_fast import _sag_fit
+from .sag_fast import _sag_fit, get_auto_step_size
 
 from .sgd_fast import ModifiedHuber
 from .sgd_fast import SmoothHinge
@@ -45,14 +46,32 @@ class _BaseSAG(object):
         self.coef_ *= self.coef_scale_
         self.coef_scale_.fill(1.0)
 
-    def _fit(self, X, Y):
-        n_samples, n_features = X.shape
+    def _fit(self, X, Y, sample_weight):
         rng = self._get_random_state()
+        adaptive_step_size = False
+        ds = get_dataset(X, order="c")
+        n_samples, n_features = ds.get_n_samples(), ds.get_n_features()
+
+        if sample_weight is None:
+            sample_weight = np.ones(n_samples, dtype=np.float64)
+        else:
+            sample_weight = np.asarray(sample_weight, dtype=np.float64)
+
+        if self.eta is None or self.eta in ('auto', 'line-search'):
+            step_size = get_auto_step_size(
+                    ds, self.alpha, self.loss, self.gamma, sample_weight=sample_weight)
+            if self.verbose > 0:
+                print("Auto stepsize: %s" % self.eta)
+            if self.eta == 'line-search':
+                self.eta = step_size
+                adaptive_step_size = True
+            else:
+                self.eta = step_size
+
         loss = self._get_loss()
         penalty = self._get_penalty()
         n_vectors = Y.shape[1]
         n_inner = int(self.n_inner * n_samples)
-        ds = get_dataset(X, order="c")
 
         self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
         self.coef_scale_ = np.ones(n_vectors, dtype=np.float64)
@@ -62,9 +81,9 @@ class _BaseSAG(object):
             y = Y[:, i]
 
             _sag_fit(self, ds, y, self.coef_[i], self.coef_scale_[i:], grad[i],
-                     self.eta, self.alpha, self.beta, loss, penalty,
+                     sample_weight, self.eta, self.alpha, self.beta, loss, penalty,
                      self.max_iter, n_inner, self.tol, self.verbose,
-                     self.callback, rng, self.is_saga)
+                     self.callback, rng, self.is_saga, adaptive_step_size)
 
         return self
 
@@ -80,8 +99,11 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
 
     Parameters
     ----------
-    eta : float
-        step size for the gradient updates
+    eta : float or {'auto', 'line-search'}, defaults to 'auto'
+        step size for the gradient updates. If set to 'auto',
+        this will calculate a step size based on the input data.
+        If set to 'line-search', it will perform a line-search
+        to find the step size based for the current iteration.
     alpha : float
         amount of squared L2 regularization
     beta : float
@@ -105,7 +127,7 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
         Pseudo-random number generator state used for random sampling.
     """
 
-    def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
+    def __init__(self, eta='auto', alpha=1.0, beta=0.0, loss="smooth_hinge",
                  penalty=None, gamma=1.0, max_iter=10, n_inner=1.0, tol=1e-3,
                  verbose=0, callback=None, random_state=None):
         self.eta = eta
@@ -122,15 +144,25 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
         self.random_state = random_state
         self.is_saga = False
 
-    def fit(self, X, y):
+    def fit(self, X, y, sample_weight=None):
+        """
+        Parameters
+        ----------
+        X : numpy array, sparse matrix or RowDataset of size (n_samples, n_features)
+        y : numpy array of size (n_samples,)
+        sample_weight : numpy array of size (n_samples,), optional
+
+        Returns
+        -------
+        self
+        """
         if not self.is_saga and self.penalty is not None:
             raise ValueError('Penalties in SAGClassifier. Please use '
                              'SAGAClassifier instead.'
                              '.')
-        self.label_binarizer_ = LabelBinarizer(neg_label=-1, pos_label=1)
-        Y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
-                              dtype=np.float64)
-        return self._fit(X, Y)
+        self._set_label_transformers(y)
+        y_binary = self.label_binarizer_.transform(y).astype(np.float64)
+        return self._fit(X, y_binary, sample_weight)
 
 
 class SAGAClassifier(SAGClassifier):
@@ -140,12 +172,15 @@ class SAGAClassifier(SAGClassifier):
     Solves the following objective:
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
-                    + alpha * 0.5 * ||w||^2_2
+                    + alpha * 0.5 * ||w||^2_2 + beta * penalty(w)
 
     Parameters
     ----------
-    eta : float
-        step size for the gradient updates
+    eta : float or {'auto', 'line-search'}, defaults to 'auto'
+        step size for the gradient updates. If set to 'auto',
+        this will calculate a step size based on the input data.
+        If set to 'line-search', it will perform a line-search
+        to find the step size based for the current iteration.
     alpha : float
         amount of squared L2 regularization
     beta : float
@@ -173,7 +208,7 @@ class SAGAClassifier(SAGClassifier):
         Pseudo-random number generator state used for random sampling.
     """
 
-    def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
+    def __init__(self, eta='auto', alpha=1.0, beta=0.0, loss="smooth_hinge",
                  penalty=None, gamma=1.0,  max_iter=10, n_inner=1.0,
                  tol=1e-3, verbose=0, callback=None, random_state=None):
             super(SAGAClassifier, self).__init__(
@@ -194,8 +229,11 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
 
     Parameters
     ----------
-    eta : float
-        step size for the gradient updates.
+    eta : float or {'auto', 'line-search'}, defaults to 'auto'
+        step size for the gradient updates. If set to 'auto',
+        this will calculate a step size based on the input data.
+        If set to 'line-search', it will perform a line-search
+        to find the step size based for the current iteration.
     alpha : float
         amount of squared L2 regularization.
     beta : float
@@ -216,7 +254,7 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
         Pseudo-random number generator state used for random sampling.
     """
 
-    def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
+    def __init__(self, eta='auto', alpha=1.0, beta=0.0, loss="smooth_hinge",
                  penalty=None, gamma=1.0, max_iter=10, n_inner=1.0, tol=1e-3,
                  verbose=0, callback=None, random_state=None):
         self.eta = eta
@@ -233,14 +271,25 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
         self.random_state = random_state
         self.is_saga = False
 
-    def fit(self, X, y):
+    def fit(self, X, y, sample_weight=None):
+        """
+        Parameters
+        ----------
+        X : numpy array, sparse matrix or RowDataset of size (n_samples, n_features)
+        y : numpy array of size (n_samples,)
+        sample_weight : numpy array of size (n_samples,), optional
+
+        Returns
+        -------
+        self
+        """
         if not self.is_saga and self.penalty is not None:
             raise ValueError('Penalties are not supported in SAGRegressor. '
                              'Please use SAGARegressor instead.')
         self.outputs_2d_ = len(y.shape) > 1
         Y = y.reshape(-1, 1) if not self.outputs_2d_ else y
         Y = Y.astype(np.float64)
-        return self._fit(X, Y)
+        return self._fit(X, Y, sample_weight=sample_weight)
 
 
 class SAGARegressor(SAGRegressor):
@@ -254,8 +303,11 @@ class SAGARegressor(SAGRegressor):
 
     Parameters
     ----------
-    eta : float
-        step size for the gradient updates
+    eta : float or {'auto', 'line-search'}, defaults to 'auto'
+        step size for the gradient updates. If set to 'auto',
+        this will calculate a step size based on the input data.
+        If set to 'line-search', it will perform a line-search
+        to find the step size based for the current iteration.
     alpha : float
         amount of squared L2 regularization
     beta : float
@@ -280,7 +332,7 @@ class SAGARegressor(SAGRegressor):
         Pseudo-random number generator state used for random sampling.
     """
 
-    def __init__(self, eta=1.0, alpha=1.0, beta=0.0, loss="smooth_hinge",
+    def __init__(self, eta='auto', alpha=1.0, beta=0.0, loss="smooth_hinge",
                  penalty="l1", max_iter=10, n_inner=1.0, tol=1e-3,
                  verbose=0, callback=None, random_state=None):
             super(SAGARegressor, self).__init__(

@@ -34,6 +34,10 @@ def configuration(parent_package='', top_path=None):
                          sources=['primal_cd_fast.cpp'],
                          include_dirs=[numpy.get_include(), randomdir])
 
+    config.add_extension('prox_fast',
+                         sources=['prox_fast.cpp'],
+                         include_dirs=[numpy.get_include(), randomdir])
+
     config.add_extension('sag_fast',
                          sources=['sag_fast.cpp'],
                          include_dirs=[numpy.get_include(), randomdir])
@@ -53,6 +57,10 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('datasets')
     config.add_subpackage('randomkit')
     config.add_subpackage('tests')
+
+    # add .pxd files to be re-used by third party software
+    config.add_data_files('sag_fast.pxd', 'dataset_fast.pxd',
+                          'sgd_fast.pxd', 'prox_fast.pxd')
 
     return config
 

@@ -3,6 +3,7 @@
 
 import numpy as np
 from scipy.linalg import svd
+from lightning.impl.prox_fast import prox_tv1d
 
 
 class L1Penalty(object):
@@ -47,3 +48,50 @@ class NNConstraint(object):
 
     def regularization(self, coef):
         return 0
+
+
+# See https://gist.github.com/mblondel/6f3b7aaad90606b98f71
+# for more algorithms.
+def project_simplex(v, z=1):
+    n_features = v.shape[0]
+    u = np.sort(v)[::-1]
+    cssv = np.cumsum(u) - z
+    ind = np.arange(n_features) + 1
+    cond = u - cssv / ind > 0
+    rho = ind[cond][-1]
+    theta = cssv[cond][-1] / float(rho)
+    w = np.maximum(v - theta, 0)
+    return w
+
+
+class SimplexConstraint(object):
+
+    def projection(self, coef, alpha, L):
+        return project_simplex(coef[0]).reshape(1,-1)
+
+    def regularization(self, coef):
+        return 0
+
+
+def project_l1_ball(v, z=1):
+    return np.sign(v) * project_simplex(np.abs(v), z)
+
+
+class L1BallConstraint(object):
+
+    def projection(self, coef, alpha, L):
+        return project_l1_ball(coef[0], alpha).reshape(1,-1)
+
+    def regularization(self, coef):
+        return 0
+
+
+class TotalVariation1DPenalty(object):
+    def projection(self, coef, alpha, L):
+        tmp = coef.copy()
+        for i in range(tmp.shape[0]):
+            prox_tv1d(tmp[i, :], alpha / L)  # operates inplace
+        return tmp
+
+    def regularization(self, coef):
+        return np.sum(np.abs(np.diff(coef)))

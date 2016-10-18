@@ -251,8 +251,8 @@ class CDClassifier(_BaseCD, BaseClassifier):
         n_features = ds.get_n_features()
 
         if self.penalty != "l1/l2" and self.multiclass:
-          raise NotImplementedError("True multiclass options not implemented "
-                                    "for non group-lasso(l1/l2) penalties.")
+            raise NotImplementedError("True multiclass options not implemented "
+                                      "for non group-lasso(l1/l2) penalties.")
 
         # Create label transformers
         #neg_label = 0 if self.penalty == "nn" else -1

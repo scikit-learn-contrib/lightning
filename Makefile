@@ -25,14 +25,14 @@ clean:
 
 # Tests...
 #
-test-code: in
+test-code: inplace
 	$(NOSETESTS) -s lightning
 
 test-coverage:
 	$(NOSETESTS) -s --with-coverage --cover-html --cover-html-dir=coverage \
 	--cover-package=lightning lightning
 
-test: test-code test-doc
+test: test-code
 
 # Datasets...
 #

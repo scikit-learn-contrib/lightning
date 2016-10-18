@@ -18,15 +18,23 @@ from .loss_fast import MulticlassLog
 from .penalty import L1Penalty
 from .penalty import L1L2Penalty
 from .penalty import TracePenalty
+from .penalty import SimplexConstraint
+from .penalty import L1BallConstraint
+from .penalty import TotalVariation1DPenalty
 
 
 class _BaseFista(object):
 
     def _get_penalty(self):
+        if hasattr(self.penalty, 'projection'):
+            return self.penalty
         penalties = {
             "l1": L1Penalty(),
             "l1/l2": L1L2Penalty(),
             "trace": TracePenalty(),
+            "simplex": SimplexConstraint(),
+            "l1-ball": L1BallConstraint(),
+            "tv1d": TotalVariation1DPenalty()
         }
         return penalties[self.penalty]
 
@@ -124,6 +132,58 @@ class _BaseFista(object):
 
 class FistaClassifier(BaseClassifier, _BaseFista):
     """Estimator for learning linear classifiers by FISTA.
+
+    The objective functions considered take the form
+
+    minimize F(W) = C * L(W) + alpha * R(W),
+
+    where L(W) is a loss term and R(W) is a penalty term.
+
+    Parameters
+    ----------
+    loss : str, 'squared_hinge', 'log', 'modified_huber', 'squared'
+        The loss function to be used.
+
+    penalty : str or Penalty object, 'l2', 'l1', 'l1/l2', 'simplex'
+        The penalty or constraint to be used.
+
+        - l2: ridge
+        - l1: lasso
+        - l1/l2: group lasso
+        - tv1d: 1-dimensional total variation (also known as fused lasso)
+        - simplex: simplex constraint
+        The method can also take an arbitrary Penalty object, i.e., an instance
+        that implements methods projection regularization method (see file penalty.py)
+
+    multiclass : bool
+        Whether to use a direct multiclass formulation (True) or one-vs-rest
+        (False).
+
+    C : float
+        Weight of the loss term.
+
+    alpha : float
+        Weight of the penalty term.
+
+    max_iter : int
+        Maximum number of iterations to perform.
+
+    max_steps : int
+        Maximum number of steps to use during the line search.
+
+    sigma : float
+        Constant used in the line search sufficient decrease condition.
+
+    eta : float
+         Decrease factor for line-search procedure. For example, eta=2.
+         will decrease the step size by a factor of 2 at each iteration
+         of the line-search routine.
+
+    callback : callable
+        Callback function.
+
+    verbose : int
+        Verbosity level.
     """
 
     def __init__(self, C=1.0, alpha=1.0, loss="squared_hinge", penalty="l1",
@@ -137,7 +197,7 @@ class FistaClassifier(BaseClassifier, _BaseFista):
         self.max_iter = max_iter
         self.max_steps = max_steps
         self.eta = eta
-        self.sigma = 1e-5
+        self.sigma = sigma
         self.callback = callback
         self.verbose = verbose
 
@@ -168,19 +228,63 @@ class FistaClassifier(BaseClassifier, _BaseFista):
 
 class FistaRegressor(BaseRegressor, _BaseFista):
     """Estimator for learning linear classifiers by FISTA.
+
+    The objective functions considered take the form
+
+    minimize F(W) = C * L(W) + alpha * R(W),
+
+    where L(W) is a loss term and R(W) is a penalty term.
+
+    Parameters
+    ----------
+    penalty : str or Penalty object, {'l2', 'l1', 'l1/l2', 'simplex'}
+        The penalty or constraint to be used.
+
+        - l2: ridge
+        - l1: lasso
+        - l1/l2: group lasso
+        - tv1d: 1-dimensional total variation (also known as fussed lasso)
+        - simplex: simplex constraint
+        The method can also take an arbitrary Penalty object, i.e., an instance
+        that implements methods projection regularization method (see file penalty.py)
+
+
+    C : float
+        Weight of the loss term.
+
+    alpha : float
+        Weight of the penalty term.
+
+    max_iter : int
+        Maximum number of iterations to perform.
+
+    max_steps : int
+        Maximum number of steps to use during the line search.
+
+    sigma : float
+        Constant used in the line search sufficient decrease condition.
+
+    eta : float
+         Decrease factor for line-search procedure. For example, eta=2.
+         will decrease the step size by a factor of 2 at each iteration
+         of the line-search routine.
+
+    callback : callable
+        Callback function.
+
+    verbose : int
+        Verbosity level.
     """
 
-    def __init__(self, C=1.0, alpha=1.0, penalty="l1", multiclass=False,
-                 max_iter=100, max_steps=30, eta=2.0, sigma=1e-5, callback=None,
-                 verbose=0):
+    def __init__(self, C=1.0, alpha=1.0, penalty="l1", max_iter=100,
+                 max_steps=30, eta=2.0, sigma=1e-5, callback=None, verbose=0):
         self.C = C
         self.alpha = alpha
         self.penalty = penalty
-        self.multiclass = multiclass
         self.max_iter = max_iter
         self.max_steps = max_steps
         self.eta = eta
-        self.sigma = 1e-5
+        self.sigma = sigma
         self.callback = callback
         self.verbose = verbose
 
