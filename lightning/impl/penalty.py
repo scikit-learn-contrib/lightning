@@ -73,6 +73,10 @@ class SimplexConstraint(object):
         return 0
 
 
+def project_l1_ball(v, z=1):
+    return np.sign(v) * project_simplex(np.abs(v), z)
+
+
 class TotalVariation1DPenalty(object):
     def projection(self, coef, alpha, L):
         tmp = coef.copy()
