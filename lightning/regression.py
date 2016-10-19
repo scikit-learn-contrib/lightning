@@ -2,6 +2,7 @@ from .impl.adagrad import AdaGradRegressor
 from .impl.dual_cd import LinearSVR
 from .impl.primal_cd import CDRegressor
 from .impl.fista import FistaRegressor
+from .impl.fw import FWRegressor
 from .impl.sag import SAGRegressor
 from .impl.sag import SAGARegressor
 from .impl.sdca import SDCARegressor
