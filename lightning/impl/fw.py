@@ -6,7 +6,7 @@ from sklearn.utils.extmath import safe_sparse_dot
 
 
 def _frank_wolfe(w_init, X, y, beta, max_iter=50, tol=1e-3, max_nz=None,
-                verbose=0):
+                simplex=False, verbose=0):
     """
     Solve
 
@@ -29,8 +29,12 @@ def _frank_wolfe(w_init, X, y, beta, max_iter=50, tol=1e-3, max_nz=None,
         resid = beta * y_pred - y
         neg_grad = -safe_sparse_dot(X.T, beta * resid)
 
-        atom = np.argmax(np.abs(neg_grad))
-        s = np.sign(neg_grad[atom])
+        if simplex:
+            atom = np.argmax(neg_grad)
+            s = 1
+        else:
+            atom = np.argmax(np.abs(neg_grad))
+            s = np.sign(neg_grad[atom])
 
         error = np.dot(resid, resid)
         dgap = s * neg_grad[atom] - np.dot(w, neg_grad)
@@ -79,11 +83,13 @@ def _frank_wolfe(w_init, X, y, beta, max_iter=50, tol=1e-3, max_nz=None,
 
 class FWRegressor(BaseEstimator, RegressorMixin):
 
-    def __init__(self, beta=1.0, max_iter=50, tol=1e-3, max_nz=None, verbose=0):
+    def __init__(self, beta=1.0, max_iter=50, tol=1e-3, max_nz=None,
+                 simplex=False, verbose=0):
         self.beta = beta
         self.max_iter = max_iter
         self.tol = tol
         self.max_nz = max_nz
+        self.simplex = simplex
         self.verbose = verbose
 
     def fit(self, X, y):
@@ -91,7 +97,8 @@ class FWRegressor(BaseEstimator, RegressorMixin):
         coef = np.zeros(n_features)
         self.coef_ = _frank_wolfe(coef, X, y, beta=self.beta,
                                   max_iter=self.max_iter, tol=self.tol,
-                                  max_nz=self.max_nz, verbose=self.verbose)
+                                  max_nz=self.max_nz, simplex=self.simplex,
+                                  verbose=self.verbose)
         return self
 
     def predict(self, X):
