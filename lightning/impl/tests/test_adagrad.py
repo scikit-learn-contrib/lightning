@@ -7,6 +7,7 @@ from sklearn.utils.testing import assert_almost_equal
 from lightning.classification import AdaGradClassifier
 from lightning.regression import AdaGradRegressor
 from lightning.impl.adagrad_fast import _proj_elastic_all
+from lightning.impl.tests.utils import check_predict_proba
 
 iris = load_iris()
 X, y = iris.data, iris.target
@@ -18,6 +19,7 @@ y_bin = y[y <= 1] * 2 - 1
 def test_adagrad_elastic_hinge():
     clf = AdaGradClassifier(alpha=0.5, l1_ratio=0.85, n_iter=10, random_state=0)
     clf.fit(X_bin, y_bin)
+    assert not hasattr(clf, "predict_proba")
     assert_equal(clf.score(X_bin, y_bin), 1.0)
 
 
@@ -25,6 +27,7 @@ def test_adagrad_elastic_smooth_hinge():
     clf = AdaGradClassifier(alpha=0.5, l1_ratio=0.85, loss="smooth_hinge",
                             n_iter=10, random_state=0)
     clf.fit(X_bin, y_bin)
+    assert not hasattr(clf, "predict_proba")
     assert_equal(clf.score(X_bin, y_bin), 1.0)
 
 
@@ -33,11 +36,13 @@ def test_adagrad_elastic_log():
                             random_state=0)
     clf.fit(X_bin, y_bin)
     assert_equal(clf.score(X_bin, y_bin), 1.0)
+    check_predict_proba(clf, X_bin)
 
 
 def test_adagrad_hinge_multiclass():
     clf = AdaGradClassifier(alpha=1e-2, n_iter=100, loss="hinge", random_state=0)
     clf.fit(X, y)
+    assert not hasattr(clf, "predict_proba")
     assert_almost_equal(clf.score(X, y), 0.960, 3)
 
 

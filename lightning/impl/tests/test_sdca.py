@@ -6,6 +6,8 @@ from sklearn.utils.testing import assert_almost_equal
 
 from lightning.classification import SDCAClassifier
 from lightning.regression import SDCARegressor
+from lightning.impl.tests.utils import check_predict_proba
+
 
 iris = load_iris()
 X, y = iris.data, iris.target
@@ -17,6 +19,7 @@ y_bin = y[y <= 1] * 2 - 1
 def test_sdca_hinge():
     clf = SDCAClassifier(loss="hinge", random_state=0)
     clf.fit(X_bin, y_bin)
+    assert not hasattr(clf, 'predict_proba')
     assert_equal(clf.score(X_bin, y_bin), 1.0)
 
 
@@ -30,12 +33,14 @@ def test_sdca_hinge_multiclass():
 def test_sdca_squared():
     clf = SDCAClassifier(loss="squared", random_state=0)
     clf.fit(X_bin, y_bin)
+    assert not hasattr(clf, 'predict_proba')
     assert_equal(clf.score(X_bin, y_bin), 1.0)
 
 
 def test_sdca_absolute():
     clf = SDCAClassifier(loss="absolute", random_state=0)
     clf.fit(X_bin, y_bin)
+    assert not hasattr(clf, 'predict_proba')
     assert_equal(clf.score(X_bin, y_bin), 1.0)
 
 
@@ -50,6 +55,7 @@ def test_sdca_smooth_hinge_elastic():
     clf = SDCAClassifier(alpha=0.5, l1_ratio=0.85, loss="smooth_hinge",
                               random_state=0)
     clf.fit(X_bin, y_bin)
+    assert not hasattr(clf, 'predict_proba')
     assert_equal(clf.score(X_bin, y_bin), 1.0)
 
 

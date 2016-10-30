@@ -12,6 +12,7 @@ from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.datasets.samples_generator import make_nn_regression
 from lightning.impl.sgd import SGDClassifier
 from lightning.impl.sgd import SGDRegressor
+from lightning.impl.tests.utils import check_predict_proba
 
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
@@ -24,6 +25,7 @@ mult_dense, mult_target = make_classification(n_samples=300, n_features=100,
 
 bin_csr = sp.csr_matrix(bin_dense)
 mult_csr = sp.csr_matrix(mult_dense)
+
 
 def test_binary_linear_sgd():
     for data in (bin_dense, bin_csr):
@@ -43,10 +45,13 @@ def test_binary_linear_sgd():
                     SGDClassifier(random_state=0, loss="modified_huber",
                                   fit_intercept=True, learning_rate="constant"),
                     ):
-
             clf.fit(data, bin_target)
             assert_greater(clf.score(data, bin_target), 0.934)
             assert_equal(list(clf.classes_), [0, 1])
+            if clf.loss in ('log', 'modified_huber'):
+                check_predict_proba(clf, data)
+            else:
+                assert not hasattr(clf, 'predict_proba')
 
 
 def test_multiclass_sgd():
