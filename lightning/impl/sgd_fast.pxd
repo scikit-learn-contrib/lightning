@@ -18,7 +18,7 @@ cdef class Hinge(LossFunction):
 
     cdef double threshold
 
-    def __init__(self, double threshold=1.0)
+    def __init__(self, double threshold=1.0):
         self.threshold = threshold
 
     cpdef double loss(self, double p, double y)
