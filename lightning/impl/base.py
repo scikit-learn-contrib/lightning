@@ -38,11 +38,18 @@ class BaseEstimator(_BaseEstimator):
 
 class BaseClassifier(BaseEstimator, ClassifierMixin):
 
-    def predict_proba(self, X):
-        if len(self.classes_) != 2:
-            raise NotImplementedError("predict_(log_)proba only supported"
-                                      " for binary classification")
+    @property
+    def predict_proba(self):
+        if self.loss not in ("log", "modified_huber"):
+            raise AttributeError("predict_proba only supported when"
+                                 " loss='log' or loss='modified_huber' "
+                                 "(%s given)" % self.loss)
+        return self._predict_proba
 
+    def _predict_proba(self, X):
+        if len(self.classes_) != 2:
+            raise NotImplementedError("predict_proba only supported"
+                                      " for binary classification")
         if self.loss == "log":
             df = self.decision_function(X).ravel()
             prob = 1.0 / (1.0 + np.exp(-df))
@@ -52,7 +59,7 @@ class BaseClassifier(BaseEstimator, ClassifierMixin):
             prob += 1
             prob /= 2
         else:
-            raise NotImplementedError("predict_(log_)proba only supported when"
+            raise NotImplementedError("predict_proba only supported when"
                                       " loss='log' or loss='modified_huber' "
                                       "(%s given)" % self.loss)
 
