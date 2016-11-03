@@ -6,6 +6,10 @@
 .. image:: https://ci.appveyor.com/api/projects/status/mmm0llccmvn5iooq?svg=true
     :target: https://ci.appveyor.com/project/fabianp/lightning-bpc6r/branch/master
 
+.. image:: https://anaconda.org/conda-forge/sklearn-contrib-lightning/badges/version.svg
+    :target: https://anaconda.org/conda-forge/sklearn-contrib-lightning
+
+
 lightning
 ==========
 
