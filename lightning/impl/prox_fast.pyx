@@ -181,7 +181,7 @@ cdef c_prox_tv2d(double* x, size_t n_rows, size_t n_cols,
 
 
 def prox_tv2d(np.ndarray[ndim=2, dtype=double] w, double stepsize,
-              max_iter=500, tol=1e-3, callback=None):
+              max_iter=500, tol=1e-3):
     """
     Computes the proximal operator of the 2-dimensional total variation operator.
 
@@ -201,6 +201,8 @@ def prox_tv2d(np.ndarray[ndim=2, dtype=double] w, double stepsize,
         step size (often denoted gamma) in proximal objective function
 
     max_iter: int
+
+    tol: float
 
     References
     ----------

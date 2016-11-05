@@ -118,27 +118,45 @@ class TotalVariation1DPenalty(object):
 
 class TotalVariation2DPenalty(object):
     """
-    Proximal operator for the 2-D total variation penalty.
+    Proximal operator for the 2-D total variation penalty. This
+    proximal operator is computed approximately using the
+    Douglas-Rachford algorithm.
 
     Parameters
     ----------
     n_rows: int
         number of rows in the image
+
     n_cols: int
         number of columns in the image
-    note that n_rows * n_cols needs to be equal to the size
+
+    max_iter: int
+        maximum number of iterations to compute this proximal
+        operator.
+
+    Misc
+    -----
+    Note that n_rows * n_cols needs to be equal to the size
     of the vector of coefficients.
+
+    References
+    ----------
+    Barbero, Álvaro, and Suvrit Sra. "Modular proximal optimization for
+    multidimensional total-variation regularization." arXiv preprint
+    arXiv:1411.0589 (2014).
     """
-    def __init__(self, n_rows, n_cols):
+    def __init__(self, n_rows, n_cols, max_iter=1000, tol=1e-12):
         self.n_rows = n_rows
         self.n_cols = n_cols
+        self.max_iter = max_iter
+        self.tol = tol
 
     def projection(self, coef, alpha, L):
         tmp = np.empty_like(coef)
         for i in range(tmp.shape[0]):
             tmp[i] = prox_tv2d(
                 coef[i].reshape((self.n_rows, self.n_cols)),
-                alpha / L).ravel()
+                alpha / L, self.max_iter, self.tol).ravel()
         return tmp
 
     def regularization(self, coef):
