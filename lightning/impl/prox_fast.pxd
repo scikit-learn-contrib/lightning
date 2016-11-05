@@ -1,4 +1,2 @@
 
-cimport numpy as np
-
-cpdef prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize)
+cdef c_prox_tv1d(double* w, size_t width, size_t incr, double stepsize)
