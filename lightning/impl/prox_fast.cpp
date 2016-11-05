@@ -1260,7 +1260,6 @@ static const char __pyx_k_numpy[] = "numpy";
 static const char __pyx_k_range[] = "range";
 static const char __pyx_k_zeros[] = "zeros";
 static const char __pyx_k_import[] = "__import__";
-static const char __pyx_k_callback[] = "callback";
 static const char __pyx_k_max_iter[] = "max_iter";
 static const char __pyx_k_stepsize[] = "stepsize";
 static const char __pyx_k_prox_tv2d[] = "prox_tv2d";
@@ -1281,7 +1280,6 @@ static PyObject *__pyx_kp_u_Non_native_byte_order_not_suppor;
 static PyObject *__pyx_n_s_RuntimeError;
 static PyObject *__pyx_kp_s_Users_fabianpedregosa_dev_light;
 static PyObject *__pyx_n_s_ValueError;
-static PyObject *__pyx_n_s_callback;
 static PyObject *__pyx_n_s_copy;
 static PyObject *__pyx_n_s_import;
 static PyObject *__pyx_n_s_lightning_impl_prox_fast;
@@ -1302,7 +1300,7 @@ static PyObject *__pyx_n_s_w;
 static PyObject *__pyx_n_s_x;
 static PyObject *__pyx_n_s_zeros;
 static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_prox_tv1d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_w, double __pyx_v_stepsize); /* proto */
-static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_2prox_tv2d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_w, double __pyx_v_stepsize, PyObject *__pyx_v_max_iter, PyObject *__pyx_v_tol, CYTHON_UNUSED PyObject *__pyx_v_callback); /* proto */
+static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_2prox_tv2d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_w, double __pyx_v_stepsize, PyObject *__pyx_v_max_iter, PyObject *__pyx_v_tol); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static PyObject *__pyx_float_1eneg_3;
@@ -3074,42 +3072,31 @@ static PyObject *__pyx_f_9lightning_4impl_9prox_fast_c_prox_tv2d(double *__pyx_v
  * 
  * 
  * def prox_tv2d(np.ndarray[ndim=2, dtype=double] w, double stepsize,             # <<<<<<<<<<<<<<
- *               max_iter=500, tol=1e-3, callback=None):
+ *               max_iter=500, tol=1e-3):
  *     """
  */
 
 /* Python wrapper */
 static PyObject *__pyx_pw_9lightning_4impl_9prox_fast_3prox_tv2d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_9lightning_4impl_9prox_fast_2prox_tv2d[] = "\n    Computes the proximal operator of the 2-dimensional total variation operator.\n\n    This solves a problem of the form\n\n         argmin_x TV(x) + (1/(2 stepsize)) ||x - w||^2\n\n    where TV(x) is the two-dimensional total variation. It does so using the\n    Douglas-Rachford algorithm [Barbero and Sra, 2014].\n\n    Parameters\n    ----------\n    w: array\n        vector of coefficients\n\n    stepsize: float\n        step size (often denoted gamma) in proximal objective function\n\n    max_iter: int\n\n    References\n    ----------\n    Condat, Laurent. \"A direct algorithm for 1D total variation denoising.\"\n    IEEE Signal Processing Letters (2013)\n\n    Barbero, \303\201lvaro, and Suvrit Sra. \"Modular proximal optimization for\n    multidimensional total-variation regularization.\" arXiv preprint\n    arXiv:1411.0589 (2014).\n    ";
+static char __pyx_doc_9lightning_4impl_9prox_fast_2prox_tv2d[] = "\n    Computes the proximal operator of the 2-dimensional total variation operator.\n\n    This solves a problem of the form\n\n         argmin_x TV(x) + (1/(2 stepsize)) ||x - w||^2\n\n    where TV(x) is the two-dimensional total variation. It does so using the\n    Douglas-Rachford algorithm [Barbero and Sra, 2014].\n\n    Parameters\n    ----------\n    w: array\n        vector of coefficients\n\n    stepsize: float\n        step size (often denoted gamma) in proximal objective function\n\n    max_iter: int\n\n    tol: float\n\n    References\n    ----------\n    Condat, Laurent. \"A direct algorithm for 1D total variation denoising.\"\n    IEEE Signal Processing Letters (2013)\n\n    Barbero, \303\201lvaro, and Suvrit Sra. \"Modular proximal optimization for\n    multidimensional total-variation regularization.\" arXiv preprint\n    arXiv:1411.0589 (2014).\n    ";
 static PyMethodDef __pyx_mdef_9lightning_4impl_9prox_fast_3prox_tv2d = {"prox_tv2d", (PyCFunction)__pyx_pw_9lightning_4impl_9prox_fast_3prox_tv2d, METH_VARARGS|METH_KEYWORDS, __pyx_doc_9lightning_4impl_9prox_fast_2prox_tv2d};
 static PyObject *__pyx_pw_9lightning_4impl_9prox_fast_3prox_tv2d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_w = 0;
   double __pyx_v_stepsize;
   PyObject *__pyx_v_max_iter = 0;
   PyObject *__pyx_v_tol = 0;
-  CYTHON_UNUSED PyObject *__pyx_v_callback = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("prox_tv2d (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_w,&__pyx_n_s_stepsize,&__pyx_n_s_max_iter,&__pyx_n_s_tol,&__pyx_n_s_callback,0};
-    PyObject* values[5] = {0,0,0,0,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_w,&__pyx_n_s_stepsize,&__pyx_n_s_max_iter,&__pyx_n_s_tol,0};
+    PyObject* values[4] = {0,0,0,0};
     values[2] = ((PyObject *)__pyx_int_500);
     values[3] = ((PyObject *)__pyx_float_1eneg_3);
-
-    /* "lightning/impl/prox_fast.pyx":184
- * 
- * def prox_tv2d(np.ndarray[ndim=2, dtype=double] w, double stepsize,
- *               max_iter=500, tol=1e-3, callback=None):             # <<<<<<<<<<<<<<
- *     """
- *     Computes the proximal operator of the 2-dimensional total variation operator.
- */
-    values[4] = ((PyObject *)Py_None);
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
       const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
       switch (pos_args) {
-        case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
         case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
         case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
         case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
@@ -3125,7 +3112,7 @@ static PyObject *__pyx_pw_9lightning_4impl_9prox_fast_3prox_tv2d(PyObject *__pyx
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_stepsize)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("prox_tv2d", 0, 2, 5, 1); __PYX_ERR(0, 183, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("prox_tv2d", 0, 2, 4, 1); __PYX_ERR(0, 183, __pyx_L3_error)
         }
         case  2:
         if (kw_args > 0) {
@@ -3137,18 +3124,12 @@ static PyObject *__pyx_pw_9lightning_4impl_9prox_fast_3prox_tv2d(PyObject *__pyx
           PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s_tol);
           if (value) { values[3] = value; kw_args--; }
         }
-        case  4:
-        if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s_callback);
-          if (value) { values[4] = value; kw_args--; }
-        }
       }
       if (unlikely(kw_args > 0)) {
         if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "prox_tv2d") < 0)) __PYX_ERR(0, 183, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
-        case  5: values[4] = PyTuple_GET_ITEM(__pyx_args, 4);
         case  4: values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
         case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
         case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
@@ -3161,26 +3142,17 @@ static PyObject *__pyx_pw_9lightning_4impl_9prox_fast_3prox_tv2d(PyObject *__pyx
     __pyx_v_stepsize = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_stepsize == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 183, __pyx_L3_error)
     __pyx_v_max_iter = values[2];
     __pyx_v_tol = values[3];
-    __pyx_v_callback = values[4];
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("prox_tv2d", 0, 2, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 183, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("prox_tv2d", 0, 2, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 183, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("lightning.impl.prox_fast.prox_tv2d", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_w), __pyx_ptype_5numpy_ndarray, 1, "w", 0))) __PYX_ERR(0, 183, __pyx_L1_error)
-  __pyx_r = __pyx_pf_9lightning_4impl_9prox_fast_2prox_tv2d(__pyx_self, __pyx_v_w, __pyx_v_stepsize, __pyx_v_max_iter, __pyx_v_tol, __pyx_v_callback);
-
-  /* "lightning/impl/prox_fast.pyx":183
- * 
- * 
- * def prox_tv2d(np.ndarray[ndim=2, dtype=double] w, double stepsize,             # <<<<<<<<<<<<<<
- *               max_iter=500, tol=1e-3, callback=None):
- *     """
- */
+  __pyx_r = __pyx_pf_9lightning_4impl_9prox_fast_2prox_tv2d(__pyx_self, __pyx_v_w, __pyx_v_stepsize, __pyx_v_max_iter, __pyx_v_tol);
 
   /* function exit code */
   goto __pyx_L0;
@@ -3191,7 +3163,7 @@ static PyObject *__pyx_pw_9lightning_4impl_9prox_fast_3prox_tv2d(PyObject *__pyx
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_2prox_tv2d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_w, double __pyx_v_stepsize, PyObject *__pyx_v_max_iter, PyObject *__pyx_v_tol, CYTHON_UNUSED PyObject *__pyx_v_callback) {
+static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_2prox_tv2d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_w, double __pyx_v_stepsize, PyObject *__pyx_v_max_iter, PyObject *__pyx_v_tol) {
   PyArrayObject *__pyx_v_x = 0;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_w;
   __Pyx_Buffer __pyx_pybuffer_w;
@@ -3220,14 +3192,14 @@ static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_2prox_tv2d(CYTHON_UNUSED P
   }
   __pyx_pybuffernd_w.diminfo[0].strides = __pyx_pybuffernd_w.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_w.diminfo[0].shape = __pyx_pybuffernd_w.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_w.diminfo[1].strides = __pyx_pybuffernd_w.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_w.diminfo[1].shape = __pyx_pybuffernd_w.rcbuffer->pybuffer.shape[1];
 
-  /* "lightning/impl/prox_fast.pyx":215
+  /* "lightning/impl/prox_fast.pyx":217
  *     """
  * 
  *     cdef np.ndarray[ndim=2, dtype=double] x = w.copy()             # <<<<<<<<<<<<<<
  *     c_prox_tv2d(<double*> x.data, w.shape[0], w.shape[1],
  *                 stepsize, max_iter, tol)
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_w), __pyx_n_s_copy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 215, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_w), __pyx_n_s_copy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 217, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_2))) {
@@ -3240,20 +3212,20 @@ static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_2prox_tv2d(CYTHON_UNUSED P
     }
   }
   if (__pyx_t_3) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 215, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 217, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   } else {
-    __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 215, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 217, __pyx_L1_error)
   }
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 215, __pyx_L1_error)
+  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 217, __pyx_L1_error)
   __pyx_t_4 = ((PyArrayObject *)__pyx_t_1);
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
     if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_x.rcbuffer->pybuffer, (PyObject*)__pyx_t_4, &__Pyx_TypeInfo_double, PyBUF_FORMAT| PyBUF_STRIDES, 2, 0, __pyx_stack) == -1)) {
       __pyx_v_x = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_x.rcbuffer->pybuffer.buf = NULL;
-      __PYX_ERR(0, 215, __pyx_L1_error)
+      __PYX_ERR(0, 217, __pyx_L1_error)
     } else {__pyx_pybuffernd_x.diminfo[0].strides = __pyx_pybuffernd_x.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_x.diminfo[0].shape = __pyx_pybuffernd_x.rcbuffer->pybuffer.shape[0]; __pyx_pybuffernd_x.diminfo[1].strides = __pyx_pybuffernd_x.rcbuffer->pybuffer.strides[1]; __pyx_pybuffernd_x.diminfo[1].shape = __pyx_pybuffernd_x.rcbuffer->pybuffer.shape[1];
     }
   }
@@ -3261,27 +3233,27 @@ static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_2prox_tv2d(CYTHON_UNUSED P
   __pyx_v_x = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "lightning/impl/prox_fast.pyx":217
+  /* "lightning/impl/prox_fast.pyx":219
  *     cdef np.ndarray[ndim=2, dtype=double] x = w.copy()
  *     c_prox_tv2d(<double*> x.data, w.shape[0], w.shape[1],
  *                 stepsize, max_iter, tol)             # <<<<<<<<<<<<<<
  *     return x
  */
-  __pyx_t_5 = __Pyx_PyInt_As_int(__pyx_v_max_iter); if (unlikely((__pyx_t_5 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 217, __pyx_L1_error)
-  __pyx_t_6 = __pyx_PyFloat_AsDouble(__pyx_v_tol); if (unlikely((__pyx_t_6 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 217, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyInt_As_int(__pyx_v_max_iter); if (unlikely((__pyx_t_5 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 219, __pyx_L1_error)
+  __pyx_t_6 = __pyx_PyFloat_AsDouble(__pyx_v_tol); if (unlikely((__pyx_t_6 == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 219, __pyx_L1_error)
 
-  /* "lightning/impl/prox_fast.pyx":216
+  /* "lightning/impl/prox_fast.pyx":218
  * 
  *     cdef np.ndarray[ndim=2, dtype=double] x = w.copy()
  *     c_prox_tv2d(<double*> x.data, w.shape[0], w.shape[1],             # <<<<<<<<<<<<<<
  *                 stepsize, max_iter, tol)
  *     return x
  */
-  __pyx_t_1 = __pyx_f_9lightning_4impl_9prox_fast_c_prox_tv2d(((double *)__pyx_v_x->data), (__pyx_v_w->dimensions[0]), (__pyx_v_w->dimensions[1]), __pyx_v_stepsize, __pyx_t_5, __pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 216, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_9lightning_4impl_9prox_fast_c_prox_tv2d(((double *)__pyx_v_x->data), (__pyx_v_w->dimensions[0]), (__pyx_v_w->dimensions[1]), __pyx_v_stepsize, __pyx_t_5, __pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 218, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "lightning/impl/prox_fast.pyx":218
+  /* "lightning/impl/prox_fast.pyx":220
  *     c_prox_tv2d(<double*> x.data, w.shape[0], w.shape[1],
  *                 stepsize, max_iter, tol)
  *     return x             # <<<<<<<<<<<<<<
@@ -3295,7 +3267,7 @@ static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_2prox_tv2d(CYTHON_UNUSED P
  * 
  * 
  * def prox_tv2d(np.ndarray[ndim=2, dtype=double] w, double stepsize,             # <<<<<<<<<<<<<<
- *               max_iter=500, tol=1e-3, callback=None):
+ *               max_iter=500, tol=1e-3):
  *     """
  */
 
@@ -5476,7 +5448,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_RuntimeError, __pyx_k_RuntimeError, sizeof(__pyx_k_RuntimeError), 0, 0, 1, 1},
   {&__pyx_kp_s_Users_fabianpedregosa_dev_light, __pyx_k_Users_fabianpedregosa_dev_light, sizeof(__pyx_k_Users_fabianpedregosa_dev_light), 0, 0, 1, 0},
   {&__pyx_n_s_ValueError, __pyx_k_ValueError, sizeof(__pyx_k_ValueError), 0, 0, 1, 1},
-  {&__pyx_n_s_callback, __pyx_k_callback, sizeof(__pyx_k_callback), 0, 0, 1, 1},
   {&__pyx_n_s_copy, __pyx_k_copy, sizeof(__pyx_k_copy), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
   {&__pyx_n_s_lightning_impl_prox_fast, __pyx_k_lightning_impl_prox_fast, sizeof(__pyx_k_lightning_impl_prox_fast), 0, 0, 1, 1},
@@ -5581,13 +5552,13 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * 
  * def prox_tv2d(np.ndarray[ndim=2, dtype=double] w, double stepsize,             # <<<<<<<<<<<<<<
- *               max_iter=500, tol=1e-3, callback=None):
+ *               max_iter=500, tol=1e-3):
  *     """
  */
-  __pyx_tuple__7 = PyTuple_Pack(6, __pyx_n_s_w, __pyx_n_s_stepsize, __pyx_n_s_max_iter, __pyx_n_s_tol, __pyx_n_s_callback, __pyx_n_s_x); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 183, __pyx_L1_error)
+  __pyx_tuple__7 = PyTuple_Pack(5, __pyx_n_s_w, __pyx_n_s_stepsize, __pyx_n_s_max_iter, __pyx_n_s_tol, __pyx_n_s_x); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 183, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__7);
   __Pyx_GIVEREF(__pyx_tuple__7);
-  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(5, 0, 6, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_fabianpedregosa_dev_light, __pyx_n_s_prox_tv2d, 183, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 183, __pyx_L1_error)
+  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(4, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_fabianpedregosa_dev_light, __pyx_n_s_prox_tv2d, 183, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 183, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -5725,7 +5696,7 @@ PyMODINIT_FUNC PyInit_prox_fast(void)
  * 
  * 
  * def prox_tv2d(np.ndarray[ndim=2, dtype=double] w, double stepsize,             # <<<<<<<<<<<<<<
- *               max_iter=500, tol=1e-3, callback=None):
+ *               max_iter=500, tol=1e-3):
  *     """
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9lightning_4impl_9prox_fast_3prox_tv2d, NULL, __pyx_n_s_lightning_impl_prox_fast); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 183, __pyx_L1_error)

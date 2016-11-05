@@ -78,7 +78,6 @@ class _BaseFista(object):
 
         t = 1.0
         for it in xrange(self.max_iter):
-            old_obj = obj
 
             if self.verbose >= 1:
                 print("Iter=%s, \tloss=%s" % (it+1, obj))
@@ -130,12 +129,6 @@ class _BaseFista(object):
                 ret = self.callback(self)
                 if ret is not None:
                     break
-
-            # stop if change in last iteration is below tol
-            if np.abs(old_obj - obj) < self.tol:
-                if self.verbose >= 1:
-                    print('Break, reached desired tolerance')
-                break
 
         return self
 
@@ -194,14 +187,11 @@ class FistaClassifier(BaseClassifier, _BaseFista):
 
     verbose : int
         Verbosity level.
-
-    tol : float
-        tolerance in the optimization scheme
     """
 
     def __init__(self, C=1.0, alpha=1.0, loss="squared_hinge", penalty="l1",
                  multiclass=False, max_iter=100, max_steps=30, eta=2.0,
-                 sigma=1e-5, callback=None, verbose=0, prox_args=(), tol=1e-6):
+                 sigma=1e-5, callback=None, verbose=0, prox_args=()):
         self.C = C
         self.alpha = alpha
         self.loss = loss
@@ -214,7 +204,6 @@ class FistaClassifier(BaseClassifier, _BaseFista):
         self.callback = callback
         self.verbose = verbose
         self.prox_args = prox_args
-        self.tol = tol
 
     def _get_loss(self):
         if self.multiclass:
@@ -289,14 +278,11 @@ class FistaRegressor(BaseRegressor, _BaseFista):
 
     verbose : int
         Verbosity level.
-
-    tol : float
-        Tolerance in the optimization scheme.
     """
 
     def __init__(self, C=1.0, alpha=1.0, penalty="l1", max_iter=100,
                  max_steps=30, eta=2.0, sigma=1e-5, callback=None, verbose=0,
-                 prox_args=(), tol=1e-6):
+                 prox_args=()):
         self.C = C
         self.alpha = alpha
         self.penalty = penalty
@@ -307,7 +293,6 @@ class FistaRegressor(BaseRegressor, _BaseFista):
         self.callback = callback
         self.verbose = verbose
         self.prox_args = prox_args
-        self.tol = tol
 
     def _get_loss(self):
         return Squared()
