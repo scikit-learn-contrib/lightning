@@ -285,8 +285,16 @@ loss functions)</p>
 <tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">decision_function</span></code>(X)</td>
 <td></td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">fit</span></code>(X,&nbsp;y[,&nbsp;sample_weight])</td>
-<td></td>
+<tr class="row-even"><td><a class="reference internal" href="#lightning.classification.SAGAClassifier.fit" title="lightning.classification.SAGAClassifier.fit"><code class="xref py py-obj docutils literal"><span class="pre">fit</span></code></a>(X,&nbsp;y[,&nbsp;sample_weight])</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#lightning.classification.SAGAClassifier.get_params" title="lightning.classification.SAGAClassifier.get_params"><code class="xref py py-obj docutils literal"><span class="pre">get_params</span></code></a>([deep])</td>
 <td>Get parameters for this estimator.</td>
@@ -297,13 +305,10 @@ loss functions)</p>
 <tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">predict</span></code>(X)</td>
 <td></td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">predict_proba</span></code>(X)</td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#lightning.classification.SAGAClassifier.score" title="lightning.classification.SAGAClassifier.score"><code class="xref py py-obj docutils literal"><span class="pre">score</span></code></a>(X,&nbsp;y[,&nbsp;sample_weight])</td>
+<tr class="row-even"><td><a class="reference internal" href="#lightning.classification.SAGAClassifier.score" title="lightning.classification.SAGAClassifier.score"><code class="xref py py-obj docutils literal"><span class="pre">score</span></code></a>(X,&nbsp;y[,&nbsp;sample_weight])</td>
 <td>Returns the mean accuracy on the given test data and labels.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#lightning.classification.SAGAClassifier.set_params" title="lightning.classification.SAGAClassifier.set_params"><code class="xref py py-obj docutils literal"><span class="pre">set_params</span></code></a>(**params)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#lightning.classification.SAGAClassifier.set_params" title="lightning.classification.SAGAClassifier.set_params"><code class="xref py py-obj docutils literal"><span class="pre">set_params</span></code></a>(**params)</td>
 <td>Set the parameters of this estimator.</td>
 </tr>
 </tbody>
@@ -312,6 +317,25 @@ loss functions)</p>
 <dt id="lightning.classification.SAGAClassifier.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>eta='auto'</em>, <em>alpha=1.0</em>, <em>beta=0.0</em>, <em>loss='smooth_hinge'</em>, <em>penalty=None</em>, <em>gamma=1.0</em>, <em>max_iter=10</em>, <em>n_inner=1.0</em>, <em>tol=0.001</em>, <em>verbose=0</em>, <em>callback=None</em>, <em>random_state=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lightning/impl/sag.html#SAGAClassifier.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lightning.classification.SAGAClassifier.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="lightning.classification.SAGAClassifier.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>sample_weight=None</em><span class="sig-paren">)</span><a class="headerlink" href="#lightning.classification.SAGAClassifier.fit" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : numpy array, sparse matrix or RowDataset of size (n_samples, n_features)</p>
+<p><strong>y</strong> : numpy array of size (n_samples,)</p>
+<p><strong>sample_weight</strong> : numpy array of size (n_samples,), optional</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>self</strong> :</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="lightning.classification.SAGAClassifier.get_params">
@@ -378,7 +402,7 @@ each label set be correctly predicted.</p>
 <code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#lightning.classification.SAGAClassifier.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
-(such as pipelines). The former have parameters of the form
+(such as pipelines). The latter have parameters of the form
 <code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it&#8217;s possible to update each
 component of a nested object.</p>
 <table class="docutils field-list" frame="void" rules="none">

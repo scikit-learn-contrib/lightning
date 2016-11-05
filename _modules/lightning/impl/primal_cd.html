@@ -451,8 +451,8 @@
         <span class="n">n_features</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">get_n_features</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="o">!=</span> <span class="s2">&quot;l1/l2&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiclass</span><span class="p">:</span>
-          <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;True multiclass options not implemented &quot;</span>
-                                    <span class="s2">&quot;for non group-lasso(l1/l2) penalties.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;True multiclass options not implemented &quot;</span>
+                                      <span class="s2">&quot;for non group-lasso(l1/l2) penalties.&quot;</span><span class="p">)</span>
 
         <span class="c1"># Create label transformers</span>
         <span class="c1">#neg_label = 0 if self.penalty == &quot;nn&quot; else -1</span>

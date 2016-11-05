@@ -25,6 +25,6 @@ Adapted from scikit-learn's plot_sgd_weighted_samples.py
 .. literalinclude:: plot_sample_weight.py
     :lines: 11-
 
-**Total running time of the example:**  0.49 seconds
-( 0 minutes  0.49 seconds)
+**Total running time of the example:**  0.08 seconds
+( 0 minutes  0.08 seconds)
     

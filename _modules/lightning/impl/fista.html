@@ -219,7 +219,9 @@
 <span class="kn">from</span> <span class="nn">.penalty</span> <span class="kn">import</span> <span class="n">L1L2Penalty</span>
 <span class="kn">from</span> <span class="nn">.penalty</span> <span class="kn">import</span> <span class="n">TracePenalty</span>
 <span class="kn">from</span> <span class="nn">.penalty</span> <span class="kn">import</span> <span class="n">SimplexConstraint</span>
+<span class="kn">from</span> <span class="nn">.penalty</span> <span class="kn">import</span> <span class="n">L1BallConstraint</span>
 <span class="kn">from</span> <span class="nn">.penalty</span> <span class="kn">import</span> <span class="n">TotalVariation1DPenalty</span>
+<span class="kn">from</span> <span class="nn">.penalty</span> <span class="kn">import</span> <span class="n">TotalVariation2DPenalty</span>
 
 
 <span class="k">class</span> <span class="nc">_BaseFista</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -228,13 +230,15 @@
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">penalty</span><span class="p">,</span> <span class="s1">&#39;projection&#39;</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span>
         <span class="n">penalties</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;l1&quot;</span><span class="p">:</span> <span class="n">L1Penalty</span><span class="p">(),</span>
-            <span class="s2">&quot;l1/l2&quot;</span><span class="p">:</span> <span class="n">L1L2Penalty</span><span class="p">(),</span>
-            <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="n">TracePenalty</span><span class="p">(),</span>
-            <span class="s2">&quot;simplex&quot;</span><span class="p">:</span> <span class="n">SimplexConstraint</span><span class="p">(),</span>
-            <span class="s2">&quot;tv1d&quot;</span><span class="p">:</span> <span class="n">TotalVariation1DPenalty</span><span class="p">()</span>
+            <span class="s2">&quot;l1&quot;</span><span class="p">:</span> <span class="n">L1Penalty</span><span class="p">,</span>
+            <span class="s2">&quot;l1/l2&quot;</span><span class="p">:</span> <span class="n">L1L2Penalty</span><span class="p">,</span>
+            <span class="s2">&quot;trace&quot;</span><span class="p">:</span> <span class="n">TracePenalty</span><span class="p">,</span>
+            <span class="s2">&quot;simplex&quot;</span><span class="p">:</span> <span class="n">SimplexConstraint</span><span class="p">,</span>
+            <span class="s2">&quot;l1-ball&quot;</span><span class="p">:</span> <span class="n">L1BallConstraint</span><span class="p">,</span>
+            <span class="s2">&quot;tv1d&quot;</span><span class="p">:</span> <span class="n">TotalVariation1DPenalty</span><span class="p">,</span>
+            <span class="s2">&quot;tv2d&quot;</span><span class="p">:</span> <span class="n">TotalVariation2DPenalty</span>
         <span class="p">}</span>
-        <span class="k">return</span> <span class="n">penalties</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">penalty</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">penalties</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">penalty</span><span class="p">](</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">prox_args</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">loss</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">*</span> <span class="n">loss</span><span class="o">.</span><span class="n">objective</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -386,7 +390,7 @@
 
 <div class="viewcode-block" id="FistaClassifier.__init__"><a class="viewcode-back" href="../../../generated/lightning.classification.FistaClassifier.html#lightning.classification.FistaClassifier.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;squared_hinge&quot;</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span>
                  <span class="n">multiclass</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">max_steps</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
-                 <span class="n">sigma</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+                 <span class="n">sigma</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">prox_args</span><span class="o">=</span><span class="p">()):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">C</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span>
@@ -397,7 +401,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="n">eta</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">callback</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prox_args</span> <span class="o">=</span> <span class="n">prox_args</span></div>
 
     <span class="k">def</span> <span class="nf">_get_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiclass</span><span class="p">:</span>
@@ -475,7 +480,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="FistaRegressor.__init__"><a class="viewcode-back" href="../../../generated/lightning.regression.FistaRegressor.html#lightning.classification.FistaRegressor.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-                 <span class="n">max_steps</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+                 <span class="n">max_steps</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">prox_args</span><span class="o">=</span><span class="p">()):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">C</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="o">=</span> <span class="n">penalty</span>
@@ -484,7 +490,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="n">eta</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">callback</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prox_args</span> <span class="o">=</span> <span class="n">prox_args</span></div>
 
     <span class="k">def</span> <span class="nf">_get_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">Squared</span><span class="p">()</span>

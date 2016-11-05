@@ -45,6 +45,6 @@ smaller C, the fewer the support vectors)
 .. literalinclude:: plot_sparse_non_linear.py
     :lines: 21-
 
-**Total running time of the example:**  0.13 seconds
-( 0 minutes  0.13 seconds)
+**Total running time of the example:**  0.12 seconds
+( 0 minutes  0.12 seconds)
     

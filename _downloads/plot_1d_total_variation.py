@@ -5,7 +5,7 @@ Signal recovery by 1D total variation
 
 In this example, we generate a signal that is piecewise constant. We then
 observe some random and corrupted measurements from that signal and
-then try to recover that signal using L1 and TV1D penalties.
+then try to recover that signal using L1 and 1D total variation (TV1D) penalties.
 
 Given a ground truth vectors, the signal that we observe is given by
 

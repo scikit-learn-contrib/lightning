@@ -203,7 +203,7 @@
 <h1>lightning.regression.FistaRegressor<a class="headerlink" href="#lightning-regression-fistaregressor" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="lightning.regression.FistaRegressor">
-<em class="property">class </em><code class="descclassname">lightning.regression.</code><code class="descname">FistaRegressor</code><span class="sig-paren">(</span><em>C=1.0</em>, <em>alpha=1.0</em>, <em>penalty='l1'</em>, <em>max_iter=100</em>, <em>max_steps=30</em>, <em>eta=2.0</em>, <em>sigma=1e-05</em>, <em>callback=None</em>, <em>verbose=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lightning/impl/fista.html#FistaRegressor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lightning.regression.FistaRegressor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">lightning.regression.</code><code class="descname">FistaRegressor</code><span class="sig-paren">(</span><em>C=1.0</em>, <em>alpha=1.0</em>, <em>penalty='l1'</em>, <em>max_iter=100</em>, <em>max_steps=30</em>, <em>eta=2.0</em>, <em>sigma=1e-05</em>, <em>callback=None</em>, <em>verbose=0</em>, <em>prox_args=()</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lightning/impl/fista.html#FistaRegressor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lightning.regression.FistaRegressor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimator for learning linear classifiers by FISTA.</p>
 <p>The objective functions considered take the form</p>
 <p>minimize F(W) = C * L(W) + alpha * R(W),</p>
@@ -292,7 +292,7 @@ of the line-search routine.</p>
 </table>
 <dl class="method">
 <dt id="lightning.regression.FistaRegressor.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>C=1.0</em>, <em>alpha=1.0</em>, <em>penalty='l1'</em>, <em>max_iter=100</em>, <em>max_steps=30</em>, <em>eta=2.0</em>, <em>sigma=1e-05</em>, <em>callback=None</em>, <em>verbose=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lightning/impl/fista.html#FistaRegressor.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lightning.regression.FistaRegressor.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>C=1.0</em>, <em>alpha=1.0</em>, <em>penalty='l1'</em>, <em>max_iter=100</em>, <em>max_steps=30</em>, <em>eta=2.0</em>, <em>sigma=1e-05</em>, <em>callback=None</em>, <em>verbose=0</em>, <em>prox_args=()</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lightning/impl/fista.html#FistaRegressor.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lightning.regression.FistaRegressor.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -364,7 +364,7 @@ would get a R^2 score of 0.0.</p>
 <code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#lightning.regression.FistaRegressor.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
-(such as pipelines). The former have parameters of the form
+(such as pipelines). The latter have parameters of the form
 <code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it&#8217;s possible to update each
 component of a nested object.</p>
 <table class="docutils field-list" frame="void" rules="none">
