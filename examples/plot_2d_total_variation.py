@@ -28,7 +28,7 @@ ax[0].set_xticks(())
 ax[0].set_yticks(())
 
 for i, alpha in enumerate(np.logspace(-1, -0.5, 4)):
-    print('Computing inverse problem for alpha=%s' % alpha)
+    print('Computing denoising for alpha=%s' % alpha)
     denoised = TotalVariation2DPenalty(*face.shape).projection([data.ravel()], alpha, 1.0)
     ax[i+1].set_title(r'$\alpha$=%.2f' % alpha)
     ax[i+1].imshow(denoised.reshape(face.shape), interpolation='nearest', cmap=plt.cm.gray)
