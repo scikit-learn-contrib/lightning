@@ -14,7 +14,7 @@ import numpy as np
 cimport numpy as np
 from libc.math cimport fabs
 
-cpdef prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):
+def prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):
     """
     Computes the proximal operator of the 1-dimensional total variation operator.
 
