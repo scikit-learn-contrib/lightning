@@ -141,7 +141,7 @@ class TotalVariation2DPenalty(object):
 
     References
     ----------
-    Barbero, Álvaro, and Suvrit Sra. "Modular proximal optimization for
+    Barbero, Alvaro, and Suvrit Sra. "Modular proximal optimization for
     multidimensional total-variation regularization." arXiv preprint
     arXiv:1411.0589 (2014).
     """
