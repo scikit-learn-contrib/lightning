@@ -6,6 +6,9 @@
 .. image:: https://ci.appveyor.com/api/projects/status/mmm0llccmvn5iooq?svg=true
     :target: https://ci.appveyor.com/project/fabianp/lightning-bpc6r/branch/master
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.200504.svg
+   :target: https://doi.org/10.5281/zenodo.200504
+
 lightning
 ==========
 
@@ -95,6 +98,11 @@ On Github
 
 https://github.com/scikit-learn-contrib/lightning
 
+
+Citing
+------
+
+If you use this software, please cite it. Many citing options are available in `its Zenodo entry <https://doi.org/10.5281/zenodo.200504>`_ .
 
 Authors
 -------
