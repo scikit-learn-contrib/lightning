@@ -107,7 +107,7 @@ If you use this software, please cite it. Here is a BibTex snippet that you can 
 
 .. code-block::
 
-  @misc{blondel_mathieu_2016_200504,
+  @misc{lightning_2016,
     author       = {Blondel Mathieu and
                     Pedregosa Fabian},
     title        = {{Lightning: large-scale linear classification, 
