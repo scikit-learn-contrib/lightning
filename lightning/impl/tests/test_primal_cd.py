@@ -15,6 +15,8 @@ from sklearn.externals.six.moves import xrange
 
 from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.primal_cd import CDClassifier, CDRegressor
+from lightning.impl.tests.utils import check_predict_proba
+
 
 bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
                                             n_informative=5,
@@ -31,6 +33,7 @@ digit = load_digits(2)
 def test_fit_linear_binary_l1r():
     clf = CDClassifier(C=1.0, random_state=0, penalty="l1")
     clf.fit(bin_dense, bin_target)
+    assert not hasattr(clf, 'predict_proba')
     acc = clf.score(bin_dense, bin_target)
     assert_almost_equal(acc, 1.0)
     n_nz = clf.n_nonzero()
@@ -51,6 +54,7 @@ def test_fit_linear_binary_l1r():
 def test_fit_linear_binary_l1r_smooth_hinge():
     clf = CDClassifier(C=1.0, loss="smooth_hinge", random_state=0, penalty="l1")
     clf.fit(bin_dense, bin_target)
+    assert not hasattr(clf, 'predict_proba')
     acc = clf.score(bin_dense, bin_target)
     assert_almost_equal(acc, 1.0)
 
@@ -102,6 +106,7 @@ def test_warm_start_l1r_regression():
 def test_fit_linear_binary_l1r_log_loss():
     clf = CDClassifier(C=1.0, random_state=0, penalty="l1", loss="log")
     clf.fit(bin_dense, bin_target)
+    check_predict_proba(clf, bin_dense)
     acc = clf.score(bin_dense, bin_target)
     assert_almost_equal(acc, 0.995)
 
@@ -133,6 +138,7 @@ def test_fit_linear_binary_l2r_modified_huber():
     clf = CDClassifier(C=1.0, random_state=0, penalty="l2",
                        loss="modified_huber")
     clf.fit(bin_dense, bin_target)
+    check_predict_proba(clf, bin_dense)
     acc = clf.score(bin_dense, bin_target)
     assert_almost_equal(acc, 1.0)
 

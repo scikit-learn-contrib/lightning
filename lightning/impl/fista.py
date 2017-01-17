@@ -116,7 +116,7 @@ class _BaseFista(object):
                 coefx = coef - G / L
                 coefx = penalty.projection(coefx, self.alpha, L)
 
-            t = (1 + np.sqrt(1 + 4 * t_old * t_old) / 2)
+            t = (1 + np.sqrt(1 + 4 * t_old * t_old)) / 2
             coef = coefx + (t_old - 1) / t * (coefx - coefx_old)
             df = safe_sparse_dot(X, coef.T)
 

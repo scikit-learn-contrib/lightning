@@ -6,7 +6,6 @@ from sklearn.datasets.samples_generator import make_regression
 from sklearn.externals.six.moves import xrange
 
 from sklearn.utils.testing import assert_equal
-from sklearn.utils.testing import assert_almost_equal
 from sklearn.utils.testing import assert_greater
 from sklearn.utils.testing import assert_array_almost_equal
 

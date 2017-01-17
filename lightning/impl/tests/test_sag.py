@@ -19,6 +19,7 @@ from lightning.impl.sgd_fast import SquaredHinge
 from lightning.impl.sgd_fast import Log
 from lightning.impl.sgd_fast import SquaredLoss
 from lightning.impl.sag import get_auto_step_size
+from lightning.impl.tests.utils import check_predict_proba
 
 
 iris = load_iris()
@@ -211,6 +212,7 @@ def test_sag():
         PySAGClassifier(eta=1e-3, max_iter=20, random_state=0)
             ):
         clf.fit(X_bin, y_bin)
+        assert not hasattr(clf, 'predict_proba')
         assert_equal(clf.score(X_bin, y_bin), 1.0)
         assert_equal(list(clf.classes_), [-1, 1])
 
@@ -244,8 +246,7 @@ def test_sag_proba():
     sag = SAGClassifier(eta=1e-3, alpha=0.0, beta=0.0, max_iter=10,
                         loss='log', random_state=0)
     sag.fit(X, y)
-    probas = sag.predict_proba(X)
-    assert_equal(probas.sum(), n_samples)
+    check_predict_proba(sag, X)
 
 
 def test_sag_multiclass_classes():
