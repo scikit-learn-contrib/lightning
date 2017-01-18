@@ -53,6 +53,9 @@ class NNConstraint(object):
 # See https://gist.github.com/mblondel/6f3b7aaad90606b98f71
 # for more algorithms.
 def project_simplex(v, z=1):
+    if np.sum(v) <= z:
+        return v
+
     n_features = v.shape[0]
     u = np.sort(v)[::-1]
     cssv = np.cumsum(u) - z
