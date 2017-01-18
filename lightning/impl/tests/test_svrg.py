@@ -19,6 +19,7 @@ y_bin = y[y <= 1] * 2 - 1
 def test_svrg():
     clf = SVRGClassifier(eta=1e-3, max_iter=20, random_state=0, verbose=0)
     clf.fit(X_bin, y_bin)
+    assert not hasattr(clf, 'predict_proba')
     assert_equal(clf.score(X_bin, y_bin), 1.0)
 
 

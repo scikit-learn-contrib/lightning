@@ -6,6 +6,9 @@
 .. image:: https://ci.appveyor.com/api/projects/status/mmm0llccmvn5iooq?svg=true
     :target: https://ci.appveyor.com/project/fabianp/lightning-bpc6r/branch/master
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.200504.svg
+   :target: https://doi.org/10.5281/zenodo.200504
+
 lightning
 ==========
 
@@ -95,6 +98,27 @@ On Github
 
 https://github.com/scikit-learn-contrib/lightning
 
+
+Citing
+------
+
+If you use this software, please cite it. Here is a BibTex snippet that you can use:
+
+
+.. code-block::
+
+  @misc{lightning_2016,
+    author       = {Blondel Mathieu and
+                    Pedregosa Fabian},
+    title        = {{Lightning: large-scale linear classification, 
+                   regression and ranking in Python}},
+    year         = 2016,
+    doi          = {10.5281/zenodo.200504},
+    url          = {https://doi.org/10.5281/zenodo.200504}
+  }
+
+
+Other citing formats are available in `its Zenodo entry <https://doi.org/10.5281/zenodo.200504>`_ .
 
 Authors
 -------
