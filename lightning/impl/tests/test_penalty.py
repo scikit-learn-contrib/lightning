@@ -1,5 +1,8 @@
 import numpy as np
-from sklearn.utils.testing import assert_almost_equal, assert_array_almost_equal
+
+from sklearn.utils.testing import (assert_almost_equal,
+                                   assert_array_almost_equal)
+from sklearn.externals.six.moves import xrange
 
 from lightning.impl.penalty import project_l1_ball, project_simplex
 
