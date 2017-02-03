@@ -56,8 +56,6 @@ cdef class ModifiedHuber(LossFunction):
 
 cdef class Hinge(LossFunction):
 
-    cdef double threshold
-
     def __init__(self, double threshold=1.0):
         self.threshold = threshold
 
@@ -75,8 +73,6 @@ cdef class Hinge(LossFunction):
 
 
 cdef class SmoothHinge(LossFunction):
-
-    cdef double gamma
 
     def __init__(self, double gamma=1.0):
         self.gamma = gamma  # the larger, the smoother
@@ -105,8 +101,6 @@ cdef class SmoothHinge(LossFunction):
 
 
 cdef class SquaredHinge(LossFunction):
-
-    cdef double threshold
 
     def __init__(self, double threshold=1.0):
         self.threshold = threshold
@@ -156,8 +150,6 @@ cdef class SquaredLoss(LossFunction):
 
 cdef class Huber(LossFunction):
 
-    cdef double c
-
     def __init__(self, double c):
         self.c = c
 
@@ -181,8 +173,6 @@ cdef class Huber(LossFunction):
 
 
 cdef class EpsilonInsensitive(LossFunction):
-
-    cdef double epsilon
 
     def __init__(self, double epsilon):
         self.epsilon = epsilon
