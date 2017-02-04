@@ -108,9 +108,9 @@ If you use this software, please cite it. Here is a BibTex snippet that you can 
 .. code-block::
 
   @misc{lightning_2016,
-    author       = {Blondel Mathieu and
-                    Pedregosa Fabian},
-    title        = {{Lightning: large-scale linear classification, 
+    author       = {Blondel, Mathieu and
+                    Pedregosa, Fabian},
+    title        = {{Lightning: large-scale linear classification,
                    regression and ranking in Python}},
     year         = 2016,
     doi          = {10.5281/zenodo.200504},
