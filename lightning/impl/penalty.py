@@ -1,9 +1,24 @@
+"""
+In this file there are defined several proximal operators for common penalty
+functions. These objects implement the following methods:
+
+      * projection(self, coef, alpha, L)
+          returns the value of the proximal operator for the penalty,
+          where coef is a ndarray that contains the coefficients of the
+          model, alpha is the amount of regularization and 1/L is the
+          step size
+
+      * regularization(self, coef)
+          returns the value of the penalty at coef, where coef is a
+          ndarray.
+"""
 # Author: Mathieu Blondel
+#         Fabian Pedregosa
 # License: BSD
 
 import numpy as np
 from scipy.linalg import svd
-from lightning.impl.prox_fast import prox_tv1d
+from lightning.impl.prox_fast import prox_tv1d, prox_tv2d
 
 
 class L1Penalty(object):
@@ -90,11 +105,68 @@ class L1BallConstraint(object):
 
 
 class TotalVariation1DPenalty(object):
+    """
+    Proximal operator for the 1-D total variation penalty (also known
+    as fussed lasso)
+    """
     def projection(self, coef, alpha, L):
-        tmp = coef.copy()
+        tmp = np.empty_like(coef)
         for i in range(tmp.shape[0]):
-            prox_tv1d(tmp[i, :], alpha / L)  # operates inplace
+            tmp[i] = prox_tv1d(coef[i], alpha / L)
         return tmp
 
     def regularization(self, coef):
         return np.sum(np.abs(np.diff(coef)))
+
+
+class TotalVariation2DPenalty(object):
+    """
+    Proximal operator for the 2-D total variation penalty. This
+    proximal operator is computed approximately using the
+    Douglas-Rachford algorithm.
+
+    Parameters
+    ----------
+    n_rows: int
+        number of rows in the image
+
+    n_cols: int
+        number of columns in the image
+
+    max_iter: int
+        maximum number of iterations to compute this proximal
+        operator.
+
+    Misc
+    -----
+    Note that n_rows * n_cols needs to be equal to the size
+    of the vector of coefficients.
+
+    References
+    ----------
+    Barbero, Alvaro, and Suvrit Sra. "Modular proximal optimization for
+    multidimensional total-variation regularization." arXiv preprint
+    arXiv:1411.0589 (2014).
+    """
+    def __init__(self, n_rows, n_cols, max_iter=1000, tol=1e-12):
+        self.n_rows = n_rows
+        self.n_cols = n_cols
+        self.max_iter = max_iter
+        self.tol = tol
+
+    def projection(self, coef, alpha, L):
+        tmp = np.empty_like(coef)
+        for i in range(tmp.shape[0]):
+            tmp[i] = prox_tv2d(
+                coef[i].reshape((self.n_rows, self.n_cols)),
+                alpha / L, self.max_iter, self.tol).ravel()
+        return tmp
+
+    def regularization(self, coef):
+        out = 0.0
+        for i in range(coef.shape[0]):
+            img = coef[i].reshape((self.n_rows, self.n_cols))
+            tmp1 = np.abs(np.diff(img, axis=0))
+            tmp2 = np.abs(np.diff(img, axis=1))
+            out += tmp1.sum() + tmp2.sum()
+        return out
