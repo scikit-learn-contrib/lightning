@@ -91,9 +91,9 @@ class L1BallConstraint(object):
 
 class TotalVariation1DPenalty(object):
     def projection(self, coef, alpha, L):
-        tmp = coef.copy()
+        tmp = np.zeros_like(coef)
         for i in range(tmp.shape[0]):
-            prox_tv1d(tmp[i, :], alpha / L)  # operates inplace
+            tmp[i, :] = prox_tv1d(coef[i, :], alpha / L)  # operates inplace
         return tmp
 
     def regularization(self, coef):

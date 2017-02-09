@@ -829,6 +829,18 @@ typedef npy_cdouble __pyx_t_5numpy_complex_t;
 #define __Pyx_CLEAR(r)    do { PyObject* tmp = ((PyObject*)(r)); r = NULL; __Pyx_DECREF(tmp);} while(0)
 #define __Pyx_XCLEAR(r)   do { if((r) != NULL) {PyObject* tmp = ((PyObject*)(r)); r = NULL; __Pyx_DECREF(tmp);}} while(0)
 
+static void __Pyx_RaiseArgtupleInvalid(const char* func_name, int exact,
+    Py_ssize_t num_min, Py_ssize_t num_max, Py_ssize_t num_found);
+
+static void __Pyx_RaiseDoubleKeywordsError(const char* func_name, PyObject* kw_name);
+
+static int __Pyx_ParseOptionalKeywords(PyObject *kwds, PyObject **argnames[],\
+    PyObject *kwds2, PyObject *values[], Py_ssize_t num_pos_args,\
+    const char* function_name);
+
+static CYTHON_INLINE int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, int none_allowed,
+    const char *name, int exact);
+
 static CYTHON_INLINE int  __Pyx_GetBufferAndValidate(Py_buffer* buf, PyObject* obj,
     __Pyx_TypeInfo* dtype, int flags, int nd, int cast, __Pyx_BufFmt_StackElem* stack);
 static CYTHON_INLINE void __Pyx_SafeReleaseBuffer(Py_buffer* info);
@@ -848,29 +860,30 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStr(PyObject* obj, PyObject
 #define __Pyx_PyObject_GetAttrStr(o,n) PyObject_GetAttr(o,n)
 #endif
 
-#define __Pyx_BufPtrStrided1d(type, buf, i0, s0) (type)((char*)buf + i0 * s0)
-static CYTHON_INLINE void __Pyx_ErrRestore(PyObject *type, PyObject *value, PyObject *tb);
-static CYTHON_INLINE void __Pyx_ErrFetch(PyObject **type, PyObject **value, PyObject **tb);
-
-static void __Pyx_RaiseArgtupleInvalid(const char* func_name, int exact,
-    Py_ssize_t num_min, Py_ssize_t num_max, Py_ssize_t num_found);
-
-static void __Pyx_RaiseDoubleKeywordsError(const char* func_name, PyObject* kw_name);
-
-static int __Pyx_ParseOptionalKeywords(PyObject *kwds, PyObject **argnames[],\
-    PyObject *kwds2, PyObject *values[], Py_ssize_t num_pos_args,\
-    const char* function_name);
-
-static CYTHON_INLINE int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, int none_allowed,
-    const char *name, int exact);
-
-static PyObject *__Pyx_GetBuiltinName(PyObject *name);
-
 #if CYTHON_COMPILING_IN_CPYTHON
 static CYTHON_INLINE PyObject* __Pyx_PyObject_Call(PyObject *func, PyObject *arg, PyObject *kw);
 #else
 #define __Pyx_PyObject_Call(func, arg, kw) PyObject_Call(func, arg, kw)
 #endif
+
+#if CYTHON_COMPILING_IN_CPYTHON
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallMethO(PyObject *func, PyObject *arg);
+#endif
+
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallOneArg(PyObject *func, PyObject *arg);
+
+#if CYTHON_COMPILING_IN_CPYTHON
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallNoArg(PyObject *func);
+#else
+#define __Pyx_PyObject_CallNoArg(func) __Pyx_PyObject_Call(func, __pyx_empty_tuple, NULL)
+#endif
+
+static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type);
+
+static CYTHON_INLINE void __Pyx_ErrRestore(PyObject *type, PyObject *value, PyObject *tb);
+static CYTHON_INLINE void __Pyx_ErrFetch(PyObject **type, PyObject **value, PyObject **tb);
+
+static PyObject *__Pyx_GetBuiltinName(PyObject *name);
 
 static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause);
 
@@ -900,7 +913,7 @@ static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index);
 
 static CYTHON_INLINE void __Pyx_RaiseNoneNotIterableError(void);
 
-static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type);
+static PyObject *__Pyx_Import(PyObject *name, PyObject *from_list, int level);
 
 typedef struct {
     int code_line;
@@ -944,7 +957,7 @@ typedef struct {
 static Py_ssize_t __Pyx_zeros[] = {0, 0, 0, 0, 0, 0, 0, 0};
 static Py_ssize_t __Pyx_minusones[] = {-1, -1, -1, -1, -1, -1, -1, -1};
 
-static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *);
+static CYTHON_INLINE size_t __Pyx_PyInt_As_size_t(PyObject *);
 
 #if CYTHON_CCOMPLEX
   #ifdef __cplusplus
@@ -1052,6 +1065,8 @@ static CYTHON_INLINE PyObject* __Pyx_PyInt_From_enum__NPY_TYPES(enum NPY_TYPES v
 
 static CYTHON_INLINE PyObject* __Pyx_PyInt_From_long(long value);
 
+static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *);
+
 static int __Pyx_check_binary_version(void);
 
 static int __Pyx_ExportFunction(const char *name, void (*f)(void), const char *sig);
@@ -1101,7 +1116,7 @@ static PyTypeObject *__pyx_ptype_5numpy_ufunc = 0;
 static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, char *, char *, int *); /*proto*/
 
 /* Module declarations from 'lightning.impl.prox_fast' */
-static PyObject *__pyx_f_9lightning_4impl_9prox_fast_prox_tv1d(PyArrayObject *, double, int __pyx_skip_dispatch); /*proto*/
+static PyObject *__pyx_f_9lightning_4impl_9prox_fast_c_prox_tv1d(double *, size_t, double); /*proto*/
 static __Pyx_TypeInfo __Pyx_TypeInfo_double = { "double", NULL, sizeof(double), { 0 }, 0, 'R', 0, 0 };
 #define __Pyx_MODULE_NAME "lightning.impl.prox_fast"
 int __pyx_module_is_main_lightning__impl__prox_fast = 0;
@@ -1128,15 +1143,23 @@ static char __pyx_k_w[] = "w";
 static char __pyx_k_Zd[] = "Zd";
 static char __pyx_k_Zf[] = "Zf";
 static char __pyx_k_Zg[] = "Zg";
+static char __pyx_k_np[] = "np";
+static char __pyx_k_tmp[] = "tmp";
+static char __pyx_k_copy[] = "copy";
 static char __pyx_k_main[] = "__main__";
 static char __pyx_k_size[] = "size";
 static char __pyx_k_test[] = "__test__";
+static char __pyx_k_numpy[] = "numpy";
 static char __pyx_k_range[] = "range";
+static char __pyx_k_import[] = "__import__";
 static char __pyx_k_stepsize[] = "stepsize";
+static char __pyx_k_prox_tv1d[] = "prox_tv1d";
 static char __pyx_k_ValueError[] = "ValueError";
 static char __pyx_k_RuntimeError[] = "RuntimeError";
+static char __pyx_k_lightning_impl_prox_fast[] = "lightning.impl.prox_fast";
 static char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
 static char __pyx_k_These_are_some_helper_functions[] = "\nThese are some helper functions to compute the proximal operator of some common penalties\n";
+static char __pyx_k_Users_fabianpedregosa_dev_light[] = "/Users/fabianpedregosa/dev/lightning/lightning/impl/prox_fast.pyx";
 static char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static char __pyx_k_Format_string_allocated_too_shor[] = "Format string allocated too short, see comment in numpy.pxd";
 static char __pyx_k_Non_native_byte_order_not_suppor[] = "Non-native byte order not supported";
@@ -1146,14 +1169,22 @@ static PyObject *__pyx_kp_u_Format_string_allocated_too_shor;
 static PyObject *__pyx_kp_u_Format_string_allocated_too_shor_2;
 static PyObject *__pyx_kp_u_Non_native_byte_order_not_suppor;
 static PyObject *__pyx_n_s_RuntimeError;
+static PyObject *__pyx_kp_s_Users_fabianpedregosa_dev_light;
 static PyObject *__pyx_n_s_ValueError;
+static PyObject *__pyx_n_s_copy;
+static PyObject *__pyx_n_s_import;
+static PyObject *__pyx_n_s_lightning_impl_prox_fast;
 static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_kp_u_ndarray_is_not_C_contiguous;
 static PyObject *__pyx_kp_u_ndarray_is_not_Fortran_contiguou;
+static PyObject *__pyx_n_s_np;
+static PyObject *__pyx_n_s_numpy;
+static PyObject *__pyx_n_s_prox_tv1d;
 static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_size;
 static PyObject *__pyx_n_s_stepsize;
 static PyObject *__pyx_n_s_test;
+static PyObject *__pyx_n_s_tmp;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_w;
 static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_prox_tv1d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_w, double __pyx_v_stepsize); /* proto */
@@ -1165,980 +1196,21 @@ static PyObject *__pyx_tuple__3;
 static PyObject *__pyx_tuple__4;
 static PyObject *__pyx_tuple__5;
 static PyObject *__pyx_tuple__6;
+static PyObject *__pyx_tuple__7;
+static PyObject *__pyx_codeobj__8;
 
 /* "lightning/impl/prox_fast.pyx":15
  * cimport numpy as np
  * 
- * cpdef prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):             # <<<<<<<<<<<<<<
+ * def prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):             # <<<<<<<<<<<<<<
  *     """
  *     Computes the proximal operator of the 1-dimensional total variation operator.
  */
-
-static PyObject *__pyx_pw_9lightning_4impl_9prox_fast_1prox_tv1d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_f_9lightning_4impl_9prox_fast_prox_tv1d(PyArrayObject *__pyx_v_w, double __pyx_v_stepsize, CYTHON_UNUSED int __pyx_skip_dispatch) {
-  long __pyx_v_width;
-  long __pyx_v_k;
-  long __pyx_v_k0;
-  long __pyx_v_kplus;
-  long __pyx_v_kminus;
-  double __pyx_v_umin;
-  double __pyx_v_umax;
-  double __pyx_v_vmin;
-  double __pyx_v_vmax;
-  double __pyx_v_twolambda;
-  double __pyx_v_minlambda;
-  __Pyx_LocalBuf_ND __pyx_pybuffernd_w;
-  __Pyx_Buffer __pyx_pybuffer_w;
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  long __pyx_t_2;
-  int __pyx_t_3;
-  int __pyx_t_4;
-  long __pyx_t_5;
-  Py_ssize_t __pyx_t_6;
-  Py_ssize_t __pyx_t_7;
-  Py_ssize_t __pyx_t_8;
-  Py_ssize_t __pyx_t_9;
-  Py_ssize_t __pyx_t_10;
-  Py_ssize_t __pyx_t_11;
-  Py_ssize_t __pyx_t_12;
-  Py_ssize_t __pyx_t_13;
-  Py_ssize_t __pyx_t_14;
-  Py_ssize_t __pyx_t_15;
-  Py_ssize_t __pyx_t_16;
-  Py_ssize_t __pyx_t_17;
-  Py_ssize_t __pyx_t_18;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("prox_tv1d", 0);
-  __pyx_pybuffer_w.pybuffer.buf = NULL;
-  __pyx_pybuffer_w.refcount = 0;
-  __pyx_pybuffernd_w.data = NULL;
-  __pyx_pybuffernd_w.rcbuffer = &__pyx_pybuffer_w;
-  {
-    __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_w.rcbuffer->pybuffer, (PyObject*)__pyx_v_w, &__Pyx_TypeInfo_double, PyBUF_FORMAT| PyBUF_STRIDES| PyBUF_WRITABLE, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  __pyx_pybuffernd_w.diminfo[0].strides = __pyx_pybuffernd_w.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_w.diminfo[0].shape = __pyx_pybuffernd_w.rcbuffer->pybuffer.shape[0];
-
-  /* "lightning/impl/prox_fast.pyx":39
- *     cdef long width, k, k0, kplus, kminus
- *     cdef double umin, umax, vmin, vmax, twolambda, minlambda
- *     width = w.size             # <<<<<<<<<<<<<<
- * 
- *     # /to avoid invalid memory access to input[0] and invalid lambda values
- */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_w), __pyx_n_s_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyInt_As_long(__pyx_t_1); if (unlikely((__pyx_t_2 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_v_width = __pyx_t_2;
-
-  /* "lightning/impl/prox_fast.pyx":42
- * 
- *     # /to avoid invalid memory access to input[0] and invalid lambda values
- *     if width > 0 and stepsize >= 0:             # <<<<<<<<<<<<<<
- *         k, k0 = 0, 0			# k: current sample location, k0: beginning of current segment
- *         umin = stepsize  # u is the dual variable
- */
-  __pyx_t_4 = ((__pyx_v_width > 0) != 0);
-  if (__pyx_t_4) {
-  } else {
-    __pyx_t_3 = __pyx_t_4;
-    goto __pyx_L4_bool_binop_done;
-  }
-  __pyx_t_4 = ((__pyx_v_stepsize >= 0.0) != 0);
-  __pyx_t_3 = __pyx_t_4;
-  __pyx_L4_bool_binop_done:;
-  if (__pyx_t_3) {
-
-    /* "lightning/impl/prox_fast.pyx":43
- *     # /to avoid invalid memory access to input[0] and invalid lambda values
- *     if width > 0 and stepsize >= 0:
- *         k, k0 = 0, 0			# k: current sample location, k0: beginning of current segment             # <<<<<<<<<<<<<<
- *         umin = stepsize  # u is the dual variable
- *         umax = - stepsize
- */
-    __pyx_t_2 = 0;
-    __pyx_t_5 = 0;
-    __pyx_v_k = __pyx_t_2;
-    __pyx_v_k0 = __pyx_t_5;
-
-    /* "lightning/impl/prox_fast.pyx":44
- *     if width > 0 and stepsize >= 0:
- *         k, k0 = 0, 0			# k: current sample location, k0: beginning of current segment
- *         umin = stepsize  # u is the dual variable             # <<<<<<<<<<<<<<
- *         umax = - stepsize
- *         vmin = w[0] - stepsize
- */
-    __pyx_v_umin = __pyx_v_stepsize;
-
-    /* "lightning/impl/prox_fast.pyx":45
- *         k, k0 = 0, 0			# k: current sample location, k0: beginning of current segment
- *         umin = stepsize  # u is the dual variable
- *         umax = - stepsize             # <<<<<<<<<<<<<<
- *         vmin = w[0] - stepsize
- *         vmax = w[0] + stepsize	  # bounds for the segment's value
- */
-    __pyx_v_umax = (-__pyx_v_stepsize);
-
-    /* "lightning/impl/prox_fast.pyx":46
- *         umin = stepsize  # u is the dual variable
- *         umax = - stepsize
- *         vmin = w[0] - stepsize             # <<<<<<<<<<<<<<
- *         vmax = w[0] + stepsize	  # bounds for the segment's value
- *         kplus = 0
- */
-    __pyx_t_6 = 0;
-    __pyx_v_vmin = ((*__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_6, __pyx_pybuffernd_w.diminfo[0].strides)) - __pyx_v_stepsize);
-
-    /* "lightning/impl/prox_fast.pyx":47
- *         umax = - stepsize
- *         vmin = w[0] - stepsize
- *         vmax = w[0] + stepsize	  # bounds for the segment's value             # <<<<<<<<<<<<<<
- *         kplus = 0
- *         kminus = 0 	# last positions where umax=-lambda, umin=lambda, respectively
- */
-    __pyx_t_7 = 0;
-    __pyx_v_vmax = ((*__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_7, __pyx_pybuffernd_w.diminfo[0].strides)) + __pyx_v_stepsize);
-
-    /* "lightning/impl/prox_fast.pyx":48
- *         vmin = w[0] - stepsize
- *         vmax = w[0] + stepsize	  # bounds for the segment's value
- *         kplus = 0             # <<<<<<<<<<<<<<
- *         kminus = 0 	# last positions where umax=-lambda, umin=lambda, respectively
- *         twolambda = 2.0 * stepsize  # auxiliary variable
- */
-    __pyx_v_kplus = 0;
-
-    /* "lightning/impl/prox_fast.pyx":49
- *         vmax = w[0] + stepsize	  # bounds for the segment's value
- *         kplus = 0
- *         kminus = 0 	# last positions where umax=-lambda, umin=lambda, respectively             # <<<<<<<<<<<<<<
- *         twolambda = 2.0 * stepsize  # auxiliary variable
- *         minlambda = -stepsize		# auxiliary variable
- */
-    __pyx_v_kminus = 0;
-
-    /* "lightning/impl/prox_fast.pyx":50
- *         kplus = 0
- *         kminus = 0 	# last positions where umax=-lambda, umin=lambda, respectively
- *         twolambda = 2.0 * stepsize  # auxiliary variable             # <<<<<<<<<<<<<<
- *         minlambda = -stepsize		# auxiliary variable
- *         while True:				# simple loop, the exit test is inside
- */
-    __pyx_v_twolambda = (2.0 * __pyx_v_stepsize);
-
-    /* "lightning/impl/prox_fast.pyx":51
- *         kminus = 0 	# last positions where umax=-lambda, umin=lambda, respectively
- *         twolambda = 2.0 * stepsize  # auxiliary variable
- *         minlambda = -stepsize		# auxiliary variable             # <<<<<<<<<<<<<<
- *         while True:				# simple loop, the exit test is inside
- *             while k >= width-1: 	# we use the right boundary condition
- */
-    __pyx_v_minlambda = (-__pyx_v_stepsize);
-
-    /* "lightning/impl/prox_fast.pyx":52
- *         twolambda = 2.0 * stepsize  # auxiliary variable
- *         minlambda = -stepsize		# auxiliary variable
- *         while True:				# simple loop, the exit test is inside             # <<<<<<<<<<<<<<
- *             while k >= width-1: 	# we use the right boundary condition
- *                 if umin < 0.0:			# vmin is too high -> negative jump necessary
- */
-    while (1) {
-
-      /* "lightning/impl/prox_fast.pyx":53
- *         minlambda = -stepsize		# auxiliary variable
- *         while True:				# simple loop, the exit test is inside
- *             while k >= width-1: 	# we use the right boundary condition             # <<<<<<<<<<<<<<
- *                 if umin < 0.0:			# vmin is too high -> negative jump necessary
- *                     while True:
- */
-      while (1) {
-        __pyx_t_3 = ((__pyx_v_k >= (__pyx_v_width - 1)) != 0);
-        if (!__pyx_t_3) break;
-
-        /* "lightning/impl/prox_fast.pyx":54
- *         while True:				# simple loop, the exit test is inside
- *             while k >= width-1: 	# we use the right boundary condition
- *                 if umin < 0.0:			# vmin is too high -> negative jump necessary             # <<<<<<<<<<<<<<
- *                     while True:
- *                         w[k0] = vmin
- */
-        __pyx_t_3 = ((__pyx_v_umin < 0.0) != 0);
-        if (__pyx_t_3) {
-
-          /* "lightning/impl/prox_fast.pyx":55
- *             while k >= width-1: 	# we use the right boundary condition
- *                 if umin < 0.0:			# vmin is too high -> negative jump necessary
- *                     while True:             # <<<<<<<<<<<<<<
- *                         w[k0] = vmin
- *                         k0 += 1
- */
-          while (1) {
-
-            /* "lightning/impl/prox_fast.pyx":56
- *                 if umin < 0.0:			# vmin is too high -> negative jump necessary
- *                     while True:
- *                         w[k0] = vmin             # <<<<<<<<<<<<<<
- *                         k0 += 1
- *                         if k0 > kminus:
- */
-            __pyx_t_8 = __pyx_v_k0;
-            *__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_8, __pyx_pybuffernd_w.diminfo[0].strides) = __pyx_v_vmin;
-
-            /* "lightning/impl/prox_fast.pyx":57
- *                     while True:
- *                         w[k0] = vmin
- *                         k0 += 1             # <<<<<<<<<<<<<<
- *                         if k0 > kminus:
- *                             break
- */
-            __pyx_v_k0 = (__pyx_v_k0 + 1);
-
-            /* "lightning/impl/prox_fast.pyx":58
- *                         w[k0] = vmin
- *                         k0 += 1
- *                         if k0 > kminus:             # <<<<<<<<<<<<<<
- *                             break
- *                     k = k0
- */
-            __pyx_t_3 = ((__pyx_v_k0 > __pyx_v_kminus) != 0);
-            if (__pyx_t_3) {
-
-              /* "lightning/impl/prox_fast.pyx":59
- *                         k0 += 1
- *                         if k0 > kminus:
- *                             break             # <<<<<<<<<<<<<<
- *                     k = k0
- *                     kminus = k
- */
-              goto __pyx_L12_break;
-
-              /* "lightning/impl/prox_fast.pyx":58
- *                         w[k0] = vmin
- *                         k0 += 1
- *                         if k0 > kminus:             # <<<<<<<<<<<<<<
- *                             break
- *                     k = k0
- */
-            }
-          }
-          __pyx_L12_break:;
-
-          /* "lightning/impl/prox_fast.pyx":60
- *                         if k0 > kminus:
- *                             break
- *                     k = k0             # <<<<<<<<<<<<<<
- *                     kminus = k
- *                     vmin = w[kminus]
- */
-          __pyx_v_k = __pyx_v_k0;
-
-          /* "lightning/impl/prox_fast.pyx":61
- *                             break
- *                     k = k0
- *                     kminus = k             # <<<<<<<<<<<<<<
- *                     vmin = w[kminus]
- *                     umin = stepsize
- */
-          __pyx_v_kminus = __pyx_v_k;
-
-          /* "lightning/impl/prox_fast.pyx":62
- *                     k = k0
- *                     kminus = k
- *                     vmin = w[kminus]             # <<<<<<<<<<<<<<
- *                     umin = stepsize
- *                     umax = vmin + umin - vmax
- */
-          __pyx_t_9 = __pyx_v_kminus;
-          __pyx_v_vmin = (*__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_9, __pyx_pybuffernd_w.diminfo[0].strides));
-
-          /* "lightning/impl/prox_fast.pyx":63
- *                     kminus = k
- *                     vmin = w[kminus]
- *                     umin = stepsize             # <<<<<<<<<<<<<<
- *                     umax = vmin + umin - vmax
- *                 elif umax > 0.0:    # vmax is too low -> positive jump necessary
- */
-          __pyx_v_umin = __pyx_v_stepsize;
-
-          /* "lightning/impl/prox_fast.pyx":64
- *                     vmin = w[kminus]
- *                     umin = stepsize
- *                     umax = vmin + umin - vmax             # <<<<<<<<<<<<<<
- *                 elif umax > 0.0:    # vmax is too low -> positive jump necessary
- *                     while True:
- */
-          __pyx_v_umax = ((__pyx_v_vmin + __pyx_v_umin) - __pyx_v_vmax);
-
-          /* "lightning/impl/prox_fast.pyx":54
- *         while True:				# simple loop, the exit test is inside
- *             while k >= width-1: 	# we use the right boundary condition
- *                 if umin < 0.0:			# vmin is too high -> negative jump necessary             # <<<<<<<<<<<<<<
- *                     while True:
- *                         w[k0] = vmin
- */
-          goto __pyx_L10;
-        }
-
-        /* "lightning/impl/prox_fast.pyx":65
- *                     umin = stepsize
- *                     umax = vmin + umin - vmax
- *                 elif umax > 0.0:    # vmax is too low -> positive jump necessary             # <<<<<<<<<<<<<<
- *                     while True:
- *                         w[k0] = vmax
- */
-        __pyx_t_3 = ((__pyx_v_umax > 0.0) != 0);
-        if (__pyx_t_3) {
-
-          /* "lightning/impl/prox_fast.pyx":66
- *                     umax = vmin + umin - vmax
- *                 elif umax > 0.0:    # vmax is too low -> positive jump necessary
- *                     while True:             # <<<<<<<<<<<<<<
- *                         w[k0] = vmax
- *                         k0 += 1
- */
-          while (1) {
-
-            /* "lightning/impl/prox_fast.pyx":67
- *                 elif umax > 0.0:    # vmax is too low -> positive jump necessary
- *                     while True:
- *                         w[k0] = vmax             # <<<<<<<<<<<<<<
- *                         k0 += 1
- *                         if k0 > kplus:
- */
-            __pyx_t_10 = __pyx_v_k0;
-            *__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_10, __pyx_pybuffernd_w.diminfo[0].strides) = __pyx_v_vmax;
-
-            /* "lightning/impl/prox_fast.pyx":68
- *                     while True:
- *                         w[k0] = vmax
- *                         k0 += 1             # <<<<<<<<<<<<<<
- *                         if k0 > kplus:
- *                             break
- */
-            __pyx_v_k0 = (__pyx_v_k0 + 1);
-
-            /* "lightning/impl/prox_fast.pyx":69
- *                         w[k0] = vmax
- *                         k0 += 1
- *                         if k0 > kplus:             # <<<<<<<<<<<<<<
- *                             break
- *                     k = k0
- */
-            __pyx_t_3 = ((__pyx_v_k0 > __pyx_v_kplus) != 0);
-            if (__pyx_t_3) {
-
-              /* "lightning/impl/prox_fast.pyx":70
- *                         k0 += 1
- *                         if k0 > kplus:
- *                             break             # <<<<<<<<<<<<<<
- *                     k = k0
- *                     kplus = k
- */
-              goto __pyx_L15_break;
-
-              /* "lightning/impl/prox_fast.pyx":69
- *                         w[k0] = vmax
- *                         k0 += 1
- *                         if k0 > kplus:             # <<<<<<<<<<<<<<
- *                             break
- *                     k = k0
- */
-            }
-          }
-          __pyx_L15_break:;
-
-          /* "lightning/impl/prox_fast.pyx":71
- *                         if k0 > kplus:
- *                             break
- *                     k = k0             # <<<<<<<<<<<<<<
- *                     kplus = k
- *                     vmax = w[kplus]
- */
-          __pyx_v_k = __pyx_v_k0;
-
-          /* "lightning/impl/prox_fast.pyx":72
- *                             break
- *                     k = k0
- *                     kplus = k             # <<<<<<<<<<<<<<
- *                     vmax = w[kplus]
- *                     umax = minlambda
- */
-          __pyx_v_kplus = __pyx_v_k;
-
-          /* "lightning/impl/prox_fast.pyx":73
- *                     k = k0
- *                     kplus = k
- *                     vmax = w[kplus]             # <<<<<<<<<<<<<<
- *                     umax = minlambda
- *                     umin = vmax + umax -vmin
- */
-          __pyx_t_11 = __pyx_v_kplus;
-          __pyx_v_vmax = (*__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_11, __pyx_pybuffernd_w.diminfo[0].strides));
-
-          /* "lightning/impl/prox_fast.pyx":74
- *                     kplus = k
- *                     vmax = w[kplus]
- *                     umax = minlambda             # <<<<<<<<<<<<<<
- *                     umin = vmax + umax -vmin
- *                 else:
- */
-          __pyx_v_umax = __pyx_v_minlambda;
-
-          /* "lightning/impl/prox_fast.pyx":75
- *                     vmax = w[kplus]
- *                     umax = minlambda
- *                     umin = vmax + umax -vmin             # <<<<<<<<<<<<<<
- *                 else:
- *                     vmin += umin / (k-k0+1)
- */
-          __pyx_v_umin = ((__pyx_v_vmax + __pyx_v_umax) - __pyx_v_vmin);
-
-          /* "lightning/impl/prox_fast.pyx":65
- *                     umin = stepsize
- *                     umax = vmin + umin - vmax
- *                 elif umax > 0.0:    # vmax is too low -> positive jump necessary             # <<<<<<<<<<<<<<
- *                     while True:
- *                         w[k0] = vmax
- */
-          goto __pyx_L10;
-        }
-
-        /* "lightning/impl/prox_fast.pyx":77
- *                     umin = vmax + umax -vmin
- *                 else:
- *                     vmin += umin / (k-k0+1)             # <<<<<<<<<<<<<<
- *                     while True:
- *                         w[k0] = vmin
- */
-        /*else*/ {
-          __pyx_v_vmin = (__pyx_v_vmin + (__pyx_v_umin / ((__pyx_v_k - __pyx_v_k0) + 1)));
-
-          /* "lightning/impl/prox_fast.pyx":78
- *                 else:
- *                     vmin += umin / (k-k0+1)
- *                     while True:             # <<<<<<<<<<<<<<
- *                         w[k0] = vmin
- *                         k0 += 1
- */
-          while (1) {
-
-            /* "lightning/impl/prox_fast.pyx":79
- *                     vmin += umin / (k-k0+1)
- *                     while True:
- *                         w[k0] = vmin             # <<<<<<<<<<<<<<
- *                         k0 += 1
- *                         if k0 > k:
- */
-            __pyx_t_12 = __pyx_v_k0;
-            *__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_12, __pyx_pybuffernd_w.diminfo[0].strides) = __pyx_v_vmin;
-
-            /* "lightning/impl/prox_fast.pyx":80
- *                     while True:
- *                         w[k0] = vmin
- *                         k0 += 1             # <<<<<<<<<<<<<<
- *                         if k0 > k:
- *                             break
- */
-            __pyx_v_k0 = (__pyx_v_k0 + 1);
-
-            /* "lightning/impl/prox_fast.pyx":81
- *                         w[k0] = vmin
- *                         k0 += 1
- *                         if k0 > k:             # <<<<<<<<<<<<<<
- *                             break
- *                     return
- */
-            __pyx_t_3 = ((__pyx_v_k0 > __pyx_v_k) != 0);
-            if (__pyx_t_3) {
-
-              /* "lightning/impl/prox_fast.pyx":82
- *                         k0 += 1
- *                         if k0 > k:
- *                             break             # <<<<<<<<<<<<<<
- *                     return
- *             umin += w[k + 1] - vmin
- */
-              goto __pyx_L18_break;
-
-              /* "lightning/impl/prox_fast.pyx":81
- *                         w[k0] = vmin
- *                         k0 += 1
- *                         if k0 > k:             # <<<<<<<<<<<<<<
- *                             break
- *                     return
- */
-            }
-          }
-          __pyx_L18_break:;
-
-          /* "lightning/impl/prox_fast.pyx":83
- *                         if k0 > k:
- *                             break
- *                     return             # <<<<<<<<<<<<<<
- *             umin += w[k + 1] - vmin
- *             if umin < minlambda:       # negative jump necessary
- */
-          __Pyx_XDECREF(__pyx_r);
-          __pyx_r = Py_None; __Pyx_INCREF(Py_None);
-          goto __pyx_L0;
-        }
-        __pyx_L10:;
-      }
-
-      /* "lightning/impl/prox_fast.pyx":84
- *                             break
- *                     return
- *             umin += w[k + 1] - vmin             # <<<<<<<<<<<<<<
- *             if umin < minlambda:       # negative jump necessary
- *                 while True:
- */
-      __pyx_t_13 = (__pyx_v_k + 1);
-      __pyx_v_umin = (__pyx_v_umin + ((*__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_13, __pyx_pybuffernd_w.diminfo[0].strides)) - __pyx_v_vmin));
-
-      /* "lightning/impl/prox_fast.pyx":85
- *                     return
- *             umin += w[k + 1] - vmin
- *             if umin < minlambda:       # negative jump necessary             # <<<<<<<<<<<<<<
- *                 while True:
- *                     w[k0] = vmin
- */
-      __pyx_t_3 = ((__pyx_v_umin < __pyx_v_minlambda) != 0);
-      if (__pyx_t_3) {
-
-        /* "lightning/impl/prox_fast.pyx":86
- *             umin += w[k + 1] - vmin
- *             if umin < minlambda:       # negative jump necessary
- *                 while True:             # <<<<<<<<<<<<<<
- *                     w[k0] = vmin
- *                     k0 += 1
- */
-        while (1) {
-
-          /* "lightning/impl/prox_fast.pyx":87
- *             if umin < minlambda:       # negative jump necessary
- *                 while True:
- *                     w[k0] = vmin             # <<<<<<<<<<<<<<
- *                     k0 += 1
- *                     if k0 > kminus:
- */
-          __pyx_t_14 = __pyx_v_k0;
-          *__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_14, __pyx_pybuffernd_w.diminfo[0].strides) = __pyx_v_vmin;
-
-          /* "lightning/impl/prox_fast.pyx":88
- *                 while True:
- *                     w[k0] = vmin
- *                     k0 += 1             # <<<<<<<<<<<<<<
- *                     if k0 > kminus:
- *                         break
- */
-          __pyx_v_k0 = (__pyx_v_k0 + 1);
-
-          /* "lightning/impl/prox_fast.pyx":89
- *                     w[k0] = vmin
- *                     k0 += 1
- *                     if k0 > kminus:             # <<<<<<<<<<<<<<
- *                         break
- *                 k = k0
- */
-          __pyx_t_3 = ((__pyx_v_k0 > __pyx_v_kminus) != 0);
-          if (__pyx_t_3) {
-
-            /* "lightning/impl/prox_fast.pyx":90
- *                     k0 += 1
- *                     if k0 > kminus:
- *                         break             # <<<<<<<<<<<<<<
- *                 k = k0
- *                 kminus = k
- */
-            goto __pyx_L22_break;
-
-            /* "lightning/impl/prox_fast.pyx":89
- *                     w[k0] = vmin
- *                     k0 += 1
- *                     if k0 > kminus:             # <<<<<<<<<<<<<<
- *                         break
- *                 k = k0
- */
-          }
-        }
-        __pyx_L22_break:;
-
-        /* "lightning/impl/prox_fast.pyx":91
- *                     if k0 > kminus:
- *                         break
- *                 k = k0             # <<<<<<<<<<<<<<
- *                 kminus = k
- *                 kplus = kminus
- */
-        __pyx_v_k = __pyx_v_k0;
-
-        /* "lightning/impl/prox_fast.pyx":92
- *                         break
- *                 k = k0
- *                 kminus = k             # <<<<<<<<<<<<<<
- *                 kplus = kminus
- *                 vmin = w[kplus]
- */
-        __pyx_v_kminus = __pyx_v_k;
-
-        /* "lightning/impl/prox_fast.pyx":93
- *                 k = k0
- *                 kminus = k
- *                 kplus = kminus             # <<<<<<<<<<<<<<
- *                 vmin = w[kplus]
- *                 vmax = vmin + twolambda
- */
-        __pyx_v_kplus = __pyx_v_kminus;
-
-        /* "lightning/impl/prox_fast.pyx":94
- *                 kminus = k
- *                 kplus = kminus
- *                 vmin = w[kplus]             # <<<<<<<<<<<<<<
- *                 vmax = vmin + twolambda
- *                 umin = stepsize
- */
-        __pyx_t_15 = __pyx_v_kplus;
-        __pyx_v_vmin = (*__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_15, __pyx_pybuffernd_w.diminfo[0].strides));
-
-        /* "lightning/impl/prox_fast.pyx":95
- *                 kplus = kminus
- *                 vmin = w[kplus]
- *                 vmax = vmin + twolambda             # <<<<<<<<<<<<<<
- *                 umin = stepsize
- *                 umax = minlambda
- */
-        __pyx_v_vmax = (__pyx_v_vmin + __pyx_v_twolambda);
-
-        /* "lightning/impl/prox_fast.pyx":96
- *                 vmin = w[kplus]
- *                 vmax = vmin + twolambda
- *                 umin = stepsize             # <<<<<<<<<<<<<<
- *                 umax = minlambda
- *             else:
- */
-        __pyx_v_umin = __pyx_v_stepsize;
-
-        /* "lightning/impl/prox_fast.pyx":97
- *                 vmax = vmin + twolambda
- *                 umin = stepsize
- *                 umax = minlambda             # <<<<<<<<<<<<<<
- *             else:
- *                 umax += w[k + 1] - vmax
- */
-        __pyx_v_umax = __pyx_v_minlambda;
-
-        /* "lightning/impl/prox_fast.pyx":85
- *                     return
- *             umin += w[k + 1] - vmin
- *             if umin < minlambda:       # negative jump necessary             # <<<<<<<<<<<<<<
- *                 while True:
- *                     w[k0] = vmin
- */
-        goto __pyx_L20;
-      }
-
-      /* "lightning/impl/prox_fast.pyx":99
- *                 umax = minlambda
- *             else:
- *                 umax += w[k + 1] - vmax             # <<<<<<<<<<<<<<
- *                 if umax > stepsize:
- *                     while True:
- */
-      /*else*/ {
-        __pyx_t_16 = (__pyx_v_k + 1);
-        __pyx_v_umax = (__pyx_v_umax + ((*__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_16, __pyx_pybuffernd_w.diminfo[0].strides)) - __pyx_v_vmax));
-
-        /* "lightning/impl/prox_fast.pyx":100
- *             else:
- *                 umax += w[k + 1] - vmax
- *                 if umax > stepsize:             # <<<<<<<<<<<<<<
- *                     while True:
- *                         w[k0] = vmax
- */
-        __pyx_t_3 = ((__pyx_v_umax > __pyx_v_stepsize) != 0);
-        if (__pyx_t_3) {
-
-          /* "lightning/impl/prox_fast.pyx":101
- *                 umax += w[k + 1] - vmax
- *                 if umax > stepsize:
- *                     while True:             # <<<<<<<<<<<<<<
- *                         w[k0] = vmax
- *                         k0 += 1
- */
-          while (1) {
-
-            /* "lightning/impl/prox_fast.pyx":102
- *                 if umax > stepsize:
- *                     while True:
- *                         w[k0] = vmax             # <<<<<<<<<<<<<<
- *                         k0 += 1
- *                         if k0 > kplus:
- */
-            __pyx_t_17 = __pyx_v_k0;
-            *__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_17, __pyx_pybuffernd_w.diminfo[0].strides) = __pyx_v_vmax;
-
-            /* "lightning/impl/prox_fast.pyx":103
- *                     while True:
- *                         w[k0] = vmax
- *                         k0 += 1             # <<<<<<<<<<<<<<
- *                         if k0 > kplus:
- *                             break
- */
-            __pyx_v_k0 = (__pyx_v_k0 + 1);
-
-            /* "lightning/impl/prox_fast.pyx":104
- *                         w[k0] = vmax
- *                         k0 += 1
- *                         if k0 > kplus:             # <<<<<<<<<<<<<<
- *                             break
- *                     k = k0
- */
-            __pyx_t_3 = ((__pyx_v_k0 > __pyx_v_kplus) != 0);
-            if (__pyx_t_3) {
-
-              /* "lightning/impl/prox_fast.pyx":105
- *                         k0 += 1
- *                         if k0 > kplus:
- *                             break             # <<<<<<<<<<<<<<
- *                     k = k0
- *                     kminus = k
- */
-              goto __pyx_L26_break;
-
-              /* "lightning/impl/prox_fast.pyx":104
- *                         w[k0] = vmax
- *                         k0 += 1
- *                         if k0 > kplus:             # <<<<<<<<<<<<<<
- *                             break
- *                     k = k0
- */
-            }
-          }
-          __pyx_L26_break:;
-
-          /* "lightning/impl/prox_fast.pyx":106
- *                         if k0 > kplus:
- *                             break
- *                     k = k0             # <<<<<<<<<<<<<<
- *                     kminus = k
- *                     kplus = kminus
- */
-          __pyx_v_k = __pyx_v_k0;
-
-          /* "lightning/impl/prox_fast.pyx":107
- *                             break
- *                     k = k0
- *                     kminus = k             # <<<<<<<<<<<<<<
- *                     kplus = kminus
- *                     vmax = w[kplus]
- */
-          __pyx_v_kminus = __pyx_v_k;
-
-          /* "lightning/impl/prox_fast.pyx":108
- *                     k = k0
- *                     kminus = k
- *                     kplus = kminus             # <<<<<<<<<<<<<<
- *                     vmax = w[kplus]
- *                     vmin = vmax - twolambda
- */
-          __pyx_v_kplus = __pyx_v_kminus;
-
-          /* "lightning/impl/prox_fast.pyx":109
- *                     kminus = k
- *                     kplus = kminus
- *                     vmax = w[kplus]             # <<<<<<<<<<<<<<
- *                     vmin = vmax - twolambda
- *                     umin = stepsize
- */
-          __pyx_t_18 = __pyx_v_kplus;
-          __pyx_v_vmax = (*__Pyx_BufPtrStrided1d(double *, __pyx_pybuffernd_w.rcbuffer->pybuffer.buf, __pyx_t_18, __pyx_pybuffernd_w.diminfo[0].strides));
-
-          /* "lightning/impl/prox_fast.pyx":110
- *                     kplus = kminus
- *                     vmax = w[kplus]
- *                     vmin = vmax - twolambda             # <<<<<<<<<<<<<<
- *                     umin = stepsize
- *                     umax = minlambda
- */
-          __pyx_v_vmin = (__pyx_v_vmax - __pyx_v_twolambda);
-
-          /* "lightning/impl/prox_fast.pyx":111
- *                     vmax = w[kplus]
- *                     vmin = vmax - twolambda
- *                     umin = stepsize             # <<<<<<<<<<<<<<
- *                     umax = minlambda
- *                 else:                   # no jump necessary, we continue
- */
-          __pyx_v_umin = __pyx_v_stepsize;
-
-          /* "lightning/impl/prox_fast.pyx":112
- *                     vmin = vmax - twolambda
- *                     umin = stepsize
- *                     umax = minlambda             # <<<<<<<<<<<<<<
- *                 else:                   # no jump necessary, we continue
- *                     k += 1
- */
-          __pyx_v_umax = __pyx_v_minlambda;
-
-          /* "lightning/impl/prox_fast.pyx":100
- *             else:
- *                 umax += w[k + 1] - vmax
- *                 if umax > stepsize:             # <<<<<<<<<<<<<<
- *                     while True:
- *                         w[k0] = vmax
- */
-          goto __pyx_L24;
-        }
-
-        /* "lightning/impl/prox_fast.pyx":114
- *                     umax = minlambda
- *                 else:                   # no jump necessary, we continue
- *                     k += 1             # <<<<<<<<<<<<<<
- *                     if umin >= stepsize:		# update of vmin
- *                         kminus = k
- */
-        /*else*/ {
-          __pyx_v_k = (__pyx_v_k + 1);
-
-          /* "lightning/impl/prox_fast.pyx":115
- *                 else:                   # no jump necessary, we continue
- *                     k += 1
- *                     if umin >= stepsize:		# update of vmin             # <<<<<<<<<<<<<<
- *                         kminus = k
- *                         vmin += (umin - stepsize) / (kminus - k0 + 1)
- */
-          __pyx_t_3 = ((__pyx_v_umin >= __pyx_v_stepsize) != 0);
-          if (__pyx_t_3) {
-
-            /* "lightning/impl/prox_fast.pyx":116
- *                     k += 1
- *                     if umin >= stepsize:		# update of vmin
- *                         kminus = k             # <<<<<<<<<<<<<<
- *                         vmin += (umin - stepsize) / (kminus - k0 + 1)
- *                         umin = stepsize
- */
-            __pyx_v_kminus = __pyx_v_k;
-
-            /* "lightning/impl/prox_fast.pyx":117
- *                     if umin >= stepsize:		# update of vmin
- *                         kminus = k
- *                         vmin += (umin - stepsize) / (kminus - k0 + 1)             # <<<<<<<<<<<<<<
- *                         umin = stepsize
- *                     if umax <= minlambda:	    # update of vmax
- */
-            __pyx_v_vmin = (__pyx_v_vmin + ((__pyx_v_umin - __pyx_v_stepsize) / ((__pyx_v_kminus - __pyx_v_k0) + 1)));
-
-            /* "lightning/impl/prox_fast.pyx":118
- *                         kminus = k
- *                         vmin += (umin - stepsize) / (kminus - k0 + 1)
- *                         umin = stepsize             # <<<<<<<<<<<<<<
- *                     if umax <= minlambda:	    # update of vmax
- *                         kplus = k
- */
-            __pyx_v_umin = __pyx_v_stepsize;
-
-            /* "lightning/impl/prox_fast.pyx":115
- *                 else:                   # no jump necessary, we continue
- *                     k += 1
- *                     if umin >= stepsize:		# update of vmin             # <<<<<<<<<<<<<<
- *                         kminus = k
- *                         vmin += (umin - stepsize) / (kminus - k0 + 1)
- */
-          }
-
-          /* "lightning/impl/prox_fast.pyx":119
- *                         vmin += (umin - stepsize) / (kminus - k0 + 1)
- *                         umin = stepsize
- *                     if umax <= minlambda:	    # update of vmax             # <<<<<<<<<<<<<<
- *                         kplus = k
- *                         vmax += (umax + stepsize) / (kplus - k0 + 1)
- */
-          __pyx_t_3 = ((__pyx_v_umax <= __pyx_v_minlambda) != 0);
-          if (__pyx_t_3) {
-
-            /* "lightning/impl/prox_fast.pyx":120
- *                         umin = stepsize
- *                     if umax <= minlambda:	    # update of vmax
- *                         kplus = k             # <<<<<<<<<<<<<<
- *                         vmax += (umax + stepsize) / (kplus - k0 + 1)
- *                         umax = minlambda
- */
-            __pyx_v_kplus = __pyx_v_k;
-
-            /* "lightning/impl/prox_fast.pyx":121
- *                     if umax <= minlambda:	    # update of vmax
- *                         kplus = k
- *                         vmax += (umax + stepsize) / (kplus - k0 + 1)             # <<<<<<<<<<<<<<
- *                         umax = minlambda
- */
-            __pyx_v_vmax = (__pyx_v_vmax + ((__pyx_v_umax + __pyx_v_stepsize) / ((__pyx_v_kplus - __pyx_v_k0) + 1)));
-
-            /* "lightning/impl/prox_fast.pyx":122
- *                         kplus = k
- *                         vmax += (umax + stepsize) / (kplus - k0 + 1)
- *                         umax = minlambda             # <<<<<<<<<<<<<<
- */
-            __pyx_v_umax = __pyx_v_minlambda;
-
-            /* "lightning/impl/prox_fast.pyx":119
- *                         vmin += (umin - stepsize) / (kminus - k0 + 1)
- *                         umin = stepsize
- *                     if umax <= minlambda:	    # update of vmax             # <<<<<<<<<<<<<<
- *                         kplus = k
- *                         vmax += (umax + stepsize) / (kplus - k0 + 1)
- */
-          }
-        }
-        __pyx_L24:;
-      }
-      __pyx_L20:;
-    }
-
-    /* "lightning/impl/prox_fast.pyx":42
- * 
- *     # /to avoid invalid memory access to input[0] and invalid lambda values
- *     if width > 0 and stepsize >= 0:             # <<<<<<<<<<<<<<
- *         k, k0 = 0, 0			# k: current sample location, k0: beginning of current segment
- *         umin = stepsize  # u is the dual variable
- */
-  }
-
-  /* "lightning/impl/prox_fast.pyx":15
- * cimport numpy as np
- * 
- * cpdef prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):             # <<<<<<<<<<<<<<
- *     """
- *     Computes the proximal operator of the 1-dimensional total variation operator.
- */
-
-  /* function exit code */
-  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
-  goto __pyx_L0;
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
-    __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
-    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_w.rcbuffer->pybuffer);
-  __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("lightning.impl.prox_fast.prox_tv1d", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = 0;
-  goto __pyx_L2;
-  __pyx_L0:;
-  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_w.rcbuffer->pybuffer);
-  __pyx_L2:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
 
 /* Python wrapper */
 static PyObject *__pyx_pw_9lightning_4impl_9prox_fast_1prox_tv1d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static char __pyx_doc_9lightning_4impl_9prox_fast_prox_tv1d[] = "\n    Computes the proximal operator of the 1-dimensional total variation operator.\n\n    This solves a problem of the form\n\n         argmin_x TV(x) + (1/(2 stepsize)) ||x - w||^2\n\n    where TV(x) is the one-dimensional total variation\n\n    Parameters\n    ----------\n    w: array\n        vector of coefficieents\n    stepsize: float\n        step size (sometimes denoted gamma) in proximal objective function\n\n    References\n    ----------\n    Condat, Laurent. \"A direct algorithm for 1D total variation denoising.\"\n    IEEE Signal Processing Letters (2013)\n    ";
+static PyMethodDef __pyx_mdef_9lightning_4impl_9prox_fast_1prox_tv1d = {"prox_tv1d", (PyCFunction)__pyx_pw_9lightning_4impl_9prox_fast_1prox_tv1d, METH_VARARGS|METH_KEYWORDS, __pyx_doc_9lightning_4impl_9prox_fast_prox_tv1d};
 static PyObject *__pyx_pw_9lightning_4impl_9prox_fast_1prox_tv1d(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyArrayObject *__pyx_v_w = 0;
   double __pyx_v_stepsize;
@@ -2204,15 +1276,26 @@ static PyObject *__pyx_pw_9lightning_4impl_9prox_fast_1prox_tv1d(PyObject *__pyx
 }
 
 static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_prox_tv1d(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_w, double __pyx_v_stepsize) {
+  PyArrayObject *__pyx_v_tmp = 0;
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_tmp;
+  __Pyx_Buffer __pyx_pybuffer_tmp;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_w;
   __Pyx_Buffer __pyx_pybuffer_w;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyArrayObject *__pyx_t_4 = NULL;
+  size_t __pyx_t_5;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("prox_tv1d", 0);
+  __pyx_pybuffer_tmp.pybuffer.buf = NULL;
+  __pyx_pybuffer_tmp.refcount = 0;
+  __pyx_pybuffernd_tmp.data = NULL;
+  __pyx_pybuffernd_tmp.rcbuffer = &__pyx_pybuffer_tmp;
   __pyx_pybuffer_w.pybuffer.buf = NULL;
   __pyx_pybuffer_w.refcount = 0;
   __pyx_pybuffernd_w.data = NULL;
@@ -2222,26 +1305,1003 @@ static PyObject *__pyx_pf_9lightning_4impl_9prox_fast_prox_tv1d(CYTHON_UNUSED Py
     if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_w.rcbuffer->pybuffer, (PyObject*)__pyx_v_w, &__Pyx_TypeInfo_double, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_pybuffernd_w.diminfo[0].strides = __pyx_pybuffernd_w.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_w.diminfo[0].shape = __pyx_pybuffernd_w.rcbuffer->pybuffer.shape[0];
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_9lightning_4impl_9prox_fast_prox_tv1d(((PyArrayObject *)__pyx_v_w), __pyx_v_stepsize, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "lightning/impl/prox_fast.pyx":38
+ *     """
+ *     # make a copy as it will be modified in place
+ *     cdef np.ndarray[ndim=1, dtype=double] tmp = w.copy()             # <<<<<<<<<<<<<<
+ *     c_prox_tv1d(<double *> tmp.data, <size_t> w.size, stepsize)
+ *     return tmp
+ */
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_w), __pyx_n_s_copy); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = NULL;
+  if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_2))) {
+    __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_2);
+    if (likely(__pyx_t_3)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+      __Pyx_INCREF(__pyx_t_3);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_2, function);
+    }
+  }
+  if (__pyx_t_3) {
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  } else {
+    __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = ((PyArrayObject *)__pyx_t_1);
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_tmp.rcbuffer->pybuffer, (PyObject*)__pyx_t_4, &__Pyx_TypeInfo_double, PyBUF_FORMAT| PyBUF_STRIDES, 1, 0, __pyx_stack) == -1)) {
+      __pyx_v_tmp = ((PyArrayObject *)Py_None); __Pyx_INCREF(Py_None); __pyx_pybuffernd_tmp.rcbuffer->pybuffer.buf = NULL;
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    } else {__pyx_pybuffernd_tmp.diminfo[0].strides = __pyx_pybuffernd_tmp.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_tmp.diminfo[0].shape = __pyx_pybuffernd_tmp.rcbuffer->pybuffer.shape[0];
+    }
+  }
+  __pyx_t_4 = 0;
+  __pyx_v_tmp = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
+
+  /* "lightning/impl/prox_fast.pyx":39
+ *     # make a copy as it will be modified in place
+ *     cdef np.ndarray[ndim=1, dtype=double] tmp = w.copy()
+ *     c_prox_tv1d(<double *> tmp.data, <size_t> w.size, stepsize)             # <<<<<<<<<<<<<<
+ *     return tmp
+ * 
+ */
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_w), __pyx_n_s_size); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_5 = __Pyx_PyInt_As_size_t(__pyx_t_1); if (unlikely((__pyx_t_5 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_t_1 = __pyx_f_9lightning_4impl_9prox_fast_c_prox_tv1d(((double *)__pyx_v_tmp->data), ((size_t)__pyx_t_5), __pyx_v_stepsize); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "lightning/impl/prox_fast.pyx":40
+ *     cdef np.ndarray[ndim=1, dtype=double] tmp = w.copy()
+ *     c_prox_tv1d(<double *> tmp.data, <size_t> w.size, stepsize)
+ *     return tmp             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __Pyx_INCREF(((PyObject *)__pyx_v_tmp));
+  __pyx_r = ((PyObject *)__pyx_v_tmp);
   goto __pyx_L0;
+
+  /* "lightning/impl/prox_fast.pyx":15
+ * cimport numpy as np
+ * 
+ * def prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):             # <<<<<<<<<<<<<<
+ *     """
+ *     Computes the proximal operator of the 1-dimensional total variation operator.
+ */
 
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
   { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_tmp.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_w.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
   __Pyx_AddTraceback("lightning.impl.prox_fast.prox_tv1d", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_tmp.rcbuffer->pybuffer);
   __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_w.rcbuffer->pybuffer);
   __pyx_L2:;
+  __Pyx_XDECREF((PyObject *)__pyx_v_tmp);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "lightning/impl/prox_fast.pyx":43
+ * 
+ * 
+ * cdef c_prox_tv1d(double* w, size_t size, double stepsize):             # <<<<<<<<<<<<<<
+ *     """
+ *     C API for prox_tv1d
+ */
+
+static PyObject *__pyx_f_9lightning_4impl_9prox_fast_c_prox_tv1d(double *__pyx_v_w, size_t __pyx_v_size, double __pyx_v_stepsize) {
+  size_t __pyx_v_k;
+  size_t __pyx_v_k0;
+  size_t __pyx_v_kplus;
+  size_t __pyx_v_kminus;
+  double __pyx_v_umin;
+  double __pyx_v_umax;
+  double __pyx_v_vmin;
+  double __pyx_v_vmax;
+  double __pyx_v_twolambda;
+  double __pyx_v_minlambda;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  int __pyx_t_1;
+  int __pyx_t_2;
+  size_t __pyx_t_3;
+  size_t __pyx_t_4;
+  __Pyx_RefNannySetupContext("c_prox_tv1d", 0);
+
+  /* "lightning/impl/prox_fast.pyx":51
+ * 
+ *     # /to avoid invalid memory access to input[0] and invalid lambda values
+ *     if size > 0 and stepsize >= 0:             # <<<<<<<<<<<<<<
+ *         k, k0 = 0, 0			# k: current sample location, k0: beginning of current segment
+ *         umin = stepsize  # u is the dual variable
+ */
+  __pyx_t_2 = ((__pyx_v_size > 0) != 0);
+  if (__pyx_t_2) {
+  } else {
+    __pyx_t_1 = __pyx_t_2;
+    goto __pyx_L4_bool_binop_done;
+  }
+  __pyx_t_2 = ((__pyx_v_stepsize >= 0.0) != 0);
+  __pyx_t_1 = __pyx_t_2;
+  __pyx_L4_bool_binop_done:;
+  if (__pyx_t_1) {
+
+    /* "lightning/impl/prox_fast.pyx":52
+ *     # /to avoid invalid memory access to input[0] and invalid lambda values
+ *     if size > 0 and stepsize >= 0:
+ *         k, k0 = 0, 0			# k: current sample location, k0: beginning of current segment             # <<<<<<<<<<<<<<
+ *         umin = stepsize  # u is the dual variable
+ *         umax = - stepsize
+ */
+    __pyx_t_3 = 0;
+    __pyx_t_4 = 0;
+    __pyx_v_k = __pyx_t_3;
+    __pyx_v_k0 = __pyx_t_4;
+
+    /* "lightning/impl/prox_fast.pyx":53
+ *     if size > 0 and stepsize >= 0:
+ *         k, k0 = 0, 0			# k: current sample location, k0: beginning of current segment
+ *         umin = stepsize  # u is the dual variable             # <<<<<<<<<<<<<<
+ *         umax = - stepsize
+ *         vmin = w[0] - stepsize
+ */
+    __pyx_v_umin = __pyx_v_stepsize;
+
+    /* "lightning/impl/prox_fast.pyx":54
+ *         k, k0 = 0, 0			# k: current sample location, k0: beginning of current segment
+ *         umin = stepsize  # u is the dual variable
+ *         umax = - stepsize             # <<<<<<<<<<<<<<
+ *         vmin = w[0] - stepsize
+ *         vmax = w[0] + stepsize	  # bounds for the segment's value
+ */
+    __pyx_v_umax = (-__pyx_v_stepsize);
+
+    /* "lightning/impl/prox_fast.pyx":55
+ *         umin = stepsize  # u is the dual variable
+ *         umax = - stepsize
+ *         vmin = w[0] - stepsize             # <<<<<<<<<<<<<<
+ *         vmax = w[0] + stepsize	  # bounds for the segment's value
+ *         kplus = 0
+ */
+    __pyx_v_vmin = ((__pyx_v_w[0]) - __pyx_v_stepsize);
+
+    /* "lightning/impl/prox_fast.pyx":56
+ *         umax = - stepsize
+ *         vmin = w[0] - stepsize
+ *         vmax = w[0] + stepsize	  # bounds for the segment's value             # <<<<<<<<<<<<<<
+ *         kplus = 0
+ *         kminus = 0 	# last positions where umax=-lambda, umin=lambda, respectively
+ */
+    __pyx_v_vmax = ((__pyx_v_w[0]) + __pyx_v_stepsize);
+
+    /* "lightning/impl/prox_fast.pyx":57
+ *         vmin = w[0] - stepsize
+ *         vmax = w[0] + stepsize	  # bounds for the segment's value
+ *         kplus = 0             # <<<<<<<<<<<<<<
+ *         kminus = 0 	# last positions where umax=-lambda, umin=lambda, respectively
+ *         twolambda = 2.0 * stepsize  # auxiliary variable
+ */
+    __pyx_v_kplus = 0;
+
+    /* "lightning/impl/prox_fast.pyx":58
+ *         vmax = w[0] + stepsize	  # bounds for the segment's value
+ *         kplus = 0
+ *         kminus = 0 	# last positions where umax=-lambda, umin=lambda, respectively             # <<<<<<<<<<<<<<
+ *         twolambda = 2.0 * stepsize  # auxiliary variable
+ *         minlambda = -stepsize		# auxiliary variable
+ */
+    __pyx_v_kminus = 0;
+
+    /* "lightning/impl/prox_fast.pyx":59
+ *         kplus = 0
+ *         kminus = 0 	# last positions where umax=-lambda, umin=lambda, respectively
+ *         twolambda = 2.0 * stepsize  # auxiliary variable             # <<<<<<<<<<<<<<
+ *         minlambda = -stepsize		# auxiliary variable
+ *         while True:				# simple loop, the exit test is inside
+ */
+    __pyx_v_twolambda = (2.0 * __pyx_v_stepsize);
+
+    /* "lightning/impl/prox_fast.pyx":60
+ *         kminus = 0 	# last positions where umax=-lambda, umin=lambda, respectively
+ *         twolambda = 2.0 * stepsize  # auxiliary variable
+ *         minlambda = -stepsize		# auxiliary variable             # <<<<<<<<<<<<<<
+ *         while True:				# simple loop, the exit test is inside
+ *             while k >= size-1: 	# we use the right boundary condition
+ */
+    __pyx_v_minlambda = (-__pyx_v_stepsize);
+
+    /* "lightning/impl/prox_fast.pyx":61
+ *         twolambda = 2.0 * stepsize  # auxiliary variable
+ *         minlambda = -stepsize		# auxiliary variable
+ *         while True:				# simple loop, the exit test is inside             # <<<<<<<<<<<<<<
+ *             while k >= size-1: 	# we use the right boundary condition
+ *                 if umin < 0.0:			# vmin is too high -> negative jump necessary
+ */
+    while (1) {
+
+      /* "lightning/impl/prox_fast.pyx":62
+ *         minlambda = -stepsize		# auxiliary variable
+ *         while True:				# simple loop, the exit test is inside
+ *             while k >= size-1: 	# we use the right boundary condition             # <<<<<<<<<<<<<<
+ *                 if umin < 0.0:			# vmin is too high -> negative jump necessary
+ *                     while True:
+ */
+      while (1) {
+        __pyx_t_1 = ((__pyx_v_k >= (__pyx_v_size - 1)) != 0);
+        if (!__pyx_t_1) break;
+
+        /* "lightning/impl/prox_fast.pyx":63
+ *         while True:				# simple loop, the exit test is inside
+ *             while k >= size-1: 	# we use the right boundary condition
+ *                 if umin < 0.0:			# vmin is too high -> negative jump necessary             # <<<<<<<<<<<<<<
+ *                     while True:
+ *                         w[k0] = vmin
+ */
+        __pyx_t_1 = ((__pyx_v_umin < 0.0) != 0);
+        if (__pyx_t_1) {
+
+          /* "lightning/impl/prox_fast.pyx":64
+ *             while k >= size-1: 	# we use the right boundary condition
+ *                 if umin < 0.0:			# vmin is too high -> negative jump necessary
+ *                     while True:             # <<<<<<<<<<<<<<
+ *                         w[k0] = vmin
+ *                         k0 += 1
+ */
+          while (1) {
+
+            /* "lightning/impl/prox_fast.pyx":65
+ *                 if umin < 0.0:			# vmin is too high -> negative jump necessary
+ *                     while True:
+ *                         w[k0] = vmin             # <<<<<<<<<<<<<<
+ *                         k0 += 1
+ *                         if k0 > kminus:
+ */
+            (__pyx_v_w[__pyx_v_k0]) = __pyx_v_vmin;
+
+            /* "lightning/impl/prox_fast.pyx":66
+ *                     while True:
+ *                         w[k0] = vmin
+ *                         k0 += 1             # <<<<<<<<<<<<<<
+ *                         if k0 > kminus:
+ *                             break
+ */
+            __pyx_v_k0 = (__pyx_v_k0 + 1);
+
+            /* "lightning/impl/prox_fast.pyx":67
+ *                         w[k0] = vmin
+ *                         k0 += 1
+ *                         if k0 > kminus:             # <<<<<<<<<<<<<<
+ *                             break
+ *                     k = k0
+ */
+            __pyx_t_1 = ((__pyx_v_k0 > __pyx_v_kminus) != 0);
+            if (__pyx_t_1) {
+
+              /* "lightning/impl/prox_fast.pyx":68
+ *                         k0 += 1
+ *                         if k0 > kminus:
+ *                             break             # <<<<<<<<<<<<<<
+ *                     k = k0
+ *                     kminus = k
+ */
+              goto __pyx_L12_break;
+
+              /* "lightning/impl/prox_fast.pyx":67
+ *                         w[k0] = vmin
+ *                         k0 += 1
+ *                         if k0 > kminus:             # <<<<<<<<<<<<<<
+ *                             break
+ *                     k = k0
+ */
+            }
+          }
+          __pyx_L12_break:;
+
+          /* "lightning/impl/prox_fast.pyx":69
+ *                         if k0 > kminus:
+ *                             break
+ *                     k = k0             # <<<<<<<<<<<<<<
+ *                     kminus = k
+ *                     vmin = w[kminus]
+ */
+          __pyx_v_k = __pyx_v_k0;
+
+          /* "lightning/impl/prox_fast.pyx":70
+ *                             break
+ *                     k = k0
+ *                     kminus = k             # <<<<<<<<<<<<<<
+ *                     vmin = w[kminus]
+ *                     umin = stepsize
+ */
+          __pyx_v_kminus = __pyx_v_k;
+
+          /* "lightning/impl/prox_fast.pyx":71
+ *                     k = k0
+ *                     kminus = k
+ *                     vmin = w[kminus]             # <<<<<<<<<<<<<<
+ *                     umin = stepsize
+ *                     umax = vmin + umin - vmax
+ */
+          __pyx_v_vmin = (__pyx_v_w[__pyx_v_kminus]);
+
+          /* "lightning/impl/prox_fast.pyx":72
+ *                     kminus = k
+ *                     vmin = w[kminus]
+ *                     umin = stepsize             # <<<<<<<<<<<<<<
+ *                     umax = vmin + umin - vmax
+ *                 elif umax > 0.0:    # vmax is too low -> positive jump necessary
+ */
+          __pyx_v_umin = __pyx_v_stepsize;
+
+          /* "lightning/impl/prox_fast.pyx":73
+ *                     vmin = w[kminus]
+ *                     umin = stepsize
+ *                     umax = vmin + umin - vmax             # <<<<<<<<<<<<<<
+ *                 elif umax > 0.0:    # vmax is too low -> positive jump necessary
+ *                     while True:
+ */
+          __pyx_v_umax = ((__pyx_v_vmin + __pyx_v_umin) - __pyx_v_vmax);
+
+          /* "lightning/impl/prox_fast.pyx":63
+ *         while True:				# simple loop, the exit test is inside
+ *             while k >= size-1: 	# we use the right boundary condition
+ *                 if umin < 0.0:			# vmin is too high -> negative jump necessary             # <<<<<<<<<<<<<<
+ *                     while True:
+ *                         w[k0] = vmin
+ */
+          goto __pyx_L10;
+        }
+
+        /* "lightning/impl/prox_fast.pyx":74
+ *                     umin = stepsize
+ *                     umax = vmin + umin - vmax
+ *                 elif umax > 0.0:    # vmax is too low -> positive jump necessary             # <<<<<<<<<<<<<<
+ *                     while True:
+ *                         w[k0] = vmax
+ */
+        __pyx_t_1 = ((__pyx_v_umax > 0.0) != 0);
+        if (__pyx_t_1) {
+
+          /* "lightning/impl/prox_fast.pyx":75
+ *                     umax = vmin + umin - vmax
+ *                 elif umax > 0.0:    # vmax is too low -> positive jump necessary
+ *                     while True:             # <<<<<<<<<<<<<<
+ *                         w[k0] = vmax
+ *                         k0 += 1
+ */
+          while (1) {
+
+            /* "lightning/impl/prox_fast.pyx":76
+ *                 elif umax > 0.0:    # vmax is too low -> positive jump necessary
+ *                     while True:
+ *                         w[k0] = vmax             # <<<<<<<<<<<<<<
+ *                         k0 += 1
+ *                         if k0 > kplus:
+ */
+            (__pyx_v_w[__pyx_v_k0]) = __pyx_v_vmax;
+
+            /* "lightning/impl/prox_fast.pyx":77
+ *                     while True:
+ *                         w[k0] = vmax
+ *                         k0 += 1             # <<<<<<<<<<<<<<
+ *                         if k0 > kplus:
+ *                             break
+ */
+            __pyx_v_k0 = (__pyx_v_k0 + 1);
+
+            /* "lightning/impl/prox_fast.pyx":78
+ *                         w[k0] = vmax
+ *                         k0 += 1
+ *                         if k0 > kplus:             # <<<<<<<<<<<<<<
+ *                             break
+ *                     k = k0
+ */
+            __pyx_t_1 = ((__pyx_v_k0 > __pyx_v_kplus) != 0);
+            if (__pyx_t_1) {
+
+              /* "lightning/impl/prox_fast.pyx":79
+ *                         k0 += 1
+ *                         if k0 > kplus:
+ *                             break             # <<<<<<<<<<<<<<
+ *                     k = k0
+ *                     kplus = k
+ */
+              goto __pyx_L15_break;
+
+              /* "lightning/impl/prox_fast.pyx":78
+ *                         w[k0] = vmax
+ *                         k0 += 1
+ *                         if k0 > kplus:             # <<<<<<<<<<<<<<
+ *                             break
+ *                     k = k0
+ */
+            }
+          }
+          __pyx_L15_break:;
+
+          /* "lightning/impl/prox_fast.pyx":80
+ *                         if k0 > kplus:
+ *                             break
+ *                     k = k0             # <<<<<<<<<<<<<<
+ *                     kplus = k
+ *                     vmax = w[kplus]
+ */
+          __pyx_v_k = __pyx_v_k0;
+
+          /* "lightning/impl/prox_fast.pyx":81
+ *                             break
+ *                     k = k0
+ *                     kplus = k             # <<<<<<<<<<<<<<
+ *                     vmax = w[kplus]
+ *                     umax = minlambda
+ */
+          __pyx_v_kplus = __pyx_v_k;
+
+          /* "lightning/impl/prox_fast.pyx":82
+ *                     k = k0
+ *                     kplus = k
+ *                     vmax = w[kplus]             # <<<<<<<<<<<<<<
+ *                     umax = minlambda
+ *                     umin = vmax + umax -vmin
+ */
+          __pyx_v_vmax = (__pyx_v_w[__pyx_v_kplus]);
+
+          /* "lightning/impl/prox_fast.pyx":83
+ *                     kplus = k
+ *                     vmax = w[kplus]
+ *                     umax = minlambda             # <<<<<<<<<<<<<<
+ *                     umin = vmax + umax -vmin
+ *                 else:
+ */
+          __pyx_v_umax = __pyx_v_minlambda;
+
+          /* "lightning/impl/prox_fast.pyx":84
+ *                     vmax = w[kplus]
+ *                     umax = minlambda
+ *                     umin = vmax + umax -vmin             # <<<<<<<<<<<<<<
+ *                 else:
+ *                     vmin += umin / (k-k0+1)
+ */
+          __pyx_v_umin = ((__pyx_v_vmax + __pyx_v_umax) - __pyx_v_vmin);
+
+          /* "lightning/impl/prox_fast.pyx":74
+ *                     umin = stepsize
+ *                     umax = vmin + umin - vmax
+ *                 elif umax > 0.0:    # vmax is too low -> positive jump necessary             # <<<<<<<<<<<<<<
+ *                     while True:
+ *                         w[k0] = vmax
+ */
+          goto __pyx_L10;
+        }
+
+        /* "lightning/impl/prox_fast.pyx":86
+ *                     umin = vmax + umax -vmin
+ *                 else:
+ *                     vmin += umin / (k-k0+1)             # <<<<<<<<<<<<<<
+ *                     while True:
+ *                         w[k0] = vmin
+ */
+        /*else*/ {
+          __pyx_v_vmin = (__pyx_v_vmin + (__pyx_v_umin / ((__pyx_v_k - __pyx_v_k0) + 1)));
+
+          /* "lightning/impl/prox_fast.pyx":87
+ *                 else:
+ *                     vmin += umin / (k-k0+1)
+ *                     while True:             # <<<<<<<<<<<<<<
+ *                         w[k0] = vmin
+ *                         k0 += 1
+ */
+          while (1) {
+
+            /* "lightning/impl/prox_fast.pyx":88
+ *                     vmin += umin / (k-k0+1)
+ *                     while True:
+ *                         w[k0] = vmin             # <<<<<<<<<<<<<<
+ *                         k0 += 1
+ *                         if k0 > k:
+ */
+            (__pyx_v_w[__pyx_v_k0]) = __pyx_v_vmin;
+
+            /* "lightning/impl/prox_fast.pyx":89
+ *                     while True:
+ *                         w[k0] = vmin
+ *                         k0 += 1             # <<<<<<<<<<<<<<
+ *                         if k0 > k:
+ *                             break
+ */
+            __pyx_v_k0 = (__pyx_v_k0 + 1);
+
+            /* "lightning/impl/prox_fast.pyx":90
+ *                         w[k0] = vmin
+ *                         k0 += 1
+ *                         if k0 > k:             # <<<<<<<<<<<<<<
+ *                             break
+ *                     return
+ */
+            __pyx_t_1 = ((__pyx_v_k0 > __pyx_v_k) != 0);
+            if (__pyx_t_1) {
+
+              /* "lightning/impl/prox_fast.pyx":91
+ *                         k0 += 1
+ *                         if k0 > k:
+ *                             break             # <<<<<<<<<<<<<<
+ *                     return
+ *             umin += w[k + 1] - vmin
+ */
+              goto __pyx_L18_break;
+
+              /* "lightning/impl/prox_fast.pyx":90
+ *                         w[k0] = vmin
+ *                         k0 += 1
+ *                         if k0 > k:             # <<<<<<<<<<<<<<
+ *                             break
+ *                     return
+ */
+            }
+          }
+          __pyx_L18_break:;
+
+          /* "lightning/impl/prox_fast.pyx":92
+ *                         if k0 > k:
+ *                             break
+ *                     return             # <<<<<<<<<<<<<<
+ *             umin += w[k + 1] - vmin
+ *             if umin < minlambda:       # negative jump necessary
+ */
+          __Pyx_XDECREF(__pyx_r);
+          __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+          goto __pyx_L0;
+        }
+        __pyx_L10:;
+      }
+
+      /* "lightning/impl/prox_fast.pyx":93
+ *                             break
+ *                     return
+ *             umin += w[k + 1] - vmin             # <<<<<<<<<<<<<<
+ *             if umin < minlambda:       # negative jump necessary
+ *                 while True:
+ */
+      __pyx_v_umin = (__pyx_v_umin + ((__pyx_v_w[(__pyx_v_k + 1)]) - __pyx_v_vmin));
+
+      /* "lightning/impl/prox_fast.pyx":94
+ *                     return
+ *             umin += w[k + 1] - vmin
+ *             if umin < minlambda:       # negative jump necessary             # <<<<<<<<<<<<<<
+ *                 while True:
+ *                     w[k0] = vmin
+ */
+      __pyx_t_1 = ((__pyx_v_umin < __pyx_v_minlambda) != 0);
+      if (__pyx_t_1) {
+
+        /* "lightning/impl/prox_fast.pyx":95
+ *             umin += w[k + 1] - vmin
+ *             if umin < minlambda:       # negative jump necessary
+ *                 while True:             # <<<<<<<<<<<<<<
+ *                     w[k0] = vmin
+ *                     k0 += 1
+ */
+        while (1) {
+
+          /* "lightning/impl/prox_fast.pyx":96
+ *             if umin < minlambda:       # negative jump necessary
+ *                 while True:
+ *                     w[k0] = vmin             # <<<<<<<<<<<<<<
+ *                     k0 += 1
+ *                     if k0 > kminus:
+ */
+          (__pyx_v_w[__pyx_v_k0]) = __pyx_v_vmin;
+
+          /* "lightning/impl/prox_fast.pyx":97
+ *                 while True:
+ *                     w[k0] = vmin
+ *                     k0 += 1             # <<<<<<<<<<<<<<
+ *                     if k0 > kminus:
+ *                         break
+ */
+          __pyx_v_k0 = (__pyx_v_k0 + 1);
+
+          /* "lightning/impl/prox_fast.pyx":98
+ *                     w[k0] = vmin
+ *                     k0 += 1
+ *                     if k0 > kminus:             # <<<<<<<<<<<<<<
+ *                         break
+ *                 k = k0
+ */
+          __pyx_t_1 = ((__pyx_v_k0 > __pyx_v_kminus) != 0);
+          if (__pyx_t_1) {
+
+            /* "lightning/impl/prox_fast.pyx":99
+ *                     k0 += 1
+ *                     if k0 > kminus:
+ *                         break             # <<<<<<<<<<<<<<
+ *                 k = k0
+ *                 kminus = k
+ */
+            goto __pyx_L22_break;
+
+            /* "lightning/impl/prox_fast.pyx":98
+ *                     w[k0] = vmin
+ *                     k0 += 1
+ *                     if k0 > kminus:             # <<<<<<<<<<<<<<
+ *                         break
+ *                 k = k0
+ */
+          }
+        }
+        __pyx_L22_break:;
+
+        /* "lightning/impl/prox_fast.pyx":100
+ *                     if k0 > kminus:
+ *                         break
+ *                 k = k0             # <<<<<<<<<<<<<<
+ *                 kminus = k
+ *                 kplus = kminus
+ */
+        __pyx_v_k = __pyx_v_k0;
+
+        /* "lightning/impl/prox_fast.pyx":101
+ *                         break
+ *                 k = k0
+ *                 kminus = k             # <<<<<<<<<<<<<<
+ *                 kplus = kminus
+ *                 vmin = w[kplus]
+ */
+        __pyx_v_kminus = __pyx_v_k;
+
+        /* "lightning/impl/prox_fast.pyx":102
+ *                 k = k0
+ *                 kminus = k
+ *                 kplus = kminus             # <<<<<<<<<<<<<<
+ *                 vmin = w[kplus]
+ *                 vmax = vmin + twolambda
+ */
+        __pyx_v_kplus = __pyx_v_kminus;
+
+        /* "lightning/impl/prox_fast.pyx":103
+ *                 kminus = k
+ *                 kplus = kminus
+ *                 vmin = w[kplus]             # <<<<<<<<<<<<<<
+ *                 vmax = vmin + twolambda
+ *                 umin = stepsize
+ */
+        __pyx_v_vmin = (__pyx_v_w[__pyx_v_kplus]);
+
+        /* "lightning/impl/prox_fast.pyx":104
+ *                 kplus = kminus
+ *                 vmin = w[kplus]
+ *                 vmax = vmin + twolambda             # <<<<<<<<<<<<<<
+ *                 umin = stepsize
+ *                 umax = minlambda
+ */
+        __pyx_v_vmax = (__pyx_v_vmin + __pyx_v_twolambda);
+
+        /* "lightning/impl/prox_fast.pyx":105
+ *                 vmin = w[kplus]
+ *                 vmax = vmin + twolambda
+ *                 umin = stepsize             # <<<<<<<<<<<<<<
+ *                 umax = minlambda
+ *             else:
+ */
+        __pyx_v_umin = __pyx_v_stepsize;
+
+        /* "lightning/impl/prox_fast.pyx":106
+ *                 vmax = vmin + twolambda
+ *                 umin = stepsize
+ *                 umax = minlambda             # <<<<<<<<<<<<<<
+ *             else:
+ *                 umax += w[k + 1] - vmax
+ */
+        __pyx_v_umax = __pyx_v_minlambda;
+
+        /* "lightning/impl/prox_fast.pyx":94
+ *                     return
+ *             umin += w[k + 1] - vmin
+ *             if umin < minlambda:       # negative jump necessary             # <<<<<<<<<<<<<<
+ *                 while True:
+ *                     w[k0] = vmin
+ */
+        goto __pyx_L20;
+      }
+
+      /* "lightning/impl/prox_fast.pyx":108
+ *                 umax = minlambda
+ *             else:
+ *                 umax += w[k + 1] - vmax             # <<<<<<<<<<<<<<
+ *                 if umax > stepsize:
+ *                     while True:
+ */
+      /*else*/ {
+        __pyx_v_umax = (__pyx_v_umax + ((__pyx_v_w[(__pyx_v_k + 1)]) - __pyx_v_vmax));
+
+        /* "lightning/impl/prox_fast.pyx":109
+ *             else:
+ *                 umax += w[k + 1] - vmax
+ *                 if umax > stepsize:             # <<<<<<<<<<<<<<
+ *                     while True:
+ *                         w[k0] = vmax
+ */
+        __pyx_t_1 = ((__pyx_v_umax > __pyx_v_stepsize) != 0);
+        if (__pyx_t_1) {
+
+          /* "lightning/impl/prox_fast.pyx":110
+ *                 umax += w[k + 1] - vmax
+ *                 if umax > stepsize:
+ *                     while True:             # <<<<<<<<<<<<<<
+ *                         w[k0] = vmax
+ *                         k0 += 1
+ */
+          while (1) {
+
+            /* "lightning/impl/prox_fast.pyx":111
+ *                 if umax > stepsize:
+ *                     while True:
+ *                         w[k0] = vmax             # <<<<<<<<<<<<<<
+ *                         k0 += 1
+ *                         if k0 > kplus:
+ */
+            (__pyx_v_w[__pyx_v_k0]) = __pyx_v_vmax;
+
+            /* "lightning/impl/prox_fast.pyx":112
+ *                     while True:
+ *                         w[k0] = vmax
+ *                         k0 += 1             # <<<<<<<<<<<<<<
+ *                         if k0 > kplus:
+ *                             break
+ */
+            __pyx_v_k0 = (__pyx_v_k0 + 1);
+
+            /* "lightning/impl/prox_fast.pyx":113
+ *                         w[k0] = vmax
+ *                         k0 += 1
+ *                         if k0 > kplus:             # <<<<<<<<<<<<<<
+ *                             break
+ *                     k = k0
+ */
+            __pyx_t_1 = ((__pyx_v_k0 > __pyx_v_kplus) != 0);
+            if (__pyx_t_1) {
+
+              /* "lightning/impl/prox_fast.pyx":114
+ *                         k0 += 1
+ *                         if k0 > kplus:
+ *                             break             # <<<<<<<<<<<<<<
+ *                     k = k0
+ *                     kminus = k
+ */
+              goto __pyx_L26_break;
+
+              /* "lightning/impl/prox_fast.pyx":113
+ *                         w[k0] = vmax
+ *                         k0 += 1
+ *                         if k0 > kplus:             # <<<<<<<<<<<<<<
+ *                             break
+ *                     k = k0
+ */
+            }
+          }
+          __pyx_L26_break:;
+
+          /* "lightning/impl/prox_fast.pyx":115
+ *                         if k0 > kplus:
+ *                             break
+ *                     k = k0             # <<<<<<<<<<<<<<
+ *                     kminus = k
+ *                     kplus = kminus
+ */
+          __pyx_v_k = __pyx_v_k0;
+
+          /* "lightning/impl/prox_fast.pyx":116
+ *                             break
+ *                     k = k0
+ *                     kminus = k             # <<<<<<<<<<<<<<
+ *                     kplus = kminus
+ *                     vmax = w[kplus]
+ */
+          __pyx_v_kminus = __pyx_v_k;
+
+          /* "lightning/impl/prox_fast.pyx":117
+ *                     k = k0
+ *                     kminus = k
+ *                     kplus = kminus             # <<<<<<<<<<<<<<
+ *                     vmax = w[kplus]
+ *                     vmin = vmax - twolambda
+ */
+          __pyx_v_kplus = __pyx_v_kminus;
+
+          /* "lightning/impl/prox_fast.pyx":118
+ *                     kminus = k
+ *                     kplus = kminus
+ *                     vmax = w[kplus]             # <<<<<<<<<<<<<<
+ *                     vmin = vmax - twolambda
+ *                     umin = stepsize
+ */
+          __pyx_v_vmax = (__pyx_v_w[__pyx_v_kplus]);
+
+          /* "lightning/impl/prox_fast.pyx":119
+ *                     kplus = kminus
+ *                     vmax = w[kplus]
+ *                     vmin = vmax - twolambda             # <<<<<<<<<<<<<<
+ *                     umin = stepsize
+ *                     umax = minlambda
+ */
+          __pyx_v_vmin = (__pyx_v_vmax - __pyx_v_twolambda);
+
+          /* "lightning/impl/prox_fast.pyx":120
+ *                     vmax = w[kplus]
+ *                     vmin = vmax - twolambda
+ *                     umin = stepsize             # <<<<<<<<<<<<<<
+ *                     umax = minlambda
+ *                 else:                   # no jump necessary, we continue
+ */
+          __pyx_v_umin = __pyx_v_stepsize;
+
+          /* "lightning/impl/prox_fast.pyx":121
+ *                     vmin = vmax - twolambda
+ *                     umin = stepsize
+ *                     umax = minlambda             # <<<<<<<<<<<<<<
+ *                 else:                   # no jump necessary, we continue
+ *                     k += 1
+ */
+          __pyx_v_umax = __pyx_v_minlambda;
+
+          /* "lightning/impl/prox_fast.pyx":109
+ *             else:
+ *                 umax += w[k + 1] - vmax
+ *                 if umax > stepsize:             # <<<<<<<<<<<<<<
+ *                     while True:
+ *                         w[k0] = vmax
+ */
+          goto __pyx_L24;
+        }
+
+        /* "lightning/impl/prox_fast.pyx":123
+ *                     umax = minlambda
+ *                 else:                   # no jump necessary, we continue
+ *                     k += 1             # <<<<<<<<<<<<<<
+ *                     if umin >= stepsize:		# update of vmin
+ *                         kminus = k
+ */
+        /*else*/ {
+          __pyx_v_k = (__pyx_v_k + 1);
+
+          /* "lightning/impl/prox_fast.pyx":124
+ *                 else:                   # no jump necessary, we continue
+ *                     k += 1
+ *                     if umin >= stepsize:		# update of vmin             # <<<<<<<<<<<<<<
+ *                         kminus = k
+ *                         vmin += (umin - stepsize) / (kminus - k0 + 1)
+ */
+          __pyx_t_1 = ((__pyx_v_umin >= __pyx_v_stepsize) != 0);
+          if (__pyx_t_1) {
+
+            /* "lightning/impl/prox_fast.pyx":125
+ *                     k += 1
+ *                     if umin >= stepsize:		# update of vmin
+ *                         kminus = k             # <<<<<<<<<<<<<<
+ *                         vmin += (umin - stepsize) / (kminus - k0 + 1)
+ *                         umin = stepsize
+ */
+            __pyx_v_kminus = __pyx_v_k;
+
+            /* "lightning/impl/prox_fast.pyx":126
+ *                     if umin >= stepsize:		# update of vmin
+ *                         kminus = k
+ *                         vmin += (umin - stepsize) / (kminus - k0 + 1)             # <<<<<<<<<<<<<<
+ *                         umin = stepsize
+ *                     if umax <= minlambda:	    # update of vmax
+ */
+            __pyx_v_vmin = (__pyx_v_vmin + ((__pyx_v_umin - __pyx_v_stepsize) / ((__pyx_v_kminus - __pyx_v_k0) + 1)));
+
+            /* "lightning/impl/prox_fast.pyx":127
+ *                         kminus = k
+ *                         vmin += (umin - stepsize) / (kminus - k0 + 1)
+ *                         umin = stepsize             # <<<<<<<<<<<<<<
+ *                     if umax <= minlambda:	    # update of vmax
+ *                         kplus = k
+ */
+            __pyx_v_umin = __pyx_v_stepsize;
+
+            /* "lightning/impl/prox_fast.pyx":124
+ *                 else:                   # no jump necessary, we continue
+ *                     k += 1
+ *                     if umin >= stepsize:		# update of vmin             # <<<<<<<<<<<<<<
+ *                         kminus = k
+ *                         vmin += (umin - stepsize) / (kminus - k0 + 1)
+ */
+          }
+
+          /* "lightning/impl/prox_fast.pyx":128
+ *                         vmin += (umin - stepsize) / (kminus - k0 + 1)
+ *                         umin = stepsize
+ *                     if umax <= minlambda:	    # update of vmax             # <<<<<<<<<<<<<<
+ *                         kplus = k
+ *                         vmax += (umax + stepsize) / (kplus - k0 + 1)
+ */
+          __pyx_t_1 = ((__pyx_v_umax <= __pyx_v_minlambda) != 0);
+          if (__pyx_t_1) {
+
+            /* "lightning/impl/prox_fast.pyx":129
+ *                         umin = stepsize
+ *                     if umax <= minlambda:	    # update of vmax
+ *                         kplus = k             # <<<<<<<<<<<<<<
+ *                         vmax += (umax + stepsize) / (kplus - k0 + 1)
+ *                         umax = minlambda
+ */
+            __pyx_v_kplus = __pyx_v_k;
+
+            /* "lightning/impl/prox_fast.pyx":130
+ *                     if umax <= minlambda:	    # update of vmax
+ *                         kplus = k
+ *                         vmax += (umax + stepsize) / (kplus - k0 + 1)             # <<<<<<<<<<<<<<
+ *                         umax = minlambda
+ */
+            __pyx_v_vmax = (__pyx_v_vmax + ((__pyx_v_umax + __pyx_v_stepsize) / ((__pyx_v_kplus - __pyx_v_k0) + 1)));
+
+            /* "lightning/impl/prox_fast.pyx":131
+ *                         kplus = k
+ *                         vmax += (umax + stepsize) / (kplus - k0 + 1)
+ *                         umax = minlambda             # <<<<<<<<<<<<<<
+ */
+            __pyx_v_umax = __pyx_v_minlambda;
+
+            /* "lightning/impl/prox_fast.pyx":128
+ *                         vmin += (umin - stepsize) / (kminus - k0 + 1)
+ *                         umin = stepsize
+ *                     if umax <= minlambda:	    # update of vmax             # <<<<<<<<<<<<<<
+ *                         kplus = k
+ *                         vmax += (umax + stepsize) / (kplus - k0 + 1)
+ */
+          }
+        }
+        __pyx_L24:;
+      }
+      __pyx_L20:;
+    }
+
+    /* "lightning/impl/prox_fast.pyx":51
+ * 
+ *     # /to avoid invalid memory access to input[0] and invalid lambda values
+ *     if size > 0 and stepsize >= 0:             # <<<<<<<<<<<<<<
+ *         k, k0 = 0, 0			# k: current sample location, k0: beginning of current segment
+ *         umin = stepsize  # u is the dual variable
+ */
+  }
+
+  /* "lightning/impl/prox_fast.pyx":43
+ * 
+ * 
+ * cdef c_prox_tv1d(double* w, size_t size, double stepsize):             # <<<<<<<<<<<<<<
+ *     """
+ *     C API for prox_tv1d
+ */
+
+  /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -4391,7 +4451,6 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
 }
 
 static PyMethodDef __pyx_methods[] = {
-  {"prox_tv1d", (PyCFunction)__pyx_pw_9lightning_4impl_9prox_fast_1prox_tv1d, METH_VARARGS|METH_KEYWORDS, __pyx_doc_9lightning_4impl_9prox_fast_prox_tv1d},
   {0, 0, 0, 0}
 };
 
@@ -4418,14 +4477,22 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_u_Format_string_allocated_too_shor_2, __pyx_k_Format_string_allocated_too_shor_2, sizeof(__pyx_k_Format_string_allocated_too_shor_2), 0, 1, 0, 0},
   {&__pyx_kp_u_Non_native_byte_order_not_suppor, __pyx_k_Non_native_byte_order_not_suppor, sizeof(__pyx_k_Non_native_byte_order_not_suppor), 0, 1, 0, 0},
   {&__pyx_n_s_RuntimeError, __pyx_k_RuntimeError, sizeof(__pyx_k_RuntimeError), 0, 0, 1, 1},
+  {&__pyx_kp_s_Users_fabianpedregosa_dev_light, __pyx_k_Users_fabianpedregosa_dev_light, sizeof(__pyx_k_Users_fabianpedregosa_dev_light), 0, 0, 1, 0},
   {&__pyx_n_s_ValueError, __pyx_k_ValueError, sizeof(__pyx_k_ValueError), 0, 0, 1, 1},
+  {&__pyx_n_s_copy, __pyx_k_copy, sizeof(__pyx_k_copy), 0, 0, 1, 1},
+  {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
+  {&__pyx_n_s_lightning_impl_prox_fast, __pyx_k_lightning_impl_prox_fast, sizeof(__pyx_k_lightning_impl_prox_fast), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
   {&__pyx_kp_u_ndarray_is_not_C_contiguous, __pyx_k_ndarray_is_not_C_contiguous, sizeof(__pyx_k_ndarray_is_not_C_contiguous), 0, 1, 0, 0},
   {&__pyx_kp_u_ndarray_is_not_Fortran_contiguou, __pyx_k_ndarray_is_not_Fortran_contiguou, sizeof(__pyx_k_ndarray_is_not_Fortran_contiguou), 0, 1, 0, 0},
+  {&__pyx_n_s_np, __pyx_k_np, sizeof(__pyx_k_np), 0, 0, 1, 1},
+  {&__pyx_n_s_numpy, __pyx_k_numpy, sizeof(__pyx_k_numpy), 0, 0, 1, 1},
+  {&__pyx_n_s_prox_tv1d, __pyx_k_prox_tv1d, sizeof(__pyx_k_prox_tv1d), 0, 0, 1, 1},
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
   {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
   {&__pyx_n_s_stepsize, __pyx_k_stepsize, sizeof(__pyx_k_stepsize), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
+  {&__pyx_n_s_tmp, __pyx_k_tmp, sizeof(__pyx_k_tmp), 0, 0, 1, 1},
   {&__pyx_kp_u_unknown_dtype_code_in_numpy_pxd, __pyx_k_unknown_dtype_code_in_numpy_pxd, sizeof(__pyx_k_unknown_dtype_code_in_numpy_pxd), 0, 1, 0, 0},
   {&__pyx_n_s_w, __pyx_k_w, sizeof(__pyx_k_w), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
@@ -4508,6 +4575,18 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__6 = PyTuple_Pack(1, __pyx_kp_u_Format_string_allocated_too_shor_2); if (unlikely(!__pyx_tuple__6)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 823; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__6);
   __Pyx_GIVEREF(__pyx_tuple__6);
+
+  /* "lightning/impl/prox_fast.pyx":15
+ * cimport numpy as np
+ * 
+ * def prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):             # <<<<<<<<<<<<<<
+ *     """
+ *     Computes the proximal operator of the 1-dimensional total variation operator.
+ */
+  __pyx_tuple__7 = PyTuple_Pack(3, __pyx_n_s_w, __pyx_n_s_stepsize, __pyx_n_s_tmp); if (unlikely(!__pyx_tuple__7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_tuple__7);
+  __Pyx_GIVEREF(__pyx_tuple__7);
+  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(2, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_fabianpedregosa_dev_light, __pyx_n_s_prox_tv1d, 15, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -4607,7 +4686,7 @@ PyMODINIT_FUNC PyInit_prox_fast(void)
   /*--- Global init code ---*/
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
-  if (__Pyx_ExportFunction("prox_tv1d", (void (*)(void))__pyx_f_9lightning_4impl_9prox_fast_prox_tv1d, "PyObject *(PyArrayObject *, double, int __pyx_skip_dispatch)") < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_ExportFunction("c_prox_tv1d", (void (*)(void))__pyx_f_9lightning_4impl_9prox_fast_c_prox_tv1d, "PyObject *(double *, size_t, double)") < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   /*--- Type init code ---*/
   /*--- Type import code ---*/
   __pyx_ptype_7cpython_4type_type = __Pyx_ImportType(__Pyx_BUILTIN_MODULE_NAME, "type", 
@@ -4628,6 +4707,30 @@ PyMODINIT_FUNC PyInit_prox_fast(void)
   #if defined(__Pyx_Generator_USED) || defined(__Pyx_Coroutine_USED)
   if (__Pyx_patch_abc() < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   #endif
+
+  /* "lightning/impl/prox_fast.pyx":12
+ * These are some helper functions to compute the proximal operator of some common penalties
+ * """
+ * import numpy as np             # <<<<<<<<<<<<<<
+ * cimport numpy as np
+ * 
+ */
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "lightning/impl/prox_fast.pyx":15
+ * cimport numpy as np
+ * 
+ * def prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):             # <<<<<<<<<<<<<<
+ *     """
+ *     Computes the proximal operator of the 1-dimensional total variation operator.
+ */
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9lightning_4impl_9prox_fast_1prox_tv1d, NULL, __pyx_n_s_lightning_impl_prox_fast); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_prox_tv1d, __pyx_t_1) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "lightning/impl/prox_fast.pyx":1
  * # encoding: utf-8             # <<<<<<<<<<<<<<
@@ -4685,6 +4788,171 @@ end:
     return (__Pyx_RefNannyAPIStruct *)r;
 }
 #endif
+
+static void __Pyx_RaiseArgtupleInvalid(
+    const char* func_name,
+    int exact,
+    Py_ssize_t num_min,
+    Py_ssize_t num_max,
+    Py_ssize_t num_found)
+{
+    Py_ssize_t num_expected;
+    const char *more_or_less;
+    if (num_found < num_min) {
+        num_expected = num_min;
+        more_or_less = "at least";
+    } else {
+        num_expected = num_max;
+        more_or_less = "at most";
+    }
+    if (exact) {
+        more_or_less = "exactly";
+    }
+    PyErr_Format(PyExc_TypeError,
+                 "%.200s() takes %.8s %" CYTHON_FORMAT_SSIZE_T "d positional argument%.1s (%" CYTHON_FORMAT_SSIZE_T "d given)",
+                 func_name, more_or_less, num_expected,
+                 (num_expected == 1) ? "" : "s", num_found);
+}
+
+static void __Pyx_RaiseDoubleKeywordsError(
+    const char* func_name,
+    PyObject* kw_name)
+{
+    PyErr_Format(PyExc_TypeError,
+        #if PY_MAJOR_VERSION >= 3
+        "%s() got multiple values for keyword argument '%U'", func_name, kw_name);
+        #else
+        "%s() got multiple values for keyword argument '%s'", func_name,
+        PyString_AsString(kw_name));
+        #endif
+}
+
+static int __Pyx_ParseOptionalKeywords(
+    PyObject *kwds,
+    PyObject **argnames[],
+    PyObject *kwds2,
+    PyObject *values[],
+    Py_ssize_t num_pos_args,
+    const char* function_name)
+{
+    PyObject *key = 0, *value = 0;
+    Py_ssize_t pos = 0;
+    PyObject*** name;
+    PyObject*** first_kw_arg = argnames + num_pos_args;
+    while (PyDict_Next(kwds, &pos, &key, &value)) {
+        name = first_kw_arg;
+        while (*name && (**name != key)) name++;
+        if (*name) {
+            values[name-argnames] = value;
+            continue;
+        }
+        name = first_kw_arg;
+        #if PY_MAJOR_VERSION < 3
+        if (likely(PyString_CheckExact(key)) || likely(PyString_Check(key))) {
+            while (*name) {
+                if ((CYTHON_COMPILING_IN_PYPY || PyString_GET_SIZE(**name) == PyString_GET_SIZE(key))
+                        && _PyString_Eq(**name, key)) {
+                    values[name-argnames] = value;
+                    break;
+                }
+                name++;
+            }
+            if (*name) continue;
+            else {
+                PyObject*** argname = argnames;
+                while (argname != first_kw_arg) {
+                    if ((**argname == key) || (
+                            (CYTHON_COMPILING_IN_PYPY || PyString_GET_SIZE(**argname) == PyString_GET_SIZE(key))
+                             && _PyString_Eq(**argname, key))) {
+                        goto arg_passed_twice;
+                    }
+                    argname++;
+                }
+            }
+        } else
+        #endif
+        if (likely(PyUnicode_Check(key))) {
+            while (*name) {
+                int cmp = (**name == key) ? 0 :
+                #if !CYTHON_COMPILING_IN_PYPY && PY_MAJOR_VERSION >= 3
+                    (PyUnicode_GET_SIZE(**name) != PyUnicode_GET_SIZE(key)) ? 1 :
+                #endif
+                    PyUnicode_Compare(**name, key);
+                if (cmp < 0 && unlikely(PyErr_Occurred())) goto bad;
+                if (cmp == 0) {
+                    values[name-argnames] = value;
+                    break;
+                }
+                name++;
+            }
+            if (*name) continue;
+            else {
+                PyObject*** argname = argnames;
+                while (argname != first_kw_arg) {
+                    int cmp = (**argname == key) ? 0 :
+                    #if !CYTHON_COMPILING_IN_PYPY && PY_MAJOR_VERSION >= 3
+                        (PyUnicode_GET_SIZE(**argname) != PyUnicode_GET_SIZE(key)) ? 1 :
+                    #endif
+                        PyUnicode_Compare(**argname, key);
+                    if (cmp < 0 && unlikely(PyErr_Occurred())) goto bad;
+                    if (cmp == 0) goto arg_passed_twice;
+                    argname++;
+                }
+            }
+        } else
+            goto invalid_keyword_type;
+        if (kwds2) {
+            if (unlikely(PyDict_SetItem(kwds2, key, value))) goto bad;
+        } else {
+            goto invalid_keyword;
+        }
+    }
+    return 0;
+arg_passed_twice:
+    __Pyx_RaiseDoubleKeywordsError(function_name, key);
+    goto bad;
+invalid_keyword_type:
+    PyErr_Format(PyExc_TypeError,
+        "%.200s() keywords must be strings", function_name);
+    goto bad;
+invalid_keyword:
+    PyErr_Format(PyExc_TypeError,
+    #if PY_MAJOR_VERSION < 3
+        "%.200s() got an unexpected keyword argument '%.200s'",
+        function_name, PyString_AsString(key));
+    #else
+        "%s() got an unexpected keyword argument '%U'",
+        function_name, key);
+    #endif
+bad:
+    return -1;
+}
+
+static void __Pyx_RaiseArgumentTypeInvalid(const char* name, PyObject *obj, PyTypeObject *type) {
+    PyErr_Format(PyExc_TypeError,
+        "Argument '%.200s' has incorrect type (expected %.200s, got %.200s)",
+        name, type->tp_name, Py_TYPE(obj)->tp_name);
+}
+static CYTHON_INLINE int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, int none_allowed,
+    const char *name, int exact)
+{
+    if (unlikely(!type)) {
+        PyErr_SetString(PyExc_SystemError, "Missing type object");
+        return 0;
+    }
+    if (none_allowed && obj == Py_None) return 1;
+    else if (exact) {
+        if (likely(Py_TYPE(obj) == type)) return 1;
+        #if PY_MAJOR_VERSION == 2
+        else if ((type == &PyBaseString_Type) && likely(__Pyx_PyBaseString_CheckExact(obj))) return 1;
+        #endif
+    }
+    else {
+        if (likely(PyObject_TypeCheck(obj, type))) return 1;
+    }
+    __Pyx_RaiseArgumentTypeInvalid(name, obj, type);
+    return 0;
+}
 
 static CYTHON_INLINE int __Pyx_IsLittleEndian(void) {
   unsigned int n = 1;
@@ -5235,6 +5503,105 @@ static CYTHON_INLINE void __Pyx_SafeReleaseBuffer(Py_buffer* info) {
   __Pyx_ReleaseBuffer(info);
 }
 
+#if CYTHON_COMPILING_IN_CPYTHON
+static CYTHON_INLINE PyObject* __Pyx_PyObject_Call(PyObject *func, PyObject *arg, PyObject *kw) {
+    PyObject *result;
+    ternaryfunc call = func->ob_type->tp_call;
+    if (unlikely(!call))
+        return PyObject_Call(func, arg, kw);
+    if (unlikely(Py_EnterRecursiveCall((char*)" while calling a Python object")))
+        return NULL;
+    result = (*call)(func, arg, kw);
+    Py_LeaveRecursiveCall();
+    if (unlikely(!result) && unlikely(!PyErr_Occurred())) {
+        PyErr_SetString(
+            PyExc_SystemError,
+            "NULL result without error in PyObject_Call");
+    }
+    return result;
+}
+#endif
+
+#if CYTHON_COMPILING_IN_CPYTHON
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallMethO(PyObject *func, PyObject *arg) {
+    PyObject *self, *result;
+    PyCFunction cfunc;
+    cfunc = PyCFunction_GET_FUNCTION(func);
+    self = PyCFunction_GET_SELF(func);
+    if (unlikely(Py_EnterRecursiveCall((char*)" while calling a Python object")))
+        return NULL;
+    result = cfunc(self, arg);
+    Py_LeaveRecursiveCall();
+    if (unlikely(!result) && unlikely(!PyErr_Occurred())) {
+        PyErr_SetString(
+            PyExc_SystemError,
+            "NULL result without error in PyObject_Call");
+    }
+    return result;
+}
+#endif
+
+#if CYTHON_COMPILING_IN_CPYTHON
+static PyObject* __Pyx__PyObject_CallOneArg(PyObject *func, PyObject *arg) {
+    PyObject *result;
+    PyObject *args = PyTuple_New(1);
+    if (unlikely(!args)) return NULL;
+    Py_INCREF(arg);
+    PyTuple_SET_ITEM(args, 0, arg);
+    result = __Pyx_PyObject_Call(func, args, NULL);
+    Py_DECREF(args);
+    return result;
+}
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallOneArg(PyObject *func, PyObject *arg) {
+#ifdef __Pyx_CyFunction_USED
+    if (likely(PyCFunction_Check(func) || PyObject_TypeCheck(func, __pyx_CyFunctionType))) {
+#else
+    if (likely(PyCFunction_Check(func))) {
+#endif
+        if (likely(PyCFunction_GET_FLAGS(func) & METH_O)) {
+            return __Pyx_PyObject_CallMethO(func, arg);
+        }
+    }
+    return __Pyx__PyObject_CallOneArg(func, arg);
+}
+#else
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallOneArg(PyObject *func, PyObject *arg) {
+    PyObject *result;
+    PyObject *args = PyTuple_Pack(1, arg);
+    if (unlikely(!args)) return NULL;
+    result = __Pyx_PyObject_Call(func, args, NULL);
+    Py_DECREF(args);
+    return result;
+}
+#endif
+
+#if CYTHON_COMPILING_IN_CPYTHON
+static CYTHON_INLINE PyObject* __Pyx_PyObject_CallNoArg(PyObject *func) {
+#ifdef __Pyx_CyFunction_USED
+    if (likely(PyCFunction_Check(func) || PyObject_TypeCheck(func, __pyx_CyFunctionType))) {
+#else
+    if (likely(PyCFunction_Check(func))) {
+#endif
+        if (likely(PyCFunction_GET_FLAGS(func) & METH_NOARGS)) {
+            return __Pyx_PyObject_CallMethO(func, NULL);
+        }
+    }
+    return __Pyx_PyObject_Call(func, __pyx_empty_tuple, NULL);
+}
+#endif
+
+static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type) {
+    if (unlikely(!type)) {
+        PyErr_SetString(PyExc_SystemError, "Missing type object");
+        return 0;
+    }
+    if (likely(PyObject_TypeCheck(obj, type)))
+        return 1;
+    PyErr_Format(PyExc_TypeError, "Cannot convert %.200s to %.200s",
+                 Py_TYPE(obj)->tp_name, type->tp_name);
+    return 0;
+}
+
 static CYTHON_INLINE void __Pyx_ErrRestore(PyObject *type, PyObject *value, PyObject *tb) {
 #if CYTHON_COMPILING_IN_CPYTHON
     PyObject *tmp_type, *tmp_value, *tmp_tb;
@@ -5266,171 +5633,6 @@ static CYTHON_INLINE void __Pyx_ErrFetch(PyObject **type, PyObject **value, PyOb
 #endif
 }
 
-static void __Pyx_RaiseArgtupleInvalid(
-    const char* func_name,
-    int exact,
-    Py_ssize_t num_min,
-    Py_ssize_t num_max,
-    Py_ssize_t num_found)
-{
-    Py_ssize_t num_expected;
-    const char *more_or_less;
-    if (num_found < num_min) {
-        num_expected = num_min;
-        more_or_less = "at least";
-    } else {
-        num_expected = num_max;
-        more_or_less = "at most";
-    }
-    if (exact) {
-        more_or_less = "exactly";
-    }
-    PyErr_Format(PyExc_TypeError,
-                 "%.200s() takes %.8s %" CYTHON_FORMAT_SSIZE_T "d positional argument%.1s (%" CYTHON_FORMAT_SSIZE_T "d given)",
-                 func_name, more_or_less, num_expected,
-                 (num_expected == 1) ? "" : "s", num_found);
-}
-
-static void __Pyx_RaiseDoubleKeywordsError(
-    const char* func_name,
-    PyObject* kw_name)
-{
-    PyErr_Format(PyExc_TypeError,
-        #if PY_MAJOR_VERSION >= 3
-        "%s() got multiple values for keyword argument '%U'", func_name, kw_name);
-        #else
-        "%s() got multiple values for keyword argument '%s'", func_name,
-        PyString_AsString(kw_name));
-        #endif
-}
-
-static int __Pyx_ParseOptionalKeywords(
-    PyObject *kwds,
-    PyObject **argnames[],
-    PyObject *kwds2,
-    PyObject *values[],
-    Py_ssize_t num_pos_args,
-    const char* function_name)
-{
-    PyObject *key = 0, *value = 0;
-    Py_ssize_t pos = 0;
-    PyObject*** name;
-    PyObject*** first_kw_arg = argnames + num_pos_args;
-    while (PyDict_Next(kwds, &pos, &key, &value)) {
-        name = first_kw_arg;
-        while (*name && (**name != key)) name++;
-        if (*name) {
-            values[name-argnames] = value;
-            continue;
-        }
-        name = first_kw_arg;
-        #if PY_MAJOR_VERSION < 3
-        if (likely(PyString_CheckExact(key)) || likely(PyString_Check(key))) {
-            while (*name) {
-                if ((CYTHON_COMPILING_IN_PYPY || PyString_GET_SIZE(**name) == PyString_GET_SIZE(key))
-                        && _PyString_Eq(**name, key)) {
-                    values[name-argnames] = value;
-                    break;
-                }
-                name++;
-            }
-            if (*name) continue;
-            else {
-                PyObject*** argname = argnames;
-                while (argname != first_kw_arg) {
-                    if ((**argname == key) || (
-                            (CYTHON_COMPILING_IN_PYPY || PyString_GET_SIZE(**argname) == PyString_GET_SIZE(key))
-                             && _PyString_Eq(**argname, key))) {
-                        goto arg_passed_twice;
-                    }
-                    argname++;
-                }
-            }
-        } else
-        #endif
-        if (likely(PyUnicode_Check(key))) {
-            while (*name) {
-                int cmp = (**name == key) ? 0 :
-                #if !CYTHON_COMPILING_IN_PYPY && PY_MAJOR_VERSION >= 3
-                    (PyUnicode_GET_SIZE(**name) != PyUnicode_GET_SIZE(key)) ? 1 :
-                #endif
-                    PyUnicode_Compare(**name, key);
-                if (cmp < 0 && unlikely(PyErr_Occurred())) goto bad;
-                if (cmp == 0) {
-                    values[name-argnames] = value;
-                    break;
-                }
-                name++;
-            }
-            if (*name) continue;
-            else {
-                PyObject*** argname = argnames;
-                while (argname != first_kw_arg) {
-                    int cmp = (**argname == key) ? 0 :
-                    #if !CYTHON_COMPILING_IN_PYPY && PY_MAJOR_VERSION >= 3
-                        (PyUnicode_GET_SIZE(**argname) != PyUnicode_GET_SIZE(key)) ? 1 :
-                    #endif
-                        PyUnicode_Compare(**argname, key);
-                    if (cmp < 0 && unlikely(PyErr_Occurred())) goto bad;
-                    if (cmp == 0) goto arg_passed_twice;
-                    argname++;
-                }
-            }
-        } else
-            goto invalid_keyword_type;
-        if (kwds2) {
-            if (unlikely(PyDict_SetItem(kwds2, key, value))) goto bad;
-        } else {
-            goto invalid_keyword;
-        }
-    }
-    return 0;
-arg_passed_twice:
-    __Pyx_RaiseDoubleKeywordsError(function_name, key);
-    goto bad;
-invalid_keyword_type:
-    PyErr_Format(PyExc_TypeError,
-        "%.200s() keywords must be strings", function_name);
-    goto bad;
-invalid_keyword:
-    PyErr_Format(PyExc_TypeError,
-    #if PY_MAJOR_VERSION < 3
-        "%.200s() got an unexpected keyword argument '%.200s'",
-        function_name, PyString_AsString(key));
-    #else
-        "%s() got an unexpected keyword argument '%U'",
-        function_name, key);
-    #endif
-bad:
-    return -1;
-}
-
-static void __Pyx_RaiseArgumentTypeInvalid(const char* name, PyObject *obj, PyTypeObject *type) {
-    PyErr_Format(PyExc_TypeError,
-        "Argument '%.200s' has incorrect type (expected %.200s, got %.200s)",
-        name, type->tp_name, Py_TYPE(obj)->tp_name);
-}
-static CYTHON_INLINE int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, int none_allowed,
-    const char *name, int exact)
-{
-    if (unlikely(!type)) {
-        PyErr_SetString(PyExc_SystemError, "Missing type object");
-        return 0;
-    }
-    if (none_allowed && obj == Py_None) return 1;
-    else if (exact) {
-        if (likely(Py_TYPE(obj) == type)) return 1;
-        #if PY_MAJOR_VERSION == 2
-        else if ((type == &PyBaseString_Type) && likely(__Pyx_PyBaseString_CheckExact(obj))) return 1;
-        #endif
-    }
-    else {
-        if (likely(PyObject_TypeCheck(obj, type))) return 1;
-    }
-    __Pyx_RaiseArgumentTypeInvalid(name, obj, type);
-    return 0;
-}
-
 static PyObject *__Pyx_GetBuiltinName(PyObject *name) {
     PyObject* result = __Pyx_PyObject_GetAttrStr(__pyx_b, name);
     if (unlikely(!result)) {
@@ -5443,25 +5645,6 @@ static PyObject *__Pyx_GetBuiltinName(PyObject *name) {
     }
     return result;
 }
-
-#if CYTHON_COMPILING_IN_CPYTHON
-static CYTHON_INLINE PyObject* __Pyx_PyObject_Call(PyObject *func, PyObject *arg, PyObject *kw) {
-    PyObject *result;
-    ternaryfunc call = func->ob_type->tp_call;
-    if (unlikely(!call))
-        return PyObject_Call(func, arg, kw);
-    if (unlikely(Py_EnterRecursiveCall((char*)" while calling a Python object")))
-        return NULL;
-    result = (*call)(func, arg, kw);
-    Py_LeaveRecursiveCall();
-    if (unlikely(!result) && unlikely(!PyErr_Occurred())) {
-        PyErr_SetString(
-            PyExc_SystemError,
-            "NULL result without error in PyObject_Call");
-    }
-    return result;
-}
-#endif
 
 #if PY_MAJOR_VERSION < 3
 static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb,
@@ -5638,16 +5821,77 @@ static CYTHON_INLINE void __Pyx_RaiseNoneNotIterableError(void) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
 }
 
-static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type) {
-    if (unlikely(!type)) {
-        PyErr_SetString(PyExc_SystemError, "Missing type object");
-        return 0;
+static PyObject *__Pyx_Import(PyObject *name, PyObject *from_list, int level) {
+    PyObject *empty_list = 0;
+    PyObject *module = 0;
+    PyObject *global_dict = 0;
+    PyObject *empty_dict = 0;
+    PyObject *list;
+    #if PY_VERSION_HEX < 0x03030000
+    PyObject *py_import;
+    py_import = __Pyx_PyObject_GetAttrStr(__pyx_b, __pyx_n_s_import);
+    if (!py_import)
+        goto bad;
+    #endif
+    if (from_list)
+        list = from_list;
+    else {
+        empty_list = PyList_New(0);
+        if (!empty_list)
+            goto bad;
+        list = empty_list;
     }
-    if (likely(PyObject_TypeCheck(obj, type)))
-        return 1;
-    PyErr_Format(PyExc_TypeError, "Cannot convert %.200s to %.200s",
-                 Py_TYPE(obj)->tp_name, type->tp_name);
-    return 0;
+    global_dict = PyModule_GetDict(__pyx_m);
+    if (!global_dict)
+        goto bad;
+    empty_dict = PyDict_New();
+    if (!empty_dict)
+        goto bad;
+    {
+        #if PY_MAJOR_VERSION >= 3
+        if (level == -1) {
+            if (strchr(__Pyx_MODULE_NAME, '.')) {
+                #if PY_VERSION_HEX < 0x03030000
+                PyObject *py_level = PyInt_FromLong(1);
+                if (!py_level)
+                    goto bad;
+                module = PyObject_CallFunctionObjArgs(py_import,
+                    name, global_dict, empty_dict, list, py_level, NULL);
+                Py_DECREF(py_level);
+                #else
+                module = PyImport_ImportModuleLevelObject(
+                    name, global_dict, empty_dict, list, 1);
+                #endif
+                if (!module) {
+                    if (!PyErr_ExceptionMatches(PyExc_ImportError))
+                        goto bad;
+                    PyErr_Clear();
+                }
+            }
+            level = 0;
+        }
+        #endif
+        if (!module) {
+            #if PY_VERSION_HEX < 0x03030000
+            PyObject *py_level = PyInt_FromLong(level);
+            if (!py_level)
+                goto bad;
+            module = PyObject_CallFunctionObjArgs(py_import,
+                name, global_dict, empty_dict, list, py_level, NULL);
+            Py_DECREF(py_level);
+            #else
+            module = PyImport_ImportModuleLevelObject(
+                name, global_dict, empty_dict, list, level);
+            #endif
+        }
+    }
+bad:
+    #if PY_VERSION_HEX < 0x03030000
+    Py_XDECREF(py_import);
+    #endif
+    Py_XDECREF(empty_list);
+    Py_XDECREF(empty_dict);
+    return module;
 }
 
 static int __pyx_bisect_code_objects(__Pyx_CodeObjectCacheEntry* entries, int count, int code_line) {
@@ -5830,7 +6074,7 @@ static void __Pyx_ReleaseBuffer(Py_buffer *view) {
 #endif
 
 
-    #define __PYX_VERIFY_RETURN_INT(target_type, func_type, func_value)\
+        #define __PYX_VERIFY_RETURN_INT(target_type, func_type, func_value)\
     __PYX__VERIFY_RETURN_INT(target_type, func_type, func_value, 0)
 #define __PYX_VERIFY_RETURN_INT_EXC(target_type, func_type, func_value)\
     __PYX__VERIFY_RETURN_INT(target_type, func_type, func_value, 1)
@@ -5855,19 +6099,19 @@ static void __Pyx_ReleaseBuffer(Py_buffer *view) {
   #include "longintrepr.h"
 #endif
 
-static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *x) {
-    const long neg_one = (long) -1, const_zero = (long) 0;
+static CYTHON_INLINE size_t __Pyx_PyInt_As_size_t(PyObject *x) {
+    const size_t neg_one = (size_t) -1, const_zero = (size_t) 0;
     const int is_unsigned = neg_one > const_zero;
 #if PY_MAJOR_VERSION < 3
     if (likely(PyInt_Check(x))) {
-        if (sizeof(long) < sizeof(long)) {
-            __PYX_VERIFY_RETURN_INT(long, long, PyInt_AS_LONG(x))
+        if (sizeof(size_t) < sizeof(long)) {
+            __PYX_VERIFY_RETURN_INT(size_t, long, PyInt_AS_LONG(x))
         } else {
             long val = PyInt_AS_LONG(x);
             if (is_unsigned && unlikely(val < 0)) {
                 goto raise_neg_overflow;
             }
-            return (long) val;
+            return (size_t) val;
         }
     } else
 #endif
@@ -5876,32 +6120,32 @@ static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *x) {
 #if CYTHON_USE_PYLONG_INTERNALS
             const digit* digits = ((PyLongObject*)x)->ob_digit;
             switch (Py_SIZE(x)) {
-                case  0: return (long) 0;
-                case  1: __PYX_VERIFY_RETURN_INT(long, digit, digits[0])
+                case  0: return (size_t) 0;
+                case  1: __PYX_VERIFY_RETURN_INT(size_t, digit, digits[0])
                 case 2:
-                    if (8 * sizeof(long) > 1 * PyLong_SHIFT) {
+                    if (8 * sizeof(size_t) > 1 * PyLong_SHIFT) {
                         if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(long, unsigned long, (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(long) >= 2 * PyLong_SHIFT) {
-                            return (long) (((((long)digits[1]) << PyLong_SHIFT) | (long)digits[0]));
+                            __PYX_VERIFY_RETURN_INT(size_t, unsigned long, (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(size_t) >= 2 * PyLong_SHIFT) {
+                            return (size_t) (((((size_t)digits[1]) << PyLong_SHIFT) | (size_t)digits[0]));
                         }
                     }
                     break;
                 case 3:
-                    if (8 * sizeof(long) > 2 * PyLong_SHIFT) {
+                    if (8 * sizeof(size_t) > 2 * PyLong_SHIFT) {
                         if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(long, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(long) >= 3 * PyLong_SHIFT) {
-                            return (long) (((((((long)digits[2]) << PyLong_SHIFT) | (long)digits[1]) << PyLong_SHIFT) | (long)digits[0]));
+                            __PYX_VERIFY_RETURN_INT(size_t, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(size_t) >= 3 * PyLong_SHIFT) {
+                            return (size_t) (((((((size_t)digits[2]) << PyLong_SHIFT) | (size_t)digits[1]) << PyLong_SHIFT) | (size_t)digits[0]));
                         }
                     }
                     break;
                 case 4:
-                    if (8 * sizeof(long) > 3 * PyLong_SHIFT) {
+                    if (8 * sizeof(size_t) > 3 * PyLong_SHIFT) {
                         if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(long, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(long) >= 4 * PyLong_SHIFT) {
-                            return (long) (((((((((long)digits[3]) << PyLong_SHIFT) | (long)digits[2]) << PyLong_SHIFT) | (long)digits[1]) << PyLong_SHIFT) | (long)digits[0]));
+                            __PYX_VERIFY_RETURN_INT(size_t, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(size_t) >= 4 * PyLong_SHIFT) {
+                            return (size_t) (((((((((size_t)digits[3]) << PyLong_SHIFT) | (size_t)digits[2]) << PyLong_SHIFT) | (size_t)digits[1]) << PyLong_SHIFT) | (size_t)digits[0]));
                         }
                     }
                     break;
@@ -5915,83 +6159,83 @@ static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *x) {
             {
                 int result = PyObject_RichCompareBool(x, Py_False, Py_LT);
                 if (unlikely(result < 0))
-                    return (long) -1;
+                    return (size_t) -1;
                 if (unlikely(result == 1))
                     goto raise_neg_overflow;
             }
 #endif
-            if (sizeof(long) <= sizeof(unsigned long)) {
-                __PYX_VERIFY_RETURN_INT_EXC(long, unsigned long, PyLong_AsUnsignedLong(x))
-            } else if (sizeof(long) <= sizeof(unsigned PY_LONG_LONG)) {
-                __PYX_VERIFY_RETURN_INT_EXC(long, unsigned PY_LONG_LONG, PyLong_AsUnsignedLongLong(x))
+            if (sizeof(size_t) <= sizeof(unsigned long)) {
+                __PYX_VERIFY_RETURN_INT_EXC(size_t, unsigned long, PyLong_AsUnsignedLong(x))
+            } else if (sizeof(size_t) <= sizeof(unsigned PY_LONG_LONG)) {
+                __PYX_VERIFY_RETURN_INT_EXC(size_t, unsigned PY_LONG_LONG, PyLong_AsUnsignedLongLong(x))
             }
         } else {
 #if CYTHON_USE_PYLONG_INTERNALS
             const digit* digits = ((PyLongObject*)x)->ob_digit;
             switch (Py_SIZE(x)) {
-                case  0: return (long) 0;
-                case -1: __PYX_VERIFY_RETURN_INT(long, sdigit, -(sdigit) digits[0])
-                case  1: __PYX_VERIFY_RETURN_INT(long,  digit, +digits[0])
+                case  0: return (size_t) 0;
+                case -1: __PYX_VERIFY_RETURN_INT(size_t, sdigit, -(sdigit) digits[0])
+                case  1: __PYX_VERIFY_RETURN_INT(size_t,  digit, +digits[0])
                 case -2:
-                    if (8 * sizeof(long) - 1 > 1 * PyLong_SHIFT) {
+                    if (8 * sizeof(size_t) - 1 > 1 * PyLong_SHIFT) {
                         if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(long, long, -(long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
-                            return (long) (((long)-1)*(((((long)digits[1]) << PyLong_SHIFT) | (long)digits[0])));
+                            __PYX_VERIFY_RETURN_INT(size_t, long, -(long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(size_t) - 1 > 2 * PyLong_SHIFT) {
+                            return (size_t) (((size_t)-1)*(((((size_t)digits[1]) << PyLong_SHIFT) | (size_t)digits[0])));
                         }
                     }
                     break;
                 case 2:
-                    if (8 * sizeof(long) > 1 * PyLong_SHIFT) {
+                    if (8 * sizeof(size_t) > 1 * PyLong_SHIFT) {
                         if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(long, unsigned long, (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
-                            return (long) ((((((long)digits[1]) << PyLong_SHIFT) | (long)digits[0])));
+                            __PYX_VERIFY_RETURN_INT(size_t, unsigned long, (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(size_t) - 1 > 2 * PyLong_SHIFT) {
+                            return (size_t) ((((((size_t)digits[1]) << PyLong_SHIFT) | (size_t)digits[0])));
                         }
                     }
                     break;
                 case -3:
-                    if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
+                    if (8 * sizeof(size_t) - 1 > 2 * PyLong_SHIFT) {
                         if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(long, long, -(long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
-                            return (long) (((long)-1)*(((((((long)digits[2]) << PyLong_SHIFT) | (long)digits[1]) << PyLong_SHIFT) | (long)digits[0])));
+                            __PYX_VERIFY_RETURN_INT(size_t, long, -(long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(size_t) - 1 > 3 * PyLong_SHIFT) {
+                            return (size_t) (((size_t)-1)*(((((((size_t)digits[2]) << PyLong_SHIFT) | (size_t)digits[1]) << PyLong_SHIFT) | (size_t)digits[0])));
                         }
                     }
                     break;
                 case 3:
-                    if (8 * sizeof(long) > 2 * PyLong_SHIFT) {
+                    if (8 * sizeof(size_t) > 2 * PyLong_SHIFT) {
                         if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(long, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
-                            return (long) ((((((((long)digits[2]) << PyLong_SHIFT) | (long)digits[1]) << PyLong_SHIFT) | (long)digits[0])));
+                            __PYX_VERIFY_RETURN_INT(size_t, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(size_t) - 1 > 3 * PyLong_SHIFT) {
+                            return (size_t) ((((((((size_t)digits[2]) << PyLong_SHIFT) | (size_t)digits[1]) << PyLong_SHIFT) | (size_t)digits[0])));
                         }
                     }
                     break;
                 case -4:
-                    if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
+                    if (8 * sizeof(size_t) - 1 > 3 * PyLong_SHIFT) {
                         if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(long, long, -(long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
-                            return (long) (((long)-1)*(((((((((long)digits[3]) << PyLong_SHIFT) | (long)digits[2]) << PyLong_SHIFT) | (long)digits[1]) << PyLong_SHIFT) | (long)digits[0])));
+                            __PYX_VERIFY_RETURN_INT(size_t, long, -(long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(size_t) - 1 > 4 * PyLong_SHIFT) {
+                            return (size_t) (((size_t)-1)*(((((((((size_t)digits[3]) << PyLong_SHIFT) | (size_t)digits[2]) << PyLong_SHIFT) | (size_t)digits[1]) << PyLong_SHIFT) | (size_t)digits[0])));
                         }
                     }
                     break;
                 case 4:
-                    if (8 * sizeof(long) > 3 * PyLong_SHIFT) {
+                    if (8 * sizeof(size_t) > 3 * PyLong_SHIFT) {
                         if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
-                            __PYX_VERIFY_RETURN_INT(long, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
-                        } else if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
-                            return (long) ((((((((((long)digits[3]) << PyLong_SHIFT) | (long)digits[2]) << PyLong_SHIFT) | (long)digits[1]) << PyLong_SHIFT) | (long)digits[0])));
+                            __PYX_VERIFY_RETURN_INT(size_t, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(size_t) - 1 > 4 * PyLong_SHIFT) {
+                            return (size_t) ((((((((((size_t)digits[3]) << PyLong_SHIFT) | (size_t)digits[2]) << PyLong_SHIFT) | (size_t)digits[1]) << PyLong_SHIFT) | (size_t)digits[0])));
                         }
                     }
                     break;
             }
 #endif
-            if (sizeof(long) <= sizeof(long)) {
-                __PYX_VERIFY_RETURN_INT_EXC(long, long, PyLong_AsLong(x))
-            } else if (sizeof(long) <= sizeof(PY_LONG_LONG)) {
-                __PYX_VERIFY_RETURN_INT_EXC(long, PY_LONG_LONG, PyLong_AsLongLong(x))
+            if (sizeof(size_t) <= sizeof(long)) {
+                __PYX_VERIFY_RETURN_INT_EXC(size_t, long, PyLong_AsLong(x))
+            } else if (sizeof(size_t) <= sizeof(PY_LONG_LONG)) {
+                __PYX_VERIFY_RETURN_INT_EXC(size_t, PY_LONG_LONG, PyLong_AsLongLong(x))
             }
         }
         {
@@ -5999,7 +6243,7 @@ static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *x) {
             PyErr_SetString(PyExc_RuntimeError,
                             "_PyLong_AsByteArray() not available in PyPy, cannot convert large numbers");
 #else
-            long val;
+            size_t val;
             PyObject *v = __Pyx_PyNumber_Int(x);
  #if PY_MAJOR_VERSION < 3
             if (likely(v) && !PyLong_Check(v)) {
@@ -6019,24 +6263,24 @@ static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *x) {
                     return val;
             }
 #endif
-            return (long) -1;
+            return (size_t) -1;
         }
     } else {
-        long val;
+        size_t val;
         PyObject *tmp = __Pyx_PyNumber_Int(x);
-        if (!tmp) return (long) -1;
-        val = __Pyx_PyInt_As_long(tmp);
+        if (!tmp) return (size_t) -1;
+        val = __Pyx_PyInt_As_size_t(tmp);
         Py_DECREF(tmp);
         return val;
     }
 raise_overflow:
     PyErr_SetString(PyExc_OverflowError,
-        "value too large to convert to long");
-    return (long) -1;
+        "value too large to convert to size_t");
+    return (size_t) -1;
 raise_neg_overflow:
     PyErr_SetString(PyExc_OverflowError,
-        "can't convert negative value to long");
-    return (long) -1;
+        "can't convert negative value to size_t");
+    return (size_t) -1;
 }
 
 #if CYTHON_CCOMPLEX
@@ -6539,6 +6783,190 @@ static CYTHON_INLINE PyObject* __Pyx_PyInt_From_long(long value) {
         return _PyLong_FromByteArray(bytes, sizeof(long),
                                      little, !is_unsigned);
     }
+}
+
+static CYTHON_INLINE long __Pyx_PyInt_As_long(PyObject *x) {
+    const long neg_one = (long) -1, const_zero = (long) 0;
+    const int is_unsigned = neg_one > const_zero;
+#if PY_MAJOR_VERSION < 3
+    if (likely(PyInt_Check(x))) {
+        if (sizeof(long) < sizeof(long)) {
+            __PYX_VERIFY_RETURN_INT(long, long, PyInt_AS_LONG(x))
+        } else {
+            long val = PyInt_AS_LONG(x);
+            if (is_unsigned && unlikely(val < 0)) {
+                goto raise_neg_overflow;
+            }
+            return (long) val;
+        }
+    } else
+#endif
+    if (likely(PyLong_Check(x))) {
+        if (is_unsigned) {
+#if CYTHON_USE_PYLONG_INTERNALS
+            const digit* digits = ((PyLongObject*)x)->ob_digit;
+            switch (Py_SIZE(x)) {
+                case  0: return (long) 0;
+                case  1: __PYX_VERIFY_RETURN_INT(long, digit, digits[0])
+                case 2:
+                    if (8 * sizeof(long) > 1 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(long, unsigned long, (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(long) >= 2 * PyLong_SHIFT) {
+                            return (long) (((((long)digits[1]) << PyLong_SHIFT) | (long)digits[0]));
+                        }
+                    }
+                    break;
+                case 3:
+                    if (8 * sizeof(long) > 2 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(long, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(long) >= 3 * PyLong_SHIFT) {
+                            return (long) (((((((long)digits[2]) << PyLong_SHIFT) | (long)digits[1]) << PyLong_SHIFT) | (long)digits[0]));
+                        }
+                    }
+                    break;
+                case 4:
+                    if (8 * sizeof(long) > 3 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(long, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(long) >= 4 * PyLong_SHIFT) {
+                            return (long) (((((((((long)digits[3]) << PyLong_SHIFT) | (long)digits[2]) << PyLong_SHIFT) | (long)digits[1]) << PyLong_SHIFT) | (long)digits[0]));
+                        }
+                    }
+                    break;
+            }
+#endif
+#if CYTHON_COMPILING_IN_CPYTHON
+            if (unlikely(Py_SIZE(x) < 0)) {
+                goto raise_neg_overflow;
+            }
+#else
+            {
+                int result = PyObject_RichCompareBool(x, Py_False, Py_LT);
+                if (unlikely(result < 0))
+                    return (long) -1;
+                if (unlikely(result == 1))
+                    goto raise_neg_overflow;
+            }
+#endif
+            if (sizeof(long) <= sizeof(unsigned long)) {
+                __PYX_VERIFY_RETURN_INT_EXC(long, unsigned long, PyLong_AsUnsignedLong(x))
+            } else if (sizeof(long) <= sizeof(unsigned PY_LONG_LONG)) {
+                __PYX_VERIFY_RETURN_INT_EXC(long, unsigned PY_LONG_LONG, PyLong_AsUnsignedLongLong(x))
+            }
+        } else {
+#if CYTHON_USE_PYLONG_INTERNALS
+            const digit* digits = ((PyLongObject*)x)->ob_digit;
+            switch (Py_SIZE(x)) {
+                case  0: return (long) 0;
+                case -1: __PYX_VERIFY_RETURN_INT(long, sdigit, -(sdigit) digits[0])
+                case  1: __PYX_VERIFY_RETURN_INT(long,  digit, +digits[0])
+                case -2:
+                    if (8 * sizeof(long) - 1 > 1 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(long, long, -(long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
+                            return (long) (((long)-1)*(((((long)digits[1]) << PyLong_SHIFT) | (long)digits[0])));
+                        }
+                    }
+                    break;
+                case 2:
+                    if (8 * sizeof(long) > 1 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 2 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(long, unsigned long, (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
+                            return (long) ((((((long)digits[1]) << PyLong_SHIFT) | (long)digits[0])));
+                        }
+                    }
+                    break;
+                case -3:
+                    if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(long, long, -(long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
+                            return (long) (((long)-1)*(((((((long)digits[2]) << PyLong_SHIFT) | (long)digits[1]) << PyLong_SHIFT) | (long)digits[0])));
+                        }
+                    }
+                    break;
+                case 3:
+                    if (8 * sizeof(long) > 2 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 3 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(long, unsigned long, (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
+                            return (long) ((((((((long)digits[2]) << PyLong_SHIFT) | (long)digits[1]) << PyLong_SHIFT) | (long)digits[0])));
+                        }
+                    }
+                    break;
+                case -4:
+                    if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(long, long, -(long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
+                            return (long) (((long)-1)*(((((((((long)digits[3]) << PyLong_SHIFT) | (long)digits[2]) << PyLong_SHIFT) | (long)digits[1]) << PyLong_SHIFT) | (long)digits[0])));
+                        }
+                    }
+                    break;
+                case 4:
+                    if (8 * sizeof(long) > 3 * PyLong_SHIFT) {
+                        if (8 * sizeof(unsigned long) > 4 * PyLong_SHIFT) {
+                            __PYX_VERIFY_RETURN_INT(long, unsigned long, (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0])))
+                        } else if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
+                            return (long) ((((((((((long)digits[3]) << PyLong_SHIFT) | (long)digits[2]) << PyLong_SHIFT) | (long)digits[1]) << PyLong_SHIFT) | (long)digits[0])));
+                        }
+                    }
+                    break;
+            }
+#endif
+            if (sizeof(long) <= sizeof(long)) {
+                __PYX_VERIFY_RETURN_INT_EXC(long, long, PyLong_AsLong(x))
+            } else if (sizeof(long) <= sizeof(PY_LONG_LONG)) {
+                __PYX_VERIFY_RETURN_INT_EXC(long, PY_LONG_LONG, PyLong_AsLongLong(x))
+            }
+        }
+        {
+#if CYTHON_COMPILING_IN_PYPY && !defined(_PyLong_AsByteArray)
+            PyErr_SetString(PyExc_RuntimeError,
+                            "_PyLong_AsByteArray() not available in PyPy, cannot convert large numbers");
+#else
+            long val;
+            PyObject *v = __Pyx_PyNumber_Int(x);
+ #if PY_MAJOR_VERSION < 3
+            if (likely(v) && !PyLong_Check(v)) {
+                PyObject *tmp = v;
+                v = PyNumber_Long(tmp);
+                Py_DECREF(tmp);
+            }
+ #endif
+            if (likely(v)) {
+                int one = 1; int is_little = (int)*(unsigned char *)&one;
+                unsigned char *bytes = (unsigned char *)&val;
+                int ret = _PyLong_AsByteArray((PyLongObject *)v,
+                                              bytes, sizeof(val),
+                                              is_little, !is_unsigned);
+                Py_DECREF(v);
+                if (likely(!ret))
+                    return val;
+            }
+#endif
+            return (long) -1;
+        }
+    } else {
+        long val;
+        PyObject *tmp = __Pyx_PyNumber_Int(x);
+        if (!tmp) return (long) -1;
+        val = __Pyx_PyInt_As_long(tmp);
+        Py_DECREF(tmp);
+        return val;
+    }
+raise_overflow:
+    PyErr_SetString(PyExc_OverflowError,
+        "value too large to convert to long");
+    return (long) -1;
+raise_neg_overflow:
+    PyErr_SetString(PyExc_OverflowError,
+        "can't convert negative value to long");
+    return (long) -1;
 }
 
 static int __Pyx_check_binary_version(void) {
