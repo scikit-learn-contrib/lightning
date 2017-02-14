@@ -1,6 +1,4 @@
-import os.path
-
-import numpy
+from lightning._build_utils import maybe_cythonize_extensions
 
 
 def configuration(parent_package='', top_path=None):
@@ -9,6 +7,8 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('lightning', parent_package, top_path)
 
     config.add_subpackage('impl')
+
+    maybe_cythonize_extensions(top_path, config)
 
     return config
 

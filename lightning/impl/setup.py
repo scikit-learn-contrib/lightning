@@ -11,47 +11,58 @@ def configuration(parent_package='', top_path=None):
     randomdir = os.path.join(top_path, "lightning", "impl", "randomkit")
 
     config.add_extension('adagrad_fast',
-                         sources=['adagrad_fast.cpp'],
+                         sources=['adagrad_fast.pyx'],
+                         language='c++',
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('dataset_fast',
-                         sources=['dataset_fast.cpp'],
+                         sources=['dataset_fast.pyx'],
+                         language='c++',
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('dual_cd_fast',
-                         sources=['dual_cd_fast.cpp'],
+                         sources=['dual_cd_fast.pyx'],
+                         language='c++',
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('loss_fast',
-                         sources=['loss_fast.cpp'],
+                         sources=['loss_fast.pyx'],
+                         language='c++',
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('prank_fast',
-                         sources=['prank_fast.cpp'],
+                         sources=['prank_fast.pyx'],
+                         language='c++',
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('primal_cd_fast',
-                         sources=['primal_cd_fast.cpp'],
+                         sources=['primal_cd_fast.pyx'],
+                         language='c++',
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('prox_fast',
-                         sources=['prox_fast.cpp'],
+                         sources=['prox_fast.pyx'],
+                         language='c++',
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('sag_fast',
-                         sources=['sag_fast.cpp'],
+                         sources=['sag_fast.pyx'],
+                         language='c++',
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('sdca_fast',
-                         sources=['sdca_fast.cpp'],
+                         sources=['sdca_fast.pyx'],
+                         language='c++',
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('sgd_fast',
-                         sources=['sgd_fast.cpp'],
+                         sources=['sgd_fast.pyx'],
+                         language='c++',
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_extension('svrg_fast',
-                         sources=['svrg_fast.cpp'],
+                         sources=['svrg_fast.pyx'],
+                         language='c++',
                          include_dirs=[numpy.get_include(), randomdir])
 
     config.add_subpackage('datasets')
