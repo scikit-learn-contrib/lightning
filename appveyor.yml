@@ -9,26 +9,21 @@ environment:
     CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\build_tools\\appveyor\\run_with_env.cmd"
 
   matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.8"
+    - PYTHON_VERSION: "2.7.13"
       PYTHON_ARCH: "32"
       MINICONDA: "C:\\Miniconda"
 
-    - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.8"
+    - PYTHON_VERSION: "2.7.13"
       PYTHON_ARCH: "64"
       MINICONDA: "C:\\Miniconda-x64"
 
-    - PYTHON: "C:\\Python35"
-      PYTHON_VERSION: "3.5.0"
+    - PYTHON_VERSION: "3.6.0"
       PYTHON_ARCH: "32"
-      MINICONDA: "C:\\Miniconda35"
+      MINICONDA: "C:\\Miniconda36"
 
-    - PYTHON: "C:\\Python35-x64"
-      PYTHON_VERSION: "3.5.0"
+    - PYTHON_VERSION: "3.6.0"
       PYTHON_ARCH: "64"
-      MINICONDA: "C:\\Miniconda35-x64"
-
+      MINICONDA: "C:\\Miniconda36-x64"
 
 
 install:
