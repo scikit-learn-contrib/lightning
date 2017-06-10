@@ -43,7 +43,6 @@ install:
   # Update previous packages and install the build and runtime dependencies of the project.
   - conda update --all --yes
   - conda install --quiet --yes numpy scipy cython nose scikit-learn wheel"
-  - conda install --quiet --yes conda-build
   - "%CMD_IN_ENV% python setup.py bdist_wheel bdist_wininst"
 
   - ps: "ls dist"
