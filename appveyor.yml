@@ -43,9 +43,7 @@ install:
   # Update previous packages and install the build and runtime dependencies of the project.
   - conda update --all --yes
   - conda install --quiet --yes numpy scipy cython nose scikit-learn wheel"
-  # there seems to be a problem with conda-build 1.21.0 on python27 and win64, avoid this
-  # by using a previous version
-  - conda install --quiet --yes conda-build=1.21.0
+  - conda install --quiet --yes conda-build
   - "%CMD_IN_ENV% python setup.py bdist_wheel bdist_wininst"
 
   - ps: "ls dist"
