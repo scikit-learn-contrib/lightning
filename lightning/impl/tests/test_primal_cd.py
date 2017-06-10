@@ -421,3 +421,11 @@ def test_multiclass_classes():
     clf = CDClassifier()
     clf.fit(mult_dense, mult_target)
     assert_equal(list(clf.classes_), [0, 1, 2])
+
+
+def test_n_jobs_can_fit():
+    # Check that all loss cdef classes pickle (issue #114)
+    for loss in ('squared', 'smooth_hinge', 'squared_hinge', 'modified_huber',
+            'log'):
+        clf = CDClassifier(loss=loss, n_jobs=2)
+        clf.fit(mult_dense, mult_target)
