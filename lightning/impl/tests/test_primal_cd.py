@@ -178,7 +178,8 @@ def test_debiasing_l1l2():
                            multiclass=False,
                            debiasing=True,
                            warm_debiasing=warm_debiasing,
-                           max_iter=20, C=0.01, random_state=0)
+                           max_iter=20, C=0.01, random_state=0,
+                           verbose=True)
         clf.fit(mult_csc, mult_target)
         assert_greater(clf.score(mult_csc, mult_target), 0.75)
         assert_equal(clf.n_nonzero(percentage=True), 0.08)

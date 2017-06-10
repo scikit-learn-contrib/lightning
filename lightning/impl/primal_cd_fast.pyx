@@ -32,6 +32,12 @@ cdef class LossFunction:
     cdef double beta
     cdef int verbose
 
+    def __getstate__(self):
+        return self.max_steps, self.sigma, self.beta, self.verbose
+
+    def __setstate__(self, state):
+        self.max_steps, self.sigma, self.beta, self.verbose = state
+
     # L2 regularization
 
     cdef void solve_l2(self,
