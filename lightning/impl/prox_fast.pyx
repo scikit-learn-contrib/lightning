@@ -11,8 +11,9 @@ These are some helper functions to compute the proximal operator of some common 
 """
 
 cimport numpy as np
+from cython cimport floating
 
-cpdef prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):
+cpdef prox_tv1d(np.ndarray[ndim=1, dtype=floating] w, floating stepsize):
     """
     Computes the proximal operator of the 1-dimensional total variation operator.
 
@@ -35,7 +36,7 @@ cpdef prox_tv1d(np.ndarray[ndim=1, dtype=double] w, double stepsize):
     IEEE Signal Processing Letters (2013)
     """
     cdef long width, k, k0, kplus, kminus
-    cdef double umin, umax, vmin, vmax, twolambda, minlambda
+    cdef floating umin, umax, vmin, vmax, twolambda, minlambda
     width = w.size
 
     # /to avoid invalid memory access to input[0] and invalid lambda values
