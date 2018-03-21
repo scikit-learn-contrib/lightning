@@ -71,7 +71,8 @@ for eta in etas:
     print("eta =", eta)
     cb = Callback(X, y)
     clf = SVRGClassifier(loss="squared_hinge", alpha=1e-5, eta=eta,
-                         n_inner=1.0, max_iter=20, random_state=0, callback=cb)
+                         do_averaging=True, n_inner=1.0, max_iter=20,
+                         random_state=0, callback=cb)
     clf.fit(X, y)
     plt.plot(cb.times, cb.obj, label="eta=" + str(eta))
 
@@ -85,8 +86,8 @@ for n_inner in n_inners:
     print("n_inner =", n_inner)
     cb = Callback(X, y)
     clf = SVRGClassifier(loss="squared_hinge", alpha=1e-5, eta=1e-4,
-                         n_inner=n_inner, max_iter=20, random_state=0,
-                         callback=cb)
+                         do_averaging=True, n_inner=n_inner, max_iter=20,
+                         random_state=0, callback=cb)
     clf.fit(X, y)
     plt.plot(cb.times, cb.obj, label="n_inner=" + str(n_inner))
 

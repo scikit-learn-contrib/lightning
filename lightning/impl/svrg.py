@@ -20,10 +20,9 @@ from .sgd_fast import SquaredLoss
 class _BaseSVRG(object):
 
     def _finalize_coef(self):
-        self.coef_ *= self.coef_scale_
-        self.coef_scale_.fill(1.0)
+        pass
 
-    def _fit(self, X, Y):
+    def _fit(self, X, Y, do_averaging):
         n_samples, n_features = X.shape
         rng = self._get_random_state()
         loss = self._get_loss()
@@ -32,16 +31,16 @@ class _BaseSVRG(object):
         ds = get_dataset(X, order="c")
 
         self.coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
+        self.average_coef_ = np.zeros((n_vectors, n_features), dtype=np.float64)
         full_grad = np.zeros_like(self.coef_)
         grad = np.zeros((n_vectors, n_samples), dtype=np.float64)
-        self.coef_scale_ = np.ones(n_vectors, dtype=np.float64)
 
         for i in xrange(n_vectors):
             y = Y[:, i]
 
-            _svrg_fit(self, ds, y, self.coef_[i], self.coef_scale_[i:],
+            _svrg_fit(self, ds, y, self.coef_[i], self.average_coef_[i],
                       full_grad[i], grad[i], self.eta, self.alpha, loss,
-                      self.max_iter, n_inner, self.tol, self.verbose,
+                      self.max_iter, n_inner, self.tol, self.verbose, self.do_averaging,
                       self.callback, rng)
 
         return self
@@ -59,7 +58,7 @@ class SVRGClassifier(BaseClassifier, _BaseSVRG):
 
     def __init__(self, eta=1.0, alpha=1.0, loss="smooth_hinge", gamma=1.0,
                  max_iter=10, n_inner=1.0, tol=1e-3, verbose=0,
-                 callback=None, random_state=None):
+                 callback=None, random_state=None, do_averaging=False):
         self.eta = eta
         self.alpha = alpha
         self.loss = loss
@@ -70,6 +69,7 @@ class SVRGClassifier(BaseClassifier, _BaseSVRG):
         self.verbose = verbose
         self.callback = callback
         self.random_state = random_state
+        self.do_averaging = do_averaging
 
     def _get_loss(self):
         losses = {
@@ -85,7 +85,7 @@ class SVRGClassifier(BaseClassifier, _BaseSVRG):
         self._set_label_transformers(y)
         Y = np.asfortranarray(self.label_binarizer_.transform(y),
                               dtype=np.float64)
-        return self._fit(X, Y)
+        return self._fit(X, Y, self.do_averaging)
 
 
 class SVRGRegressor(BaseRegressor, _BaseSVRG):
@@ -100,7 +100,7 @@ class SVRGRegressor(BaseRegressor, _BaseSVRG):
 
     def __init__(self, eta=1.0, alpha=1.0, loss="squared", gamma=1.0,
                  max_iter=10, n_inner=1.0, tol=1e-3, verbose=0,
-                 callback=None, random_state=None):
+                 callback=None, random_state=None, do_averaging=False):
         self.eta = eta
         self.alpha = alpha
         self.loss = loss
@@ -111,6 +111,7 @@ class SVRGRegressor(BaseRegressor, _BaseSVRG):
         self.verbose = verbose
         self.callback = callback
         self.random_state = random_state
+        self.do_averaging = do_averaging
 
     def _get_loss(self):
         losses = {
@@ -122,4 +123,4 @@ class SVRGRegressor(BaseRegressor, _BaseSVRG):
         self.outputs_2d_ = len(y.shape) > 1
         Y = y.reshape(-1, 1) if not self.outputs_2d_ else y
         Y = Y.astype(np.float64)
-        return self._fit(X, Y)
+        return self._fit(X, Y, self.do_averaging)
