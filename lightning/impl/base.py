@@ -3,6 +3,7 @@
 
 import numpy as np
 import scipy.sparse as sp
+import scipy.special
 
 from sklearn.base import BaseEstimator as _BaseEstimator
 from sklearn.base import ClassifierMixin, RegressorMixin
@@ -52,7 +53,7 @@ class BaseClassifier(BaseEstimator, ClassifierMixin):
                                       " for binary classification")
         if self.loss == "log":
             df = self.decision_function(X).ravel()
-            prob = 1.0 / (1.0 + np.exp(-df))
+            prob = scipy.special.expit(df)
         elif self.loss == "modified_huber":
             df = self.decision_function(X).ravel()
             prob = np.minimum(1, np.maximum(-1, df))
