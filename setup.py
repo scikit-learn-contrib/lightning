@@ -4,6 +4,7 @@
 
 import sys
 import os
+from distutils.command.sdist import sdist
 import setuptools
 from numpy.distutils.core import setup
 
@@ -53,6 +54,7 @@ if __name__ == "__main__":
           download_url=DOWNLOAD_URL,
           long_description=LONG_DESCRIPTION,
           zip_safe=False,  # the package can run out of an .egg file
+          cmdclass={"sdist": sdist},
           classifiers=[
               'Intended Audience :: Science/Research',
               'Intended Audience :: Developers',

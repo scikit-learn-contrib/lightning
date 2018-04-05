@@ -1,2 +1,3 @@
 include MANIFEST.in
+include README.rst
 recursive-include lightning *.c *.h *.cpp *.pyx *.pxd
