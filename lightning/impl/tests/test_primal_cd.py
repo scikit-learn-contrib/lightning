@@ -178,7 +178,8 @@ def test_debiasing_l1l2():
                            multiclass=False,
                            debiasing=True,
                            warm_debiasing=warm_debiasing,
-                           max_iter=20, C=0.01, random_state=0)
+                           max_iter=20, C=0.01, random_state=0,
+                           verbose=True)
         clf.fit(mult_csc, mult_target)
         assert_greater(clf.score(mult_csc, mult_target), 0.75)
         assert_equal(clf.n_nonzero(percentage=True), 0.08)
@@ -421,3 +422,11 @@ def test_multiclass_classes():
     clf = CDClassifier()
     clf.fit(mult_dense, mult_target)
     assert_equal(list(clf.classes_), [0, 1, 2])
+
+
+def test_n_jobs_can_fit():
+    # Check that all loss cdef classes pickle (issue #114)
+    for loss in ('squared', 'smooth_hinge', 'squared_hinge', 'modified_huber',
+            'log'):
+        clf = CDClassifier(loss=loss, n_jobs=2)
+        clf.fit(mult_dense, mult_target)
