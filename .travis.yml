@@ -3,7 +3,7 @@ language: python
 python:
   - "2.7"
   - "3.4"
-  - "3.5"
+  - "3.7"
 install:
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
