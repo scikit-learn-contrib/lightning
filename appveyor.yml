@@ -12,28 +12,24 @@ environment:
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.8"
       PYTHON_ARCH: "32"
-      MINICONDA: "C:\\Miniconda"
 
     - PYTHON: "C:\\Python27-x64"
       PYTHON_VERSION: "2.7.8"
       PYTHON_ARCH: "64"
-      MINICONDA: "C:\\Miniconda-x64"
 
-    - PYTHON: "C:\\Python35"
-      PYTHON_VERSION: "3.5.0"
+    - PYTHON: "C:\\Python37"
+      PYTHON_VERSION: "3.7.0"
       PYTHON_ARCH: "32"
-      MINICONDA: "C:\\Miniconda35"
 
-    - PYTHON: "C:\\Python35-x64"
-      PYTHON_VERSION: "3.5.0"
+    - PYTHON: "C:\\Python37-x64"
+      PYTHON_VERSION: "3.7.0"
       PYTHON_ARCH: "64"
-      MINICONDA: "C:\\Miniconda35-x64"
 
 
 
 install:
   # Miniconda is pre-installed in the worker build
-  - "SET PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python -m pip install -U pip"
 
   # Check that we have the expected version and architecture for Python
@@ -41,17 +37,8 @@ install:
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
   - "pip --version"
 
-  # Remove cygwin because it clashes with conda
-  # see http://help.appveyor.com/discussions/problems/3712-git-remote-https-seems-to-be-broken
-  - rmdir C:\\cygwin /s /q
-
-  # Update previous packages and install the build and runtime dependencies of the project.
-  - conda update --all --yes
-  - conda install --quiet --yes numpy scipy cython nose scikit-learn wheel"
-  # there seems to be a problem with conda-build 1.21.0 on python27 and win64, avoid this
-  # by using a previous version
-  - conda install --quiet --yes conda-build=1.21.0
-  - "%CMD_IN_ENV% python setup.py bdist_wheel bdist_wininst"
+  - %CMD_IN_ENV% pip install --timeout=60 numpy scipy cython nose scikit-learn wheel
+  - %CMD_IN_ENV% python setup.py bdist_wheel bdist_wininst 
 
   - ps: "ls dist"
   # Install the generated wheel package to test it
