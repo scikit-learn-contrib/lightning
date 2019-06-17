@@ -2,6 +2,7 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: language_level=3
 #
 # Author: Mathieu Blondel
 # License: BSD
@@ -120,11 +121,11 @@ def _svrg_fit(self,
         violation_ratio = violation / violation_init
 
         if verbose:
-            print it + 1, violation_ratio
+            print(it + 1, violation_ratio)
 
         if violation_ratio <= tol:
             if verbose:
-                print "Converged"
+                print("Converged")
             break
 
         # Inner loop.
