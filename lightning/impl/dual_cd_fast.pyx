@@ -2,6 +2,7 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: language_level=3
 #
 # Author: Mathieu Blondel
 # License: BSD
@@ -223,7 +224,7 @@ def _dual_cd(self,
 
         # Verbose output.
         if verbose >= 1:
-            print "iter", t + 1, M - m, "(%d)" % active_size
+            print("iter", t + 1, M - m, "(%d)" % active_size)
 
         if stop:
             break
@@ -232,7 +233,7 @@ def _dual_cd(self,
         if M - m <= tol:
             if active_size == n_samples:
                 if verbose >= 1:
-                    print "\nConverged at iteration", t
+                    print("\nConverged at iteration", t)
                 break
             else:
                 # When shrinking is enabled, we need to do one more outer
@@ -320,7 +321,7 @@ def _dual_cd_auc(self,
     # Learning
     for t in xrange(max_iter):
         if verbose >= 1:
-            print "\nIteration", t
+            print("\nIteration", t)
 
         for tt in xrange(n_samples):
             r = rs.randint(n_pos - 1)
@@ -455,7 +456,7 @@ def _dual_cd_svr(self,
     # Learning...
     for t in xrange(max_iter):
         if verbose >= 1:
-            print "\nIteration", t
+            print("\nIteration", t)
 
         if permute:
             rs.shuffle(A)
@@ -532,17 +533,17 @@ def _dual_cd_svr(self,
             violation_init = violation_sum
 
         if verbose >= 1:
-            print t, violation_sum / violation_init
+            print(t, violation_sum / violation_init)
 
         if violation_sum / violation_init < tol:
             if verbose >= 1:
-                print "Converged"
+                print("Converged")
             break
 
     # end for t
 
     if verbose >= 1:
-        print
+        print()
 
     for i in xrange(n_samples):
         ii = i * 2

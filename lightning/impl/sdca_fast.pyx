@@ -2,6 +2,7 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: language_level=3
 #
 # Author: Mathieu Blondel
 # License: BSD
@@ -280,11 +281,11 @@ def _prox_sdca_fit(self,
         gap = fabs(gap)
 
         if verbose:
-            print "iter", it + 1, gap
+            print("iter", it + 1, gap)
 
         if gap <= tol:
             if verbose:
-                print "Converged"
+                print("Converged")
             break
 
     # for it in xrange(max_iter)

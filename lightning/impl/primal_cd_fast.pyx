@@ -2,6 +2,7 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: language_level=3
 #
 # Author: Mathieu Blondel
 # License: BSD
@@ -86,7 +87,7 @@ cdef class LossFunction:
             if step >= self.max_steps:
                 if self.max_steps > 1:
                     if self.verbose >= 2:
-                        print "Max steps reached during line search..."
+                        print("Max steps reached during line search...")
                     recompute = 1
                 break
 
@@ -223,7 +224,7 @@ cdef class LossFunction:
                  Lp_n < -violation_old / n_samples:
                 # Shrink!
                 if self.verbose >= 3:
-                    print "Shrink variable", j
+                    print("Shrink variable", j)
                 return 1
         elif w[j] > 0:
             violation[0] = fabs(Lp_p)
@@ -262,7 +263,7 @@ cdef class LossFunction:
             if step >= self.max_steps:
                 if self.max_steps > 1:
                     if self.verbose >= 2:
-                        print "Max steps reached during line search..."
+                        print("Max steps reached during line search...")
                     recompute = 1
                 break
 
@@ -379,7 +380,7 @@ cdef class LossFunction:
                  g_norm + violation_old / nv <= 0:
                 # Shrink!
                 if self.verbose >= 2:
-                    print "Shrink variable", j
+                    print("Shrink variable", j)
                 return 1
         else:
             violation[0] = fabs(g_norm - alpha)
@@ -434,7 +435,7 @@ cdef class LossFunction:
             if step >= self.max_steps:
                 if self.max_steps > 1:
                     if self.verbose >= 2:
-                        print "Max steps reached during line search..."
+                        print("Max steps reached during line search...")
                     recompute = 1
                 break
 
@@ -1365,11 +1366,11 @@ def _primal_cd(self,
         # Verbose output.
         if verbose >= 1:
             if check_violation_sum:
-                print "iter", t + 1, violation_sum / violation_init, \
-                      "(%d)" % active_size
+                print("iter", t + 1, violation_sum / violation_init,
+                      "(%d)" % active_size)
             elif check_violation_max:
-                print "iter", t + 1, violation_max / violation_init, \
-                      "(%d)" % active_size
+                print("iter", t + 1, violation_max / violation_init,
+                      "(%d)" % active_size)
 
         # Check convergence.
         if (check_violation_sum and
@@ -1378,7 +1379,7 @@ def _primal_cd(self,
             violation_max <= tol * violation_init):
             if active_size == active_size_start:
                 if verbose >= 1:
-                    print "\nConverged at iteration", t
+                    print("\nConverged at iteration", t)
                 break
             else:
                 # When shrinking is enabled, we need to do one more outer
