@@ -12,6 +12,7 @@ from sklearn.cross_validation import train_test_split
 from lightning.classification import CDClassifier
 from lightning.classification import LinearSVC
 from lightning.classification import SGDClassifier
+from sklearn import tree
 
 # Load News20 dataset from scikit-learn.
 bunch = fetch_20newsgroups_vectorized(subset="all")
@@ -41,7 +42,9 @@ clfs = (CDClassifier(loss="squared_hinge",
         SGDClassifier(learning_rate="constant",
                       alpha=1e-3,
                       max_iter=20,
-                      random_state=0))
+                      random_state=0),
+        
+       clf = tree.DecisionTreeClassifier())
 
 for clf in clfs:
     print(clf.__class__.__name__)
