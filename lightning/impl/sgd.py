@@ -16,7 +16,7 @@ import numpy as np
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import assert_all_finite
-from sklearn.externals.six.moves import xrange
+from six.moves import xrange
 
 from .base import BaseClassifier
 from .base import BaseRegressor

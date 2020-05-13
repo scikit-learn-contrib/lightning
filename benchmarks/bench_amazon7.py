@@ -1,6 +1,6 @@
 import sys
 
-from sklearn.externals import joblib
+import joblib
 
 from lightning.classification import SDCAClassifier
 

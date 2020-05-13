@@ -4,7 +4,7 @@
 import numpy as np
 
 from sklearn.utils.extmath import safe_sparse_dot
-from sklearn.externals.six.moves import xrange
+from six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 
