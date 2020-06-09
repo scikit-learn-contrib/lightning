@@ -42,6 +42,10 @@ if __name__ == "__main__":
     setup(configuration=configuration,
           name=DISTNAME,
           maintainer=MAINTAINER,
+          install_requires=[
+              'six',
+              'scikit-learn'
+          ],
           include_package_data=True,
           scripts=["bin/lightning_train",
                    "bin/lightning_predict"],

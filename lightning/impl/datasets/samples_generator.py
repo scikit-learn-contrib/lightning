@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.sparse as sp
-from sklearn.externals.six.moves import xrange
+from six.moves import xrange
 
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils import check_random_state

@@ -12,8 +12,8 @@ functions and penalties.
 
 import numpy as np
 
-from sklearn.externals.joblib import Parallel, delayed
-from sklearn.externals.six.moves import xrange
+from joblib import Parallel, delayed
+from six.moves import xrange
 
 from .base import BaseClassifier
 from .base import BaseRegressor

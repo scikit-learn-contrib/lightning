@@ -3,7 +3,7 @@ import numpy as np
 from numpy.testing import (assert_almost_equal, assert_array_equal,
                            assert_equal)
 from lightning.impl.randomkit import RandomState
-from sklearn.externals.six.moves import xrange
+from six.moves import xrange
 
 
 def test_randint():

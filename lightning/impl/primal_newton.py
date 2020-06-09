@@ -18,7 +18,7 @@ from sklearn.utils import safe_mask
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
 from sklearn.metrics.pairwise import pairwise_kernels
-from sklearn.externals.six.moves import xrange
+from six.moves import xrange
 
 from .base import BaseClassifier
 
