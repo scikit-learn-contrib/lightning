@@ -7,8 +7,12 @@ Classification of text documents
 import numpy as np
 
 from sklearn.datasets import fetch_20newsgroups_vectorized
-from sklearn.cross_validation import train_test_split
 
+try:
+    from sklearn.model_selection import train_test_split
+except ImportError:
+    from sklearn.cross_validation import train_test_split
+    
 from lightning.classification import CDClassifier
 from lightning.classification import LinearSVC
 from lightning.classification import SGDClassifier
