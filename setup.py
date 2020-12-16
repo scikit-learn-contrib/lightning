@@ -17,7 +17,7 @@ MAINTAINER_EMAIL = 'mathieu@mblondel.org'
 URL = 'https://github.com/scikit-learn-contrib/lightning'
 LICENSE = 'new BSD'
 DOWNLOAD_URL = 'https://github.com/scikit-learn-contrib/lightning'
-VERSION = '0.6.0'
+VERSION = '0.6.1dev'
 
 
 def configuration(parent_package='', top_path=None):
