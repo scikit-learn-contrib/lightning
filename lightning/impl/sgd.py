@@ -396,8 +396,7 @@ class SGDRegressor(BaseRegressor, _BaseSGD):
         try:
             assert_all_finite(self.coef_)
             pred = safe_sparse_dot(X, self.coef_.T)
-            if self.intercept_ is not None:
-                pred += self.intercept_
+            pred += self.intercept_
         except ValueError:
             n_samples = X.shape[0]
             n_vectors = self.coef_.shape[0]
