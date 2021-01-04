@@ -150,6 +150,7 @@ class SGDClassifier(BaseClassifier, _BaseSGD):
         self.n_calls = n_calls
         self.verbose = verbose
         self.coef_ = None
+        self.intercept_ = None
 
     def _get_loss(self):
         if self.multiclass:
@@ -395,6 +396,7 @@ class SGDRegressor(BaseRegressor, _BaseSGD):
         try:
             assert_all_finite(self.coef_)
             pred = safe_sparse_dot(X, self.coef_.T)
+            pred += self.intercept_
         except ValueError:
             n_samples = X.shape[0]
             n_vectors = self.coef_.shape[0]

@@ -106,7 +106,7 @@ def test_regression_squared_loss():
 
     reg.fit(X, y)
     pred = reg.predict(X)
-    assert_almost_equal(np.mean((pred - y) ** 2), 4.913, 3)
+    assert_almost_equal(np.mean((pred - y) ** 2), 4.749, 3)
 
 
 def test_regression_squared_loss_nn_l1():
@@ -119,7 +119,7 @@ def test_regression_squared_loss_nn_l1():
 
         reg.fit(X, y)
         pred = reg.predict(X)
-        assert_almost_equal(np.mean((pred - y) ** 2), 0.033, 3)
+        assert_almost_equal(np.mean((pred - y) ** 2), 0.016, 3)
         assert_false((reg.coef_ < 0).any())
 
 
@@ -132,7 +132,7 @@ def test_regression_squared_loss_nn_l2():
 
     reg.fit(X, y)
     pred = reg.predict(X)
-    assert_almost_equal(np.mean((pred - y) ** 2), 0.033, 3)
+    assert_almost_equal(np.mean((pred - y) ** 2), 0.016, 3)
     assert_almost_equal(reg.coef_.sum(), 2.131, 3)
     assert_false((reg.coef_ < 0).any())
 
@@ -147,5 +147,5 @@ def test_regression_squared_loss_multiple_output():
     Y[:, 1] = y
     reg.fit(X, Y)
     pred = reg.predict(X)
-    assert_almost_equal(np.mean((pred - Y) ** 2), 4.541, 3)
+    assert_almost_equal(np.mean((pred - Y) ** 2), 4.397, 3)
 
