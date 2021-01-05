@@ -1,1 +1,1 @@
-These are some examples using the lightning machine learning library
+These are some examples using the lightning machine learning library. It is an amazing project to be forked!
