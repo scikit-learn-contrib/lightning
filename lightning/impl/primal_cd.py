@@ -368,7 +368,7 @@ class CDRegressor(_BaseCD, BaseRegressor):
     loss : str, 'squared'
         The loss function to be used.
 
-    penalty : str, 'l2', 'l1', 'l1/l2', 'nnl1', 'nnl2'
+    penalty : str, 'l2', 'l1', 'l1/l2'
         The penalty to be used.
 
         - l2: ridge
