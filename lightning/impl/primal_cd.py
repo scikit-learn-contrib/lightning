@@ -368,14 +368,12 @@ class CDRegressor(_BaseCD, BaseRegressor):
     loss : str, 'squared'
         The loss function to be used.
 
-    penalty : str, 'l2', 'l1', 'l1/l2', 'nnl1', 'nnl2'
+    penalty : str, 'l2', 'l1', 'l1/l2'
         The penalty to be used.
 
         - l2: ridge
         - l1: lasso
         - l1/l2: group lasso
-        - nnl1: non-negative constraints + l1 penalty
-        - nnl2: non-negative constraints + l2 penalty
 
     For other parameters, see `CDClassifier`.
     """
