@@ -6,6 +6,7 @@
 *.swp
 .DS_Store
 build
+*.egg-info/
 lightning/**/*.html
 
 dist/
