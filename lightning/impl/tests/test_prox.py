@@ -1,5 +1,4 @@
 import numpy as np
-from nose.tools import assert_equal
 
 from lightning.impl import prox_fast
 
@@ -27,4 +26,4 @@ def test_tv1d_dtype():
     for dtype in (np.float32, np.float64):
         y = x.astype(dtype, copy=True)
         prox_fast.prox_tv1d(y, 0.01)
-        assert_equal(y.dtype, dtype)
+        assert y.dtype == dtype

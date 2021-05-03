@@ -1,11 +1,6 @@
 import numpy as np
 import scipy.sparse as sp
 
-from sklearn.utils.testing import assert_almost_equal
-from sklearn.utils.testing import assert_false
-from sklearn.utils.testing import assert_greater
-from sklearn.utils.testing import assert_equal
-
 from sklearn.datasets.samples_generator import make_regression
 
 from lightning.impl.datasets.samples_generator import make_classification
@@ -46,8 +41,8 @@ def test_binary_linear_sgd():
                                   fit_intercept=True, learning_rate="constant"),
                     ):
             clf.fit(data, bin_target)
-            assert_greater(clf.score(data, bin_target), 0.934)
-            assert_equal(list(clf.classes_), [0, 1])
+            assert clf.score(data, bin_target) > 0.934
+            assert list(clf.classes_) == [0, 1]
             if clf.loss in ('log', 'modified_huber'):
                 check_predict_proba(clf, data)
             else:
@@ -57,8 +52,8 @@ def test_binary_linear_sgd():
 def test_multiclass_sgd():
     clf = SGDClassifier(random_state=0)
     clf.fit(mult_dense, mult_target)
-    assert_greater(clf.score(mult_dense, mult_target), 0.80)
-    assert_equal(list(clf.classes_), [0, 1, 2])
+    assert clf.score(mult_dense, mult_target) > 0.80
+    assert list(clf.classes_) == [0, 1, 2]
 
 
 def test_multiclass_hinge_sgd():
@@ -67,7 +62,7 @@ def test_multiclass_hinge_sgd():
             clf = SGDClassifier(loss="hinge", multiclass=True,
                                 fit_intercept=fit_intercept, random_state=0)
             clf.fit(data, mult_target)
-            assert_greater(clf.score(data, mult_target), 0.78)
+            assert clf.score(data, mult_target) > 0.78
 
 
 def test_multiclass_hinge_sgd_l1l2():
@@ -75,7 +70,7 @@ def test_multiclass_hinge_sgd_l1l2():
         clf = SGDClassifier(loss="hinge", penalty="l1/l2",
                             multiclass=True, random_state=0)
         clf.fit(data, mult_target)
-        assert_greater(clf.score(data, mult_target), 0.75)
+        assert clf.score(data, mult_target) > 0.75
 
 
 def test_multiclass_squared_hinge_sgd():
@@ -85,7 +80,7 @@ def test_multiclass_squared_hinge_sgd():
                                 learning_rate="constant", eta0=1e-3,
                                 fit_intercept=fit_intercept, random_state=0)
             clf.fit(data, mult_target)
-            assert_greater(clf.score(data, mult_target), 0.78)
+            assert clf.score(data, mult_target) > 0.78
 
 
 def test_multiclass_log_sgd():
@@ -95,7 +90,7 @@ def test_multiclass_log_sgd():
                                 fit_intercept=fit_intercept,
                                 random_state=0)
             clf.fit(data, mult_target)
-            assert_greater(clf.score(data, mult_target), 0.78)
+            assert clf.score(data, mult_target) > 0.78
 
 
 def test_regression_squared_loss():
@@ -106,7 +101,7 @@ def test_regression_squared_loss():
 
     reg.fit(X, y)
     pred = reg.predict(X)
-    assert_almost_equal(np.mean((pred - y) ** 2), 4.749, 3)
+    np.testing.assert_almost_equal(np.mean((pred - y) ** 2), 4.749, 3)
 
 
 def test_regression_squared_loss_nn_l1():
@@ -119,8 +114,8 @@ def test_regression_squared_loss_nn_l1():
 
         reg.fit(X, y)
         pred = reg.predict(X)
-        assert_almost_equal(np.mean((pred - y) ** 2), 0.016, 3)
-        assert_false((reg.coef_ < 0).any())
+        np.testing.assert_almost_equal(np.mean((pred - y) ** 2), 0.016, 3)
+        assert (reg.coef_ >= 0).all()
 
 
 def test_regression_squared_loss_nn_l2():
@@ -132,9 +127,9 @@ def test_regression_squared_loss_nn_l2():
 
     reg.fit(X, y)
     pred = reg.predict(X)
-    assert_almost_equal(np.mean((pred - y) ** 2), 0.016, 3)
-    assert_almost_equal(reg.coef_.sum(), 2.131, 3)
-    assert_false((reg.coef_ < 0).any())
+    np.testing.assert_almost_equal(np.mean((pred - y) ** 2), 0.016, 3)
+    np.testing.assert_almost_equal(reg.coef_.sum(), 2.131, 3)
+    assert (reg.coef_ >= 0).all()
 
 
 def test_regression_squared_loss_multiple_output():
@@ -147,5 +142,5 @@ def test_regression_squared_loss_multiple_output():
     Y[:, 1] = y
     reg.fit(X, Y)
     pred = reg.predict(X)
-    assert_almost_equal(np.mean((pred - Y) ** 2), 4.397, 3)
+    np.testing.assert_almost_equal(np.mean((pred - Y) ** 2), 4.397, 3)
 
