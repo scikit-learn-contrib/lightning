@@ -6,7 +6,7 @@ from sklearn.utils.testing import assert_false
 from sklearn.utils.testing import assert_greater
 from sklearn.utils.testing import assert_equal
 
-from sklearn.datasets.samples_generator import make_regression
+from sklearn.datasets import make_regression
 
 from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.datasets.samples_generator import make_nn_regression
