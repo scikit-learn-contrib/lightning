@@ -2,7 +2,7 @@ import numpy as np
 import scipy.sparse as sp
 
 from sklearn.metrics.pairwise import linear_kernel
-from sklearn.datasets.samples_generator import make_regression
+from sklearn.datasets import make_regression
 from six.moves import xrange
 
 from lightning.impl.datasets.samples_generator import make_classification
