@@ -25,7 +25,7 @@ def test_sdca_hinge_multiclass():
     clf = SDCAClassifier(alpha=1e-2, max_iter=100, loss="hinge",
                               random_state=0)
     clf.fit(X, y)
-    np.testing.assert_almost_equal(clf.score(X, y), 0.947, 3)
+    np.testing.assert_almost_equal(clf.score(X, y), 0.933, 3)
 
 
 def test_sdca_squared():
