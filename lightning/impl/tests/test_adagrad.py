@@ -43,7 +43,7 @@ def test_adagrad_hinge_multiclass():
     clf = AdaGradClassifier(alpha=1e-2, n_iter=100, loss="hinge", random_state=0)
     clf.fit(X, y)
     assert not hasattr(clf, "predict_proba")
-    assert_almost_equal(clf.score(X, y), 0.960, 3)
+    assert_almost_equal(clf.score(X, y), 0.940, 3)
 
 
 def test_adagrad_classes_binary():
