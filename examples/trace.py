@@ -9,7 +9,6 @@ import numpy as np
 from scipy.linalg import svd
 
 from sklearn.datasets import fetch_20newsgroups_vectorized
-from sklearn.datasets.samples_generator import make_classification
 from sklearn.feature_selection import SelectKBest, chi2
 
 from lightning.classification import FistaClassifier
