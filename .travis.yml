@@ -25,9 +25,9 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy nose cython scikit-learn six joblib
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy pytest cython scikit-learn six joblib
   - source activate test-environment
   - make all
 
 script:
-  - nosetests -v
+  - pytest -v --pyargs lightning
