@@ -1,12 +1,8 @@
 import numpy as np
 from scipy import sparse
 
-from numpy.testing import assert_array_equal
-
 from sklearn.datasets import load_iris, make_classification
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.utils.testing import assert_true
-from sklearn.utils.testing import assert_equal, assert_almost_equal
 
 from lightning.impl.base import BaseClassifier
 from lightning.impl.dataset_fast import get_dataset
@@ -197,12 +193,12 @@ def test_l1_prox():
     x = np.ones(5)
     for l1 in [0.1, 0.5, .99, 1.]:
         penalty = L1Penalty(l1=l1)
-        assert_array_equal(penalty.projection(x, stepsize=1.), x - l1)
-        assert_array_equal(penalty.projection(-x, stepsize=1.), -x + l1)
+        np.testing.assert_array_equal(penalty.projection(x, stepsize=1.), x - l1)
+        np.testing.assert_array_equal(penalty.projection(-x, stepsize=1.), -x + l1)
 
     penalty = L1Penalty(l1=2.)
-    assert_array_equal(penalty.projection(x, stepsize=1.), 0)
-    assert_array_equal(penalty.projection(-x, stepsize=1.), 0)
+    np.testing.assert_array_equal(penalty.projection(x, stepsize=1.), 0)
+    np.testing.assert_array_equal(penalty.projection(-x, stepsize=1.), 0)
 
 
 def test_sag():
@@ -213,8 +209,8 @@ def test_sag():
             ):
         clf.fit(X_bin, y_bin)
         assert not hasattr(clf, 'predict_proba')
-        assert_equal(clf.score(X_bin, y_bin), 1.0)
-        assert_equal(list(clf.classes_), [-1, 1])
+        assert clf.score(X_bin, y_bin) == 1.0
+        assert list(clf.classes_) == [-1, 1]
 
 
 def test_sag_dataset():
@@ -224,7 +220,7 @@ def test_sag_dataset():
         clf2 = SAG_(eta=1e-3, max_iter=20, verbose=0, random_state=0)
         clf1.fit(get_dataset(X_bin, order='C'), y_bin)
         clf2.fit(X_bin, y_bin)
-        assert_almost_equal(clf1.coef_, clf2.coef_)
+        np.testing.assert_almost_equal(clf1.coef_, clf2.coef_)
 
 
 def test_sag_score():
@@ -237,7 +233,7 @@ def test_sag_score():
 
     pysag.fit(X, y)
     sag.fit(X, y)
-    assert_equal(pysag.score(X, y), sag.score(X, y))
+    assert pysag.score(X, y) == sag.score(X, y)
 
 
 def test_sag_proba():
@@ -254,7 +250,7 @@ def test_sag_multiclass_classes():
                                n_informative=4)
     sag = SAGClassifier()
     sag.fit(X, y)
-    assert_equal(list(sag.classes_), [0, 1, 2])
+    assert list(sag.classes_) == [0, 1, 2]
 
 
 def test_no_reg_sag():
@@ -287,7 +283,7 @@ def test_saga_score():
 
     pysaga.fit(X, y)
     saga.fit(X, y)
-    assert_equal(pysaga.score(X, y), saga.score(X, y))
+    assert pysaga.score(X, y) == saga.score(X, y)
 
 
 def test_enet_regularized_saga():
@@ -374,7 +370,7 @@ def test_sag_callback():
         clf.fit(X_bin, y_bin)
         # its not a descent method, just check that most of
         # updates are decreasing the objective function
-        assert_true(np.mean(np.diff(cb.obj) <= 0) > 0.9)
+        assert np.mean(np.diff(cb.obj) <= 0) > 0.9
 
 
 def test_auto_stepsize():
@@ -385,7 +381,7 @@ def test_auto_stepsize():
         PySAGClassifier(loss='log', max_iter=20, random_state=0)
             ):
         clf.fit(X_bin, y_bin)
-        assert_equal(clf.score(X_bin, y_bin), 1.0)
+        assert clf.score(X_bin, y_bin) == 1.0
 
 
 def test_sag_regression():
@@ -395,7 +391,7 @@ def test_sag_regression():
             ):
         reg.fit(X_bin, y_bin)
         y_pred = np.sign(reg.predict(X_bin))
-        assert_equal(np.mean(y_bin == y_pred), 1.0)
+        assert np.mean(y_bin == y_pred) == 1.0
 
 
 def test_sag_sparse():
@@ -411,7 +407,7 @@ def test_sag_sparse():
         clf_dense = SAGClassifier(eta=1., max_iter=1, random_state=0,
                                   alpha=alpha)
         clf_dense.fit(X.toarray(), y)
-        assert_equal(clf_sparse.score(X, y), clf_dense.score(X, y))
+        assert clf_sparse.score(X, y) == clf_dense.score(X, y)
 
         clf_sparse = SAGAClassifier(eta=1.,
                                     max_iter=1, random_state=0, alpha=alpha)
@@ -419,7 +415,7 @@ def test_sag_sparse():
         clf_dense = SAGAClassifier(eta=1.,
                                    max_iter=1, random_state=0, alpha=alpha)
         clf_dense.fit(X.toarray(), y)
-        assert_equal(clf_sparse.score(X, y), clf_dense.score(X, y))
+        assert clf_sparse.score(X, y) == clf_dense.score(X, y)
 
 
 def test_sag_sample_weights():
@@ -468,7 +464,7 @@ def test_sag_adaptive():
         clf = SAGClassifier(
             eta='auto', random_state=0, alpha=alpha)
         clf.fit(X, y)
-        assert_almost_equal(clf_adaptive.score(X, y), clf.score(X, y), 1)
+        np.testing.assert_almost_equal(clf_adaptive.score(X, y), clf.score(X, y), 1)
 
         clf_adaptive = SAGAClassifier(
             eta='line-search', loss='log', random_state=0, alpha=alpha, max_iter=20)
@@ -477,7 +473,7 @@ def test_sag_adaptive():
         clf = SAGAClassifier(
             eta='auto', loss='log', random_state=0, alpha=alpha, max_iter=20)
         clf.fit(X, y)
-        assert_almost_equal(clf_adaptive.score(X, y), clf.score(X, y), 1)
+        np.testing.assert_almost_equal(clf_adaptive.score(X, y), clf.score(X, y), 1)
 
 if __name__ == '__main__':
     import nose
