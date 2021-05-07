@@ -9,36 +9,12 @@ build: false
 
 environment:
   matrix:
-    - PYTHON: "C:\\Python36"
-      PYTHON_VERSION: "3.6.8"
-      PYTHON_ARCH: "32"
-
     - PYTHON: "C:\\Python36-x64"
       PYTHON_VERSION: "3.6.8"
       PYTHON_ARCH: "64"
 
-    - PYTHON: "C:\\Python37"
-      PYTHON_VERSION: "3.7.5"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python37-x64"
-      PYTHON_VERSION: "3.7.5"
-      PYTHON_ARCH: "64"
-
-    - PYTHON: "C:\\Python38"
-      PYTHON_VERSION: "3.8.7"
-      PYTHON_ARCH: "32"
-
     - PYTHON: "C:\\Python38-x64"
       PYTHON_VERSION: "3.8.7"
-      PYTHON_ARCH: "64"
-
-    - PYTHON: "C:\\Python39"
-      PYTHON_VERSION: "3.9.1"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python39-x64"
-      PYTHON_VERSION: "3.9.1"
       PYTHON_ARCH: "64"
 
 
@@ -52,7 +28,7 @@ install:
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
   - "python -m pip --version"
 
-  - "python -m pip install --timeout=60 numpy scipy cython nose scikit-learn wheel six joblib"
+  - "python -m pip install --timeout=60 numpy scipy cython nose2 scikit-learn wheel six joblib"
   - "python setup.py bdist_wheel bdist_wininst"
 
   - ps: "ls dist"
@@ -60,12 +36,7 @@ install:
   - "python -m pip install --pre --no-index --find-links dist/ sklearn-contrib-lightning"
 
 test_script:
-  # Change to a non-source folder to make sure we run the tests on the
-  # installed library.
-  - "mkdir empty_folder"
-  - "cd empty_folder"
-
-  - "python -c \"import nose; nose.main()\" -s -v lightning"
+  - "python -m nose2 -v"
 
   # Move back to the project folder
   - "cd .."

@@ -67,7 +67,7 @@ Dependencies
 ------------
 
 lightning requires Python >= 2.7, setuptools, Numpy >= 1.3, SciPy >= 0.7 and
-scikit-learn >= 0.15. Building from source also requires Cython and a working C/C++ compiler. To run the tests you will also need nose >= 0.10.
+scikit-learn >= 0.15. Building from source also requires Cython and a working C/C++ compiler. To run the tests you will also need nose2.
 
 Installation
 ------------
