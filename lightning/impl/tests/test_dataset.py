@@ -2,12 +2,9 @@ import pickle
 import numpy as np
 import scipy.sparse as sp
 
-from sklearn.utils.testing import assert_array_equal
-from sklearn.utils.testing import assert_array_almost_equal
-from sklearn.utils.testing import assert_equal
 from six.moves import xrange
 
-from sklearn.datasets.samples_generator import make_classification
+from sklearn.datasets import make_classification
 from sklearn.utils import check_random_state
 
 from lightning.impl.dataset_fast import ContiguousDataset
@@ -38,9 +35,9 @@ def test_contiguous_get_row():
     ind = np.arange(X.shape[1])
     for i in xrange(X.shape[0]):
         indices, data, n_nz = cds.get_row(i)
-        assert_array_equal(indices, ind)
-        assert_array_equal(data, X[i])
-        assert_equal(n_nz, X.shape[1])
+        np.testing.assert_array_equal(indices, ind)
+        np.testing.assert_array_equal(data, X[i])
+        assert n_nz == X.shape[1]
 
 
 def test_csr_get_row():
@@ -48,16 +45,16 @@ def test_csr_get_row():
         indices, data, n_nz = csr_ds.get_row(i)
         for jj in xrange(n_nz):
             j = indices[jj]
-            assert_equal(X[i, j], data[jj])
+            assert X[i, j] == data[jj]
 
 
 def test_fortran_get_column():
     ind = np.arange(X.shape[0])
     for j in xrange(X.shape[1]):
         indices, data, n_nz = fds.get_column(j)
-        assert_array_equal(indices, ind)
-        assert_array_equal(data, X[:, j])
-        assert_equal(n_nz, X.shape[0])
+        np.testing.assert_array_equal(indices, ind)
+        np.testing.assert_array_equal(data, X[:, j])
+        assert n_nz == X.shape[0]
 
 
 def test_csc_get_column():
@@ -65,7 +62,7 @@ def test_csc_get_column():
         indices, data, n_nz = csc_ds.get_column(j)
         for ii in xrange(n_nz):
             i = indices[ii]
-            assert_equal(X[i, j], data[ii])
+            assert X[i, j] == data[ii]
 
 
 def test_picklable_datasets():
@@ -74,5 +71,5 @@ def test_picklable_datasets():
     for dataset in [cds, csr_ds, fds, csc_ds]:
         pds = pickle.dumps(dataset)
         dataset = pickle.loads(pds)
-        assert_equal(dataset.get_n_samples(), X.shape[0])
-        assert_equal(dataset.get_n_features(), X.shape[1])
+        assert dataset.get_n_samples() == X.shape[0]
+        assert dataset.get_n_features() == X.shape[1]

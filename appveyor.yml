@@ -1,54 +1,72 @@
 # AppVeyor.com is a Continuous Integration service to build and run tests under
 # Windows
 # https://ci.appveyor.com/project/fabianp/lightning-bpc6r
-environment:
-  global:
-    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
-    # /E:ON and /V:ON options are not enabled in the batch script interpreter
-    # See: http://stackoverflow.com/a/13751649/163740
-    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\build_tools\\appveyor\\run_with_env.cmd"
 
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+image: Visual Studio 2019
+
+# Not a .NET project, we build scikit-learn in the install step instead
+build: false
+
+environment:
   matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.8"
+    - PYTHON: "C:\\Python36"
+      PYTHON_VERSION: "3.6.8"
       PYTHON_ARCH: "32"
 
-    - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.8"
+    - PYTHON: "C:\\Python36-x64"
+      PYTHON_VERSION: "3.6.8"
       PYTHON_ARCH: "64"
 
     - PYTHON: "C:\\Python37"
-      PYTHON_VERSION: "3.7.0"
+      PYTHON_VERSION: "3.7.5"
       PYTHON_ARCH: "32"
 
     - PYTHON: "C:\\Python37-x64"
-      PYTHON_VERSION: "3.7.0"
+      PYTHON_VERSION: "3.7.5"
       PYTHON_ARCH: "64"
 
+    - PYTHON: "C:\\Python38"
+      PYTHON_VERSION: "3.8.7"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python38-x64"
+      PYTHON_VERSION: "3.8.7"
+      PYTHON_ARCH: "64"
+
+    - PYTHON: "C:\\Python39"
+      PYTHON_VERSION: "3.9.1"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python39-x64"
+      PYTHON_VERSION: "3.9.1"
+      PYTHON_ARCH: "64"
 
 
 install:
   # Miniconda is pre-installed in the worker build
-  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PYTHON%\\Library\\mingw-w64\\bin;%PYTHON%\\Library\\bin;%PYTHON%\\Library\\usr\\bin;%PATH%"
   - "python -m pip install -U pip"
 
   # Check that we have the expected version and architecture for Python
   - "python --version"
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
-  - "pip --version"
+  - "python -m pip --version"
 
-  - "%CMD_IN_ENV% pip install --timeout=60 numpy scipy cython pytest scikit-learn wheel six joblib"
-  - "%CMD_IN_ENV% python setup.py bdist_wheel bdist_wininst"
+  - "python -m pip install --timeout=60 numpy scipy cython pytest scikit-learn wheel six joblib"
+  - "python setup.py bdist_wheel bdist_wininst"
 
   - ps: "ls dist"
   # Install the generated wheel package to test it
-  - "pip install --pre --no-index --find-links dist/ sklearn-contrib-lightning"
-
-# Not a .NET project, we build scikit-learn in the install step instead
-build: false
+  - "python -m pip install --pre --no-index --find-links dist/ sklearn-contrib-lightning"
 
 test_script:
   - "python -m pytest -v --pyargs lightning"
+
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 artifacts:
   # Archive the generated wheel package in the ci.appveyor.com build report.

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sklearn.utils.testing import assert_array_equal, assert_equal
+import numpy as np
 
 
 def check_predict_proba(clf, X):
@@ -10,11 +10,11 @@ def check_predict_proba(clf, X):
 
     # check that predict_proba result agree with y_true
     y_proba = clf.predict_proba(X)
-    assert_equal(y_proba.shape, (n_samples, 2))
+    assert y_proba.shape == (n_samples, 2)
     y_proba_best = (y_proba.argmax(axis=1) == 1)
-    assert_array_equal(y_proba_best, y_pred)
+    np.testing.assert_array_equal(y_proba_best, y_pred)
 
     # check that y_proba looks like probability
     assert not (y_proba > 1).any()
     assert not (y_proba < 0).any()
-    assert_array_equal(y_proba.sum(axis=1), 1.0)
+    np.testing.assert_array_equal(y_proba.sum(axis=1), 1.0)
