@@ -2,7 +2,6 @@ import numpy as np
 import scipy.sparse as sp
 
 from sklearn.datasets import load_digits
-from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer
 from six.moves import xrange
 
@@ -20,7 +19,7 @@ mult_dense, mult_target = make_classification(n_samples=300, n_features=100,
                                               n_classes=3, random_state=0)
 mult_csc = sp.csc_matrix(mult_dense)
 
-digit = load_digits(2)
+digit = load_digits(n_class=2)
 
 
 def test_fit_linear_binary_l1r():

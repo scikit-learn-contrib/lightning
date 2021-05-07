@@ -12,7 +12,6 @@ This module provides coordinate descent solvers for support vector machines
 
 import numpy as np
 
-from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import add_dummy_feature
 from six.moves import xrange
 

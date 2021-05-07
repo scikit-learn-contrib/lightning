@@ -3,7 +3,6 @@
 
 import numpy as np
 
-from sklearn.preprocessing import LabelBinarizer
 from six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor

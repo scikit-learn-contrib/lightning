@@ -1,3 +1,5 @@
+from itertools import product
+
 import numpy as np
 import scipy.sparse as sp
 from six.moves import xrange
@@ -195,9 +197,6 @@ def make_classification(n_samples=100, n_features=20, n_informative=2,
     .. [1] I. Guyon, "Design of experiments for the NIPS 2003 variable
            selection benchmark", 2003.
     """
-    from itertools import product
-    from sklearn.utils import shuffle as util_shuffle
-
     generator = check_random_state(random_state)
 
     # Count features, clusters and samples
@@ -308,7 +307,7 @@ def make_classification(n_samples=100, n_features=20, n_informative=2,
 
     # Randomly permute samples and features
     if shuffle:
-        X, y = util_shuffle(X, y, random_state=generator)
+        X, y = shuffle_func(X, y, random_state=generator)
 
         indices = np.arange(n_features)
         generator.shuffle(indices)
