@@ -2,9 +2,6 @@
 # Windows
 # https://ci.appveyor.com/project/fabianp/lightning-bpc6r
 
-init:
-  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-
 image: Visual Studio 2019
 
 # Not a .NET project, we build scikit-learn in the install step instead
@@ -64,9 +61,6 @@ install:
 
 test_script:
   - "python -m pytest -v --pyargs lightning"
-
-on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 artifacts:
   # Archive the generated wheel package in the ci.appveyor.com build report.

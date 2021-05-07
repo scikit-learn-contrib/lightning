@@ -441,7 +441,7 @@ def test_sag_sample_weights():
     # resulting coefficients by adding noise to original samples
     X2 = np.concatenate((X, np.random.randn(*X.shape)), axis=0)   # augment with noise
     y2 = np.concatenate((y, y), axis=0)
-    sample_weights = np.ones(y2.size, dtype=np.float)
+    sample_weights = np.ones(y2.size, dtype=float)
     sample_weights[X.shape[0]:] = 0.
 
     clf1 = SAGARegressor(loss='squared', alpha=alpha,  max_iter=100, random_state=0, tol=1e-24)
