@@ -20,7 +20,7 @@ mult_dense, mult_target = make_classification(n_samples=300, n_features=100,
                                               n_classes=3, random_state=0)
 bin_csr = sp.csr_matrix(bin_dense)
 mult_csr = sp.csr_matrix(mult_dense)
-digit = load_digits(2)
+digit = load_digits(n_class=2)
 
 
 def test_fista_multiclass_l1l2():

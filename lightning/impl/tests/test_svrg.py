@@ -1,7 +1,6 @@
 import numpy as np
 
 from sklearn.datasets import load_iris
-from sklearn.base import BaseEstimator, ClassifierMixin
 
 from lightning.classification import SVRGClassifier
 from lightning.regression import SVRGRegressor
