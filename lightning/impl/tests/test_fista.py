@@ -134,7 +134,7 @@ def test_fista_regression_simplex():
     y_pred = reg.predict(X)
     error = np.sqrt(np.mean((y - y_pred) ** 2))
     np.testing.assert_almost_equal(error, 0.000, 3)
-    assert np.all(reg.coef_ >= 0)
+    assert np.all(reg.coef_ >= -1e-12)
     np.testing.assert_almost_equal(np.sum(reg.coef_), 1.0, 3)
 
 
