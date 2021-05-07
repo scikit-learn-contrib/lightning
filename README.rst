@@ -4,7 +4,7 @@
     :target: https://travis-ci.org/scikit-learn-contrib/lightning
 
 .. image:: https://ci.appveyor.com/api/projects/status/mmm0llccmvn5iooq?svg=true
-    :target: https://ci.appveyor.com/project/fabianp/lightning-bpc6r/branch/master
+    :target: https://ci.appveyor.com/project/fabianp/lightning/branch/master
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.200504.svg
    :target: https://doi.org/10.5281/zenodo.200504
