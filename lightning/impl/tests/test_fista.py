@@ -20,7 +20,7 @@ mult_dense, mult_target = make_classification(n_samples=300, n_features=100,
                                               n_classes=3, random_state=0)
 bin_csr = sp.csr_matrix(bin_dense)
 mult_csr = sp.csr_matrix(mult_dense)
-digit = load_digits(2)
+digit = load_digits(n_class=2)
 
 
 def test_fista_multiclass_l1l2():
@@ -134,7 +134,7 @@ def test_fista_regression_simplex():
     y_pred = reg.predict(X)
     error = np.sqrt(np.mean((y - y_pred) ** 2))
     np.testing.assert_almost_equal(error, 0.000, 3)
-    assert np.all(reg.coef_ >= 0)
+    assert np.all(reg.coef_ >= -1e-12)
     np.testing.assert_almost_equal(np.sum(reg.coef_), 1.0, 3)
 
 

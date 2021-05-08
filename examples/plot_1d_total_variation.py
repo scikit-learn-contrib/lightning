@@ -31,7 +31,7 @@ n_features = ground_truth.size
 np.random.seed(0)  # for reproducibility
 X = np.random.rand(n_samples, n_features)
 # generate y as a linear model, y = sign(X w + noise)
-y = np.sign(X.dot(ground_truth) + 0.5 * np.random.randn(n_samples)).astype(np.int)
+y = np.sign(X.dot(ground_truth) + 0.5 * np.random.randn(n_samples)).astype(int)
 
 
 for penalty in ('l1', 'tv1d'):

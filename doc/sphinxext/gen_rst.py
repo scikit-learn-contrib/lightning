@@ -558,7 +558,7 @@ def line_count_sort(file_list, target_dir):
         unsorted[count][1] = total_lines - docstr_lines
         unsorted[count][0] = exmpl
     index = np.lexsort((unsorted[:, 0].astype(np.str),
-                        unsorted[:, 1].astype(np.float)))
+                        unsorted[:, 1].astype(float)))
     if not len(unsorted):
         return []
     return np.array(unsorted[index][:, 0]).tolist()

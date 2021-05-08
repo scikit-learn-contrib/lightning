@@ -2,7 +2,6 @@ import numpy as np
 from scipy import sparse
 
 from sklearn.datasets import load_iris, make_classification
-from sklearn.preprocessing import LabelBinarizer
 
 from lightning.impl.base import BaseClassifier
 from lightning.impl.dataset_fast import get_dataset
@@ -224,7 +223,7 @@ def test_sag_dataset():
 
 
 def test_sag_score():
-    X, y = make_classification(1000, random_state=0)
+    X, y = make_classification(n_samples=1000, random_state=0)
 
     pysag = PySAGClassifier(eta=1e-3, alpha=0.0, beta=0.0, max_iter=10,
                             random_state=0)
@@ -238,7 +237,7 @@ def test_sag_score():
 
 def test_sag_proba():
     n_samples = 10
-    X, y = make_classification(n_samples, random_state=0)
+    X, y = make_classification(n_samples=n_samples, random_state=0)
     sag = SAGClassifier(eta=1e-3, alpha=0.0, beta=0.0, max_iter=10,
                         loss='log', random_state=0)
     sag.fit(X, y)
@@ -274,7 +273,7 @@ def test_l2_regularized_sag():
 
 
 def test_saga_score():
-    X, y = make_classification(1000, random_state=0)
+    X, y = make_classification(n_samples=1000, random_state=0)
 
     pysaga = PySAGAClassifier(eta=1e-3, alpha=0.0, beta=0.0, max_iter=1,
                               penalty=None, random_state=0)
@@ -441,7 +440,7 @@ def test_sag_sample_weights():
     # resulting coefficients by adding noise to original samples
     X2 = np.concatenate((X, np.random.randn(*X.shape)), axis=0)   # augment with noise
     y2 = np.concatenate((y, y), axis=0)
-    sample_weights = np.ones(y2.size, dtype=np.float)
+    sample_weights = np.ones(y2.size, dtype=float)
     sample_weights[X.shape[0]:] = 0.
 
     clf1 = SAGARegressor(loss='squared', alpha=alpha,  max_iter=100, random_state=0, tol=1e-24)
