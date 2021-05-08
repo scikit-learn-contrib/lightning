@@ -2,7 +2,6 @@ from itertools import product
 
 import numpy as np
 import scipy.sparse as sp
-from six.moves import xrange
 
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils import check_random_state
@@ -27,7 +26,7 @@ def _make_nn_regression(n_samples=100, n_features=100, n_informative=10,
 
     n = 0
     ind = np.arange(n_features)
-    for i in xrange(n_samples):
+    for i in range(n_samples):
         generator.shuffle(ind)
         col[n:n+n_informative] = ind[:n_informative]
         n += n_informative

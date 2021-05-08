@@ -79,10 +79,10 @@ cdef _sqnorms(RowDataset X,
     cdef int* indices
     cdef int n_nz
 
-    for i in xrange(n_samples):
+    for i in range(n_samples):
         X.get_row_ptr(i, &indices, &data, &n_nz)
         dot = 0
-        for jj in xrange(n_nz):
+        for jj in range(n_nz):
             dot += data[jj] * data[jj]
         sqnorms[i] = dot
 
@@ -150,7 +150,7 @@ def _dual_cd(self,
     Q_bar_diag += D_ii
 
 
-    for t in xrange(max_iter):
+    for t in range(max_iter):
         if permute:
             rs.shuffle(A[:active_size])
 
@@ -170,7 +170,7 @@ def _dual_cd(self,
             # Compute ith element of the gradient.
             # G = y_i * np.dot(w, X[i]) - 1 + D_ii * alpha_i
             G = 0
-            for jj in xrange(n_nz):
+            for jj in range(n_nz):
                 j = indices[jj]
                 G += w[j] * data[jj]
             G = y_i * G - 1 + D_ii * alpha_i
@@ -207,7 +207,7 @@ def _dual_cd(self,
 
                 # Update the primal coefficients.
                 step = (alpha_i - alpha_old) * y_i
-                for jj in xrange(n_nz):
+                for jj in range(n_nz):
                     j = indices[jj]
                     w[j] += step * data[jj]
 
@@ -306,7 +306,7 @@ def _dual_cd_auc(self,
     cdef int n_pos = 0
     cdef int n_neg = 0
 
-    for i in xrange(n_samples):
+    for i in range(n_samples):
         if y[i] == 1:
             pos[n_pos] = i
             n_pos += 1
@@ -319,11 +319,11 @@ def _dual_cd_auc(self,
     alpha = np.zeros(n_pos * n_neg, dtype=np.float64)
 
     # Learning
-    for t in xrange(max_iter):
+    for t in range(max_iter):
         if verbose >= 1:
             print("\nIteration", t)
 
-        for tt in xrange(n_samples):
+        for tt in range(n_samples):
             r = rs.randint(n_pos - 1)
             s = rs.randint(n_neg - 1)
             p = pos[r]
@@ -340,11 +340,11 @@ def _dual_cd_auc(self,
 
             # Gradient
             G = 0
-            for jj in xrange(n_nz1):
+            for jj in range(n_nz1):
                 j = indices1[jj]
                 G += w[j] * data1[jj]
 
-            for jj in xrange(n_nz2):
+            for jj in range(n_nz2):
                 j = indices2[jj]
                 G -= w[j] * data2[jj]
 
@@ -374,11 +374,11 @@ def _dual_cd_auc(self,
                 # Update w.
                 step = (alpha_k - alpha_old)
 
-                for jj in xrange(n_nz1):
+                for jj in range(n_nz1):
                     j = indices1[jj]
                     w[j] += step * data1[jj]
 
-                for jj in xrange(n_nz2):
+                for jj in range(n_nz2):
                     j = indices2[jj]
                     w[j] -= step * data2[jj]
 
@@ -446,7 +446,7 @@ def _dual_cd_svr(self,
     # We store alphas in the form
     # alpha[i] = alpha_+[i] - alpha_-[i]
     # so we need to convert representation.
-    for i in xrange(n_samples):
+    for i in range(n_samples):
         ii = i * 2
         if alpha[i] > 0:
             alpha_[ii] = alpha[i]
@@ -454,7 +454,7 @@ def _dual_cd_svr(self,
             alpha_[ii + 1] = -alpha[i]
 
     # Learning...
-    for t in xrange(max_iter):
+    for t in range(max_iter):
         if verbose >= 1:
             print("\nIteration", t)
 
@@ -463,7 +463,7 @@ def _dual_cd_svr(self,
 
         violation_sum = 0
 
-        for s in xrange(n_samples * 2):
+        for s in range(n_samples * 2):
             i = A[s % n_samples]
 
             # Retrieve row.
@@ -471,7 +471,7 @@ def _dual_cd_svr(self,
 
             # Compute prediction.
             pred = 0
-            for jj in xrange(n_nz):
+            for jj in range(n_nz):
                 j = indices[jj]
                 pred += w[j] * data[jj]
 
@@ -511,7 +511,7 @@ def _dual_cd_svr(self,
 
                 # Update the primal coefficients.
                 if diff != 0:
-                    for jj in xrange(n_nz):
+                    for jj in range(n_nz):
                         j = indices[jj]
                         w[j] += diff * data[jj]
 
@@ -545,7 +545,7 @@ def _dual_cd_svr(self,
     if verbose >= 1:
         print()
 
-    for i in xrange(n_samples):
+    for i in range(n_samples):
         ii = i * 2
         alpha[i] = alpha_[ii] - alpha_[ii + 1]
 

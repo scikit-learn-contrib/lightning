@@ -159,10 +159,10 @@ cdef class LossFunction:
         cdef int* indices
         cdef int n_nz
 
-        for j in xrange(n_features):
+        for j in range(n_features):
             X.get_column_ptr(j, &indices, &data, &n_nz)
 
-            for ii in xrange(n_nz):
+            for ii in range(n_nz):
                 i = indices[ii]
 
                 out[j] += scale * data[ii] * data[ii]
@@ -343,7 +343,7 @@ cdef class LossFunction:
             L = 0
             Lpp_max = -DBL_MAX
 
-            for k in xrange(n_vectors):
+            for k in range(n_vectors):
                 self.derivatives(j, C, indices, data, n_nz, y_ptr,
                                  b_ptr, &g[k], &Lpp_tmp, &L_tmp)
                 L += L_tmp
@@ -364,7 +364,7 @@ cdef class LossFunction:
         g_norm = 0
         R_j = 0
 
-        for k in xrange(n_vectors):
+        for k in range(n_vectors):
             g_norm += g[k] * g[k]
             R_j += w[k, j] * w[k, j]
 
@@ -387,7 +387,7 @@ cdef class LossFunction:
 
         # Compute vector to be projected and scaling factor.
         scaling = 0
-        for k in xrange(n_vectors):
+        for k in range(n_vectors):
             d_old[k] = 0
             d[k] = w[k, j] - g[k] / Lpp_max
             scaling += d[k] * d[k]
@@ -400,7 +400,7 @@ cdef class LossFunction:
         # Project (proximity operator).
         delta = 0
         dmax = -DBL_MAX
-        for k in xrange(n_vectors):
+        for k in range(n_vectors):
             # Difference between new and old solution.
             d[k] = scaling * d[k] - w[k, j]
             delta += d[k] * g[k]
@@ -424,7 +424,7 @@ cdef class LossFunction:
                 y_ptr = <double*>Y.data
                 b_ptr = <double*>b.data
 
-                for k in xrange(n_vectors):
+                for k in range(n_vectors):
                     z_diff = d_old[k] - d[k]
                     self.update(j, z_diff, C, indices, data, n_nz,
                                 y_ptr, b_ptr, &L_tmp)
@@ -441,7 +441,7 @@ cdef class LossFunction:
 
             # Compute regularization term.
             R_j_new = 0
-            for k in xrange(n_vectors):
+            for k in range(n_vectors):
                 tmp = w[k, j] + d[k]
                 R_j_new += tmp * tmp
             R_j_new = sqrt(R_j_new)
@@ -456,13 +456,13 @@ cdef class LossFunction:
                 break
 
             delta *= self.beta
-            for k in xrange(n_vectors):
+            for k in range(n_vectors):
                 d_old[k] = d[k]
                 d[k] *= self.beta
             step += 1
 
         # Update solution
-        for k in xrange(n_vectors):
+        for k in range(n_vectors):
             w[k, j] += d[k]
 
         # Recompute errors if necessary.
@@ -474,7 +474,7 @@ cdef class LossFunction:
                 b_ptr = <double*>b.data
                 w_ptr = <double*>w.data
 
-                for k in xrange(n_vectors):
+                for k in range(n_vectors):
                     self.recompute(X, y_ptr, w_ptr, b_ptr)
                     y_ptr += n_samples
                     b_ptr += n_samples
@@ -567,7 +567,7 @@ cdef class Squared(LossFunction):
         # Objective value
         L[0] = 0
 
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             tmp = data[ii] * C
             Lpp[0] += data[ii] * tmp
@@ -592,7 +592,7 @@ cdef class Squared(LossFunction):
         # New objective value
         L_new[0] = 0
 
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             # Update residuals.
             b[i] -= z_diff * data[ii]
@@ -634,7 +634,7 @@ cdef class SquaredHinge(LossFunction):
         # Objective value
         L[0] = 0
 
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             val = data[ii] * y[i]
 
@@ -663,7 +663,7 @@ cdef class SquaredHinge(LossFunction):
         # New objective value
         L_new[0] = 0
 
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             b_new = b[i] + z_diff * data[ii] * y[i]
             # b[i] = 1 - y[i] * np.dot(w, X[i])
@@ -701,15 +701,15 @@ cdef class SquaredHinge(LossFunction):
         # Objective value
         L[0] = 0
 
-        for k in xrange(n_vectors):
+        for k in range(n_vectors):
             # First derivative with respect to w_jk
             g[k] = 0
             # Second derivative with respect to  w_jk^2
             h[k] = 0
 
-        for k in xrange(n_vectors):
+        for k in range(n_vectors):
 
-            for ii in xrange(n_nz):
+            for ii in range(n_nz):
                 i = indices[ii]
 
                 if y[i] == k:
@@ -731,7 +731,7 @@ cdef class SquaredHinge(LossFunction):
             b_ptr += n_samples
 
         Lpp_max[0] = -DBL_MAX
-        for k in xrange(n_vectors):
+        for k in range(n_vectors):
             g[k] *= 2
             Lpp_max[0] = max(Lpp_max[0], h[k])
 
@@ -758,13 +758,13 @@ cdef class SquaredHinge(LossFunction):
 
         # New objective value
         L_new[0] = 0
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             b_ptr = b + i
 
             tmp = d_old[y[i]] - d[y[i]]
 
-            for k in xrange(n_vectors):
+            for k in range(n_vectors):
                 if k != y[i]:
                     # b_ptr[0] = b[k, i]
                     b_new = b_ptr[0] + (tmp - (d_old[k] - d[k])) * data[ii]
@@ -827,7 +827,7 @@ cdef class SmoothHinge(LossFunction):
         # Objective value
         L[0] = 0
 
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             val = data[ii] * y[i]
 
@@ -859,7 +859,7 @@ cdef class SmoothHinge(LossFunction):
         # New objective value
         L_new[0] = 0
 
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             b_new = b[i] + z_diff * data[ii] * y[i]
             # b[i] = 1 - y[i] * np.dot(w, X[i])
@@ -906,7 +906,7 @@ cdef class ModifiedHuber(LossFunction):
         # Objective value
         L[0] = 0
 
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             val = data[ii] * y[i]
 
@@ -938,7 +938,7 @@ cdef class ModifiedHuber(LossFunction):
 
         L_new[0] = 0
 
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             b_new = b[i] + z_diff * data[ii] * y[i]
             b[i] = b_new
@@ -984,7 +984,7 @@ cdef class Log(LossFunction):
         # Objective value
         L[0] = 0
 
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             val = data[ii] * y[i]
 
@@ -1012,7 +1012,7 @@ cdef class Log(LossFunction):
         # New objective value
         L_new[0] = 0
 
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             b[i] /= exp(z_diff * data[ii] * y[i])
             exppred = 1 + 1 / b[i]
@@ -1043,11 +1043,11 @@ cdef class Log(LossFunction):
         # Objective value
         L[0] = 0
 
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             b_ptr = b + i
             Z[i] = 0 # Normalization term
-            for k in xrange(n_vectors):
+            for k in range(n_vectors):
                 # b_ptr[0] = b[k, i]
                 Z[i] += b_ptr[0]
                 b_ptr += n_samples
@@ -1057,13 +1057,13 @@ cdef class Log(LossFunction):
         Lpp_max[0] = -DBL_MAX
 
         b_ptr = b
-        for k in xrange(n_vectors):
+        for k in range(n_vectors):
             # First derivatives (k th element of the partial gradient)
             g[k] = 0
             # Second derivative
             Lpp = 0
 
-            for ii in xrange(n_nz):
+            for ii in range(n_nz):
                 i = indices[ii]
 
                 if Z[i] == 0:
@@ -1104,13 +1104,13 @@ cdef class Log(LossFunction):
         # New objective value
         L_new[0] = 0
 
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             b_ptr = b + i
             tmp = d_old[y[i]] - d[y[i]]
             Z[i] = 0
 
-            for k in xrange(n_vectors):
+            for k in range(n_vectors):
                 # b_ptr[0] = b[k, i]
                 if y[i] != k:
                     b_ptr[0] *= exp((d[k] - d_old[k] + tmp) * data[ii])
@@ -1134,17 +1134,17 @@ cdef class Log(LossFunction):
         cdef int* indices
         cdef int n_nz
 
-        for i in xrange(n_samples):
+        for i in range(n_samples):
             b[i] = 0
 
-        for j in xrange(n_features):
+        for j in range(n_features):
             X.get_column_ptr(j, &indices, &data, &n_nz)
 
-            for ii in xrange(n_nz):
+            for ii in range(n_nz):
                 i = indices[ii]
                 b[i] += data[ii] * w[j]
 
-        for i in xrange(n_samples):
+        for i in range(n_samples):
             b[i] = exp(y[i] * b[i])
 
     cdef void recompute_mc(self,
@@ -1163,27 +1163,27 @@ cdef class Log(LossFunction):
         cdef int* indices
         cdef int n_nz
 
-        for i in xrange(n_samples):
-            for k in xrange(n_vectors):
+        for i in range(n_samples):
+            for k in range(n_vectors):
                 b[k, i] = 0
 
-        for j in xrange(n_features):
+        for j in range(n_features):
             X.get_column_ptr(j, &indices, &data, &n_nz)
 
-            for ii in xrange(n_nz):
+            for ii in range(n_nz):
                 i = indices[ii]
 
-                for k in xrange(n_vectors):
+                for k in range(n_vectors):
                     tmp = w[k, j] * data[ii]
                     if k == y[i]:
-                        for k2 in xrange(n_vectors):
+                        for k2 in range(n_vectors):
                             if k2 != y[i]:
                                 b[k2, i] -= tmp
                     else:
                         b[k, i] += tmp
 
-        for i in xrange(n_samples):
-            for k in xrange(n_vectors):
+        for i in range(n_samples):
+            for k in range(n_vectors):
                 if k != y[i]:
                     b[k, i] = exp(b[k, i])
                 else:
@@ -1301,7 +1301,7 @@ def _primal_cd(self,
         buf = np.zeros(n_samples, dtype=np.float64)
         buf_ptr = <double*>buf.data
 
-    for t in xrange(max_iter):
+    for t in range(max_iter):
         # Permute features (cyclic case only)
         if permute:
             rs.shuffle(active_set[:active_size])

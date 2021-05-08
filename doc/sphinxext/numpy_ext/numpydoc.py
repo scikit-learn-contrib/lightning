@@ -17,9 +17,6 @@ It will:
 
 """
 
-from __future__ import unicode_literals
-
-import sys # Only needed to check Python version
 import os
 import re
 import pydoc
@@ -41,10 +38,7 @@ def mangle_docstrings(app, what, name, obj, options, lines,
         lines[:] = title_re.sub('', "\n".join(lines)).split("\n")
     else:
         doc = get_doc_object(obj, what, "\n".join(lines), config=cfg)
-        if sys.version_info[0] < 3:
-            lines[:] = unicode(doc).splitlines()
-        else:
-            lines[:] = str(doc).splitlines()
+        lines[:] = str(doc).splitlines()
 
     if app.config.numpydoc_edit_link and hasattr(obj, '__name__') and \
            obj.__name__:
@@ -104,12 +98,8 @@ def setup(app, get_doc_object_=get_doc_object):
     global get_doc_object
     get_doc_object = get_doc_object_
 
-    if sys.version_info[0] < 3:
-        app.connect(b'autodoc-process-docstring', mangle_docstrings)
-        app.connect(b'autodoc-process-signature', mangle_signature)
-    else:
-        app.connect('autodoc-process-docstring', mangle_docstrings)
-        app.connect('autodoc-process-signature', mangle_signature)
+    app.connect('autodoc-process-docstring', mangle_docstrings)
+    app.connect('autodoc-process-signature', mangle_signature)
     app.add_config_value('numpydoc_edit_link', None, False)
     app.add_config_value('numpydoc_use_plots', None, False)
     app.add_config_value('numpydoc_show_class_members', True, True)
@@ -135,7 +125,7 @@ class ManglingDomainBase(object):
     directive_mangling_map = {}
 
     def __init__(self, *a, **kw):
-        super(ManglingDomainBase, self).__init__(*a, **kw)
+        super().__init__(*a, **kw)
         self.wrap_mangling_directives()
 
     def wrap_mangling_directives(self):

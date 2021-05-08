@@ -13,7 +13,6 @@ This module provides coordinate descent solvers for support vector machines
 import numpy as np
 
 from sklearn.preprocessing import add_dummy_feature
-from six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
@@ -136,7 +135,7 @@ class LinearSVC(BaseClassifier):
                 self.dual_coef_ = np.zeros((n_vectors, n_samples),
                                            dtype=np.float64)
 
-        for i in xrange(n_vectors):
+        for i in range(n_vectors):
             if self.criterion == "accuracy":
                 _dual_cd(self, self.coef_[i], self.dual_coef_[i],
                          ds, Y[:, i], self.permute,
@@ -257,7 +256,7 @@ class LinearSVR(BaseRegressor):
             self.dual_coef_ = np.zeros((n_vectors, n_samples),
                                        dtype=np.float64)
 
-        for i in xrange(n_vectors):
+        for i in range(n_vectors):
             _dual_cd_svr(self, self.coef_[i], self.dual_coef_[i],
                          ds, Y[:, i], self.permute,
                          self.C, self.epsilon, self._get_loss(),

@@ -181,7 +181,7 @@ class PySAGAClassifier(PySAGClassifier):
     def __init__(self, eta, alpha=1.0, beta=0.0, loss="smooth_hinge",
                  penalty='l2', gamma=1.0, max_iter=100, random_state=None,
                  callback=None):
-        super(PySAGAClassifier, self).__init__(
+        super().__init__(
                 eta=eta, alpha=alpha, beta=beta, loss=loss, penalty=penalty,
                 gamma=gamma, max_iter=max_iter,
                 random_state=random_state, callback=callback)

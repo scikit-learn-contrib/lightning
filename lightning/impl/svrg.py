@@ -3,8 +3,6 @@
 
 import numpy as np
 
-from six.moves import xrange
-
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
 from .svrg_fast import _svrg_fit
@@ -35,7 +33,7 @@ class _BaseSVRG(object):
         grad = np.zeros((n_vectors, n_samples), dtype=np.float64)
         self.coef_scale_ = np.ones(n_vectors, dtype=np.float64)
 
-        for i in xrange(n_vectors):
+        for i in range(n_vectors):
             y = Y[:, i]
 
             _svrg_fit(self, ds, y, self.coef_[i], self.coef_scale_[i:],

@@ -185,7 +185,7 @@ cdef double _pred(double* data,
     cdef int j, jj
     cdef double dot = 0
 
-    for jj in xrange(n_nz):
+    for jj in range(n_nz):
         j = indices[jj]
         dot += w[j] * data[jj]
 
@@ -198,7 +198,7 @@ cdef void _add(double* data,
                double* w):
     cdef int jj, j
 
-    for jj in xrange(n_nz):
+    for jj in range(n_nz):
         j = indices[jj]
         w[j] += scale * data[jj]
 

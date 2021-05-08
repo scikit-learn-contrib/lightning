@@ -30,9 +30,9 @@ class BaseEstimator(_BaseEstimator):
         if percentage:
             if hasattr(self, "support_vectors_") and \
                self.support_vectors_ is not None:
-                n_nz /= float(self.n_samples_)
+                n_nz /= self.n_samples_
             else:
-                n_nz /= float(coef.shape[1])
+                n_nz /= coef.shape[1]
 
         return n_nz
 

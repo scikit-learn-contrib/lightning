@@ -5,7 +5,7 @@ import glob
 import shutil
 from conda_build.config import config
 
-with open(os.path.join(sys.argv[1], 'meta.yaml')) as f:
+with open(os.path.join(sys.argv[1], 'meta.yaml'), encoding='utf-8') as f:
     name = yaml.load(f)['package']['name']
 
 binary_package_glob = os.path.join(

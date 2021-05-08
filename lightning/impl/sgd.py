@@ -16,7 +16,6 @@ import numpy as np
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import assert_all_finite
-from six.moves import xrange
 
 from .base import BaseClassifier
 from .base import BaseRegressor
@@ -207,7 +206,7 @@ class SGDClassifier(BaseClassifier, _BaseSGD):
         if n_vectors == 1 or not self.multiclass:
             Y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
                                   dtype=np.float64)
-            for i in xrange(n_vectors):
+            for i in range(n_vectors):
                 _binary_sgd(self,
                             self.coef_, self.intercept_, i,
                             ds, Y[:, i], loss, penalty,
@@ -362,7 +361,7 @@ class SGDRegressor(BaseRegressor, _BaseSGD):
         loss = self._get_loss()
         penalty = self._get_penalty()
 
-        for k in xrange(n_vectors):
+        for k in range(n_vectors):
             _binary_sgd(self,
                         self.coef_, self.intercept_, k,
                         ds, Y[:, k], loss, penalty, self.alpha,

@@ -13,7 +13,6 @@ functions and penalties.
 import numpy as np
 
 from joblib import Parallel, delayed
-from six.moves import xrange
 
 from .base import BaseClassifier
 from .base import BaseRegressor
@@ -299,7 +298,7 @@ class CDClassifier(_BaseCD, BaseClassifier):
 
             n_pos = np.zeros(n_vectors)
             vinit = self.C / self.C_init * np.ones_like(n_pos)
-            for k in xrange(n_vectors):
+            for k in range(n_vectors):
                 n_pos[k] = np.sum(Y[:, k] == 1)
                 vinit[k] *= self.violation_init_.get(k, 0)
             n_neg = n_samples - n_pos
@@ -315,7 +314,7 @@ class CDClassifier(_BaseCD, BaseClassifier):
                                         self.shrinking, vinit[k],
                                         rs, tol[k], self.callback, self.n_calls,
                                         self.verbose)
-                    for k in xrange(n_vectors))
+                    for k in range(n_vectors))
             model = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(jobs)
             viol, coefs, errors = zip(*model)
             self.coef_ = np.asarray(coefs)
@@ -345,7 +344,7 @@ class CDClassifier(_BaseCD, BaseClassifier):
                            rs, self.tol, self.callback, self.n_calls,
                            self.verbose
                             )
-                    for k in xrange(n_vectors))
+                    for k in range(n_vectors))
             model = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(jobs)
             viol, coefs, errors = zip(*model)
             self.coef_ = np.asarray(coefs)
@@ -472,7 +471,7 @@ class CDRegressor(_BaseCD, BaseRegressor):
         else:
             penalty = self._get_penalty()
             vinit = np.asarray([self.violation_init_.get(k, 0)
-                    for k in xrange(n_vectors)]) * self.C / self.C_init
+                    for k in range(n_vectors)]) * self.C / self.C_init
 
             jobs = (delayed(_primal_cd)(self, self.coef_, self.errors_,
                                        ds, y, Y, k, False,
@@ -484,7 +483,7 @@ class CDRegressor(_BaseCD, BaseRegressor):
                                        self.shrinking, vinit[k],
                                        rs, self.tol, self.callback, self.n_calls,
                                        self.verbose)
-                    for k in xrange(n_vectors))
+                    for k in range(n_vectors))
 
             model = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(jobs)
             viol, self.coef_, self.error_ = zip(*model)

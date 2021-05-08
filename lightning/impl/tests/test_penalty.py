@@ -1,7 +1,5 @@
 import numpy as np
 
-from six.moves import xrange
-
 from lightning.impl.penalty import project_l1_ball, project_simplex
 
 
@@ -10,7 +8,7 @@ def project_simplex_bisection(v, z=1, tau=0.0001, max_iter=1000):
     upper = np.max(v)
     current = np.inf
 
-    for it in xrange(max_iter):
+    for it in range(max_iter):
         if np.abs(current) / z < tau and current < 0:
             break
 
