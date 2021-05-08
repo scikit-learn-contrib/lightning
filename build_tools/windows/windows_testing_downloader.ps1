@@ -114,8 +114,8 @@ function PipInstall($pkg_name, $python_version, $extra_args) {
     Invoke-Expression -Command "$pip install $pkg_name"
 }
 
-function InstallNose($python_version) {
-    PipInstall "nose" $python_version 
+function InstallPytest($python_version) {
+    PipInstall "pytest" $python_version 
 }
 
 function WheelInstall($name, $url, $python_version) {
@@ -254,7 +254,7 @@ function main {
         } else {
            EnsurePip $py 
         }
-        InstallNose $py
+        InstallPytest $py
         InstallWheel $py
 
         # The installers below here use wheel packages.

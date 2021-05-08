@@ -52,7 +52,7 @@ install:
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
   - "python -m pip --version"
 
-  - "python -m pip install --timeout=60 numpy scipy cython nose scikit-learn wheel six joblib"
+  - "python -m pip install --timeout=60 numpy scipy cython pytest scikit-learn wheel six joblib"
   - "python setup.py bdist_wheel bdist_wininst"
 
   - ps: "ls dist"
@@ -60,15 +60,7 @@ install:
   - "python -m pip install --pre --no-index --find-links dist/ sklearn-contrib-lightning"
 
 test_script:
-  # Change to a non-source folder to make sure we run the tests on the
-  # installed library.
-  - "mkdir empty_folder"
-  - "cd empty_folder"
-
-  - "python -c \"import nose; nose.main()\" -s -v lightning"
-
-  # Move back to the project folder
-  - "cd .."
+  - "pytest -v --pyargs lightning"
 
 artifacts:
   # Archive the generated wheel package in the ci.appveyor.com build report.

@@ -473,7 +473,3 @@ def test_sag_adaptive():
             eta='auto', loss='log', random_state=0, alpha=alpha, max_iter=20)
         clf.fit(X, y)
         np.testing.assert_almost_equal(clf_adaptive.score(X, y), clf.score(X, y), 1)
-
-if __name__ == '__main__':
-    import nose
-    nose.run()
