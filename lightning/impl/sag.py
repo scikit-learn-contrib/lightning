@@ -89,7 +89,7 @@ class _BaseSAG(object):
 
 
 class SAGClassifier(BaseClassifier, _BaseSAG):
-    """
+    r"""
     Estimator for learning linear classifiers by SAG.
 
     Solves the following objective:
@@ -166,7 +166,7 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
 
 
 class SAGAClassifier(SAGClassifier):
-    """
+    r"""
     Estimator for learning linear classifiers by SAGA.
 
     Solves the following objective:
@@ -219,7 +219,7 @@ class SAGAClassifier(SAGClassifier):
 
 
 class SAGRegressor(BaseRegressor, _BaseSAG):
-    """
+    r"""
     Estimator for learning linear regressors by SAG.
 
     Solves the following objective:
@@ -293,7 +293,7 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
 
 
 class SAGARegressor(SAGRegressor):
-    """
+    r"""
     Estimator for learning linear regressors by SAG.
 
     Solves the following objective:

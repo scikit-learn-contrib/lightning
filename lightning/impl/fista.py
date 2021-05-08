@@ -131,7 +131,7 @@ class _BaseFista(object):
 
 
 class FistaClassifier(BaseClassifier, _BaseFista):
-    """Estimator for learning linear classifiers by FISTA.
+    r"""Estimator for learning linear classifiers by FISTA.
 
     The objective functions considered take the form
 
@@ -227,7 +227,7 @@ class FistaClassifier(BaseClassifier, _BaseFista):
 
 
 class FistaRegressor(BaseRegressor, _BaseFista):
-    """Estimator for learning linear classifiers by FISTA.
+    r"""Estimator for learning linear classifiers by FISTA.
 
     The objective functions considered take the form
 

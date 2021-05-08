@@ -24,7 +24,7 @@ from .base import BaseClassifier
 
 
 class KernelSVC(BaseClassifier):
-    """Estimator for learning kernel SVMs by Newton's method.
+    r"""Estimator for learning kernel SVMs by Newton's method.
 
     Parameters
     ----------

@@ -23,7 +23,7 @@ from .dual_cd_fast import _dual_cd_svr
 
 
 class LinearSVC(BaseClassifier):
-    """Estimator for learning linear support vector machine by coordinate
+    r"""Estimator for learning linear support vector machine by coordinate
     descent in the dual.
 
     Parameters
@@ -152,7 +152,7 @@ class LinearSVC(BaseClassifier):
 
 
 class LinearSVR(BaseRegressor):
-    """Estimator for learning a linear support vector regressor by coordinate
+    r"""Estimator for learning a linear support vector regressor by coordinate
     descent in the dual.
 
     Parameters

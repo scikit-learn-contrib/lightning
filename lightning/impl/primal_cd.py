@@ -72,7 +72,7 @@ class _BaseCD(object):
 
 
 class CDClassifier(_BaseCD, BaseClassifier):
-    """Estimator for learning linear classifiers by (block) coordinate descent.
+    r"""Estimator for learning linear classifiers by (block) coordinate descent.
 
     The objective functions considered take the form
 
@@ -355,7 +355,7 @@ class CDClassifier(_BaseCD, BaseClassifier):
 
 
 class CDRegressor(_BaseCD, BaseRegressor):
-    """Estimator for learning linear regressors by (block) coordinate descent.
+    r"""Estimator for learning linear regressors by (block) coordinate descent.
 
     The objective functions considered take the form
 
