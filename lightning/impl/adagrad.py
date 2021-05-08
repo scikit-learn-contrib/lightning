@@ -48,7 +48,7 @@ class _BaseAdagrad(object):
 
 
 class AdaGradClassifier(BaseClassifier, _BaseAdagrad):
-    """
+    r"""
     Estimator for learning linear classifiers by AdaGrad.
 
     Solves the following objective:
@@ -92,7 +92,7 @@ class AdaGradClassifier(BaseClassifier, _BaseAdagrad):
 
 
 class AdaGradRegressor(BaseRegressor, _BaseAdagrad):
-    """
+    r"""
     Estimator for learning linear regressors by AdaGrad.
 
     Solves the following objective:

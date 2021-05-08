@@ -72,7 +72,7 @@ class _BaseSDCA(object):
 
 
 class SDCAClassifier(BaseClassifier, _BaseSDCA):
-    """
+    r"""
     Estimator for learning linear classifiers by (proximal) SDCA.
 
     Solves the following objective:
@@ -137,7 +137,7 @@ class SDCAClassifier(BaseClassifier, _BaseSDCA):
 
 
 class SDCARegressor(BaseRegressor, _BaseSDCA):
-    """
+    r"""
     Estimator for learning linear regressors by (proximal) SDCA.
 
     Solves the following objective:

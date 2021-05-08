@@ -58,7 +58,7 @@ class _BaseSGD(object):
 
 
 class SGDClassifier(BaseClassifier, _BaseSGD):
-    """Estimator for learning linear classifiers by SGD.
+    r"""Estimator for learning linear classifiers by SGD.
 
     Parameters
     ----------
@@ -241,7 +241,7 @@ class SGDClassifier(BaseClassifier, _BaseSGD):
 
 
 class SGDRegressor(BaseRegressor, _BaseSGD):
-    """Estimator for learning linear regressors by SGD.
+    r"""Estimator for learning linear regressors by SGD.
 
     Parameters
     ----------

@@ -47,7 +47,7 @@ class _BaseSVRG(object):
 
 
 class SVRGClassifier(BaseClassifier, _BaseSVRG):
-    """
+    r"""
     Estimator for learning linear classifiers by SVRG.
 
     Solves the following objective:
@@ -88,7 +88,7 @@ class SVRGClassifier(BaseClassifier, _BaseSVRG):
 
 
 class SVRGRegressor(BaseRegressor, _BaseSVRG):
-    """
+    r"""
     Estimator for learning linear regressors by SVRG.
 
     Solves the following objective:
