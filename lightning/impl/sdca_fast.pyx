@@ -27,7 +27,7 @@ cdef _add_l2(double* data,
     cdef int j, jj
     cdef double delta, w_old
 
-    for jj in xrange(n_nz):
+    for jj in range(n_nz):
         j = indices[jj]
         delta = update * data[jj]
         w_old = w[j]
@@ -57,7 +57,7 @@ cdef _add_elastic(double* data,
     cdef int j, jj
     cdef double delta, w_old, v_old
 
-    for jj in xrange(n_nz):
+    for jj in range(n_nz):
         j = indices[jj]
         delta = update * data[jj]
         v_old = v[j]
@@ -80,10 +80,10 @@ cdef _sqnorms(RowDataset X,
     cdef int* indices
     cdef int n_nz
 
-    for i in xrange(n_samples):
+    for i in range(n_samples):
         X.get_row_ptr(i, &indices, &data, &n_nz)
         dot = 0
-        for jj in xrange(n_nz):
+        for jj in range(n_nz):
             dot += data[jj] * data[jj]
         sqnorms[i] = dot
 
@@ -96,7 +96,7 @@ cdef double _pred(double* data,
     cdef int j, jj
     cdef double dot = 0
 
-    for jj in xrange(n_nz):
+    for jj in range(n_nz):
         j = indices[jj]
         dot += w[j] * data[jj]
 
@@ -249,12 +249,12 @@ def _prox_sdca_fit(self,
     regul = 0
 
     t = 0
-    for it in xrange(max_iter):
+    for it in range(max_iter):
         primal = 0
 
         rng.shuffle(sindices)
 
-        for ii in xrange(n_samples):
+        for ii in range(n_samples):
 
             i = sindices[ii]
 
@@ -275,7 +275,7 @@ def _prox_sdca_fit(self,
 
             t += 1
 
-        # end for ii in xrange(n_samples)
+        # end for ii in range(n_samples)
 
         gap = (primal - dual) / n_samples + alpha2 * regul
         gap = fabs(gap)
@@ -288,7 +288,7 @@ def _prox_sdca_fit(self,
                 print("Converged")
             break
 
-    # for it in xrange(max_iter)
+    # for it in range(max_iter)
 
-    for i in xrange(n_samples):
+    for i in range(n_samples):
         dcoef[i] *= scale

@@ -7,7 +7,6 @@ example files.
 Files that generate images should start with 'plot'
 
 """
-from __future__ import division, print_function
 from time import time
 import ast
 import os
@@ -20,37 +19,19 @@ import gzip
 import posixpath
 import subprocess
 import warnings
-import six
+
+from io import StringIO
+import pickle
+import urllib.request
+import urllib.error
+import urllib.parse
+from urllib.error import HTTPError, URLError
 
 
-# Try Python 2 first, otherwise load from Python 3
-try:
-    from StringIO import StringIO
-    import cPickle as pickle
-    import urllib2 as urllib
-    from urllib2 import HTTPError, URLError
-except ImportError:
-    from io import StringIO
-    import pickle
-    import urllib.request
-    import urllib.error
-    import urllib.parse
-    from urllib.error import HTTPError, URLError
-
-
-try:
-    # Python 2 built-in
-    execfile
-except NameError:
-    def execfile(filename, global_vars=None, local_vars=None):
-        with open(filename, encoding='utf-8') as f:
-            code = compile(f.read(), filename, 'exec')
-            exec(code, global_vars, local_vars)
-
-try:
-    basestring
-except NameError:
-    basestring = str
+def execfile(filename, global_vars=None, local_vars=None):
+    with open(filename, encoding='utf-8') as f:
+        code = compile(f.read(), filename, 'exec')
+        exec(code, global_vars, local_vars)
 
 import token
 import tokenize
@@ -93,13 +74,8 @@ class Tee(object):
 def _get_data(url):
     """Helper function to get data over http or from a local file"""
     if url.startswith('http://'):
-        # Try Python 2, use Python 3 on exception
-        try:
-            resp = urllib.urlopen(url)
-            encoding = resp.headers.dict.get('content-encoding', 'plain')
-        except AttributeError:
-            resp = urllib.request.urlopen(url)
-            encoding = resp.headers.get('content-encoding', 'plain')
+        resp = urllib.request.urlopen(url)
+        encoding = resp.headers.get('content-encoding', 'plain')
         data = resp.read()
         if encoding == 'plain':
             pass
@@ -427,10 +403,8 @@ carousel_thumbs = {'plot_classifier_comparison_001.png': (1, 600),
 def extract_docstring(filename, ignore_heading=False):
     """ Extract a module-level docstring, if any
     """
-    if six.PY2:
-        lines = open(filename).readlines()
-    else:
-        lines = open(filename, encoding='utf-8').readlines()
+    with open(filename, encoding='utf-8') as f:
+        lines = f.readlines()
     start_row = 0
     if lines[0].startswith('#!'):
         lines.pop(0)
@@ -526,10 +500,8 @@ Examples
 def extract_line_count(filename, target_dir):
     # Extract the line count of a file
     example_file = os.path.join(target_dir, filename)
-    if six.PY2:
-        lines = open(example_file).readlines()
-    else:
-        lines = open(example_file, encoding='utf-8').readlines()
+    with open(example_file, encoding='utf-8') as f:
+        lines = f.readlines()
     start_row = 0
     if lines and lines[0].startswith('#!'):
         lines.pop(0)
@@ -620,7 +592,7 @@ def generate_dir_rst(directory, fhindex, example_dir, root_dir, plot_gallery, se
 %s
 
 
-""" % open(os.path.join(src_dir, 'README.txt')).read())
+""" % open(os.path.join(src_dir, 'README.txt'), encoding='utf-8').read())
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     sorted_listdir = line_count_sort(os.listdir(src_dir),
@@ -676,8 +648,8 @@ def make_thumbnail(in_fname, out_fname, width, height):
         import Image
     img = Image.open(in_fname)
     width_in, height_in = img.size
-    scale_w = width / float(width_in)
-    scale_h = height / float(height_in)
+    scale_w = width / width_in
+    scale_h = height / height_in
 
     if height_in * scale_w <= height:
         scale = scale_w
@@ -727,7 +699,7 @@ class NameFinder(ast.NodeVisitor):
     """
 
     def __init__(self):
-        super(NameFinder, self).__init__()
+        super().__init__()
         self.imported_names = {}
         self.accessed_names = set()
 
@@ -964,11 +936,8 @@ def generate_file_rst(fname, target_dir, src_dir, root_dir, plot_gallery):
     f.flush()
 
     # save variables so we can later add links to the documentation
-    if six.PY2:
-        example_code_obj = identify_names(open(example_file).read())
-    else:
-        example_code_obj = \
-            identify_names(open(example_file, encoding='utf-8').read())
+    with open(example_file, encoding='utf-8') as f:
+        example_code_obj = identify_names(f.read())
     if example_code_obj:
         codeobj_fname = example_file[:-3] + '_codeobj.pickle'
         with open(codeobj_fname, 'wb') as fid:

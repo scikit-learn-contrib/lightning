@@ -4,7 +4,6 @@
 import numpy as np
 
 from sklearn.utils import check_random_state
-from six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
@@ -55,7 +54,7 @@ class _BaseSDCA(object):
         rng = check_random_state(self.random_state)
         loss = self._get_loss()
 
-        for i in xrange(n_vectors):
+        for i in range(n_vectors):
             y = Y[:, i]
 
             if self.l1_ratio == 1.0:

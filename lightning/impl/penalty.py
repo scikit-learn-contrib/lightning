@@ -62,7 +62,7 @@ def project_simplex(v, z=1):
     ind = np.arange(n_features) + 1
     cond = u - cssv / ind > 0
     rho = ind[cond][-1]
-    theta = cssv[cond][-1] / float(rho)
+    theta = cssv[cond][-1] / rho
     w = np.maximum(v - theta, 0)
     return w
 

@@ -20,7 +20,7 @@ cdef int _predict(double dot,
     cdef int r
     cdef int y_hat = 0
 
-    for r in xrange(n_classes):
+    for r in range(n_classes):
         if dot - b[r] < 0:
             y_hat = r
             break
@@ -35,7 +35,7 @@ cdef int _update_thresholds(double dot,
     cdef int tau = 0
     cdef int r, yr
 
-    for r in xrange(n_classes - 1):
+    for r in range(n_classes - 1):
         if y <= r:
             yr = -1
         else:
@@ -72,11 +72,11 @@ def _prank_fit(np.ndarray[double, ndim=1, mode='c'] w,
     cdef np.ndarray[int, ndim=1] ind
     ind = np.arange(n_samples, dtype=np.int32)
 
-    for n in xrange(n_iter):
+    for n in range(n_iter):
         if shuffle:
             rs.shuffle(ind)
 
-        for ii in xrange(n_samples):
+        for ii in range(n_samples):
             i = ind[ii]
 
             # Retrieve row.
@@ -84,7 +84,7 @@ def _prank_fit(np.ndarray[double, ndim=1, mode='c'] w,
 
             # Compute dot product.
             dot = 0
-            for jj in xrange(n_nz):
+            for jj in range(n_nz):
                 j = indices[jj]
                 dot += w[j] * data[jj]
 
@@ -97,7 +97,7 @@ def _prank_fit(np.ndarray[double, ndim=1, mode='c'] w,
             tau = _update_thresholds(dot, b, y[i], n_classes)
 
             # Update w.
-            for jj in xrange(n_nz):
+            for jj in range(n_nz):
                 j = indices[jj]
                 w[j] += tau * data[jj]
 
@@ -120,16 +120,16 @@ def _prank_fit_kernel(np.ndarray[double, ndim=1, mode='c'] alpha,
     cdef np.ndarray[int, ndim=1] ind
     ind = np.arange(n_samples, dtype=np.int32)
 
-    for n in xrange(n_iter):
+    for n in range(n_iter):
         if shuffle:
             rs.shuffle(ind)
 
-        for ii in xrange(n_samples):
+        for ii in range(n_samples):
             i = ind[ii]
 
             # Compute dot product.
             dot = 0
-            for j in xrange(n_samples):
+            for j in range(n_samples):
                 dot += alpha[j] * K[i, j]
 
             y_hat = _predict(dot, b, n_classes)
@@ -152,5 +152,5 @@ def _prank_predict(np.ndarray[double, ndim=1, mode='c'] dot,
     cdef int n_samples = dot.shape[0]
     cdef int i
 
-    for i in xrange(n_samples):
+    for i in range(n_samples):
         out[i] = _predict(dot[i], b, n_classes)

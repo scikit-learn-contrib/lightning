@@ -2,8 +2,6 @@ import pickle
 import numpy as np
 import scipy.sparse as sp
 
-from six.moves import xrange
-
 from sklearn.datasets import make_classification
 from sklearn.utils import check_random_state
 
@@ -33,7 +31,7 @@ csc_ds = CSCDataset(X_csc)
 
 def test_contiguous_get_row():
     ind = np.arange(X.shape[1])
-    for i in xrange(X.shape[0]):
+    for i in range(X.shape[0]):
         indices, data, n_nz = cds.get_row(i)
         np.testing.assert_array_equal(indices, ind)
         np.testing.assert_array_equal(data, X[i])
@@ -41,16 +39,16 @@ def test_contiguous_get_row():
 
 
 def test_csr_get_row():
-    for i in xrange(X.shape[0]):
+    for i in range(X.shape[0]):
         indices, data, n_nz = csr_ds.get_row(i)
-        for jj in xrange(n_nz):
+        for jj in range(n_nz):
             j = indices[jj]
             assert X[i, j] == data[jj]
 
 
 def test_fortran_get_column():
     ind = np.arange(X.shape[0])
-    for j in xrange(X.shape[1]):
+    for j in range(X.shape[1]):
         indices, data, n_nz = fds.get_column(j)
         np.testing.assert_array_equal(indices, ind)
         np.testing.assert_array_equal(data, X[:, j])
@@ -58,9 +56,9 @@ def test_fortran_get_column():
 
 
 def test_csc_get_column():
-    for j in xrange(X.shape[1]):
+    for j in range(X.shape[1]):
         indices, data, n_nz = csc_ds.get_column(j)
-        for ii in xrange(n_nz):
+        for ii in range(n_nz):
             i = indices[ii]
             assert X[i, j] == data[ii]
 

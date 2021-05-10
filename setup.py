@@ -9,15 +9,17 @@ from numpy.distutils.core import setup
 
 
 DISTNAME = 'sklearn-contrib-lightning'
-DESCRIPTION = "Large-scale sparse linear classification, " + \
-              "regression and ranking in Python"
-LONG_DESCRIPTION = open('README.rst').read()
+DESCRIPTION = ("Large-scale sparse linear classification, "
+               "regression and ranking in Python")
+with open('README.rst', encoding='utf-8') as f:
+    LONG_DESCRIPTION = f.read()
 MAINTAINER = 'Mathieu Blondel'
 MAINTAINER_EMAIL = 'mathieu@mblondel.org'
 URL = 'https://github.com/scikit-learn-contrib/lightning'
 LICENSE = 'new BSD'
 DOWNLOAD_URL = 'https://github.com/scikit-learn-contrib/lightning'
 VERSION = '0.6.1dev'
+MIN_PYTHON_VERSION = '3.6'
 
 
 def configuration(parent_package='', top_path=None):
@@ -42,8 +44,8 @@ if __name__ == "__main__":
     setup(configuration=configuration,
           name=DISTNAME,
           maintainer=MAINTAINER,
+          python_requires='>={}'.format(MIN_PYTHON_VERSION),
           install_requires=[
-              'six',
               'scikit-learn'
           ],
           include_package_data=True,

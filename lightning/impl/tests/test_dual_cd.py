@@ -3,7 +3,6 @@ import scipy.sparse as sp
 
 from sklearn.metrics.pairwise import linear_kernel
 from sklearn.datasets import make_regression
-from six.moves import xrange
 
 from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.dual_cd import LinearSVC
@@ -31,8 +30,8 @@ def test_sparse_dot():
         K2 = np.zeros_like(K)
         ds = get_dataset(data)
 
-        for i in xrange(data.shape[0]):
-            for j in xrange(i, data.shape[0]):
+        for i in range(data.shape[0]):
+            for j in range(i, data.shape[0]):
                 K2[i, j] = sparse_dot(ds, i, j)
                 K2[j, i] = K[i, j]
 

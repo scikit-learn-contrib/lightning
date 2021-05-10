@@ -7,11 +7,7 @@ import textwrap
 import re
 import pydoc
 from warnings import warn
-# Try Python 2 first, otherwise load from Python 3
-try:
-    from StringIO import StringIO
-except:
-    from io import StringIO
+from io import StringIO
 
 
 class Reader(object):
@@ -466,7 +462,7 @@ class FunctionDoc(NumpyDocString):
             out += '.. %s:: %s\n    \n\n' % (roles.get(self._role, ''),
                                              func_name)
 
-        out += super(FunctionDoc, self).__str__(func_role=self._role)
+        out += super().__str__(func_role=self._role)
         return out
 
 

@@ -17,9 +17,9 @@ ranking in Python.
 
 Highlights:
 
-- follows the `scikit-learn <http://scikit-learn.org>`_ API conventions
+- follows the `scikit-learn <https://scikit-learn.org>`_ API conventions
 - supports natively both dense and sparse data representations
-- computationally demanding parts implemented in `Cython <http://cython.org>`_
+- computationally demanding parts implemented in `Cython <https://cython.org>`_
 
 Solvers supported:
 
@@ -66,8 +66,8 @@ penalty on the News20 dataset (c.f., `Blondel et al. 2013
 Dependencies
 ------------
 
-lightning requires Python >= 2.7, setuptools, Numpy >= 1.3, SciPy >= 0.7 and
-scikit-learn >= 0.15. Building from source also requires Cython and a working C/C++ compiler. To run the tests you will also need pytest.
+lightning requires Python >= 3.6, setuptools, Numpy >= 1.12, SciPy >= 0.19 and
+scikit-learn >= 0.19. Building from source also requires Cython and a working C/C++ compiler. To run the tests you will also need pytest.
 
 Installation
 ------------
@@ -93,7 +93,7 @@ Documentation
 
 http://contrib.scikit-learn.org/lightning/
 
-On Github
+On GitHub
 ---------
 
 https://github.com/scikit-learn-contrib/lightning

@@ -33,20 +33,20 @@ class SparseNonlinearClassifier(CDClassifier):
 
     def __init__(self, gamma=1e-2, C=1, alpha=1):
         self.gamma = gamma
-        super(SparseNonlinearClassifier, self).__init__(C=C,
-                                                        alpha=alpha,
-                                                        loss="squared_hinge",
-                                                        penalty="l1")
+        super().__init__(C=C,
+                         alpha=alpha,
+                         loss="squared_hinge",
+                         penalty="l1")
 
     def fit(self, X, y):
         K = rbf_kernel(X, gamma=self.gamma)
         self.X_train_ = X
-        super(SparseNonlinearClassifier, self).fit(K, y)
+        super().fit(K, y)
         return self
 
     def decision_function(self, X):
         K = rbf_kernel(X, self.X_train_, gamma=self.gamma)
-        return super(SparseNonlinearClassifier, self).decision_function(K)
+        return super().decision_function(K)
 
 
 def gen_non_lin_separable_data():

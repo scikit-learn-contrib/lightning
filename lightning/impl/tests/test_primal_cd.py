@@ -3,7 +3,6 @@ import scipy.sparse as sp
 
 from sklearn.datasets import load_digits
 from sklearn.preprocessing import LabelBinarizer
-from six.moves import xrange
 
 from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.primal_cd import CDClassifier, CDRegressor
@@ -30,7 +29,7 @@ def test_fit_linear_binary_l1r():
     np.testing.assert_almost_equal(acc, 1.0)
     n_nz = clf.n_nonzero()
     perc = clf.n_nonzero(percentage=True)
-    assert perc == float(n_nz) / bin_dense.shape[1]
+    assert perc == n_nz / bin_dense.shape[1]
 
     clf = CDClassifier(C=0.1, random_state=0, penalty="l1")
     clf.fit(bin_dense, bin_target)
@@ -38,7 +37,7 @@ def test_fit_linear_binary_l1r():
     np.testing.assert_almost_equal(acc, 0.97)
     n_nz2 = clf.n_nonzero()
     perc2 = clf.n_nonzero(percentage=True)
-    assert perc2 == float(n_nz2) / bin_dense.shape[1]
+    assert perc2 == n_nz2 / bin_dense.shape[1]
 
     assert n_nz > n_nz2
 
@@ -236,11 +235,11 @@ def test_l1l2_multiclass_log_loss():
         clf.fit(data, mult_target)
         np.testing.assert_almost_equal(clf.score(data, mult_target), 0.8766, 3)
         df = clf.decision_function(data)
-        sel = np.array([df[i, int(mult_target[i])] for i in xrange(df.shape[0])])
+        sel = np.array([df[i, int(mult_target[i])] for i in range(df.shape[0])])
         df -= sel[:, np.newaxis]
         df = np.exp(df)
         np.testing.assert_array_almost_equal(clf.errors_, df.T)
-        for i in xrange(data.shape[0]):
+        for i in range(data.shape[0]):
             np.testing.assert_almost_equal(clf.errors_[mult_target[i], i], 1.0)
         nz = np.sum(clf.coef_ != 0)
         assert nz == 297
@@ -275,8 +274,8 @@ def test_l1l2_multiclass_squared_hinge_loss():
         df = clf.decision_function(data)
         n_samples, n_vectors = df.shape
         diff = np.zeros_like(clf.errors_)
-        for i in xrange(n_samples):
-            for k in xrange(n_vectors):
+        for i in range(n_samples):
+            for k in range(n_vectors):
                 diff[k, i] = 1 - (df[i, mult_target[i]] - df[i, k])
         np.testing.assert_array_almost_equal(clf.errors_, diff)
         assert np.sum(clf.coef_ != 0) == 300
@@ -301,8 +300,8 @@ def test_l1l2_multiclass_squared_hinge_loss_no_linesearch():
     df = clf.decision_function(data)
     n_samples, n_vectors = df.shape
     diff = np.zeros_like(clf.errors_)
-    for i in xrange(n_samples):
-        for k in xrange(n_vectors):
+    for i in range(n_samples):
+        for k in range(n_vectors):
             diff[k, i] = 1 - (df[i, mult_target[i]] - df[i, k])
     np.testing.assert_array_almost_equal(clf.errors_, diff)
     assert np.sum(clf.coef_ != 0) == 300
