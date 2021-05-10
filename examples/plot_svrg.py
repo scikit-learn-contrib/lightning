@@ -27,19 +27,19 @@ class Callback(object):
         self.y = y
         self.obj = []
         self.times = []
-        self.start_time = time.time()
+        self.start_time = time.clock()
         self.test_time = 0
 
     def __call__(self, clf):
-        test_time = time.time()
+        test_time = time.clock()
         clf._finalize_coef()
         y_pred = clf.decision_function(self.X).ravel()
         loss = (np.maximum(1 - self.y * y_pred, 0) ** 2).mean()
         coef = clf.coef_.ravel()
         regul = 0.5 * clf.alpha * np.dot(coef, coef)
         self.obj.append(loss + regul)
-        self.test_time += time.time() - test_time
-        self.times.append(time.time() -  self.start_time - self.test_time)
+        self.test_time += time.clock() - test_time
+        self.times.append(time.clock() -  self.start_time - self.test_time)
 
 try:
     dataset = sys.argv[1]
