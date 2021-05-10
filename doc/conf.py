@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.abspath('sphinxext'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['gen_rst', 'sphinx.ext.autodoc', 'sphinx.ext.autosummary',
-              'sphinx.ext.doctest', 'sphinx.ext.pngmath',
+              'sphinx.ext.doctest', sphinx.ext.imgmath,
               'sphinx.ext.viewcode', 'numpy_ext.numpydoc']
 
 autosummary_generate = True
@@ -312,4 +312,3 @@ html_theme_options = {
     # Values: "3" (default) or "2" (in quotes)
     'bootstrap_version': "3",
 }
-

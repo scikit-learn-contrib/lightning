@@ -21,7 +21,7 @@ The 1D total variation is also known as fused lasso.
 import numpy as np
 import matplotlib.pyplot as plt
 from lightning.classification import FistaClassifier
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 
 # generate some synthetic data
 n_samples = 200
