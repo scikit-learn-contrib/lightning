@@ -47,8 +47,8 @@ class PRank(_BasePRank):
     thresholds_ : array, shape=[n_classes]
         Estimated thresholds.
 
-    Reference
-    ---------
+    References
+    ----------
     Pranking with Ranking
     Koby Crammer, Yoram Singer
     NIPS 2001
@@ -144,8 +144,8 @@ class KernelPRank(_BasePRank):
     thresholds_ : array, shape=[n_classes]
         Estimated thresholds.
 
-    Reference
-    ---------
+    References
+    ----------
     Pranking with Ranking
     Koby Crammer, Yoram Singer
     NIPS 2001

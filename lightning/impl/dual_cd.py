@@ -63,9 +63,8 @@ class LinearSVC(BaseClassifier):
     verbose : int
         Verbosity level.
 
-    Example
-    -------
-
+    Examples
+    --------
     The following example demonstrates how to learn a classification
     model:
 
