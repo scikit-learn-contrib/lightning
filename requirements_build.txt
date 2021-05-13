@@ -1,5 +1,2 @@
 cython
-joblib
 numpy
-scikit-learn
-scipy

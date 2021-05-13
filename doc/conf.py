@@ -23,7 +23,7 @@ try:
     from lightning import __version__
 except (ImportError, ModuleNotFoundError) as e:
     raise ImportError(
-        "You must install 'lightning' package itself to build docs for it"
+        f"You must install '{project}' package itself to build docs for it"
     ) from e
 
 release = __version__

@@ -3,7 +3,7 @@ name: Deploy Docs to GitHub Pages
 on:
   push:
     branches:
-    - master
+      - master
 
 jobs:
   build-and-deploy-docs:
@@ -19,8 +19,8 @@ jobs:
           python-version: '3.x'
       - name: Install package
         run: |
-          pip install -r requirements_test.txt
-          python setup.py build_ext -i
+          pip install -r requirements_build.txt
+          python setup.py build
           python setup.py install
       - name: Build docs
         run: |
