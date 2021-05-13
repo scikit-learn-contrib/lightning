@@ -115,9 +115,8 @@ class SGDClassifier(BaseClassifier, _BaseSGD):
     verbose : int
         Verbosity level.
 
-    Example
-    -------
-
+    Examples
+    --------
     >>> from sklearn.datasets import fetch_20newsgroups_vectorized
     >>> from lightning.classification import SGDClassifier
     >>> bunch = fetch_20newsgroups_vectorized(subset="all")

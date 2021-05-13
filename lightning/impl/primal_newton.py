@@ -27,7 +27,6 @@ class KernelSVC(BaseClassifier):
 
     Parameters
     ----------
-
     alpha : float
         Weight of the penalty term.
 
@@ -62,9 +61,8 @@ class KernelSVC(BaseClassifier):
     n_jobs : int
         Number of jobs to use to compute the kernel matrix.
 
-    Example
-    -------
-
+    Examples
+    --------
     >>> from sklearn.datasets import make_classification
     >>> from lightning.classification import KernelSVC
     >>> X, y = make_classification()

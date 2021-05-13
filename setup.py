@@ -2,6 +2,7 @@
 #
 # Copyright (C) 2012 Mathieu Blondel
 
+import re
 import sys
 import os
 import setuptools
@@ -17,8 +18,11 @@ MAINTAINER = 'Mathieu Blondel'
 MAINTAINER_EMAIL = 'mathieu@mblondel.org'
 URL = 'https://github.com/scikit-learn-contrib/lightning'
 LICENSE = 'new BSD'
-DOWNLOAD_URL = 'https://github.com/scikit-learn-contrib/lightning'
-VERSION = '0.6.1dev'
+DOWNLOAD_URL = URL
+with open(os.path.join('lightning', '__init__.py'), encoding='utf-8') as f:
+    match = re.search(r'__version__[ ]*=[ ]*[\"\'](?P<version>.+)[\"\']',
+                      f.read())
+    VERSION = match.group('version').strip()
 MIN_PYTHON_VERSION = '3.6'
 
 

@@ -1,3 +1,9 @@
+# encoding: utf-8
+# cython: cdivision=True
+# cython: boundscheck=False
+# cython: wraparound=False
+# cython: language_level=3
+#
 # Author: Mathieu Blondel
 # License: BSD
 

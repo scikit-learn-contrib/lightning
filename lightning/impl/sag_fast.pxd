@@ -1,3 +1,13 @@
+# encoding: utf-8
+# cython: cdivision=True
+# cython: boundscheck=False
+# cython: wraparound=False
+# cython: language_level=3
+#
+# Authors: Mathieu Blondel
+#          Fabian Pedregosa
+#          Arnaud Rachez
+# License: BSD
 
 cimport numpy as np
 

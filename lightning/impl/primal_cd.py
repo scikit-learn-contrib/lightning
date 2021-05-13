@@ -162,9 +162,8 @@ class CDClassifier(_BaseCD, BaseClassifier):
         penalty is a non group-lasso penalty. By default use one CPU.
         If set to -1, use all CPU's
 
-    Example
-    -------
-
+    Examples
+    --------
     The following example demonstrates how to learn a classification
     model with a multiclass squared hinge loss and an l1/l2 penalty.
 

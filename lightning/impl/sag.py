@@ -92,6 +92,8 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
 
     Solves the following objective:
 
+    .. code-block::
+
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2
 
@@ -169,6 +171,8 @@ class SAGAClassifier(SAGClassifier):
 
     Solves the following objective:
 
+    .. code-block::
+
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2 + beta * penalty(w)
 
@@ -221,6 +225,8 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
     Estimator for learning linear regressors by SAG.
 
     Solves the following objective:
+
+    .. code-block::
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2
@@ -295,6 +301,8 @@ class SAGARegressor(SAGRegressor):
     Estimator for learning linear regressors by SAG.
 
     Solves the following objective:
+
+    .. code-block::
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2 + beta * penalty(w)
