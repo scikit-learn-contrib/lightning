@@ -50,6 +50,8 @@ class SVRGClassifier(BaseClassifier, _BaseSVRG):
 
     Solves the following objective:
 
+    .. code-block::
+
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2
     """
@@ -90,6 +92,8 @@ class SVRGRegressor(BaseRegressor, _BaseSVRG):
     Estimator for learning linear regressors by SVRG.
 
     Solves the following objective:
+
+    .. code-block::
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2

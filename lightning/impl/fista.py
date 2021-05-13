@@ -143,7 +143,7 @@ class FistaClassifier(BaseClassifier, _BaseFista):
     loss : str, 'squared_hinge', 'log', 'modified_huber', 'squared'
         The loss function to be used.
 
-    penalty : str or Penalty object, 'l2', 'l1', 'l1/l2', 'simplex'
+    penalty : str or Penalty object, {'l2', 'l1', 'l1/l2', 'tv1d', 'simplex'}
         The penalty or constraint to be used.
 
         - l2: ridge
@@ -151,6 +151,7 @@ class FistaClassifier(BaseClassifier, _BaseFista):
         - l1/l2: group lasso
         - tv1d: 1-dimensional total variation (also known as fused lasso)
         - simplex: simplex constraint
+
         The method can also take an arbitrary Penalty object, i.e., an instance
         that implements methods projection regularization method (see file penalty.py)
 
@@ -236,7 +237,7 @@ class FistaRegressor(BaseRegressor, _BaseFista):
 
     Parameters
     ----------
-    penalty : str or Penalty object, {'l2', 'l1', 'l1/l2', 'simplex'}
+    penalty : str or Penalty object, {'l2', 'l1', 'l1/l2', 'tv1d', 'simplex'}
         The penalty or constraint to be used.
 
         - l2: ridge
@@ -244,6 +245,7 @@ class FistaRegressor(BaseRegressor, _BaseFista):
         - l1/l2: group lasso
         - tv1d: 1-dimensional total variation (also known as fussed lasso)
         - simplex: simplex constraint
+
         The method can also take an arbitrary Penalty object, i.e., an instance
         that implements methods projection regularization method (see file penalty.py)
 

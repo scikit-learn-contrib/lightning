@@ -1,8 +1,7 @@
-.navbar-text{
-    display: none
+.navbar-text {
+    display: none !important;
 }
 
-body .content-container{
-    margin-top: 10px;
-    width: 940px;
+div.body.content {
+    margin-top: 15px !important;
 }

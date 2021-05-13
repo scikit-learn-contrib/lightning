@@ -76,6 +76,8 @@ class SDCAClassifier(BaseClassifier, _BaseSDCA):
 
     Solves the following objective:
 
+    .. code-block::
+
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * l1_ratio * ||w||_1
                     + alpha * (1 - l1_ratio) * 0.5 * ||w||^2_2
@@ -141,9 +143,12 @@ class SDCARegressor(BaseRegressor, _BaseSDCA):
 
     Solves the following objective:
 
+    .. code-block::
+
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * l1_ratio * ||w||_1
                     + alpha * (1 - l1_ratio) * 0.5 * ||w||^2_2
+
     Parameters
     ----------
     loss: string, {'squared', 'absolute'}
