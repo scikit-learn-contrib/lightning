@@ -1,3 +1,10 @@
+# encoding: utf-8
+# cython: cdivision=True
+# cython: boundscheck=False
+# cython: wraparound=False
+# cython: language_level=3
+#
+# Copyright 2005 Robert Kern (robert.kern@gmail.com)
 
 cdef extern from "randomkit.h":
 
