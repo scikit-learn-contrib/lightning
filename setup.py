@@ -24,7 +24,7 @@ with open(os.path.join('lightning', '__init__.py'), encoding='utf-8') as f:
                       f.read())
     VERSION = match.group('version').strip()
 MIN_PYTHON_VERSION = '3.6'
-with open('requirements.txt'), encoding='utf-8') as f:
+with open('requirements.txt', encoding='utf-8') as f:
     REQUIREMENTS = [
         line.strip()
         for line in f.read().splitlines()
