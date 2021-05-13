@@ -125,7 +125,8 @@ Other citing formats are available in `its Zenodo entry <https://doi.org/10.5281
 Authors
 -------
 
-- Mathieu Blondel, 2012-present
-- Manoj Kumar, 2015-present
-- Arnaud Rachez, 2016-present
-- Fabian Pedregosa, 2016-present
+- Mathieu Blondel
+- Manoj Kumar
+- Arnaud Rachez
+- Fabian Pedregosa
+- Nikita Titov
