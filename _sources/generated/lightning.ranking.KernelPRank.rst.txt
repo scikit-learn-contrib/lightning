@@ -1,0 +1,6 @@
+﻿lightning.ranking.KernelPRank
+=============================
+
+.. currentmodule:: lightning.ranking
+
+.. autoclass:: KernelPRank

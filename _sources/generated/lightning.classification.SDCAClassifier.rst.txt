@@ -1,0 +1,6 @@
+﻿lightning.classification.SDCAClassifier
+=======================================
+
+.. currentmodule:: lightning.classification
+
+.. autoclass:: SDCAClassifier

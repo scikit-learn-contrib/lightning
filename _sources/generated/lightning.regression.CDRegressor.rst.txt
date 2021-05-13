@@ -1,0 +1,6 @@
+﻿lightning.regression.CDRegressor
+================================
+
+.. currentmodule:: lightning.regression
+
+.. autoclass:: CDRegressor

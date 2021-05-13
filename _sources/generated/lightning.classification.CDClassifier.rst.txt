@@ -1,0 +1,6 @@
+﻿lightning.classification.CDClassifier
+=====================================
+
+.. currentmodule:: lightning.classification
+
+.. autoclass:: CDClassifier

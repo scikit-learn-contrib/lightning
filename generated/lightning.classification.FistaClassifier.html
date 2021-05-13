@@ -1,48 +1,36 @@
-
 <!DOCTYPE html>
 
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>lightning.classification.FistaClassifier &mdash; lightning dev documentation</title>
-    
-    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/lightning.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-3.3.4/css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-3.3.4/css/bootstrap-theme.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     'dev',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="lightning dev documentation" href="../index.html" />
-    <link rel="up" title="Classification" href="../references.html" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>lightning.classification.FistaClassifier &#8212; lightning 0.6.1.dev0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-rendered-html.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/lightning.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="lightning.classification.KernelSVC" href="lightning.classification.KernelSVC.html" />
     <link rel="prev" title="lightning.classification.CDClassifier" href="lightning.classification.CDClassifier.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
 <meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
 
-  </head>
-  <body role="document">
+  </head><body>
 
   <div id="navbar" class="navbar navbar-default navbar-fixed-top">
     <div class="container">
@@ -55,7 +43,7 @@
         </button>
         <a class="navbar-brand" href="../index.html">
           lightning</a>
-        <span class="navbar-text navbar-version pull-left"><b>dev</b></span>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -76,8 +64,8 @@
       role="menu"
       aria-labelledby="dLabelGlobalToc"><ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../auto_examples/index.html">Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_robust_regression.html">Robust regression</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../auto_examples/trace.html">Trace norm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_sample_weight.html">SAGA: Weighted samples</a></li>
@@ -90,7 +78,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../references.html">Classification</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lightning.classification.AdaGradClassifier.html">lightning.classification.AdaGradClassifier</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lightning.classification.CDClassifier.html">lightning.classification.CDClassifier</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">lightning.classification.FistaClassifier</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">lightning.classification.FistaClassifier</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lightning.classification.KernelSVC.html">lightning.classification.KernelSVC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lightning.classification.LinearSVC.html">lightning.classification.LinearSVC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lightning.classification.SDCAClassifier.html">lightning.classification.SDCAClassifier</a></li>
@@ -127,8 +115,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../intro.html#stochastic-variance-reduced-gradient-svrg">Stochastic variance-reduced gradient (SVRG)</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../intro.html#prank">PRank</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../auto_examples/index.html">Examples</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../auto_examples/plot_robust_regression.html">Robust regression</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../auto_examples/trace.html">Trace norm</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../auto_examples/plot_sample_weight.html">SAGA: Weighted samples</a></li>
@@ -141,7 +129,7 @@
 <li class="toctree-l3 current"><a class="reference internal" href="../references.html">Classification</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="lightning.classification.AdaGradClassifier.html">lightning.classification.AdaGradClassifier</a></li>
 <li class="toctree-l4"><a class="reference internal" href="lightning.classification.CDClassifier.html">lightning.classification.CDClassifier</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="">lightning.classification.FistaClassifier</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">lightning.classification.FistaClassifier</a></li>
 <li class="toctree-l4"><a class="reference internal" href="lightning.classification.KernelSVC.html">lightning.classification.KernelSVC</a></li>
 <li class="toctree-l4"><a class="reference internal" href="lightning.classification.LinearSVC.html">lightning.classification.LinearSVC</a></li>
 <li class="toctree-l4"><a class="reference internal" href="lightning.classification.SDCAClassifier.html">lightning.classification.SDCAClassifier</a></li>
@@ -197,199 +185,145 @@
     </div>
   </div>
 
-<div class="container content-container">
-  
-  <div class="section" id="lightning-classification-fistaclassifier">
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="lightning-classification-fistaclassifier">
 <h1>lightning.classification.FistaClassifier<a class="headerlink" href="#lightning-classification-fistaclassifier" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="lightning.classification.FistaClassifier">
-<em class="property">class </em><code class="descclassname">lightning.classification.</code><code class="descname">FistaClassifier</code><span class="sig-paren">(</span><em>C=1.0</em>, <em>alpha=1.0</em>, <em>loss='squared_hinge'</em>, <em>penalty='l1'</em>, <em>multiclass=False</em>, <em>max_iter=100</em>, <em>max_steps=30</em>, <em>eta=2.0</em>, <em>sigma=1e-05</em>, <em>callback=None</em>, <em>verbose=0</em>, <em>prox_args=()</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lightning/impl/fista.html#FistaClassifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lightning.classification.FistaClassifier" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightning.classification.FistaClassifier">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">lightning.classification.</span></span><span class="sig-name descname"><span class="pre">FistaClassifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'squared_hinge'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">penalty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'l1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiclass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lightning/impl/fista.html#FistaClassifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightning.classification.FistaClassifier" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimator for learning linear classifiers by FISTA.</p>
 <p>The objective functions considered take the form</p>
 <p>minimize F(W) = C * L(W) + alpha * R(W),</p>
 <p>where L(W) is a loss term and R(W) is a penalty term.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>loss</strong> : str, &#8216;squared_hinge&#8217;, &#8216;log&#8217;, &#8216;modified_huber&#8217;, &#8216;squared&#8217;</p>
-<blockquote>
-<div><p>The loss function to be used.</p>
-</div></blockquote>
-<p><strong>penalty</strong> : str or Penalty object, &#8216;l2&#8217;, &#8216;l1&#8217;, &#8216;l1/l2&#8217;, &#8216;simplex&#8217;</p>
-<blockquote>
-<div><p>The penalty or constraint to be used.</p>
-<ul class="simple">
-<li>l2: ridge</li>
-<li>l1: lasso</li>
-<li>l1/l2: group lasso</li>
-<li>tv1d: 1-dimensional total variation (also known as fused lasso)</li>
-<li>simplex: simplex constraint</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss</strong> (<em>str</em><em>, </em><em>'squared_hinge'</em><em>, </em><em>'log'</em><em>, </em><em>'modified_huber'</em><em>, </em><em>'squared'</em>) – The loss function to be used.</p></li>
+<li><p><strong>penalty</strong> (<em>str</em><em> or </em><em>Penalty object</em><em>, </em><em>{'l2'</em><em>, </em><em>'l1'</em><em>, </em><em>'l1/l2'</em><em>, </em><em>'tv1d'</em><em>, </em><em>'simplex'}</em>) – <p>The penalty or constraint to be used.</p>
+<ul>
+<li><p>l2: ridge</p></li>
+<li><p>l1: lasso</p></li>
+<li><p>l1/l2: group lasso</p></li>
+<li><p>tv1d: 1-dimensional total variation (also known as fused lasso)</p></li>
+<li><p>simplex: simplex constraint</p></li>
 </ul>
 <p>The method can also take an arbitrary Penalty object, i.e., an instance
 that implements methods projection regularization method (see file penalty.py)</p>
-</div></blockquote>
-<p><strong>multiclass</strong> : bool</p>
-<blockquote>
-<div><p>Whether to use a direct multiclass formulation (True) or one-vs-rest
-(False).</p>
-</div></blockquote>
-<p><strong>C</strong> : float</p>
-<blockquote>
-<div><p>Weight of the loss term.</p>
-</div></blockquote>
-<p><strong>alpha</strong> : float</p>
-<blockquote>
-<div><p>Weight of the penalty term.</p>
-</div></blockquote>
-<p><strong>max_iter</strong> : int</p>
-<blockquote>
-<div><p>Maximum number of iterations to perform.</p>
-</div></blockquote>
-<p><strong>max_steps</strong> : int</p>
-<blockquote>
-<div><p>Maximum number of steps to use during the line search.</p>
-</div></blockquote>
-<p><strong>sigma</strong> : float</p>
-<blockquote>
-<div><p>Constant used in the line search sufficient decrease condition.</p>
-</div></blockquote>
-<p><strong>eta</strong> : float</p>
-<blockquote>
-<div><p>Decrease factor for line-search procedure. For example, eta=2.
+</p></li>
+<li><p><strong>multiclass</strong> (<em>bool</em>) – Whether to use a direct multiclass formulation (True) or one-vs-rest
+(False).</p></li>
+<li><p><strong>C</strong> (<em>float</em>) – Weight of the loss term.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Weight of the penalty term.</p></li>
+<li><p><strong>max_iter</strong> (<em>int</em>) – Maximum number of iterations to perform.</p></li>
+<li><p><strong>max_steps</strong> (<em>int</em>) – Maximum number of steps to use during the line search.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em>) – Constant used in the line search sufficient decrease condition.</p></li>
+<li><p><strong>eta</strong> (<em>float</em>) – Decrease factor for line-search procedure. For example, eta=2.
 will decrease the step size by a factor of 2 at each iteration
-of the line-search routine.</p>
-</div></blockquote>
-<p><strong>callback</strong> : callable</p>
-<blockquote>
-<div><p>Callback function.</p>
-</div></blockquote>
-<p><strong>verbose</strong> : int</p>
-<blockquote class="last">
-<div><p>Verbosity level.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Methods</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">decision_function</span></code>(X)</td>
-<td></td>
-</tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">fit</span></code>(X,&nbsp;y)</td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#lightning.classification.FistaClassifier.get_params" title="lightning.classification.FistaClassifier.get_params"><code class="xref py py-obj docutils literal"><span class="pre">get_params</span></code></a>([deep])</td>
-<td>Get parameters for this estimator.</td>
-</tr>
-<tr class="row-even"><td><code class="xref py py-obj docutils literal"><span class="pre">n_nonzero</span></code>([percentage])</td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><code class="xref py py-obj docutils literal"><span class="pre">predict</span></code>(X)</td>
-<td></td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#lightning.classification.FistaClassifier.score" title="lightning.classification.FistaClassifier.score"><code class="xref py py-obj docutils literal"><span class="pre">score</span></code></a>(X,&nbsp;y[,&nbsp;sample_weight])</td>
-<td>Returns the mean accuracy on the given test data and labels.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#lightning.classification.FistaClassifier.set_params" title="lightning.classification.FistaClassifier.set_params"><code class="xref py py-obj docutils literal"><span class="pre">set_params</span></code></a>(**params)</td>
-<td>Set the parameters of this estimator.</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="lightning.classification.FistaClassifier.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>C=1.0</em>, <em>alpha=1.0</em>, <em>loss='squared_hinge'</em>, <em>penalty='l1'</em>, <em>multiclass=False</em>, <em>max_iter=100</em>, <em>max_steps=30</em>, <em>eta=2.0</em>, <em>sigma=1e-05</em>, <em>callback=None</em>, <em>verbose=0</em>, <em>prox_args=()</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lightning/impl/fista.html#FistaClassifier.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lightning.classification.FistaClassifier.__init__" title="Permalink to this definition">¶</a></dt>
+of the line-search routine.</p></li>
+<li><p><strong>callback</strong> (<em>callable</em>) – Callback function.</p></li>
+<li><p><strong>verbose</strong> (<em>int</em>) – Verbosity level.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightning.classification.FistaClassifier.decision_function">
+<span class="sig-name descname"><span class="pre">decision_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lightning.classification.FistaClassifier.decision_function" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="lightning.classification.FistaClassifier.get_params">
-<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="headerlink" href="#lightning.classification.FistaClassifier.get_params" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightning.classification.FistaClassifier.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lightning/impl/fista.html#FistaClassifier.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightning.classification.FistaClassifier.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightning.classification.FistaClassifier.get_params">
+<span class="sig-name descname"><span class="pre">get_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lightning.classification.FistaClassifier.get_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get parameters for this estimator.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>deep: boolean, optional</strong> :</p>
-<blockquote>
-<div><p>If True, will return the parameters for this estimator and
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>deep</strong> (<em>bool</em><em>, </em><em>default=True</em>) – If True, will return the parameters for this estimator and
 contained subobjects that are estimators.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>params</strong> : mapping of string to any</p>
-<blockquote class="last">
-<div><p>Parameter names mapped to their values.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>params</strong> – Parameter names mapped to their values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="lightning.classification.FistaClassifier.score">
-<code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>sample_weight=None</em><span class="sig-paren">)</span><a class="headerlink" href="#lightning.classification.FistaClassifier.score" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the mean accuracy on the given test data and labels.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightning.classification.FistaClassifier.n_nonzero">
+<span class="sig-name descname"><span class="pre">n_nonzero</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">percentage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lightning.classification.FistaClassifier.n_nonzero" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightning.classification.FistaClassifier.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lightning.classification.FistaClassifier.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="lightning.classification.FistaClassifier.predict_proba">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">predict_proba</span></span><a class="headerlink" href="#lightning.classification.FistaClassifier.predict_proba" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightning.classification.FistaClassifier.score">
+<span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lightning.classification.FistaClassifier.score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the mean accuracy on the given test data and labels.</p>
 <p>In multi-label classification, this is the subset accuracy
 which is a harsh metric since you require for each sample that
 each label set be correctly predicted.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : array-like, shape = (n_samples, n_features)</p>
-<blockquote>
-<div><p>Test samples.</p>
-</div></blockquote>
-<p><strong>y</strong> : array-like, shape = (n_samples) or (n_samples, n_outputs)</p>
-<blockquote>
-<div><p>True labels for X.</p>
-</div></blockquote>
-<p><strong>sample_weight</strong> : array-like, shape = [n_samples], optional</p>
-<blockquote>
-<div><p>Sample weights.</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>score</strong> : float</p>
-<blockquote class="last">
-<div><p>Mean accuracy of self.predict(X) wrt. y.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>array-like of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Test samples.</p></li>
+<li><p><strong>y</strong> (<em>array-like of shape</em><em> (</em><em>n_samples</em><em>,</em><em>) or </em><em>(</em><em>n_samples</em><em>, </em><em>n_outputs</em><em>)</em>) – True labels for <cite>X</cite>.</p></li>
+<li><p><strong>sample_weight</strong> (<em>array-like of shape</em><em> (</em><em>n_samples</em><em>,</em><em>)</em><em>, </em><em>default=None</em>) – Sample weights.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>score</strong> – Mean accuracy of <code class="docutils literal notranslate"><span class="pre">self.predict(X)</span></code> wrt. <cite>y</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="lightning.classification.FistaClassifier.set_params">
-<code class="descname">set_params</code><span class="sig-paren">(</span><em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#lightning.classification.FistaClassifier.set_params" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightning.classification.FistaClassifier.set_params">
+<span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lightning.classification.FistaClassifier.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
-(such as pipelines). The latter have parameters of the form
-<code class="docutils literal"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it&#8217;s possible to update each
-component of a nested object.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>self</strong> :</td>
-</tr>
-</tbody>
-</table>
+(such as <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipeline</span></code>). The latter have
+parameters of the form <code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s
+possible to update each component of a nested object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>**params</strong> (<em>dict</em>) – Estimator parameters.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>self</strong> – Estimator instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>estimator instance</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-</div>
+</section>
 
 
+    </div>
+      
+  </div>
 </div>
 <footer class="footer">
   <div class="container">
@@ -398,8 +332,8 @@ component of a nested object.</p>
       
     </p>
     <p>
-        &copy; Copyright Mathieu Blondel.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.<br/>
+        &copy; Copyright 2021, Mathieu Blondel.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.0.1.<br/>
     </p>
   </div>
 </footer>

@@ -1,0 +1,6 @@
+﻿lightning.classification.SVRGClassifier
+=======================================
+
+.. currentmodule:: lightning.classification
+
+.. autoclass:: SVRGClassifier

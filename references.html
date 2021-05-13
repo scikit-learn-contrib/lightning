@@ -1,47 +1,36 @@
-
 <!DOCTYPE html>
 
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Classification &mdash; lightning dev documentation</title>
-    
-    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/lightning.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-3.3.4/css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-3.3.4/css/bootstrap-theme.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     'dev',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="lightning dev documentation" href="index.html" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Classification &#8212; lightning 0.6.1.dev0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="_static/gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/gallery-rendered-html.css" />
+    <link rel="stylesheet" type="text/css" href="_static/lightning.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="lightning.classification.AdaGradClassifier" href="generated/lightning.classification.AdaGradClassifier.html" />
     <link rel="prev" title="L2 solver comparison" href="auto_examples/plot_l2_solvers.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
 <meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
 
-  </head>
-  <body role="document">
+  </head><body>
 
   <div id="navbar" class="navbar navbar-default navbar-fixed-top">
     <div class="container">
@@ -54,7 +43,7 @@
         </button>
         <a class="navbar-brand" href="index.html">
           lightning</a>
-        <span class="navbar-text navbar-version pull-left"><b>dev</b></span>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -75,8 +64,8 @@
       role="menu"
       aria-labelledby="dLabelGlobalToc"><ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="auto_examples/index.html">Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_robust_regression.html">Robust regression</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auto_examples/trace.html">Trace norm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_sample_weight.html">SAGA: Weighted samples</a></li>
@@ -86,7 +75,7 @@
 <li class="toctree-l2"><a class="reference internal" href="auto_examples/plot_l2_solvers.html">L2 solver comparison</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Classification</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Classification</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.AdaGradClassifier.html">lightning.classification.AdaGradClassifier</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.CDClassifier.html">lightning.classification.CDClassifier</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/lightning.classification.FistaClassifier.html">lightning.classification.FistaClassifier</a></li>
@@ -126,8 +115,8 @@
 <li class="toctree-l2"><a class="reference internal" href="intro.html#stochastic-variance-reduced-gradient-svrg">Stochastic variance-reduced gradient (SVRG)</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="intro.html#prank">PRank</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="auto_examples/index.html">Examples</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_robust_regression.html">Robust regression</a></li>
 <li class="toctree-l4"><a class="reference internal" href="auto_examples/trace.html">Trace norm</a></li>
 <li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_sample_weight.html">SAGA: Weighted samples</a></li>
@@ -137,7 +126,7 @@
 <li class="toctree-l4"><a class="reference internal" href="auto_examples/plot_l2_solvers.html">L2 solver comparison</a></li>
 </ul>
 </li>
-<li class="toctree-l3 current"><a class="current reference internal" href="">Classification</a><ul>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Classification</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.AdaGradClassifier.html">lightning.classification.AdaGradClassifier</a></li>
 <li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.CDClassifier.html">lightning.classification.CDClassifier</a></li>
 <li class="toctree-l4"><a class="reference internal" href="generated/lightning.classification.FistaClassifier.html">lightning.classification.FistaClassifier</a></li>
@@ -196,113 +185,116 @@
     </div>
   </div>
 
-<div class="container content-container">
-  
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
   <div class="toctree-wrapper compound">
-<ul class="simple">
-</ul>
 </div>
-<div class="section" id="classification">
+<section id="classification">
 <span id="id1"></span><h1>Classification<a class="headerlink" href="#classification" title="Permalink to this headline">¶</a></h1>
 <p>This module contains algorithms for solving classification problems.</p>
-<span class="target" id="module-lightning.classification"></span><table border="1" class="longtable docutils">
+<span class="target" id="module-lightning.classification"></span><table class="longtable docutils align-default">
 <colgroup>
-<col width="10%" />
-<col width="90%" />
+<col style="width: 10%" />
+<col style="width: 90%" />
 </colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="generated/lightning.classification.AdaGradClassifier.html#lightning.classification.AdaGradClassifier" title="lightning.classification.AdaGradClassifier"><code class="xref py py-obj docutils literal"><span class="pre">classification.AdaGradClassifier</span></code></a>([eta,&nbsp;...])</td>
-<td>Estimator for learning linear classifiers by AdaGrad.</td>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/lightning.classification.AdaGradClassifier.html#lightning.classification.AdaGradClassifier" title="lightning.classification.AdaGradClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification.AdaGradClassifier</span></code></a>([eta, …])</p></td>
+<td><p>Estimator for learning linear classifiers by AdaGrad.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier" title="lightning.classification.CDClassifier"><code class="xref py py-obj docutils literal"><span class="pre">classification.CDClassifier</span></code></a>([loss,&nbsp;penalty,&nbsp;...])</td>
-<td>Estimator for learning linear classifiers by (block) coordinate descent.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier" title="lightning.classification.CDClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification.CDClassifier</span></code></a>([loss, penalty, …])</p></td>
+<td><p>Estimator for learning linear classifiers by (block) coordinate descent.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/lightning.classification.FistaClassifier.html#lightning.classification.FistaClassifier" title="lightning.classification.FistaClassifier"><code class="xref py py-obj docutils literal"><span class="pre">classification.FistaClassifier</span></code></a>([C,&nbsp;alpha,&nbsp;...])</td>
-<td>Estimator for learning linear classifiers by FISTA.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/lightning.classification.FistaClassifier.html#lightning.classification.FistaClassifier" title="lightning.classification.FistaClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification.FistaClassifier</span></code></a>([C, alpha, …])</p></td>
+<td><p>Estimator for learning linear classifiers by FISTA.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC" title="lightning.classification.KernelSVC"><code class="xref py py-obj docutils literal"><span class="pre">classification.KernelSVC</span></code></a>([alpha,&nbsp;solver,&nbsp;...])</td>
-<td>Estimator for learning kernel SVMs by Newton&#8217;s method.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/lightning.classification.KernelSVC.html#lightning.classification.KernelSVC" title="lightning.classification.KernelSVC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification.KernelSVC</span></code></a>([alpha, solver, …])</p></td>
+<td><p>Estimator for learning kernel SVMs by Newton’s method.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/lightning.classification.LinearSVC.html#lightning.classification.LinearSVC" title="lightning.classification.LinearSVC"><code class="xref py py-obj docutils literal"><span class="pre">classification.LinearSVC</span></code></a>([C,&nbsp;loss,&nbsp;...])</td>
-<td>Estimator for learning linear support vector machine by coordinate descent in the dual.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/lightning.classification.LinearSVC.html#lightning.classification.LinearSVC" title="lightning.classification.LinearSVC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification.LinearSVC</span></code></a>([C, loss, …])</p></td>
+<td><p>Estimator for learning linear support vector machine by coordinate descent in the dual.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/lightning.classification.SDCAClassifier.html#lightning.classification.SDCAClassifier" title="lightning.classification.SDCAClassifier"><code class="xref py py-obj docutils literal"><span class="pre">classification.SDCAClassifier</span></code></a>([alpha,&nbsp;...])</td>
-<td>Estimator for learning linear classifiers by (proximal) SDCA.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/lightning.classification.SDCAClassifier.html#lightning.classification.SDCAClassifier" title="lightning.classification.SDCAClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification.SDCAClassifier</span></code></a>([alpha, …])</p></td>
+<td><p>Estimator for learning linear classifiers by (proximal) SDCA.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/lightning.classification.SAGClassifier.html#lightning.classification.SAGClassifier" title="lightning.classification.SAGClassifier"><code class="xref py py-obj docutils literal"><span class="pre">classification.SAGClassifier</span></code></a>([eta,&nbsp;alpha,&nbsp;...])</td>
-<td>Estimator for learning linear classifiers by SAG.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/lightning.classification.SAGClassifier.html#lightning.classification.SAGClassifier" title="lightning.classification.SAGClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification.SAGClassifier</span></code></a>([eta, alpha, …])</p></td>
+<td><p>Estimator for learning linear classifiers by SAG.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/lightning.classification.SAGAClassifier.html#lightning.classification.SAGAClassifier" title="lightning.classification.SAGAClassifier"><code class="xref py py-obj docutils literal"><span class="pre">classification.SAGAClassifier</span></code></a>([eta,&nbsp;alpha,&nbsp;...])</td>
-<td>Estimator for learning linear classifiers by SAGA.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/lightning.classification.SAGAClassifier.html#lightning.classification.SAGAClassifier" title="lightning.classification.SAGAClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification.SAGAClassifier</span></code></a>([eta, alpha, …])</p></td>
+<td><p>Estimator for learning linear classifiers by SAGA.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/lightning.classification.SGDClassifier.html#lightning.classification.SGDClassifier" title="lightning.classification.SGDClassifier"><code class="xref py py-obj docutils literal"><span class="pre">classification.SGDClassifier</span></code></a>([loss,&nbsp;...])</td>
-<td>Estimator for learning linear classifiers by SGD.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/lightning.classification.SGDClassifier.html#lightning.classification.SGDClassifier" title="lightning.classification.SGDClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification.SGDClassifier</span></code></a>([loss, …])</p></td>
+<td><p>Estimator for learning linear classifiers by SGD.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/lightning.classification.SVRGClassifier.html#lightning.classification.SVRGClassifier" title="lightning.classification.SVRGClassifier"><code class="xref py py-obj docutils literal"><span class="pre">classification.SVRGClassifier</span></code></a>([eta,&nbsp;alpha,&nbsp;...])</td>
-<td>Estimator for learning linear classifiers by SVRG.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/lightning.classification.SVRGClassifier.html#lightning.classification.SVRGClassifier" title="lightning.classification.SVRGClassifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification.SVRGClassifier</span></code></a>([eta, alpha, …])</p></td>
+<td><p>Estimator for learning linear classifiers by SVRG.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="regression">
+</section>
+<section id="regression">
 <span id="id2"></span><h1>Regression<a class="headerlink" href="#regression" title="Permalink to this headline">¶</a></h1>
 <p>This module contains algorithms for solving regression problems.</p>
-<span class="target" id="module-lightning.regression"></span><table border="1" class="longtable docutils">
+<span class="target" id="module-lightning.regression"></span><table class="longtable docutils align-default">
 <colgroup>
-<col width="10%" />
-<col width="90%" />
+<col style="width: 10%" />
+<col style="width: 90%" />
 </colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="generated/lightning.regression.AdaGradRegressor.html#lightning.regression.AdaGradRegressor" title="lightning.regression.AdaGradRegressor"><code class="xref py py-obj docutils literal"><span class="pre">regression.AdaGradRegressor</span></code></a>([eta,&nbsp;alpha,&nbsp;...])</td>
-<td>Estimator for learning linear regressors by AdaGrad.</td>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/lightning.regression.AdaGradRegressor.html#lightning.regression.AdaGradRegressor" title="lightning.regression.AdaGradRegressor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regression.AdaGradRegressor</span></code></a>([eta, alpha, …])</p></td>
+<td><p>Estimator for learning linear regressors by AdaGrad.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/lightning.regression.CDRegressor.html#lightning.regression.CDRegressor" title="lightning.regression.CDRegressor"><code class="xref py py-obj docutils literal"><span class="pre">regression.CDRegressor</span></code></a>([C,&nbsp;alpha,&nbsp;loss,&nbsp;...])</td>
-<td>Estimator for learning linear regressors by (block) coordinate descent.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/lightning.regression.CDRegressor.html#lightning.regression.CDRegressor" title="lightning.regression.CDRegressor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regression.CDRegressor</span></code></a>([C, alpha, loss, …])</p></td>
+<td><p>Estimator for learning linear regressors by (block) coordinate descent.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/lightning.regression.FistaRegressor.html#lightning.regression.FistaRegressor" title="lightning.regression.FistaRegressor"><code class="xref py py-obj docutils literal"><span class="pre">regression.FistaRegressor</span></code></a>([C,&nbsp;alpha,&nbsp;...])</td>
-<td>Estimator for learning linear classifiers by FISTA.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/lightning.regression.FistaRegressor.html#lightning.regression.FistaRegressor" title="lightning.regression.FistaRegressor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regression.FistaRegressor</span></code></a>([C, alpha, …])</p></td>
+<td><p>Estimator for learning linear classifiers by FISTA.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/lightning.regression.LinearSVR.html#lightning.regression.LinearSVR" title="lightning.regression.LinearSVR"><code class="xref py py-obj docutils literal"><span class="pre">regression.LinearSVR</span></code></a>([C,&nbsp;epsilon,&nbsp;loss,&nbsp;...])</td>
-<td>Estimator for learning a linear support vector regressor by coordinate descent in the dual.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/lightning.regression.LinearSVR.html#lightning.regression.LinearSVR" title="lightning.regression.LinearSVR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regression.LinearSVR</span></code></a>([C, epsilon, loss, …])</p></td>
+<td><p>Estimator for learning a linear support vector regressor by coordinate descent in the dual.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/lightning.regression.SAGRegressor.html#lightning.regression.SAGRegressor" title="lightning.regression.SAGRegressor"><code class="xref py py-obj docutils literal"><span class="pre">regression.SAGRegressor</span></code></a>([eta,&nbsp;alpha,&nbsp;beta,&nbsp;...])</td>
-<td>Estimator for learning linear regressors by SAG.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/lightning.regression.SAGRegressor.html#lightning.regression.SAGRegressor" title="lightning.regression.SAGRegressor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regression.SAGRegressor</span></code></a>([eta, alpha, beta, …])</p></td>
+<td><p>Estimator for learning linear regressors by SAG.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/lightning.regression.SAGARegressor.html#lightning.regression.SAGARegressor" title="lightning.regression.SAGARegressor"><code class="xref py py-obj docutils literal"><span class="pre">regression.SAGARegressor</span></code></a>([eta,&nbsp;alpha,&nbsp;beta,&nbsp;...])</td>
-<td>Estimator for learning linear regressors by SAG.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/lightning.regression.SAGARegressor.html#lightning.regression.SAGARegressor" title="lightning.regression.SAGARegressor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regression.SAGARegressor</span></code></a>([eta, alpha, beta, …])</p></td>
+<td><p>Estimator for learning linear regressors by SAG.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/lightning.regression.SDCARegressor.html#lightning.regression.SDCARegressor" title="lightning.regression.SDCARegressor"><code class="xref py py-obj docutils literal"><span class="pre">regression.SDCARegressor</span></code></a>([alpha,&nbsp;l1_ratio,&nbsp;...])</td>
-<td>Estimator for learning linear regressors by (proximal) SDCA.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/lightning.regression.SDCARegressor.html#lightning.regression.SDCARegressor" title="lightning.regression.SDCARegressor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regression.SDCARegressor</span></code></a>([alpha, l1_ratio, …])</p></td>
+<td><p>Estimator for learning linear regressors by (proximal) SDCA.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/lightning.regression.SGDRegressor.html#lightning.regression.SGDRegressor" title="lightning.regression.SGDRegressor"><code class="xref py py-obj docutils literal"><span class="pre">regression.SGDRegressor</span></code></a>([loss,&nbsp;penalty,&nbsp;...])</td>
-<td>Estimator for learning linear regressors by SGD.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/lightning.regression.SGDRegressor.html#lightning.regression.SGDRegressor" title="lightning.regression.SGDRegressor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regression.SGDRegressor</span></code></a>([loss, penalty, …])</p></td>
+<td><p>Estimator for learning linear regressors by SGD.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/lightning.regression.SVRGRegressor.html#lightning.regression.SVRGRegressor" title="lightning.regression.SVRGRegressor"><code class="xref py py-obj docutils literal"><span class="pre">regression.SVRGRegressor</span></code></a>([eta,&nbsp;alpha,&nbsp;loss,&nbsp;...])</td>
-<td>Estimator for learning linear regressors by SVRG.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/lightning.regression.SVRGRegressor.html#lightning.regression.SVRGRegressor" title="lightning.regression.SVRGRegressor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regression.SVRGRegressor</span></code></a>([eta, alpha, loss, …])</p></td>
+<td><p>Estimator for learning linear regressors by SVRG.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="ranking">
+</section>
+<section id="ranking">
 <h1>Ranking<a class="headerlink" href="#ranking" title="Permalink to this headline">¶</a></h1>
 <p>This module contains algorithms for solving ranking and ordinal regression problems.</p>
-<span class="target" id="module-lightning.ranking"></span><table border="1" class="longtable docutils">
+<span class="target" id="module-lightning.ranking"></span><table class="longtable docutils align-default">
 <colgroup>
-<col width="10%" />
-<col width="90%" />
+<col style="width: 10%" />
+<col style="width: 90%" />
 </colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="generated/lightning.ranking.PRank.html#lightning.ranking.PRank" title="lightning.ranking.PRank"><code class="xref py py-obj docutils literal"><span class="pre">ranking.PRank</span></code></a>([n_iter,&nbsp;shuffle,&nbsp;random_state])</td>
-<td>Online algorithm for learning an ordinal regression model.</td>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/lightning.ranking.PRank.html#lightning.ranking.PRank" title="lightning.ranking.PRank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ranking.PRank</span></code></a>([n_iter, shuffle, random_state])</p></td>
+<td><p>Online algorithm for learning an ordinal regression model.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/lightning.ranking.KernelPRank.html#lightning.ranking.KernelPRank" title="lightning.ranking.KernelPRank"><code class="xref py py-obj docutils literal"><span class="pre">ranking.KernelPRank</span></code></a>([n_iter,&nbsp;shuffle,&nbsp;...])</td>
-<td>Kernelized online algorithm for learning an ordinal regression model.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/lightning.ranking.KernelPRank.html#lightning.ranking.KernelPRank" title="lightning.ranking.KernelPRank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ranking.KernelPRank</span></code></a>([n_iter, shuffle, …])</p></td>
+<td><p>Kernelized online algorithm for learning an ordinal regression model.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
+</section>
 
 
+    </div>
+      
+  </div>
 </div>
 <footer class="footer">
   <div class="container">
@@ -311,8 +303,8 @@
       
     </p>
     <p>
-        &copy; Copyright Mathieu Blondel.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.<br/>
+        &copy; Copyright 2021, Mathieu Blondel.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.0.1.<br/>
     </p>
   </div>
 </footer>
