@@ -1,2 +1,4 @@
+matplotlib
+sphinx
 sphinx_bootstrap_theme
-sphinx-gallery
+sphinx_gallery

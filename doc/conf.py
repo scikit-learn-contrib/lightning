@@ -10,7 +10,6 @@ from datetime import datetime
 
 import sphinx_bootstrap_theme
 
-from lightning import __version__
 
 # -- Project information -----------------------------------------------------
 
@@ -20,6 +19,13 @@ author = 'Mathieu Blondel'
 copyright = '{}, {}'.format(datetime.now().year, author)
 
 # The full version, including alpha/beta/rc tags.
+try:
+    from lightning import __version__
+except (ImportError, ModuleNotFoundError) as e:
+    raise ImportError(
+        "You must install 'lightning' package itself to build docs for it"
+    ) from e
+
 release = __version__
 
 # -- General configuration ---------------------------------------------------
