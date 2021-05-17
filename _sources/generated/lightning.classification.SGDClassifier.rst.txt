@@ -1,0 +1,6 @@
+﻿lightning.classification.SGDClassifier
+======================================
+
+.. currentmodule:: lightning.classification
+
+.. autoclass:: SGDClassifier

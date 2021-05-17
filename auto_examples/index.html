@@ -1,47 +1,36 @@
-
 <!DOCTYPE html>
 
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Examples &mdash; lightning dev documentation</title>
-    
-    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/lightning.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-3.3.4/css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-3.3.4/css/bootstrap-theme.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     'dev',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="lightning dev documentation" href="../index.html" />
-    <link rel="next" title="Signal recovery by 1D total variation" href="plot_1d_total_variation.html" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Examples &#8212; lightning 0.6.1.dev0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-rendered-html.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/lightning.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SGD: Convex Loss Functions" href="plot_sgd_loss_functions.html" />
     <link rel="prev" title="lightning" href="../index.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
 <meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
 
-  </head>
-  <body role="document">
+  </head><body>
 
   <div id="navbar" class="navbar navbar-default navbar-fixed-top">
     <div class="container">
@@ -54,7 +43,7 @@
         </button>
         <a class="navbar-brand" href="../index.html">
           lightning</a>
-        <span class="navbar-text navbar-version pull-left"><b>dev</b></span>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -74,9 +63,9 @@
   <ul class="dropdown-menu globaltoc"
       role="menu"
       aria-labelledby="dLabelGlobalToc"><ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="">Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_robust_regression.html">Robust regression</a></li>
 <li class="toctree-l2"><a class="reference internal" href="trace.html">Trace norm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_sample_weight.html">SAGA: Weighted samples</a></li>
@@ -125,9 +114,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../intro.html#stochastic-averaged-gradient-sag-and-saga">Stochastic averaged gradient (SAG and SAGA)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../intro.html#stochastic-variance-reduced-gradient-svrg">Stochastic variance-reduced gradient (SVRG)</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../intro.html#prank">PRank</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="">Examples</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="plot_robust_regression.html">Robust regression</a></li>
 <li class="toctree-l4"><a class="reference internal" href="trace.html">Trace norm</a></li>
 <li class="toctree-l4"><a class="reference internal" href="plot_sample_weight.html">SAGA: Weighted samples</a></li>
@@ -196,73 +185,100 @@
     </div>
   </div>
 
-<div class="container content-container">
-  
-  <style type="text/css">
-div#sidebarbutton {
-    /* hide the sidebar collapser, while ensuring vertical arrangement */
-    display: none;
-}
-</style><div class="section" id="examples">
-<span id="examples-index"></span><h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<p>These are some examples using the lightning machine learning library</p>
-<div class="thumbnailContainer" tooltip="In this example, we generate a signal that is piecewise constant. We then observe some random a..."><div class="figure" id="id1">
-<a class="reference external image-reference" href="./plot_1d_total_variation.html"><img alt="../_images/plot_1d_total_variation.png" src="../_images/plot_1d_total_variation.png" /></a>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="plot_1d_total_variation.html#example-plot-1d-total-variation-py"><span>Signal recovery by 1D total variation</span></a></span></p>
-</div>
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="examples">
+<span id="sphx-glr-auto-examples"></span><h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<p>These are some examples using the lightning machine learning library.</p>
+<div class="sphx-glr-thumbcontainer" tooltip="SGD: Convex Loss Functions"><figure class="align-default" id="id1">
+<img alt="SGD: Convex Loss Functions" src="../_images/sphx_glr_plot_sgd_loss_functions_thumb.png" />
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="plot_sgd_loss_functions.html#sphx-glr-auto-examples-plot-sgd-loss-functions-py"><span class="std std-ref">SGD: Convex Loss Functions</span></a></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </div><div class="toctree-wrapper compound">
 </div>
-<div class="thumbnailContainer" tooltip=""><div class="figure" id="id2">
-<a class="reference external image-reference" href="./plot_sgd_loss_functions.html"><img alt="../_images/plot_sgd_loss_functions.png" src="../_images/plot_sgd_loss_functions.png" /></a>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="plot_sgd_loss_functions.html#example-plot-sgd-loss-functions-py"><span>SGD: Convex Loss Functions</span></a></span></p>
-</div>
+<div class="sphx-glr-thumbcontainer" tooltip="In this example, we generate a signal that is piecewise constant. We then observe some random a..."><figure class="align-default" id="id2">
+<img alt="Signal recovery by 1D total variation" src="../_images/sphx_glr_plot_1d_total_variation_thumb.png" />
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="plot_1d_total_variation.html#sphx-glr-auto-examples-plot-1d-total-variation-py"><span class="std std-ref">Signal recovery by 1D total variation</span></a></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </div><div class="toctree-wrapper compound">
 </div>
-<div class="thumbnailContainer" tooltip=""><div class="figure" id="id3">
-<a class="reference external image-reference" href="./plot_robust_regression.html"><img alt="../_images/plot_robust_regression.png" src="../_images/plot_robust_regression.png" /></a>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="plot_robust_regression.html#example-plot-robust-regression-py"><span>Robust regression</span></a></span></p>
-</div>
+<div class="sphx-glr-thumbcontainer" tooltip="Robust regression"><figure class="align-default" id="id3">
+<img alt="Robust regression" src="../_images/sphx_glr_plot_robust_regression_thumb.png" />
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="plot_robust_regression.html#sphx-glr-auto-examples-plot-robust-regression-py"><span class="std std-ref">Robust regression</span></a></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </div><div class="toctree-wrapper compound">
 </div>
-<div class="thumbnailContainer" tooltip=""><div class="figure" id="id4">
-<a class="reference external image-reference" href="./trace.html"><img alt="../_images/trace.png" src="../_images/trace.png" /></a>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="trace.html#example-trace-py"><span>Trace norm</span></a></span></p>
-</div>
+<div class="sphx-glr-thumbcontainer" tooltip="Trace norm"><figure class="align-default" id="id4">
+<img alt="Trace norm" src="../_images/sphx_glr_trace_thumb.png" />
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="trace.html#sphx-glr-auto-examples-trace-py"><span class="std std-ref">Trace norm</span></a></span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </div><div class="toctree-wrapper compound">
 </div>
-<div class="thumbnailContainer" tooltip="Plot decision function of a weighted dataset, where the size of points is proportional to its w..."><div class="figure" id="id5">
-<a class="reference external image-reference" href="./plot_sample_weight.html"><img alt="../_images/plot_sample_weight.png" src="../_images/plot_sample_weight.png" /></a>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="plot_sample_weight.html#example-plot-sample-weight-py"><span>SAGA: Weighted samples</span></a></span></p>
-</div>
+<div class="sphx-glr-thumbcontainer" tooltip="Plot decision function of a weighted dataset, where the size of points is proportional to its w..."><figure class="align-default" id="id5">
+<img alt="SAGA: Weighted samples" src="../_images/sphx_glr_plot_sample_weight_thumb.png" />
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="plot_sample_weight.html#sphx-glr-auto-examples-plot-sample-weight-py"><span class="std std-ref">SAGA: Weighted samples</span></a></span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </div><div class="toctree-wrapper compound">
 </div>
-<div class="thumbnailContainer" tooltip=""><div class="figure" id="id6">
-<a class="reference external image-reference" href="./document_classification_news20.html"><img alt="../_images/document_classification_news20.png" src="../_images/document_classification_news20.png" /></a>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="document_classification_news20.html#example-document-classification-news20-py"><span>Classification of text documents</span></a></span></p>
-</div>
+<div class="sphx-glr-thumbcontainer" tooltip="Classification of text documents"><figure class="align-default" id="id6">
+<img alt="Classification of text documents" src="../_images/sphx_glr_document_classification_news20_thumb.png" />
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="document_classification_news20.html#sphx-glr-auto-examples-document-classification-news20-py"><span class="std std-ref">Classification of text documents</span></a></span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </div><div class="toctree-wrapper compound">
 </div>
-<div class="thumbnailContainer" tooltip="This example shows the sensitivity of SVRG with respect to different hyperparameters. "><div class="figure" id="id7">
-<a class="reference external image-reference" href="./plot_svrg.html"><img alt="../_images/plot_svrg.png" src="../_images/plot_svrg.png" /></a>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="plot_svrg.html#example-plot-svrg-py"><span>Sensitivity to hyper-parameters in SVRG</span></a></span></p>
-</div>
+<div class="sphx-glr-thumbcontainer" tooltip="This example shows the sensitivity of SVRG with respect to different hyperparameters."><figure class="align-default" id="id7">
+<img alt="Sensitivity to hyper-parameters in SVRG" src="../_images/sphx_glr_plot_svrg_thumb.png" />
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="plot_svrg.html#sphx-glr-auto-examples-plot-svrg-py"><span class="std std-ref">Sensitivity to hyper-parameters in SVRG</span></a></span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </div><div class="toctree-wrapper compound">
 </div>
-<div class="thumbnailContainer" tooltip="This examples demonstrates how to use `CDClassifier` with L1 penalty to do sparse non-linear cl..."><div class="figure" id="id8">
-<a class="reference external image-reference" href="./plot_sparse_non_linear.html"><img alt="../_images/plot_sparse_non_linear.png" src="../_images/plot_sparse_non_linear.png" /></a>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="plot_sparse_non_linear.html#example-plot-sparse-non-linear-py"><span>Sparse non-linear classification</span></a></span></p>
-</div>
+<div class="sphx-glr-thumbcontainer" tooltip="This examples demonstrates how to use CDClassifier with L1 penalty to do sparse non-linear clas..."><figure class="align-default" id="id8">
+<img alt="Sparse non-linear classification" src="../_images/sphx_glr_plot_sparse_non_linear_thumb.png" />
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="plot_sparse_non_linear.html#sphx-glr-auto-examples-plot-sparse-non-linear-py"><span class="std std-ref">Sparse non-linear classification</span></a></span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </div><div class="toctree-wrapper compound">
 </div>
-<div class="thumbnailContainer" tooltip="This example compares different solvers with L2 regularization. "><div class="figure" id="id9">
-<a class="reference external image-reference" href="./plot_l2_solvers.html"><img alt="../_images/plot_l2_solvers.png" src="../_images/plot_l2_solvers.png" /></a>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="plot_l2_solvers.html#example-plot-l2-solvers-py"><span>L2 solver comparison</span></a></span></p>
-</div>
+<div class="sphx-glr-thumbcontainer" tooltip="This example compares different solvers with L2 regularization."><figure class="align-default" id="id9">
+<img alt="L2 solver comparison" src="../_images/sphx_glr_plot_l2_solvers_thumb.png" />
+<figcaption>
+<p><span class="caption-text"><a class="reference internal" href="plot_l2_solvers.html#sphx-glr-auto-examples-plot-l2-solvers-py"><span class="std std-ref">L2 solver comparison</span></a></span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 </div><div class="toctree-wrapper compound">
 </div>
-<div class="clearer"></div></div>
+<div class="sphx-glr-clear"></div><div class="sphx-glr-footer class sphx-glr-footer-gallery docutils container">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/07fcc19ba03226cd3d83d4e40ec44385/auto_examples_python.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">all</span> <span class="pre">examples</span> <span class="pre">in</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">auto_examples_python.zip</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/6f1e7a639e0699d6164445b55e6c116d/auto_examples_jupyter.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">all</span> <span class="pre">examples</span> <span class="pre">in</span> <span class="pre">Jupyter</span> <span class="pre">notebooks:</span> <span class="pre">auto_examples_jupyter.zip</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
 
 
+    </div>
+      
+  </div>
 </div>
 <footer class="footer">
   <div class="container">
@@ -271,8 +287,8 @@ div#sidebarbutton {
       
     </p>
     <p>
-        &copy; Copyright Mathieu Blondel.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.<br/>
+        &copy; Copyright 2021, Mathieu Blondel.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.0.1.<br/>
     </p>
   </div>
 </footer>

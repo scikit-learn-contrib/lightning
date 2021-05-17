@@ -1,48 +1,36 @@
-
 <!DOCTYPE html>
 
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>L2 solver comparison &mdash; lightning dev documentation</title>
-    
-    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/lightning.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-3.3.4/css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-3.3.4/css/bootstrap-theme.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     'dev',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="lightning dev documentation" href="../index.html" />
-    <link rel="up" title="Examples" href="index.html" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>L2 solver comparison &#8212; lightning 0.6.1.dev0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-rendered-html.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/lightning.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Classification" href="../references.html" />
     <link rel="prev" title="Sparse non-linear classification" href="plot_sparse_non_linear.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
 <meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
 
-  </head>
-  <body role="document">
+  </head><body>
 
   <div id="navbar" class="navbar navbar-default navbar-fixed-top">
     <div class="container">
@@ -55,7 +43,7 @@
         </button>
         <a class="navbar-brand" href="../index.html">
           lightning</a>
-        <span class="navbar-text navbar-version pull-left"><b>dev</b></span>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -76,15 +64,15 @@
       role="menu"
       aria-labelledby="dLabelGlobalToc"><ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_robust_regression.html">Robust regression</a></li>
 <li class="toctree-l2"><a class="reference internal" href="trace.html">Trace norm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_sample_weight.html">SAGA: Weighted samples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="document_classification_news20.html">Classification of text documents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_svrg.html">Sensitivity to hyper-parameters in SVRG</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">L2 solver comparison</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">L2 solver comparison</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">Classification</a><ul>
@@ -127,15 +115,15 @@
 <li class="toctree-l2"><a class="reference internal" href="../intro.html#stochastic-variance-reduced-gradient-svrg">Stochastic variance-reduced gradient (SVRG)</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../intro.html#prank">PRank</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="plot_robust_regression.html">Robust regression</a></li>
 <li class="toctree-l4"><a class="reference internal" href="trace.html">Trace norm</a></li>
 <li class="toctree-l4"><a class="reference internal" href="plot_sample_weight.html">SAGA: Weighted samples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="document_classification_news20.html">Classification of text documents</a></li>
 <li class="toctree-l4"><a class="reference internal" href="plot_svrg.html">Sensitivity to hyper-parameters in SVRG</a></li>
 <li class="toctree-l4"><a class="reference internal" href="plot_sparse_non_linear.html">Sparse non-linear classification</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="">L2 solver comparison</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">L2 solver comparison</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../references.html">Classification</a><ul>
@@ -197,29 +185,38 @@
     </div>
   </div>
 
-<div class="container content-container">
-  
-  <div class="section" id="l2-solver-comparison">
-<span id="example-plot-l2-solvers-py"></span><h1>L2 solver comparison<a class="headerlink" href="#l2-solver-comparison" title="Permalink to this headline">¶</a></h1>
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-plot-l2-solvers-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
+</div>
+<section class="sphx-glr-example-title" id="l2-solver-comparison">
+<span id="sphx-glr-auto-examples-plot-l2-solvers-py"></span><h1>L2 solver comparison<a class="headerlink" href="#l2-solver-comparison" title="Permalink to this headline">¶</a></h1>
 <p>This example compares different solvers with L2 regularization.</p>
-<img alt="../_images/plot_l2_solvers_001.png" class="align-center" src="../_images/plot_l2_solvers_001.png" />
-<p><strong>Script output</strong>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">SVRG</span>
-<span class="n">SDCA</span>
-<span class="n">PCD</span>
-<span class="n">AdaGrad</span>
-<span class="n">SAGA</span>
-<span class="n">SAG</span>
+<img alt="plot l2 solvers" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_l2_solvers_001.png" />
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>SVRG
+SDCA
+PCD
+AdaGrad
+SAGA
+SAG
 </pre></div>
 </div>
-<p><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_l2_solvers.py"><code class="xref download docutils literal"><span class="pre">plot_l2_solvers.py</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">__doc__</span><span class="p">)</span>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="vm">__doc__</span><span class="p">)</span>
 
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">time</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_classification</span>
 <span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">fetch_20newsgroups_vectorized</span>
@@ -234,33 +231,33 @@
 
 <span class="k">class</span> <span class="nc">Callback</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">test_time</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clf</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="n">test_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clf</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">test_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="s2">&quot;_finalize_coef&quot;</span><span class="p">):</span>
             <span class="n">clf</span><span class="o">.</span><span class="n">_finalize_coef</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">_proj_elastic_all</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">g_sum_</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">clf</span><span class="o">.</span><span class="n">g_norms_</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                               <span class="n">alpha1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha2</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                               <span class="n">w</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
 
         <span class="n">y_pred</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.maximum.html#numpy.maximum"><span class="n">np</span><span class="o">.</span><span class="n">maximum</span></a><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">y_pred</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">y_pred</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
         <span class="n">coef</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-        <span class="n">regul</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">clf</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.dot.html#numpy.dot"><span class="n">np</span><span class="o">.</span><span class="n">dot</span></a><span class="p">(</span><span class="n">coef</span><span class="p">,</span> <span class="n">coef</span><span class="p">)</span>
+        <span class="n">regul</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">clf</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">coef</span><span class="p">,</span> <span class="n">coef</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span> <span class="o">+</span> <span class="n">regul</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">test_time</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span> <span class="o">-</span> <span class="n">test_time</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span> <span class="o">-</span>  <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_time</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_time</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">test_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span>  <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_time</span><span class="p">)</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="n">dataset</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -306,7 +303,7 @@
 <span class="n">clf6</span> <span class="o">=</span> <span class="n">SAGClassifier</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s2">&quot;squared_hinge&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
                     <span class="n">max_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
 
-<a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 
 <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="k">for</span> <span class="n">clf</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">((</span><span class="n">clf1</span><span class="p">,</span> <span class="s2">&quot;SVRG&quot;</span><span class="p">),</span>
@@ -316,7 +313,7 @@
                   <span class="p">(</span><span class="n">clf5</span><span class="p">,</span> <span class="s2">&quot;SAGA&quot;</span><span class="p">),</span>
                   <span class="p">(</span><span class="n">clf6</span><span class="p">,</span> <span class="s2">&quot;SAG&quot;</span><span class="p">)</span>
                   <span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="n">cb</span> <span class="o">=</span> <span class="n">Callback</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
     <span class="n">clf</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">cb</span>
 
@@ -324,28 +321,39 @@
         <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">tocsc</span><span class="p">(),</span> <span class="n">y</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-    <span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">cb</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.array.html#numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">cb</span><span class="o">.</span><span class="n">obj</span><span class="p">))</span>
+    <span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">cb</span><span class="o">.</span><span class="n">times</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cb</span><span class="o">.</span><span class="n">obj</span><span class="p">))</span>
 
 <span class="c1"># get best value</span>
 <span class="n">fmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
 <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">fmin</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">fmin</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xlim"><span class="n">plt</span><span class="o">.</span><span class="n">xlim</span></a><span class="p">(</span><span class="n">xlim</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.yscale"><span class="n">plt</span><span class="o">.</span><span class="n">yscale</span></a><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xlabel"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s2">&quot;CPU time&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">xlim</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;CPU time&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Objective value minus optimum&quot;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/legend_api.html#matplotlib.legend"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">()</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.grid"><span class="n">plt</span><span class="o">.</span><span class="n">grid</span></a><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
 
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  5.06 seconds
-( 0 minutes  5.06 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.473 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-l2-solvers-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/ec735e1c8225c498d7b32ba947e3d64a/plot_l2_solvers.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_l2_solvers.py</span></code></a></p>
 </div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/10e9cd1dfc67c24a4cf7a41eabda0e2b/plot_l2_solvers.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_l2_solvers.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
 
 
+    </div>
+      
+  </div>
 </div>
 <footer class="footer">
   <div class="container">
@@ -354,8 +362,8 @@
       
     </p>
     <p>
-        &copy; Copyright Mathieu Blondel.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.<br/>
+        &copy; Copyright 2021, Mathieu Blondel.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.0.1.<br/>
     </p>
   </div>
 </footer>

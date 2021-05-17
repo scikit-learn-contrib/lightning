@@ -1,0 +1,6 @@
+﻿lightning.regression.SAGRegressor
+=================================
+
+.. currentmodule:: lightning.regression
+
+.. autoclass:: SAGRegressor

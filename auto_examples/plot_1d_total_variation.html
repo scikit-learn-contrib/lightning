@@ -1,48 +1,36 @@
-
 <!DOCTYPE html>
 
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Signal recovery by 1D total variation &mdash; lightning dev documentation</title>
-    
-    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/lightning.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-3.3.4/css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-3.3.4/css/bootstrap-theme.min.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../',
-        VERSION:     'dev',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="lightning dev documentation" href="../index.html" />
-    <link rel="up" title="Examples" href="index.html" />
-    <link rel="next" title="SGD: Convex Loss Functions" href="plot_sgd_loss_functions.html" />
-    <link rel="prev" title="Examples" href="index.html" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Signal recovery by 1D total variation &#8212; lightning 0.6.1.dev0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-rendered-html.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/lightning.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Robust regression" href="plot_robust_regression.html" />
+    <link rel="prev" title="SGD: Convex Loss Functions" href="plot_sgd_loss_functions.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
 <meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
 
-  </head>
-  <body role="document">
+  </head><body>
 
   <div id="navbar" class="navbar navbar-default navbar-fixed-top">
     <div class="container">
@@ -55,7 +43,7 @@
         </button>
         <a class="navbar-brand" href="../index.html">
           lightning</a>
-        <span class="navbar-text navbar-version pull-left"><b>dev</b></span>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -76,8 +64,8 @@
       role="menu"
       aria-labelledby="dLabelGlobalToc"><ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_robust_regression.html">Robust regression</a></li>
 <li class="toctree-l2"><a class="reference internal" href="trace.html">Trace norm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_sample_weight.html">SAGA: Weighted samples</a></li>
@@ -127,8 +115,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../intro.html#stochastic-variance-reduced-gradient-svrg">Stochastic variance-reduced gradient (SVRG)</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../intro.html#prank">PRank</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
-<li class="toctree-l4 current"><a class="current reference internal" href="">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="plot_robust_regression.html">Robust regression</a></li>
 <li class="toctree-l4"><a class="reference internal" href="trace.html">Trace norm</a></li>
 <li class="toctree-l4"><a class="reference internal" href="plot_sample_weight.html">SAGA: Weighted samples</a></li>
@@ -197,58 +185,76 @@
     </div>
   </div>
 
-<div class="container content-container">
-  
-  <div class="section" id="signal-recovery-by-1d-total-variation">
-<span id="example-plot-1d-total-variation-py"></span><h1>Signal recovery by 1D total variation<a class="headerlink" href="#signal-recovery-by-1d-total-variation" title="Permalink to this headline">¶</a></h1>
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-plot-1d-total-variation-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
+</div>
+<section class="sphx-glr-example-title" id="signal-recovery-by-1d-total-variation">
+<span id="sphx-glr-auto-examples-plot-1d-total-variation-py"></span><h1>Signal recovery by 1D total variation<a class="headerlink" href="#signal-recovery-by-1d-total-variation" title="Permalink to this headline">¶</a></h1>
 <p>In this example, we generate a signal that is piecewise constant. We then
 observe some random and corrupted measurements from that signal and
 then try to recover that signal using L1 and 1D total variation (TV1D) penalties.</p>
 <p>Given a ground truth vectors, the signal that we observe is given by</p>
 <blockquote>
-<div>y = sign(X ground_truth + noise)</div></blockquote>
+<div><p>y = sign(X ground_truth + noise)</p>
+</div></blockquote>
 <p>where X is a random matrix. We obtain the vector ground_truth by solving
-an optimization problem using lightning&#8217;s <a class="reference internal" href="../generated/lightning.classification.FistaClassifier.html#lightning.classification.FistaClassifier" title="lightning.classification.FistaClassifier"><code class="xref py py-class docutils literal"><span class="pre">lightning.classification.FistaClassifier</span></code></a>.</p>
+an optimization problem using lightning’s <a class="reference internal" href="../generated/lightning.classification.FistaClassifier.html#lightning.classification.FistaClassifier" title="lightning.classification.FistaClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">lightning.classification.FistaClassifier</span></code></a>.</p>
 <p>The 1D total variation is also known as fused lasso.</p>
-<img alt="../_images/plot_1d_total_variation_001.png" class="align-center" src="../_images/plot_1d_total_variation_001.png" />
-<p><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_1d_total_variation.py"><code class="xref download docutils literal"><span class="pre">plot_1d_total_variation.py</span></code></a></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Author: Fabian Pedregosa &lt;f@bianp.net&gt;</span>
+<img alt="plot 1d total variation" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_1d_total_variation_001.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Author: Fabian Pedregosa &lt;f@bianp.net&gt;</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">lightning.classification</span> <span class="kn">import</span> <span class="n">FistaClassifier</span>
-<span class="kn">from</span> <span class="nn">sklearn.grid_search</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
 
 <span class="c1"># generate some synthetic data</span>
 <span class="n">n_samples</span> <span class="o">=</span> <span class="mi">200</span>
-<span class="n">ground_truth</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.concatenate.html#numpy.concatenate"><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span></a><span class="p">((</span>
-    <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ones.html#numpy.ones"><span class="n">np</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="o">-</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ones.html#numpy.ones"><span class="n">np</span><span class="o">.</span><span class="n">ones</span></a><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.zeros.html#numpy.zeros"><span class="n">np</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">(</span><span class="mi">40</span><span class="p">)))</span>
+<span class="n">ground_truth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">40</span><span class="p">)))</span>
 <span class="n">n_features</span> <span class="o">=</span> <span class="n">ground_truth</span><span class="o">.</span><span class="n">size</span>
-<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.random.seed.html#numpy.random.seed"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span></a><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># for reproducibility</span>
-<span class="n">X</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.random.rand.html#numpy.random.rand"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># for reproducibility</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span><span class="p">)</span>
 <span class="c1"># generate y as a linear model, y = sign(X w + noise)</span>
-<span class="n">y</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.sign.html#numpy.sign"><span class="n">np</span><span class="o">.</span><span class="n">sign</span></a><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ground_truth</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n_samples</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ground_truth</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n_samples</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
 
 <span class="k">for</span> <span class="n">penalty</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;l1&#39;</span><span class="p">,</span> <span class="s1">&#39;tv1d&#39;</span><span class="p">):</span>
     <span class="n">clf</span> <span class="o">=</span> <span class="n">FistaClassifier</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="n">penalty</span><span class="p">)</span>
-    <span class="n">gs</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.logspace.html#numpy.logspace"><span class="n">np</span><span class="o">.</span><span class="n">logspace</span></a><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)})</span>
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)})</span>
     <span class="n">gs</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
     <span class="n">coefs</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">best_estimator_</span><span class="o">.</span><span class="n">coef_</span>
-    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><span class="n">coefs</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> penalty&#39;</span> <span class="o">%</span> <span class="n">penalty</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">coefs</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> penalty&#39;</span> <span class="o">%</span> <span class="n">penalty</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><span class="n">ground_truth</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;^&#39;</span><span class="p">,</span> <span class="n">markevery</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ground truth&quot;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.grid"><span class="n">plt</span><span class="o">.</span><span class="n">grid</span></a><span class="p">()</span>
-<a href="http://matplotlib.org/api/legend_api.html#matplotlib.legend"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">()</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.ylim"><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span></a><span class="p">((</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">))</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ground_truth</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;^&#39;</span><span class="p">,</span> <span class="n">markevery</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ground truth&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">((</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  0.83 seconds
-( 0 minutes  0.83 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.724 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-1d-total-variation-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/415a37556be4083e8ecf64d9b2ea2a7f/plot_1d_total_variation.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_1d_total_variation.py</span></code></a></p>
 </div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/e564d8ea2a76b9b36a235e6c48d112cb/plot_1d_total_variation.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_1d_total_variation.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
 
 
+    </div>
+      
+  </div>
 </div>
 <footer class="footer">
   <div class="container">
@@ -257,8 +263,8 @@ an optimization problem using lightning&#8217;s <a class="reference internal" hr
       
     </p>
     <p>
-        &copy; Copyright Mathieu Blondel.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.<br/>
+        &copy; Copyright 2021, Mathieu Blondel.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.0.1.<br/>
     </p>
   </div>
 </footer>

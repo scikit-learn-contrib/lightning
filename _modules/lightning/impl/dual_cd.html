@@ -1,46 +1,33 @@
-
 <!DOCTYPE html>
 
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>lightning.impl.dual_cd &mdash; lightning dev documentation</title>
-    
-    <link rel="stylesheet" href="../../../_static/basic.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/lightning.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/bootstrap-3.3.4/css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/bootstrap-3.3.4/css/bootstrap-theme.min.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     'dev',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="../../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="../../../_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="../../../_static/bootstrap-3.3.4/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../../../_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="lightning dev documentation" href="../../../index.html" />
-    <link rel="up" title="Module code" href="../../index.html" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>lightning.impl.dual_cd &#8212; lightning 0.6.1.dev0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/bootstrap-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/gallery-rendered-html.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/lightning.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
 <meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
 
-  </head>
-  <body role="document">
+  </head><body>
 
   <div id="navbar" class="navbar navbar-default navbar-fixed-top">
     <div class="container">
@@ -53,7 +40,7 @@
         </button>
         <a class="navbar-brand" href="../../../index.html">
           lightning</a>
-        <span class="navbar-text navbar-version pull-left"><b>dev</b></span>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
       </div>
 
         <div class="collapse navbar-collapse nav-collapse">
@@ -74,8 +61,8 @@
       role="menu"
       aria-labelledby="dLabelGlobalToc"><ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../auto_examples/index.html">Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_robust_regression.html">Robust regression</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/trace.html">Trace norm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../auto_examples/plot_sample_weight.html">SAGA: Weighted samples</a></li>
@@ -125,8 +112,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../intro.html#stochastic-variance-reduced-gradient-svrg">Stochastic variance-reduced gradient (SVRG)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../intro.html#prank">PRank</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../../auto_examples/index.html">Examples</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_sgd_loss_functions.html">SGD: Convex Loss Functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_1d_total_variation.html">Signal recovery by 1D total variation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_robust_regression.html">Robust regression</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/trace.html">Trace norm</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../auto_examples/plot_sample_weight.html">SAGA: Weighted samples</a></li>
@@ -195,8 +182,10 @@
     </div>
   </div>
 
-<div class="container content-container">
-  
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
   <h1>Source code for lightning.impl.dual_cd</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">==========================================</span>
@@ -210,11 +199,9 @@
 <span class="c1"># Author: Mathieu Blondel</span>
 <span class="c1"># License: BSD</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelBinarizer</span>
 <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">add_dummy_feature</span>
-<span class="kn">from</span> <span class="nn">sklearn.externals.six.moves</span> <span class="kn">import</span> <span class="nb">xrange</span>
 
 <span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">BaseClassifier</span><span class="p">,</span> <span class="n">BaseRegressor</span>
 <span class="kn">from</span> <span class="nn">.dataset_fast</span> <span class="kn">import</span> <span class="n">get_dataset</span>
@@ -224,7 +211,7 @@
 
 
 <div class="viewcode-block" id="LinearSVC"><a class="viewcode-back" href="../../../generated/lightning.classification.LinearSVC.html#lightning.classification.LinearSVC">[docs]</a><span class="k">class</span> <span class="nc">LinearSVC</span><span class="p">(</span><span class="n">BaseClassifier</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Estimator for learning linear support vector machine by coordinate</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Estimator for learning linear support vector machine by coordinate</span>
 <span class="sd">    descent in the dual.</span>
 
 <span class="sd">    Parameters</span>
@@ -265,9 +252,8 @@
 <span class="sd">    verbose : int</span>
 <span class="sd">        Verbosity level.</span>
 
-<span class="sd">    Example</span>
-<span class="sd">    -------</span>
-
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
 <span class="sd">    The following example demonstrates how to learn a classification</span>
 <span class="sd">    model:</span>
 
@@ -279,10 +265,10 @@
 <span class="sd">    &gt;&gt;&gt; accuracy = clf.score(X, y)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="LinearSVC.__init__"><a class="viewcode-back" href="../../../generated/lightning.classification.LinearSVC.html#lightning.classification.LinearSVC.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;hinge&quot;</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;accuracy&quot;</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;hinge&quot;</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s2">&quot;accuracy&quot;</span><span class="p">,</span>
                  <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
-                 <span class="n">permute</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">shrinking</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">warm_start</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_calls</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+                 <span class="n">permute</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">shrinking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">warm_start</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_calls</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">C</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">criterion</span>
@@ -295,7 +281,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">callback</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_calls</span> <span class="o">=</span> <span class="n">n_calls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="bp">None</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_get_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;l1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -331,13 +317,13 @@
 
         <span class="n">ds</span> <span class="o">=</span> <span class="n">get_dataset</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">warm_start</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">warm_start</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_vectors</span><span class="p">,</span> <span class="n">n_features</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">==</span> <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">dual_coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_vectors</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">),</span>
                                            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">==</span> <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span>
                 <span class="n">_dual_cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dual_coef_</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                          <span class="n">ds</span><span class="p">,</span> <span class="n">Y</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">permute</span><span class="p">,</span>
@@ -353,7 +339,7 @@
 
 
 <div class="viewcode-block" id="LinearSVR"><a class="viewcode-back" href="../../../generated/lightning.regression.LinearSVR.html#lightning.classification.LinearSVR">[docs]</a><span class="k">class</span> <span class="nc">LinearSVR</span><span class="p">(</span><span class="n">BaseRegressor</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Estimator for learning a linear support vector regressor by coordinate</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Estimator for learning a linear support vector regressor by coordinate</span>
 <span class="sd">    descent in the dual.</span>
 
 <span class="sd">    Parameters</span>
@@ -395,10 +381,10 @@
 <span class="sd">        Verbosity level.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="LinearSVR.__init__"><a class="viewcode-back" href="../../../generated/lightning.regression.LinearSVR.html#lightning.classification.LinearSVR.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;epsilon_insensitive&quot;</span><span class="p">,</span>
-                 <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">fit_intercept</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">permute</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">warm_start</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_calls</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;epsilon_insensitive&quot;</span><span class="p">,</span>
+                 <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">fit_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">permute</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">warm_start</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_calls</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">C</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span> <span class="o">=</span> <span class="n">epsilon</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span>
@@ -411,7 +397,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">callback</span> <span class="o">=</span> <span class="n">callback</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_calls</span> <span class="o">=</span> <span class="n">n_calls</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="bp">None</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_get_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;l1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -453,12 +439,12 @@
 
         <span class="n">ds</span> <span class="o">=</span> <span class="n">get_dataset</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">warm_start</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">warm_start</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_vectors</span><span class="p">,</span> <span class="n">n_features</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dual_coef_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_vectors</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">),</span>
                                        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_vectors</span><span class="p">):</span>
             <span class="n">_dual_cd_svr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dual_coef_</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                          <span class="n">ds</span><span class="p">,</span> <span class="n">Y</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">permute</span><span class="p">,</span>
                          <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_loss</span><span class="p">(),</span>
@@ -473,6 +459,9 @@
         <span class="k">return</span> <span class="bp">self</span></div></div>
 </pre></div>
 
+    </div>
+      
+  </div>
 </div>
 <footer class="footer">
   <div class="container">
@@ -481,8 +470,8 @@
       
     </p>
     <p>
-        &copy; Copyright Mathieu Blondel.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.<br/>
+        &copy; Copyright 2021, Mathieu Blondel.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.0.1.<br/>
     </p>
   </div>
 </footer>
