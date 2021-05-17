@@ -24,6 +24,12 @@ with open(os.path.join('lightning', '__init__.py'), encoding='utf-8') as f:
                       f.read())
     VERSION = match.group('version').strip()
 MIN_PYTHON_VERSION = '3.6'
+with open('requirements.txt', encoding='utf-8') as f:
+    REQUIREMENTS = [
+        line.strip()
+        for line in f.read().splitlines()
+        if line.strip()
+    ]
 
 
 def configuration(parent_package='', top_path=None):
@@ -49,9 +55,7 @@ if __name__ == "__main__":
           name=DISTNAME,
           maintainer=MAINTAINER,
           python_requires='>={}'.format(MIN_PYTHON_VERSION),
-          install_requires=[
-              'scikit-learn'
-          ],
+          install_requires=REQUIREMENTS,
           include_package_data=True,
           scripts=["bin/lightning_train",
                    "bin/lightning_predict"],
