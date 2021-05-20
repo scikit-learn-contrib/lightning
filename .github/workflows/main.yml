@@ -3,7 +3,7 @@ name: Package tests
 on:
   push:
     branches:
-      - github_actions
+      - master
   pull_request:
     branches:
       - master
