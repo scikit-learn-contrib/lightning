@@ -70,7 +70,7 @@ AdaGrad
 Stochastic averaged gradient (SAG and SAGA)
 -------------------------------------------
 
-:class:`classification.classification.SAGClassifier`, :class:`classification.SAGAClassifier`, :class:`regression.SAGRegressor`, :class:`regression.SAGARegressor`
+:class:`classification.SAGClassifier`, :class:`classification.SAGAClassifier`, :class:`regression.SAGRegressor`, :class:`regression.SAGARegressor`
 
 - Main idea: instead of using the full gradient (average of sample-wise gradients), compute gradient for a randomly selected sample and use out-dated gradients for other samples
 - Non-smooth losses: Yes (:class:`classification.SAGAClassifier` and :class:`regression.SAGARegressor`)
