@@ -87,8 +87,7 @@ The development version of lightning can be installed from its git repository. I
 
   git clone https://github.com/scikit-learn-contrib/lightning.git
   cd lightning
-  python setup.py build
-  sudo python setup.py install
+  python setup.py install
 
 Documentation
 -------------
