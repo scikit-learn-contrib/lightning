@@ -6,7 +6,11 @@ import re
 import sys
 import os
 import setuptools
+
+from distutils.command.sdist import sdist
+
 from numpy.distutils.core import setup
+from numpy.distutils.misc_util import Configuration
 
 
 DISTNAME = 'sklearn-contrib-lightning'
@@ -18,7 +22,6 @@ MAINTAINER = 'Mathieu Blondel'
 MAINTAINER_EMAIL = 'mathieu@mblondel.org'
 URL = 'https://github.com/scikit-learn-contrib/lightning'
 LICENSE = 'new BSD'
-DOWNLOAD_URL = URL
 with open(os.path.join('lightning', '__init__.py'), encoding='utf-8') as f:
     match = re.search(r'__version__[ ]*=[ ]*[\"\'](?P<version>.+)[\"\']',
                       f.read())
@@ -36,8 +39,14 @@ def configuration(parent_package='', top_path=None):
     if os.path.exists('MANIFEST'):
         os.remove('MANIFEST')
 
-    from numpy.distutils.misc_util import Configuration
     config = Configuration(None, parent_package, top_path)
+
+    # Avoid non-useful msg:
+    # "Ignoring attempt to set 'name' (from ... "
+    config.set_options(ignore_setup_xxx_py=True,
+                       assume_default_configuration=True,
+                       delegate_options_to_subpackages=True,
+                       quiet=True)
 
     config.add_subpackage('lightning')
 
@@ -54,17 +63,18 @@ if __name__ == "__main__":
     setup(configuration=configuration,
           name=DISTNAME,
           maintainer=MAINTAINER,
-          python_requires='>={}'.format(MIN_PYTHON_VERSION),
+          python_requires=f'>={MIN_PYTHON_VERSION}',
           install_requires=REQUIREMENTS,
           include_package_data=True,
           scripts=["bin/lightning_train",
                    "bin/lightning_predict"],
+          cmdclass={'sdist': sdist},
           maintainer_email=MAINTAINER_EMAIL,
           description=DESCRIPTION,
           license=LICENSE,
           url=URL,
           version=VERSION,
-          download_url=DOWNLOAD_URL,
+          download_url=URL,
           long_description=LONG_DESCRIPTION,
           zip_safe=False,  # the package can run out of an .egg file
           classifiers=[
@@ -72,7 +82,7 @@ if __name__ == "__main__":
               'Intended Audience :: Developers',
               'License :: OSI Approved',
               'Programming Language :: C',
-              'Programming Language :: Python',
+              'Programming Language :: Python :: 3',
               'Topic :: Software Development',
               'Topic :: Scientific/Engineering',
               'Operating System :: Microsoft :: Windows',
