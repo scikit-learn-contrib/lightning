@@ -57,7 +57,7 @@ jobs:
           import sys
 
           assert sys.version_info[:2] == tuple(map(int, "${{ matrix.python_version }}".split(".")))
-          assert f"x{struct.calcsize('P') * 8}".replace("32", "87") == "${{ matrix.python_arch }}"
+          assert f"x{struct.calcsize('P') * 8}".replace("32", "86") == "${{ matrix.python_arch }}"
       - name: Install package
         run: |
           python -m pip install --upgrade pip
