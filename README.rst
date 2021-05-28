@@ -1,10 +1,7 @@
 .. -*- mode: rst -*-
 
-.. image:: https://travis-ci.org/scikit-learn-contrib/lightning.svg?branch=master
-    :target: https://travis-ci.org/scikit-learn-contrib/lightning
-
-.. image:: https://ci.appveyor.com/api/projects/status/mmm0llccmvn5iooq?svg=true
-    :target: https://ci.appveyor.com/project/fabianp/lightning/branch/master
+.. image:: https://github.com/scikit-learn-contrib/lightning/actions/workflows/main.yml/badge.svg?branch=master
+    :target: https://github.com/scikit-learn-contrib/lightning/actions/workflows/main.yml
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.200504.svg
     :target: https://doi.org/10.5281/zenodo.200504
@@ -66,7 +63,7 @@ penalty on the News20 dataset (c.f., `Blondel et al. 2013
 Dependencies
 ------------
 
-lightning requires Python >= 3.6, setuptools, Numpy >= 1.12, SciPy >= 0.19 and
+lightning requires Python >= 3.6, setuptools, Joblib, Numpy >= 1.12, SciPy >= 0.19 and
 scikit-learn >= 0.19. Building from source also requires Cython and a working C/C++ compiler. To run the tests you will also need pytest.
 
 Installation
@@ -90,8 +87,7 @@ The development version of lightning can be installed from its git repository. I
 
   git clone https://github.com/scikit-learn-contrib/lightning.git
   cd lightning
-  python setup.py build
-  sudo python setup.py install
+  python setup.py install
 
 Documentation
 -------------
