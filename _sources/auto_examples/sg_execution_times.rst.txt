@@ -5,22 +5,22 @@
 
 Computation times
 =================
-**00:06.459** total execution time for **auto_examples** files:
+**00:08.371** total execution time for **auto_examples** files:
 
 +---------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_plot_l2_solvers.py` (``plot_l2_solvers.py``)                               | 00:03.951 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_plot_l2_solvers.py` (``plot_l2_solvers.py``)                               | 00:04.661 | 0.0 MB |
 +---------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_plot_1d_total_variation.py` (``plot_1d_total_variation.py``)               | 00:01.113 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_plot_1d_total_variation.py` (``plot_1d_total_variation.py``)               | 00:01.871 | 0.0 MB |
 +---------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_plot_svrg.py` (``plot_svrg.py``)                                           | 00:00.644 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_plot_svrg.py` (``plot_svrg.py``)                                           | 00:00.815 | 0.0 MB |
 +---------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_plot_robust_regression.py` (``plot_robust_regression.py``)                 | 00:00.239 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_plot_robust_regression.py` (``plot_robust_regression.py``)                 | 00:00.317 | 0.0 MB |
 +---------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_plot_sgd_loss_functions.py` (``plot_sgd_loss_functions.py``)               | 00:00.225 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_plot_sgd_loss_functions.py` (``plot_sgd_loss_functions.py``)               | 00:00.316 | 0.0 MB |
 +---------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_plot_sparse_non_linear.py` (``plot_sparse_non_linear.py``)                 | 00:00.205 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_plot_sparse_non_linear.py` (``plot_sparse_non_linear.py``)                 | 00:00.288 | 0.0 MB |
 +---------------------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_plot_sample_weight.py` (``plot_sample_weight.py``)                         | 00:00.082 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_plot_sample_weight.py` (``plot_sample_weight.py``)                         | 00:00.102 | 0.0 MB |
 +---------------------------------------------------------------------------------------------------------+-----------+--------+
 | :ref:`sphx_glr_auto_examples_document_classification_news20.py` (``document_classification_news20.py``) | 00:00.000 | 0.0 MB |
 +---------------------------------------------------------------------------------------------------------+-----------+--------+
