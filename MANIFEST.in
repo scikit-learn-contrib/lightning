@@ -1,3 +1,4 @@
 include MANIFEST.in
 include Makefile
+include requirements*.txt
 recursive-include lightning *.c *.h *.cpp *.pyx *.pxd
