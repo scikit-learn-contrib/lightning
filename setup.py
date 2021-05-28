@@ -5,7 +5,6 @@
 import re
 import sys
 import os
-from distutils.command.sdist import sdist
 import setuptools
 
 from distutils.command.sdist import sdist
@@ -69,7 +68,6 @@ if __name__ == "__main__":
           include_package_data=True,
           scripts=["bin/lightning_train",
                    "bin/lightning_predict"],
-          cmdclass={'sdist': sdist},
           maintainer_email=MAINTAINER_EMAIL,
           description=DESCRIPTION,
           license=LICENSE,
