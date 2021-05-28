@@ -36,9 +36,8 @@ clf = FistaClassifier(C=1.0 / X_train.shape[0],
                       penalty="trace",
                       multiclass=True)
 
+print(f"{'alpha': <10}| {'score': <25}| {'rank': <5}")
 for alpha in (1e-3, 1e-2, 0.1, 0.2, 0.3):
-    print("alpha=", alpha)
     clf.alpha = alpha
     clf.fit(X_train, y_train)
-    print(clf.score(X_test, y_test))
-    print(rank(clf.coef_))
+    print(f"{alpha: <10}| {clf.score(X_test, y_test): <25}| {rank(clf.coef_): <5}")

@@ -68,6 +68,7 @@ exclude_patterns = ['_build', '_templates', '_themes', 'Thumbs.db', '.DS_Store']
 sphinx_gallery_conf = {
      'examples_dirs': '../examples',
      'gallery_dirs': 'auto_examples',
+     'filename_pattern' : '.py',
      'plot_gallery': 'True',
 }
 

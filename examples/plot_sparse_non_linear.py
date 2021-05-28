@@ -3,18 +3,18 @@
 Sparse non-linear classification
 ================================
 
-This examples demonstrates how to use `CDClassifier` with L1 penalty to do
+This examples demonstrates how to use :class:`lightning.classification.CDClassifier` with L1 penalty to do
 sparse non-linear classification. The trick simply consists in fitting the
 classifier with a kernel matrix (e.g., using an RBF kernel).
 
 There are a few interesting differences with standard kernel SVMs:
 
 1. the kernel matrix does not need to be positive semi-definite (hence the
-expression "kernel matrix" above is an abuse of terminology)
+   expression "kernel matrix" above is an abuse of terminology)
 
 2. the number of "support vectors" will be typically smaller thanks to L1
-regularization and can be adjusted by the regularization parameter C (the
-smaller C, the fewer the support vectors)
+   regularization and can be adjusted by the regularization parameter C (the
+   smaller C, the fewer the support vectors)
 
 3. the "support vectors" need not be located at the margin
 """
