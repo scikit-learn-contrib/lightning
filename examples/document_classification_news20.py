@@ -7,11 +7,7 @@ Classification of text documents
 import numpy as np
 
 from sklearn.datasets import fetch_20newsgroups_vectorized
-
-try:
-    from sklearn.model_selection import train_test_split
-except ImportError:
-    from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
     
 from lightning.classification import CDClassifier
 from lightning.classification import LinearSVC
@@ -50,4 +46,4 @@ clfs = (CDClassifier(loss="squared_hinge",
 for clf in clfs:
     print(clf.__class__.__name__)
     clf.fit(X_tr, y_tr)
-    print(clf.score(X_te, y_te))
+    print("score =", clf.score(X_te, y_te))
