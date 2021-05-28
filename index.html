@@ -188,8 +188,7 @@
   <div class="row">
     <div class="body col-md-12 content" role="main">
       
-  <a class="reference external image-reference" href="https://travis-ci.org/scikit-learn-contrib/lightning"><img alt="https://travis-ci.org/scikit-learn-contrib/lightning.svg?branch=master" src="https://travis-ci.org/scikit-learn-contrib/lightning.svg?branch=master" /></a>
-<a class="reference external image-reference" href="https://ci.appveyor.com/project/fabianp/lightning/branch/master"><img alt="https://ci.appveyor.com/api/projects/status/mmm0llccmvn5iooq?svg=true" src="https://ci.appveyor.com/api/projects/status/mmm0llccmvn5iooq?svg=true" /></a>
+  <a class="reference external image-reference" href="https://github.com/scikit-learn-contrib/lightning/actions/workflows/main.yml"><img alt="https://github.com/scikit-learn-contrib/lightning/actions/workflows/main.yml/badge.svg?branch=master" src="https://github.com/scikit-learn-contrib/lightning/actions/workflows/main.yml/badge.svg?branch=master" /></a>
 <a class="reference external image-reference" href="https://doi.org/10.5281/zenodo.200504"><img alt="https://zenodo.org/badge/DOI/10.5281/zenodo.200504.svg" src="https://zenodo.org/badge/DOI/10.5281/zenodo.200504.svg" /></a>
 <section id="lightning">
 <h1>lightning<a class="headerlink" href="#lightning" title="Permalink to this headline">¶</a></h1>
@@ -242,7 +241,7 @@ penalty on the News20 dataset (c.f., <a class="reference external" href="http://
 </section>
 <section id="dependencies">
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<p>lightning requires Python &gt;= 3.6, setuptools, Numpy &gt;= 1.12, SciPy &gt;= 0.19 and
+<p>lightning requires Python &gt;= 3.6, setuptools, Joblib, Numpy &gt;= 1.12, SciPy &gt;= 0.19 and
 scikit-learn &gt;= 0.19. Building from source also requires Cython and a working C/C++ compiler. To run the tests you will also need pytest.</p>
 </section>
 <section id="installation">
@@ -258,8 +257,7 @@ scikit-learn &gt;= 0.19. Building from source also requires Cython and a working
 <p>The development version of lightning can be installed from its git repository. In this case it is assumed that you have the git version control system, a working C++ compiler, Cython and the numpy development libraries. In order to install the development version, type:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/scikit-learn-contrib/lightning.git
 <span class="nb">cd</span> lightning
-python setup.py build
-sudo python setup.py install
+python setup.py install
 </pre></div>
 </div>
 </section>
@@ -314,7 +312,7 @@ sudo python setup.py install
     </p>
     <p>
         &copy; Copyright 2021, Mathieu Blondel.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.0.1.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.0.2.<br/>
     </p>
   </div>
 </footer>
