@@ -22,7 +22,31 @@
 Trace norm
 ===========
 
-.. GENERATED FROM PYTHON SOURCE LINES 7-45
+.. GENERATED FROM PYTHON SOURCE LINES 7-44
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    alpha     | score                    | rank 
+    0.001     | 0.7696494954859268       | 19   
+    0.01      | 0.7639405204460966       | 19   
+    0.1       | 0.45698353690918747      | 19   
+    0.2       | 0.2894317578332448       | 12   
+    0.3       | 0.20233669676048857      | 6    
+
+
+
+
+
+
+|
 
 .. code-block:: default
 
@@ -58,17 +82,16 @@ Trace norm
                           penalty="trace",
                           multiclass=True)
 
+    print(f"{'alpha': <10}| {'score': <25}| {'rank': <5}")
     for alpha in (1e-3, 1e-2, 0.1, 0.2, 0.3):
-        print("alpha=", alpha)
         clf.alpha = alpha
         clf.fit(X_train, y_train)
-        print(clf.score(X_test, y_test))
-        print(rank(clf.coef_))
+        print(f"{alpha: <10}| {clf.score(X_test, y_test): <25}| {rank(clf.coef_): <5}")
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 2 minutes  11.612 seconds)
 
 
 .. _sphx_glr_download_auto_examples_trace.py:

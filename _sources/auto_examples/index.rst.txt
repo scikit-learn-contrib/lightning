@@ -160,7 +160,7 @@ These are some examples using the lightning machine learning library.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This examples demonstrates how to use CDClassifier with L1 penalty to do sparse non-linear clas...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This examples demonstrates how to use lightning.classification.CDClassifier with L1 penalty to ...">
 
 .. only:: html
 

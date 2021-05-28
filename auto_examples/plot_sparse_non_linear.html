@@ -196,16 +196,16 @@ to download the full example code</p>
 </div>
 <section class="sphx-glr-example-title" id="sparse-non-linear-classification">
 <span id="sphx-glr-auto-examples-plot-sparse-non-linear-py"></span><h1>Sparse non-linear classification<a class="headerlink" href="#sparse-non-linear-classification" title="Permalink to this headline">¶</a></h1>
-<p>This examples demonstrates how to use <cite>CDClassifier</cite> with L1 penalty to do
+<p>This examples demonstrates how to use <a class="reference internal" href="../generated/lightning.classification.CDClassifier.html#lightning.classification.CDClassifier" title="lightning.classification.CDClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">lightning.classification.CDClassifier</span></code></a> with L1 penalty to do
 sparse non-linear classification. The trick simply consists in fitting the
 classifier with a kernel matrix (e.g., using an RBF kernel).</p>
 <p>There are a few interesting differences with standard kernel SVMs:</p>
-<p>1. the kernel matrix does not need to be positive semi-definite (hence the
-expression “kernel matrix” above is an abuse of terminology)</p>
-<p>2. the number of “support vectors” will be typically smaller thanks to L1
+<ol class="arabic simple">
+<li><p>the kernel matrix does not need to be positive semi-definite (hence the
+expression “kernel matrix” above is an abuse of terminology)</p></li>
+<li><p>the number of “support vectors” will be typically smaller thanks to L1
 regularization and can be adjusted by the regularization parameter C (the
-smaller C, the fewer the support vectors)</p>
-<ol class="arabic simple" start="3">
+smaller C, the fewer the support vectors)</p></li>
 <li><p>the “support vectors” need not be located at the margin</p></li>
 </ol>
 <ul class="sphx-glr-horizontal">
@@ -305,7 +305,7 @@ smaller C, the fewer the support vectors)</p>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.288 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.237 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-sparse-non-linear-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/8e93a4e8b69a7bf144ff3d244bcbfd2e/plot_sparse_non_linear.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_sparse_non_linear.py</span></code></a></p>

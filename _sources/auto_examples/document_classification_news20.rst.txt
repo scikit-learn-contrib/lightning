@@ -22,18 +22,37 @@
 Classification of text documents
 ================================
 
-.. GENERATED FROM PYTHON SOURCE LINES 7-54
+.. GENERATED FROM PYTHON SOURCE LINES 7-50
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    CDClassifier
+    score = 0.9107142857142857
+    LinearSVC
+    score = 0.9022108843537415
+    SGDClassifier
+    score = 0.858843537414966
+
+
+
+
+
+
+|
 
 .. code-block:: default
 
     import numpy as np
 
     from sklearn.datasets import fetch_20newsgroups_vectorized
-
-    try:
-        from sklearn.model_selection import train_test_split
-    except ImportError:
-        from sklearn.cross_validation import train_test_split
+    from sklearn.model_selection import train_test_split
     
     from lightning.classification import CDClassifier
     from lightning.classification import LinearSVC
@@ -72,12 +91,12 @@ Classification of text documents
     for clf in clfs:
         print(clf.__class__.__name__)
         clf.fit(X_tr, y_tr)
-        print(clf.score(X_te, y_te))
+        print("score =", clf.score(X_te, y_te))
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  4.910 seconds)
 
 
 .. _sphx_glr_download_auto_examples_document_classification_news20.py:
