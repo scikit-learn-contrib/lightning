@@ -2,6 +2,7 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: language_level=3
 #
 # Author: Mathieu Blondel
 # License: BSD
@@ -26,7 +27,7 @@ cdef double _pred(double* data,
     cdef int j, jj
     cdef double dot = 0
 
-    for jj in xrange(n_nz):
+    for jj in range(n_nz):
         j = indices[jj]
         dot += w[j] * data[jj]
 
@@ -40,7 +41,7 @@ cdef void _add(double* data,
                double* w):
     cdef int jj, j
 
-    for jj in xrange(n_nz):
+    for jj in range(n_nz):
         j = indices[jj]
         w[j] += scale * data[jj]
 
@@ -85,14 +86,14 @@ def _svrg_fit(self,
     cdef double* fg = <double*>full_grad.data
     cdef double* g = <double*>grad.data
 
-    for it in xrange(max_iter):
+    for it in range(max_iter):
 
         # Reset full gradient
-        for j in xrange(n_features):
+        for j in range(n_features):
             fg[j] = 0
 
         # Compute full gradient.
-        for i in xrange(n_samples):
+        for i in range(n_samples):
 
             # Retrieve sample i.
             X.get_row_ptr(i, &indices, &data, &n_nz)
@@ -108,7 +109,7 @@ def _svrg_fit(self,
         # Compute optimality violation.
         violation = 0
         alpha_scaled = alpha * w_scale[0]
-        for j in xrange(n_features):
+        for j in range(n_features):
             tmp = fg[j] / n_samples + alpha_scaled * w[j]
             violation += tmp * tmp
         violation = sqrt(violation)
@@ -120,15 +121,15 @@ def _svrg_fit(self,
         violation_ratio = violation / violation_init
 
         if verbose:
-            print it + 1, violation_ratio
+            print(it + 1, violation_ratio)
 
         if violation_ratio <= tol:
             if verbose:
-                print "Converged"
+                print("Converged")
             break
 
         # Inner loop.
-        for t in xrange(n_inner):
+        for t in range(n_inner):
             i = rng.randint(n_samples - 1)
 
             # Retrieve sample i.
@@ -136,7 +137,7 @@ def _svrg_fit(self,
 
             # Add deterministic part, just in time.
             if t > 0:
-                for jj in xrange(n_nz):
+                for jj in range(n_nz):
                     j = indices[jj]
                     w[j] -= eta_avg / w_scale[0] * (t - last[j]) * fg[j]
                     last[j] = t
@@ -150,7 +151,7 @@ def _svrg_fit(self,
             w_scale[0] *= (1 - eta_alpha)
 
             # Add deterministic part.
-            #for j in xrange(n_features):
+            #for j in range(n_features):
                 #w[j] -= eta_avg / w_scale * fg[j]
 
             # Add stochastic part.
@@ -158,12 +159,12 @@ def _svrg_fit(self,
 
             # Take care of possible underflows.
             if w_scale[0] < 1e-9:
-                for j in xrange(n_features):
+                for j in range(n_features):
                     w[j] *= w_scale[0]
                 w_scale[0] = 1.0
 
         # Finalize.
-        for j in xrange(n_features):
+        for j in range(n_features):
             w[j] -= eta_avg / w_scale[0] * (n_inner - last[j]) * fg[j]
             last[j] = 0
 
@@ -174,6 +175,6 @@ def _svrg_fit(self,
                 break
 
     # Rescale coefficients.
-    for j in xrange(n_features):
+    for j in range(n_features):
         w[j] *= w_scale[0]
     w_scale[0] = 1.0

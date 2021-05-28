@@ -1,6 +1,5 @@
 PYTHON ?= python
-CYTHON ?= cython
-NOSETESTS ?= nosetests
+PYTEST ?= pytest
 DATADIR=$(HOME)/lightning_data
 
 # Compilation...
@@ -18,11 +17,7 @@ clean:
 # Tests...
 #
 test-code: inplace
-	$(NOSETESTS) -s lightning
-
-test-coverage:
-	$(NOSETESTS) -s --with-coverage --cover-html --cover-html-dir=coverage \
-	--cover-package=lightning lightning
+	$(PYTEST) -s -v lightning
 
 test: test-code
 
@@ -174,4 +169,3 @@ download-usps: datadir
 	./download.sh http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.t.bz2
 	bunzip2 usps.t.bz2
 	mv usps.t $(DATADIR)
-

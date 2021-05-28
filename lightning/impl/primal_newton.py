@@ -18,17 +18,15 @@ from sklearn.utils import safe_mask
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
 from sklearn.metrics.pairwise import pairwise_kernels
-from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier
 
 
 class KernelSVC(BaseClassifier):
-    """Estimator for learning kernel SVMs by Newton's method.
+    r"""Estimator for learning kernel SVMs by Newton's method.
 
     Parameters
     ----------
-
     alpha : float
         Weight of the penalty term.
 
@@ -63,9 +61,8 @@ class KernelSVC(BaseClassifier):
     n_jobs : int
         Number of jobs to use to compute the kernel matrix.
 
-    Example
-    -------
-
+    Examples
+    --------
     >>> from sklearn.datasets import make_classification
     >>> from lightning.classification import KernelSVC
     >>> X, y = make_classification()
@@ -111,7 +108,7 @@ class KernelSVC(BaseClassifier):
             sv[:1000] = True
             rs.shuffle(sv)
 
-        for t in xrange(1, self.max_iter + 1):
+        for t in range(1, self.max_iter + 1):
             if self.verbose:
                 print("Iteration", t, "#SV=", np.sum(sv))
 
@@ -180,7 +177,7 @@ class KernelSVC(BaseClassifier):
         K = pairwise_kernels(X, filter_params=True, n_jobs=self.n_jobs,
                              metric=self.kernel, **self._kernel_params())
 
-        coef = [self._fit_binary(K, Y[:, i], rs) for i in xrange(n_vectors)]
+        coef = [self._fit_binary(K, Y[:, i], rs) for i in range(n_vectors)]
         self.coef_ = np.array(coef)
         self.intercept_ = np.zeros(n_vectors, dtype=np.float64)
 

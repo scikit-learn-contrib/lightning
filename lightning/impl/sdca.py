@@ -4,8 +4,6 @@
 import numpy as np
 
 from sklearn.utils import check_random_state
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
@@ -56,7 +54,7 @@ class _BaseSDCA(object):
         rng = check_random_state(self.random_state)
         loss = self._get_loss()
 
-        for i in xrange(n_vectors):
+        for i in range(n_vectors):
             y = Y[:, i]
 
             if self.l1_ratio == 1.0:
@@ -73,10 +71,12 @@ class _BaseSDCA(object):
 
 
 class SDCAClassifier(BaseClassifier, _BaseSDCA):
-    """
+    r"""
     Estimator for learning linear classifiers by (proximal) SDCA.
 
     Solves the following objective:
+
+    .. code-block::
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * l1_ratio * ||w||_1
@@ -138,14 +138,17 @@ class SDCAClassifier(BaseClassifier, _BaseSDCA):
 
 
 class SDCARegressor(BaseRegressor, _BaseSDCA):
-    """
+    r"""
     Estimator for learning linear regressors by (proximal) SDCA.
 
     Solves the following objective:
 
+    .. code-block::
+
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * l1_ratio * ||w||_1
                     + alpha * (1 - l1_ratio) * 0.5 * ||w||^2_2
+
     Parameters
     ----------
     loss: string, {'squared', 'absolute'}

@@ -1,17 +1,8 @@
 import numpy as np
 import scipy.sparse as sp
 
-from sklearn.utils.testing import assert_array_almost_equal
-from sklearn.utils.testing import assert_almost_equal
-from sklearn.utils.testing import assert_true
-from sklearn.utils.testing import assert_equal
-from sklearn.utils.testing import assert_greater
-from sklearn.utils.testing import assert_raises
-
 from sklearn.datasets import load_digits
-from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.externals.six.moves import xrange
 
 from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.primal_cd import CDClassifier, CDRegressor
@@ -27,7 +18,7 @@ mult_dense, mult_target = make_classification(n_samples=300, n_features=100,
                                               n_classes=3, random_state=0)
 mult_csc = sp.csc_matrix(mult_dense)
 
-digit = load_digits(2)
+digit = load_digits(n_class=2)
 
 
 def test_fit_linear_binary_l1r():
@@ -35,20 +26,20 @@ def test_fit_linear_binary_l1r():
     clf.fit(bin_dense, bin_target)
     assert not hasattr(clf, 'predict_proba')
     acc = clf.score(bin_dense, bin_target)
-    assert_almost_equal(acc, 1.0)
+    np.testing.assert_almost_equal(acc, 1.0)
     n_nz = clf.n_nonzero()
     perc = clf.n_nonzero(percentage=True)
-    assert_equal(perc, float(n_nz) / bin_dense.shape[1])
+    assert perc == n_nz / bin_dense.shape[1]
 
     clf = CDClassifier(C=0.1, random_state=0, penalty="l1")
     clf.fit(bin_dense, bin_target)
     acc = clf.score(bin_dense, bin_target)
-    assert_almost_equal(acc, 0.97)
+    np.testing.assert_almost_equal(acc, 0.97)
     n_nz2 = clf.n_nonzero()
     perc2 = clf.n_nonzero(percentage=True)
-    assert_equal(perc2, float(n_nz2) / bin_dense.shape[1])
+    assert perc2 == n_nz2 / bin_dense.shape[1]
 
-    assert_true(n_nz > n_nz2)
+    assert n_nz > n_nz2
 
 
 def test_fit_linear_binary_l1r_smooth_hinge():
@@ -56,7 +47,7 @@ def test_fit_linear_binary_l1r_smooth_hinge():
     clf.fit(bin_dense, bin_target)
     assert not hasattr(clf, 'predict_proba')
     acc = clf.score(bin_dense, bin_target)
-    assert_almost_equal(acc, 1.0)
+    np.testing.assert_almost_equal(acc, 1.0)
 
 
 def test_fit_linear_binary_l1r_no_linesearch():
@@ -64,7 +55,7 @@ def test_fit_linear_binary_l1r_no_linesearch():
                        random_state=0, penalty="l1")
     clf.fit(bin_dense, bin_target)
     acc = clf.score(bin_dense, bin_target)
-    assert_almost_equal(acc, 1.0)
+    np.testing.assert_almost_equal(acc, 1.0)
 
 
 def test_l1r_shrinking():
@@ -72,7 +63,7 @@ def test_l1r_shrinking():
         clf = CDClassifier(C=0.5, penalty="l1", random_state=0,
                            shrinking=shrinking)
         clf.fit(bin_dense, bin_target)
-        assert_equal(clf.score(bin_dense, bin_target), 1.0)
+        assert clf.score(bin_dense, bin_target) == 1.0
 
 
 def test_warm_start_l1r():
@@ -86,7 +77,7 @@ def test_warm_start_l1r():
     clf.fit(bin_dense, bin_target)
     n_nz2 = clf.n_nonzero()
 
-    assert_true(n_nz < n_nz2)
+    assert n_nz < n_nz2
 
 
 def test_warm_start_l1r_regression():
@@ -100,7 +91,7 @@ def test_warm_start_l1r_regression():
     clf.fit(bin_dense, bin_target)
     n_nz2 = clf.n_nonzero()
 
-    assert_true(n_nz < n_nz2)
+    assert n_nz < n_nz2
 
 
 def test_fit_linear_binary_l1r_log_loss():
@@ -108,7 +99,7 @@ def test_fit_linear_binary_l1r_log_loss():
     clf.fit(bin_dense, bin_target)
     check_predict_proba(clf, bin_dense)
     acc = clf.score(bin_dense, bin_target)
-    assert_almost_equal(acc, 0.995)
+    np.testing.assert_almost_equal(acc, 0.995)
 
 
 def test_fit_linear_binary_l1r_log_loss_no_linesearch():
@@ -116,14 +107,14 @@ def test_fit_linear_binary_l1r_log_loss_no_linesearch():
                        selection="uniform", penalty="l1", loss="log")
     clf.fit(bin_dense, bin_target)
     acc = clf.score(bin_dense, bin_target)
-    assert_almost_equal(acc, 0.995)
+    np.testing.assert_almost_equal(acc, 0.995)
 
 
 def test_fit_linear_binary_l2r():
     clf = CDClassifier(C=1.0, random_state=0, penalty="l2")
     clf.fit(bin_dense, bin_target)
     acc = clf.score(bin_dense, bin_target)
-    assert_almost_equal(acc, 1.0)
+    np.testing.assert_almost_equal(acc, 1.0)
 
 
 def test_fit_linear_binary_l2r_log():
@@ -131,7 +122,7 @@ def test_fit_linear_binary_l2r_log():
                        max_iter=5)
     clf.fit(bin_dense, bin_target)
     acc = clf.score(bin_dense, bin_target)
-    assert_almost_equal(acc, 1.0)
+    np.testing.assert_almost_equal(acc, 1.0)
 
 
 def test_fit_linear_binary_l2r_modified_huber():
@@ -140,14 +131,14 @@ def test_fit_linear_binary_l2r_modified_huber():
     clf.fit(bin_dense, bin_target)
     check_predict_proba(clf, bin_dense)
     acc = clf.score(bin_dense, bin_target)
-    assert_almost_equal(acc, 1.0)
+    np.testing.assert_almost_equal(acc, 1.0)
 
 
 def test_fit_linear_multi_l2r():
     clf = CDClassifier(C=1.0, random_state=0, penalty="l2")
     clf.fit(mult_dense, mult_target)
     acc = clf.score(mult_dense, mult_target)
-    assert_almost_equal(acc, 0.8833, 4)
+    np.testing.assert_almost_equal(acc, 0.8833, 4)
 
 
 def test_warm_start_l2r():
@@ -155,11 +146,11 @@ def test_warm_start_l2r():
 
     clf.C = 0.1
     clf.fit(bin_dense, bin_target)
-    assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
+    np.testing.assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
 
     clf.C = 0.2
     clf.fit(bin_dense, bin_target)
-    assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
+    np.testing.assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
 
 
 def test_debiasing_l1():
@@ -168,8 +159,8 @@ def test_debiasing_l1():
                            warm_debiasing=warm_debiasing,
                            C=0.05, Cd=1.0, max_iter=10, random_state=0)
         clf.fit(bin_dense, bin_target)
-        assert_equal(clf.n_nonzero(), 22)
-        assert_almost_equal(clf.score(bin_dense, bin_target), 0.955, 3)
+        assert clf.n_nonzero() == 22
+        np.testing.assert_almost_equal(clf.score(bin_dense, bin_target), 0.955, 3)
 
 
 def test_debiasing_l1l2():
@@ -180,8 +171,8 @@ def test_debiasing_l1l2():
                            warm_debiasing=warm_debiasing,
                            max_iter=20, C=0.01, random_state=0)
         clf.fit(mult_csc, mult_target)
-        assert_greater(clf.score(mult_csc, mult_target), 0.75)
-        assert_equal(clf.n_nonzero(percentage=True), 0.08)
+        assert clf.score(mult_csc, mult_target) > 0.75
+        assert clf.n_nonzero(percentage=True) == 0.08
 
 
 def test_debiasing_warm_start():
@@ -189,52 +180,52 @@ def test_debiasing_warm_start():
                        warm_start=True, random_state=0)
     clf.C = 0.5
     clf.fit(bin_dense, bin_target)
-    assert_equal(clf.n_nonzero(), 74)
-    assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
+    assert clf.n_nonzero() == 74
+    np.testing.assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
 
     clf.C = 1.0
     clf.fit(bin_dense, bin_target)
     # FIXME: not the same sparsity as without warm start...
-    assert_equal(clf.n_nonzero(), 77)
-    assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
+    assert clf.n_nonzero() == 77
+    np.testing.assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
 
 
 def test_empty_model():
     clf = CDClassifier(C=1e-5, penalty="l1")
     clf.fit(bin_dense, bin_target)
-    assert_equal(clf.n_nonzero(), 0)
+    assert clf.n_nonzero() == 0
     acc = clf.score(bin_dense, bin_target)
-    assert_equal(acc, 0.5)
+    assert acc == 0.5
 
     clf = CDClassifier(C=1e-5, penalty="l1", debiasing=True)
     clf.fit(bin_dense, bin_target)
-    assert_equal(clf.n_nonzero(), 0)
+    assert clf.n_nonzero() == 0
     acc = clf.score(bin_dense, bin_target)
-    assert_equal(acc, 0.5)
+    assert acc == 0.5
 
 
 def test_fit_squared_loss():
     clf = CDClassifier(C=1.0, random_state=0, penalty="l2",
                        loss="squared", max_iter=100)
     clf.fit(bin_dense, bin_target)
-    assert_almost_equal(clf.score(bin_dense, bin_target), 0.99)
+    np.testing.assert_almost_equal(clf.score(bin_dense, bin_target), 0.99)
     y = bin_target.copy()
     y[y == 0] = -1
-    assert_array_almost_equal(np.dot(bin_dense, clf.coef_.ravel()) - y,
-                              clf.errors_.ravel())
+    np.testing.assert_array_almost_equal(np.dot(bin_dense, clf.coef_.ravel()) - y,
+                                         clf.errors_.ravel())
 
 
 def test_fit_squared_loss_l1():
     clf = CDClassifier(C=0.5, random_state=0, penalty="l1",
                        loss="squared", max_iter=100, shrinking=False)
     clf.fit(bin_dense, bin_target)
-    assert_almost_equal(clf.score(bin_dense, bin_target), 0.985, 3)
+    np.testing.assert_almost_equal(clf.score(bin_dense, bin_target), 0.985, 3)
     y = bin_target.copy()
     y[y == 0] = -1
-    assert_array_almost_equal(np.dot(bin_dense, clf.coef_.ravel()) - y,
-                              clf.errors_.ravel())
+    np.testing.assert_array_almost_equal(np.dot(bin_dense, clf.coef_.ravel()) - y,
+                                         clf.errors_.ravel())
     n_nz = clf.n_nonzero()
-    assert_equal(n_nz, 89)
+    assert n_nz == 89
 
 
 def test_l1l2_multiclass_log_loss():
@@ -242,24 +233,24 @@ def test_l1l2_multiclass_log_loss():
         clf = CDClassifier(penalty="l1/l2", loss="log", multiclass=True,
                            max_steps=30, max_iter=5, C=1.0, random_state=0)
         clf.fit(data, mult_target)
-        assert_almost_equal(clf.score(data, mult_target), 0.8766, 3)
+        np.testing.assert_almost_equal(clf.score(data, mult_target), 0.8766, 3)
         df = clf.decision_function(data)
-        sel = np.array([df[i, int(mult_target[i])] for i in xrange(df.shape[0])])
+        sel = np.array([df[i, int(mult_target[i])] for i in range(df.shape[0])])
         df -= sel[:, np.newaxis]
         df = np.exp(df)
-        assert_array_almost_equal(clf.errors_, df.T)
-        for i in xrange(data.shape[0]):
-            assert_almost_equal(clf.errors_[mult_target[i], i], 1.0)
+        np.testing.assert_array_almost_equal(clf.errors_, df.T)
+        for i in range(data.shape[0]):
+            np.testing.assert_almost_equal(clf.errors_[mult_target[i], i], 1.0)
         nz = np.sum(clf.coef_ != 0)
-        assert_equal(nz, 297)
+        assert nz == 297
 
         clf = CDClassifier(penalty="l1/l2", loss="log", multiclass=True,
                            max_steps=30, max_iter=5, C=0.3, random_state=0)
         clf.fit(data, mult_target)
-        assert_almost_equal(clf.score(data, mult_target), 0.8566, 3)
+        np.testing.assert_almost_equal(clf.score(data, mult_target), 0.8566, 3)
         nz = np.sum(clf.coef_ != 0)
-        assert_equal(nz, 213)
-        assert_true(nz % 3 == 0) # should be a multiple of n_classes
+        assert nz == 213
+        assert nz % 3 == 0  # should be a multiple of n_classes
 
 
 def test_l1l2_multiclass_log_loss_no_linesearch():
@@ -268,9 +259,9 @@ def test_l1l2_multiclass_log_loss_no_linesearch():
                        selection="uniform", max_steps=0,
                        max_iter=30, C=1.0, random_state=0)
     clf.fit(data, mult_target)
-    assert_almost_equal(clf.score(data, mult_target), 0.88, 3)
+    np.testing.assert_almost_equal(clf.score(data, mult_target), 0.88, 3)
     nz = np.sum(clf.coef_ != 0)
-    assert_equal(nz, 297)
+    assert nz == 297
 
 
 def test_l1l2_multiclass_squared_hinge_loss():
@@ -279,24 +270,24 @@ def test_l1l2_multiclass_squared_hinge_loss():
                            multiclass=True,
                            max_iter=20, C=1.0, random_state=0)
         clf.fit(data, mult_target)
-        assert_almost_equal(clf.score(data, mult_target), 0.913, 3)
+        np.testing.assert_almost_equal(clf.score(data, mult_target), 0.913, 3)
         df = clf.decision_function(data)
         n_samples, n_vectors = df.shape
         diff = np.zeros_like(clf.errors_)
-        for i in xrange(n_samples):
-            for k in xrange(n_vectors):
+        for i in range(n_samples):
+            for k in range(n_vectors):
                 diff[k, i] = 1 - (df[i, mult_target[i]] - df[i, k])
-        assert_array_almost_equal(clf.errors_, diff)
-        assert_equal(np.sum(clf.coef_ != 0), 300)
+        np.testing.assert_array_almost_equal(clf.errors_, diff)
+        assert np.sum(clf.coef_ != 0) == 300
 
         clf = CDClassifier(penalty="l1/l2", loss="squared_hinge",
                            multiclass=True,
                            max_iter=20, C=0.05, random_state=0)
         clf.fit(data, mult_target)
-        assert_almost_equal(clf.score(data, mult_target), 0.83, 3)
+        np.testing.assert_almost_equal(clf.score(data, mult_target), 0.83, 3)
         nz = np.sum(clf.coef_ != 0)
-        assert_equal(nz, 207)
-        assert_true(nz % 3 == 0) # should be a multiple of n_classes
+        assert nz == 207
+        assert nz % 3 == 0  # should be a multiple of n_classes
 
 
 def test_l1l2_multiclass_squared_hinge_loss_no_linesearch():
@@ -305,24 +296,24 @@ def test_l1l2_multiclass_squared_hinge_loss_no_linesearch():
                        multiclass=True, shrinking=False, selection="uniform",
                        max_steps=0, max_iter=200, C=1.0, random_state=0)
     clf.fit(data, mult_target)
-    assert_almost_equal(clf.score(data, mult_target), 0.9166, 3)
+    np.testing.assert_almost_equal(clf.score(data, mult_target), 0.9166, 3)
     df = clf.decision_function(data)
     n_samples, n_vectors = df.shape
     diff = np.zeros_like(clf.errors_)
-    for i in xrange(n_samples):
-        for k in xrange(n_vectors):
+    for i in range(n_samples):
+        for k in range(n_vectors):
             diff[k, i] = 1 - (df[i, mult_target[i]] - df[i, k])
-    assert_array_almost_equal(clf.errors_, diff)
-    assert_equal(np.sum(clf.coef_ != 0), 300)
+    np.testing.assert_array_almost_equal(clf.errors_, diff)
+    assert np.sum(clf.coef_ != 0) == 300
 
     clf = CDClassifier(penalty="l1/l2", loss="squared_hinge",
                        multiclass=True,
                        max_iter=20, C=0.05, random_state=0)
     clf.fit(data, mult_target)
-    assert_almost_equal(clf.score(data, mult_target), 0.83, 3)
+    np.testing.assert_almost_equal(clf.score(data, mult_target), 0.83, 3)
     nz = np.sum(clf.coef_ != 0)
-    assert_equal(nz, 207)
-    assert_true(nz % 3 == 0) # should be a multiple of n_classes
+    assert nz == 207
+    assert nz % 3 == 0  # should be a multiple of n_classes
 
 
 
@@ -333,18 +324,18 @@ def test_l1l2_multi_task_squared_hinge_loss():
                        max_iter=20, C=5.0, random_state=0)
     clf.fit(mult_dense, mult_target)
     df = clf.decision_function(mult_dense)
-    assert_array_almost_equal(clf.errors_.T, 1 - Y * df)
-    assert_almost_equal(clf.score(mult_dense, mult_target), 0.8633, 3)
+    np.testing.assert_array_almost_equal(clf.errors_.T, 1 - Y * df)
+    np.testing.assert_almost_equal(clf.score(mult_dense, mult_target), 0.8633, 3)
     nz = np.sum(clf.coef_ != 0)
-    assert_equal(nz, 300)
+    assert nz == 300
 
     clf = CDClassifier(penalty="l1/l2", loss="squared_hinge",
                        multiclass=False,
                        max_iter=20, C=0.05, random_state=0)
     clf.fit(mult_dense, mult_target)
-    assert_almost_equal(clf.score(mult_dense, mult_target), 0.8266, 3)
+    np.testing.assert_almost_equal(clf.score(mult_dense, mult_target), 0.8266, 3)
     nz = np.sum(clf.coef_ != 0)
-    assert_equal(nz, 231)
+    assert nz == 231
 
 
 def test_l1l2_multi_task_log_loss():
@@ -353,7 +344,7 @@ def test_l1l2_multi_task_log_loss():
                        max_steps=30,
                        max_iter=20, C=5.0, random_state=0)
     clf.fit(mult_dense, mult_target)
-    assert_almost_equal(clf.score(mult_dense, mult_target), 0.8633, 3)
+    np.testing.assert_almost_equal(clf.score(mult_dense, mult_target), 0.8633, 3)
 
 
 def test_l1l2_multi_task_square_loss():
@@ -361,7 +352,7 @@ def test_l1l2_multi_task_square_loss():
                        multiclass=False,
                        max_iter=20, C=5.0, random_state=0)
     clf.fit(mult_dense, mult_target)
-    assert_almost_equal(clf.score(mult_dense, mult_target), 0.8066, 3)
+    np.testing.assert_almost_equal(clf.score(mult_dense, mult_target), 0.8066, 3)
 
 
 def test_fit_reg_squared_l2():
@@ -370,7 +361,7 @@ def test_fit_reg_squared_l2():
     clf.fit(digit.data, digit.target)
     y_pred = (clf.predict(digit.data) > 0.5).astype(int)
     acc = np.mean(digit.target == y_pred)
-    assert_almost_equal(acc, 1.0, 3)
+    np.testing.assert_almost_equal(acc, 1.0, 3)
 
 
 def test_fit_reg_squared_l1():
@@ -379,7 +370,7 @@ def test_fit_reg_squared_l1():
     clf.fit(digit.data, digit.target)
     y_pred = (clf.predict(digit.data) > 0.5).astype(int)
     acc = np.mean(digit.target == y_pred)
-    assert_almost_equal(acc, 1.0, 3)
+    np.testing.assert_almost_equal(acc, 1.0, 3)
 
 
 def test_fit_reg_squared_multiple_outputs():
@@ -390,8 +381,8 @@ def test_fit_reg_squared_multiple_outputs():
     Y[:, 1] = digit.target
     reg.fit(digit.data, Y)
     y_pred = reg.predict(digit.data)
-    assert_equal(y_pred.shape[0], len(digit.target))
-    assert_equal(y_pred.shape[1], 2)
+    assert y_pred.shape[0] == len(digit.target)
+    assert y_pred.shape[1] == 2
 
 
 def test_fit_reg_squared_multiple_outputs():
@@ -401,23 +392,23 @@ def test_fit_reg_squared_multiple_outputs():
     Y = lb.fit_transform(mult_target)
     reg.fit(mult_dense, Y)
     y_pred = lb.inverse_transform(reg.predict(mult_dense))
-    assert_almost_equal(np.mean(y_pred == mult_target), 0.797, 3)
-    assert_almost_equal(reg.n_nonzero(percentage=True), 0.5)
+    np.testing.assert_almost_equal(np.mean(y_pred == mult_target), 0.797, 3)
+    np.testing.assert_almost_equal(reg.n_nonzero(percentage=True), 0.5)
 
 
 def test_multiclass_error_nongrouplasso():
     for penalty in ['l1', 'l2']:
         clf = CDClassifier(multiclass=True, penalty=penalty)
-        assert_raises(NotImplementedError, clf.fit, mult_dense, mult_target)
+        np.testing.assert_raises(NotImplementedError, clf.fit, mult_dense, mult_target)
 
 
 def test_bin_classes():
     clf = CDClassifier()
     clf.fit(bin_dense, bin_target)
-    assert_equal(list(clf.classes_), [0, 1])
+    assert list(clf.classes_) == [0, 1]
 
 
 def test_multiclass_classes():
     clf = CDClassifier()
     clf.fit(mult_dense, mult_target)
-    assert_equal(list(clf.classes_), [0, 1, 2])
+    assert list(clf.classes_) == [0, 1, 2]

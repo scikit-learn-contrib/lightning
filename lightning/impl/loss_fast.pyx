@@ -2,6 +2,7 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: language_level=3
 #
 # Author: Mathieu Blondel
 # License: BSD
@@ -26,11 +27,11 @@ cdef double _l2_norm_sums(RowDataset X, int squared):
         cdef int* indices
         cdef int n_nz
 
-        for i in xrange(n_samples):
+        for i in range(n_samples):
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
             norm = 0
-            for jj in xrange(n_nz):
+            for jj in range(n_nz):
                 norm += data[jj] * data[jj]
 
             if squared:
@@ -58,11 +59,11 @@ cdef class Squared:
         cdef int i, k, j, jj
         cdef double residual
 
-        for i in xrange(n_samples):
-            for k in xrange(n_vectors):
+        for i in range(n_samples):
+            for k in range(n_vectors):
                 residual = y[i, k] - df[i, k]
                 X.get_row_ptr(i, &indices, &data, &n_nz)
-                for jj in xrange(n_nz):
+                for jj in range(n_nz):
                     j = indices[jj]
                     G[k, j] -= residual * data[jj]
 
@@ -78,8 +79,8 @@ cdef class Squared:
 
         obj = 0
 
-        for i in xrange(n_samples):
-            for k in xrange(n_vectors):
+        for i in range(n_samples):
+            for k in range(n_vectors):
                 residual = y[i, k] - df[i, k]
                 obj += residual * residual
 
@@ -106,13 +107,13 @@ cdef class SquaredHinge:
         cdef int i, k, j, jj
         cdef double tmp
 
-        for i in xrange(n_samples):
-            for k in xrange(n_vectors):
+        for i in range(n_samples):
+            for k in range(n_vectors):
                 tmp = 1 - y[i, k] * df[i, k]
                 if tmp > 0:
                     tmp *= 2 * y[i, k]
                     X.get_row_ptr(i, &indices, &data, &n_nz)
-                    for jj in xrange(n_nz):
+                    for jj in range(n_nz):
                         j = indices[jj]
                         G[k, j] -= tmp * data[jj]
 
@@ -128,8 +129,8 @@ cdef class SquaredHinge:
 
         obj = 0
 
-        for i in xrange(n_samples):
-            for k in xrange(n_vectors):
+        for i in range(n_samples):
+            for k in range(n_vectors):
                 value = max(1 - y[i, k] * df[i, k], 0)
                 obj += value * value
 
@@ -156,17 +157,17 @@ cdef class MulticlassSquaredHinge:
         cdef int i, k, j, jj
         cdef double update, tmp
 
-        for i in xrange(n_samples):
+        for i in range(n_samples):
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
-            for k in xrange(n_vectors):
+            for k in range(n_vectors):
                 if y[i] == k:
                     continue
 
                 update = max(1 - df[i, y[i]] + df[i, k], 0)
                 if update != 0:
                     update *= 2
-                    for jj in xrange(n_nz):
+                    for jj in range(n_nz):
                         j = indices[jj]
                         tmp = update * data[jj]
                         G[y[i], j] -= tmp
@@ -184,8 +185,8 @@ cdef class MulticlassSquaredHinge:
 
         obj = 0
 
-        for i in xrange(n_samples):
-            for k in xrange(n_vectors):
+        for i in range(n_samples):
+            for k in range(n_vectors):
                 if y[i] == k:
                     continue
                 value = max(1 - df[i, y[i]] + df[i, k], 0)
@@ -221,11 +222,11 @@ cdef class MulticlassLog:
         cdef np.ndarray[double, ndim=1, mode='c'] scores
         scores = np.zeros(n_vectors, dtype=np.float64)
 
-        for i in xrange(n_samples):
+        for i in range(n_samples):
             X.get_row_ptr(i, &indices, &data, &n_nz)
 
             Z = 0
-            for k in xrange(n_vectors):
+            for k in range(n_vectors):
                 tmp = df[i, k] - df[i, y[i]]
                 if self.margin and k != y[i]:
                     tmp += 1
@@ -233,12 +234,12 @@ cdef class MulticlassLog:
                 scores[k] = tmp
                 Z += tmp
 
-            for k in xrange(n_vectors):
+            for k in range(n_vectors):
                 tmp = scores[k] / Z
                 if k == y[i]:
                     tmp -= 1
 
-                for jj in xrange(n_nz):
+                for jj in range(n_nz):
                     j = indices[jj]
                     G[k, j] += tmp * data[jj]
 
@@ -254,9 +255,9 @@ cdef class MulticlassLog:
 
         obj = 0
 
-        for i in xrange(n_samples):
+        for i in range(n_samples):
             s = 1
-            for k in xrange(n_vectors):
+            for k in range(n_vectors):
                 tmp = df[i, k] - df[i, y[i]]
                 if self.margin and k != y[i]:
                     tmp += 1

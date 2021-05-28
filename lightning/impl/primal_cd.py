@@ -12,8 +12,7 @@ functions and penalties.
 
 import numpy as np
 
-from sklearn.externals.joblib import Parallel, delayed
-from sklearn.externals.six.moves import xrange
+from joblib import Parallel, delayed
 
 from .base import BaseClassifier
 from .base import BaseRegressor
@@ -72,7 +71,7 @@ class _BaseCD(object):
 
 
 class CDClassifier(_BaseCD, BaseClassifier):
-    """Estimator for learning linear classifiers by (block) coordinate descent.
+    r"""Estimator for learning linear classifiers by (block) coordinate descent.
 
     The objective functions considered take the form
 
@@ -163,9 +162,8 @@ class CDClassifier(_BaseCD, BaseClassifier):
         penalty is a non group-lasso penalty. By default use one CPU.
         If set to -1, use all CPU's
 
-    Example
-    -------
-
+    Examples
+    --------
     The following example demonstrates how to learn a classification
     model with a multiclass squared hinge loss and an l1/l2 penalty.
 
@@ -299,7 +297,7 @@ class CDClassifier(_BaseCD, BaseClassifier):
 
             n_pos = np.zeros(n_vectors)
             vinit = self.C / self.C_init * np.ones_like(n_pos)
-            for k in xrange(n_vectors):
+            for k in range(n_vectors):
                 n_pos[k] = np.sum(Y[:, k] == 1)
                 vinit[k] *= self.violation_init_.get(k, 0)
             n_neg = n_samples - n_pos
@@ -315,7 +313,7 @@ class CDClassifier(_BaseCD, BaseClassifier):
                                         self.shrinking, vinit[k],
                                         rs, tol[k], self.callback, self.n_calls,
                                         self.verbose)
-                    for k in xrange(n_vectors))
+                    for k in range(n_vectors))
             model = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(jobs)
             viol, coefs, errors = zip(*model)
             self.coef_ = np.asarray(coefs)
@@ -345,7 +343,7 @@ class CDClassifier(_BaseCD, BaseClassifier):
                            rs, self.tol, self.callback, self.n_calls,
                            self.verbose
                             )
-                    for k in xrange(n_vectors))
+                    for k in range(n_vectors))
             model = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(jobs)
             viol, coefs, errors = zip(*model)
             self.coef_ = np.asarray(coefs)
@@ -355,7 +353,7 @@ class CDClassifier(_BaseCD, BaseClassifier):
 
 
 class CDRegressor(_BaseCD, BaseRegressor):
-    """Estimator for learning linear regressors by (block) coordinate descent.
+    r"""Estimator for learning linear regressors by (block) coordinate descent.
 
     The objective functions considered take the form
 
@@ -368,14 +366,12 @@ class CDRegressor(_BaseCD, BaseRegressor):
     loss : str, 'squared'
         The loss function to be used.
 
-    penalty : str, 'l2', 'l1', 'l1/l2', 'nnl1', 'nnl2'
+    penalty : str, 'l2', 'l1', 'l1/l2'
         The penalty to be used.
 
         - l2: ridge
         - l1: lasso
         - l1/l2: group lasso
-        - nnl1: non-negative constraints + l1 penalty
-        - nnl2: non-negative constraints + l2 penalty
 
     For other parameters, see `CDClassifier`.
     """
@@ -474,7 +470,7 @@ class CDRegressor(_BaseCD, BaseRegressor):
         else:
             penalty = self._get_penalty()
             vinit = np.asarray([self.violation_init_.get(k, 0)
-                    for k in xrange(n_vectors)]) * self.C / self.C_init
+                    for k in range(n_vectors)]) * self.C / self.C_init
 
             jobs = (delayed(_primal_cd)(self, self.coef_, self.errors_,
                                        ds, y, Y, k, False,
@@ -486,7 +482,7 @@ class CDRegressor(_BaseCD, BaseRegressor):
                                        self.shrinking, vinit[k],
                                        rs, self.tol, self.callback, self.n_calls,
                                        self.verbose)
-                    for k in xrange(n_vectors))
+                    for k in range(n_vectors))
 
             model = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(jobs)
             viol, self.coef_, self.error_ = zip(*model)

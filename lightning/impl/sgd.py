@@ -16,7 +16,6 @@ import numpy as np
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import assert_all_finite
-from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier
 from .base import BaseRegressor
@@ -58,7 +57,7 @@ class _BaseSGD(object):
 
 
 class SGDClassifier(BaseClassifier, _BaseSGD):
-    """Estimator for learning linear classifiers by SGD.
+    r"""Estimator for learning linear classifiers by SGD.
 
     Parameters
     ----------
@@ -116,9 +115,8 @@ class SGDClassifier(BaseClassifier, _BaseSGD):
     verbose : int
         Verbosity level.
 
-    Example
-    -------
-
+    Examples
+    --------
     >>> from sklearn.datasets import fetch_20newsgroups_vectorized
     >>> from lightning.classification import SGDClassifier
     >>> bunch = fetch_20newsgroups_vectorized(subset="all")
@@ -150,6 +148,7 @@ class SGDClassifier(BaseClassifier, _BaseSGD):
         self.n_calls = n_calls
         self.verbose = verbose
         self.coef_ = None
+        self.intercept_ = None
 
     def _get_loss(self):
         if self.multiclass:
@@ -206,7 +205,7 @@ class SGDClassifier(BaseClassifier, _BaseSGD):
         if n_vectors == 1 or not self.multiclass:
             Y = np.asfortranarray(self.label_binarizer_.fit_transform(y),
                                   dtype=np.float64)
-            for i in xrange(n_vectors):
+            for i in range(n_vectors):
                 _binary_sgd(self,
                             self.coef_, self.intercept_, i,
                             ds, Y[:, i], loss, penalty,
@@ -240,7 +239,7 @@ class SGDClassifier(BaseClassifier, _BaseSGD):
 
 
 class SGDRegressor(BaseRegressor, _BaseSGD):
-    """Estimator for learning linear regressors by SGD.
+    r"""Estimator for learning linear regressors by SGD.
 
     Parameters
     ----------
@@ -361,7 +360,7 @@ class SGDRegressor(BaseRegressor, _BaseSGD):
         loss = self._get_loss()
         penalty = self._get_penalty()
 
-        for k in xrange(n_vectors):
+        for k in range(n_vectors):
             _binary_sgd(self,
                         self.coef_, self.intercept_, k,
                         ds, Y[:, k], loss, penalty, self.alpha,
@@ -395,6 +394,7 @@ class SGDRegressor(BaseRegressor, _BaseSGD):
         try:
             assert_all_finite(self.coef_)
             pred = safe_sparse_dot(X, self.coef_.T)
+            pred += self.intercept_
         except ValueError:
             n_samples = X.shape[0]
             n_vectors = self.coef_.shape[0]

@@ -12,9 +12,7 @@ This module provides coordinate descent solvers for support vector machines
 
 import numpy as np
 
-from sklearn.preprocessing import LabelBinarizer
 from sklearn.preprocessing import add_dummy_feature
-from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
@@ -24,7 +22,7 @@ from .dual_cd_fast import _dual_cd_svr
 
 
 class LinearSVC(BaseClassifier):
-    """Estimator for learning linear support vector machine by coordinate
+    r"""Estimator for learning linear support vector machine by coordinate
     descent in the dual.
 
     Parameters
@@ -65,9 +63,8 @@ class LinearSVC(BaseClassifier):
     verbose : int
         Verbosity level.
 
-    Example
-    -------
-
+    Examples
+    --------
     The following example demonstrates how to learn a classification
     model:
 
@@ -137,7 +134,7 @@ class LinearSVC(BaseClassifier):
                 self.dual_coef_ = np.zeros((n_vectors, n_samples),
                                            dtype=np.float64)
 
-        for i in xrange(n_vectors):
+        for i in range(n_vectors):
             if self.criterion == "accuracy":
                 _dual_cd(self, self.coef_[i], self.dual_coef_[i],
                          ds, Y[:, i], self.permute,
@@ -153,7 +150,7 @@ class LinearSVC(BaseClassifier):
 
 
 class LinearSVR(BaseRegressor):
-    """Estimator for learning a linear support vector regressor by coordinate
+    r"""Estimator for learning a linear support vector regressor by coordinate
     descent in the dual.
 
     Parameters
@@ -258,7 +255,7 @@ class LinearSVR(BaseRegressor):
             self.dual_coef_ = np.zeros((n_vectors, n_samples),
                                        dtype=np.float64)
 
-        for i in xrange(n_vectors):
+        for i in range(n_vectors):
             _dual_cd_svr(self, self.coef_[i], self.dual_coef_[i],
                          ds, Y[:, i], self.permute,
                          self.C, self.epsilon, self._get_loss(),

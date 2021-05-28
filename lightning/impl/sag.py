@@ -5,8 +5,6 @@
 
 import numpy as np
 
-from sklearn.externals.six.moves import xrange
-
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
 from .sag_fast import _sag_fit, get_auto_step_size
@@ -77,7 +75,7 @@ class _BaseSAG(object):
         self.coef_scale_ = np.ones(n_vectors, dtype=np.float64)
         grad = np.zeros((n_vectors, n_samples), dtype=np.float64)
 
-        for i in xrange(n_vectors):
+        for i in range(n_vectors):
             y = Y[:, i]
 
             _sag_fit(self, ds, y, self.coef_[i], self.coef_scale_[i:], grad[i],
@@ -89,10 +87,12 @@ class _BaseSAG(object):
 
 
 class SAGClassifier(BaseClassifier, _BaseSAG):
-    """
+    r"""
     Estimator for learning linear classifiers by SAG.
 
     Solves the following objective:
+
+    .. code-block::
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2
@@ -166,10 +166,12 @@ class SAGClassifier(BaseClassifier, _BaseSAG):
 
 
 class SAGAClassifier(SAGClassifier):
-    """
+    r"""
     Estimator for learning linear classifiers by SAGA.
 
     Solves the following objective:
+
+    .. code-block::
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2 + beta * penalty(w)
@@ -211,7 +213,7 @@ class SAGAClassifier(SAGClassifier):
     def __init__(self, eta='auto', alpha=1.0, beta=0.0, loss="smooth_hinge",
                  penalty=None, gamma=1.0,  max_iter=10, n_inner=1.0,
                  tol=1e-3, verbose=0, callback=None, random_state=None):
-            super(SAGAClassifier, self).__init__(
+            super().__init__(
                 eta=eta, alpha=alpha, beta=beta, loss=loss, penalty=penalty,
                 gamma=gamma, max_iter=max_iter, n_inner=n_inner, tol=tol,
                 verbose=verbose, callback=callback, random_state=random_state)
@@ -219,10 +221,12 @@ class SAGAClassifier(SAGClassifier):
 
 
 class SAGRegressor(BaseRegressor, _BaseSAG):
-    """
+    r"""
     Estimator for learning linear regressors by SAG.
 
     Solves the following objective:
+
+    .. code-block::
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2
@@ -293,10 +297,12 @@ class SAGRegressor(BaseRegressor, _BaseSAG):
 
 
 class SAGARegressor(SAGRegressor):
-    """
+    r"""
     Estimator for learning linear regressors by SAG.
 
     Solves the following objective:
+
+    .. code-block::
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2 + beta * penalty(w)
@@ -335,7 +341,7 @@ class SAGARegressor(SAGRegressor):
     def __init__(self, eta='auto', alpha=1.0, beta=0.0, loss="smooth_hinge",
                  penalty="l1", max_iter=10, n_inner=1.0, tol=1e-3,
                  verbose=0, callback=None, random_state=None):
-            super(SAGARegressor, self).__init__(
+            super().__init__(
                 eta=eta, alpha=alpha, beta=beta, loss=loss, penalty=penalty,
                 gamma=1.0, max_iter=max_iter, n_inner=n_inner, tol=tol,
                 verbose=verbose, callback=callback, random_state=random_state)

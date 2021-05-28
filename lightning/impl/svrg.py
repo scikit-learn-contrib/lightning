@@ -3,9 +3,6 @@
 
 import numpy as np
 
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.externals.six.moves import xrange
-
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
 from .svrg_fast import _svrg_fit
@@ -36,7 +33,7 @@ class _BaseSVRG(object):
         grad = np.zeros((n_vectors, n_samples), dtype=np.float64)
         self.coef_scale_ = np.ones(n_vectors, dtype=np.float64)
 
-        for i in xrange(n_vectors):
+        for i in range(n_vectors):
             y = Y[:, i]
 
             _svrg_fit(self, ds, y, self.coef_[i], self.coef_scale_[i:],
@@ -48,10 +45,12 @@ class _BaseSVRG(object):
 
 
 class SVRGClassifier(BaseClassifier, _BaseSVRG):
-    """
+    r"""
     Estimator for learning linear classifiers by SVRG.
 
     Solves the following objective:
+
+    .. code-block::
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2
@@ -89,10 +88,12 @@ class SVRGClassifier(BaseClassifier, _BaseSVRG):
 
 
 class SVRGRegressor(BaseRegressor, _BaseSVRG):
-    """
+    r"""
     Estimator for learning linear regressors by SVRG.
 
     Solves the following objective:
+
+    .. code-block::
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * 0.5 * ||w||^2_2

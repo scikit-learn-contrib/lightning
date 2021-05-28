@@ -4,7 +4,6 @@
 import numpy as np
 
 from sklearn.utils.extmath import safe_sparse_dot
-from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 
@@ -75,7 +74,7 @@ class _BaseFista(object):
             L = 1.0
 
         t = 1.0
-        for it in xrange(self.max_iter):
+        for it in range(self.max_iter):
             if self.verbose >= 1:
                 print("Iter", it + 1, obj)
 
@@ -92,7 +91,7 @@ class _BaseFista(object):
             if self.max_steps > 0:
                 objb = self._get_objective(df, y, loss)
 
-            for tt in xrange(self.max_steps):
+            for tt in range(self.max_steps):
                 # Solve
                 coefx = coef - G / L
                 coefx = penalty.projection(coefx, self.alpha, L)
@@ -131,7 +130,7 @@ class _BaseFista(object):
 
 
 class FistaClassifier(BaseClassifier, _BaseFista):
-    """Estimator for learning linear classifiers by FISTA.
+    r"""Estimator for learning linear classifiers by FISTA.
 
     The objective functions considered take the form
 
@@ -144,7 +143,7 @@ class FistaClassifier(BaseClassifier, _BaseFista):
     loss : str, 'squared_hinge', 'log', 'modified_huber', 'squared'
         The loss function to be used.
 
-    penalty : str or Penalty object, 'l2', 'l1', 'l1/l2', 'simplex'
+    penalty : str or Penalty object, {'l2', 'l1', 'l1/l2', 'tv1d', 'simplex'}
         The penalty or constraint to be used.
 
         - l2: ridge
@@ -152,6 +151,7 @@ class FistaClassifier(BaseClassifier, _BaseFista):
         - l1/l2: group lasso
         - tv1d: 1-dimensional total variation (also known as fused lasso)
         - simplex: simplex constraint
+
         The method can also take an arbitrary Penalty object, i.e., an instance
         that implements methods projection regularization method (see file penalty.py)
 
@@ -227,7 +227,7 @@ class FistaClassifier(BaseClassifier, _BaseFista):
 
 
 class FistaRegressor(BaseRegressor, _BaseFista):
-    """Estimator for learning linear classifiers by FISTA.
+    r"""Estimator for learning linear classifiers by FISTA.
 
     The objective functions considered take the form
 
@@ -237,7 +237,7 @@ class FistaRegressor(BaseRegressor, _BaseFista):
 
     Parameters
     ----------
-    penalty : str or Penalty object, {'l2', 'l1', 'l1/l2', 'simplex'}
+    penalty : str or Penalty object, {'l2', 'l1', 'l1/l2', 'tv1d', 'simplex'}
         The penalty or constraint to be used.
 
         - l2: ridge
@@ -245,6 +245,7 @@ class FistaRegressor(BaseRegressor, _BaseFista):
         - l1/l2: group lasso
         - tv1d: 1-dimensional total variation (also known as fussed lasso)
         - simplex: simplex constraint
+
         The method can also take an arbitrary Penalty object, i.e., an instance
         that implements methods projection regularization method (see file penalty.py)
 

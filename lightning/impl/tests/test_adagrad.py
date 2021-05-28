@@ -1,8 +1,6 @@
 import numpy as np
 
 from sklearn.datasets import load_iris
-from sklearn.utils.testing import assert_equal
-from sklearn.utils.testing import assert_almost_equal
 
 from lightning.classification import AdaGradClassifier
 from lightning.regression import AdaGradRegressor
@@ -20,7 +18,7 @@ def test_adagrad_elastic_hinge():
     clf = AdaGradClassifier(alpha=0.5, l1_ratio=0.85, n_iter=10, random_state=0)
     clf.fit(X_bin, y_bin)
     assert not hasattr(clf, "predict_proba")
-    assert_equal(clf.score(X_bin, y_bin), 1.0)
+    assert clf.score(X_bin, y_bin) == 1.0
 
 
 def test_adagrad_elastic_smooth_hinge():
@@ -28,14 +26,14 @@ def test_adagrad_elastic_smooth_hinge():
                             n_iter=10, random_state=0)
     clf.fit(X_bin, y_bin)
     assert not hasattr(clf, "predict_proba")
-    assert_equal(clf.score(X_bin, y_bin), 1.0)
+    assert clf.score(X_bin, y_bin) == 1.0
 
 
 def test_adagrad_elastic_log():
     clf = AdaGradClassifier(alpha=0.1, l1_ratio=0.85, loss="log", n_iter=10,
                             random_state=0)
     clf.fit(X_bin, y_bin)
-    assert_equal(clf.score(X_bin, y_bin), 1.0)
+    assert clf.score(X_bin, y_bin) == 1.0
     check_predict_proba(clf, X_bin)
 
 
@@ -43,21 +41,21 @@ def test_adagrad_hinge_multiclass():
     clf = AdaGradClassifier(alpha=1e-2, n_iter=100, loss="hinge", random_state=0)
     clf.fit(X, y)
     assert not hasattr(clf, "predict_proba")
-    assert_almost_equal(clf.score(X, y), 0.960, 3)
+    np.testing.assert_almost_equal(clf.score(X, y), 0.940, 3)
 
 
 def test_adagrad_classes_binary():
     clf = AdaGradClassifier()
     assert not hasattr(clf, 'classes_')
     clf.fit(X_bin, y_bin)
-    assert_equal(list(clf.classes_), [-1, 1])
+    assert list(clf.classes_) == [-1, 1]
 
 
 def test_adagrad_classes_multiclass():
     clf = AdaGradClassifier()
     assert not hasattr(clf, 'classes_')
     clf.fit(X, y)
-    assert_equal(list(clf.classes_), [0, 1, 2])
+    assert list(clf.classes_) == [0, 1, 2]
 
 
 def test_adagrad_callback():
@@ -80,7 +78,7 @@ def test_adagrad_callback():
     clf = AdaGradClassifier(alpha=0.5, l1_ratio=0.85, n_iter=10,
                             callback=cb, random_state=0)
     clf.fit(X_bin, y_bin)
-    assert_equal(cb.acc[-1], 1.0)
+    assert cb.acc[-1] == 1.0
 
 
 def test_adagrad_regression():
@@ -88,4 +86,4 @@ def test_adagrad_regression():
         reg = AdaGradRegressor(loss=loss)
         reg.fit(X_bin, y_bin)
         y_pred = np.sign(reg.predict(X_bin))
-        assert_equal(np.mean(y_bin == y_pred), 1.0)
+        assert np.mean(y_bin == y_pred) == 1.0

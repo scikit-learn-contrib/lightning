@@ -2,6 +2,7 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: language_level=3
 #
 # Author: Mathieu Blondel
 # License: BSD
@@ -25,7 +26,7 @@ cdef double _pred(double* data,
     cdef int j, jj
     cdef double dot = 0
 
-    for jj in xrange(n_nz):
+    for jj in range(n_nz):
         j = indices[jj]
         dot += w[j] * data[jj]
 
@@ -63,7 +64,7 @@ cpdef _proj_elastic_all(double eta,
                         np.ndarray[double, ndim=1] w):
     cdef int n_features = w.shape[0]
     cdef int j
-    for j in xrange(n_features):
+    for j in range(n_features):
         if g_norms[j] != 0:
             w[j] = _proj_elastic(eta, t, g_sum[j], g_norms[j], alpha1, alpha2,
                                  delta)
@@ -106,13 +107,13 @@ def _adagrad_fit(self,
     cdef double* w = <double*>coef.data
 
     t = 1
-    for it in xrange(n_iter):
+    for it in range(n_iter):
 
         # Shuffle sample indices.
         if shuffle:
             rng.shuffle(sindices)
 
-        for ii in xrange(n_samples):
+        for ii in range(n_samples):
             i = sindices[ii]
 
             # Retrieve sample i.
@@ -120,7 +121,7 @@ def _adagrad_fit(self,
 
             # Update w lazily.
             if t > 1:
-                for jj in xrange(n_nz):
+                for jj in range(n_nz):
                     j = indices[jj]
                     if g_norms[j] != 0:
                         w[j] = _proj_elastic(eta, t - 1, g_sum[j], g_norms[j],
@@ -134,14 +135,14 @@ def _adagrad_fit(self,
 
             # Update g_sum and g_norms.
             if scale != 0:
-                for jj in xrange(n_nz):
+                for jj in range(n_nz):
                     j = indices[jj]
                     tmp = scale * data[jj]
                     g_sum[j] += tmp
                     g_norms[j] += tmp * tmp
 
             # Update w by naive implementation: very slow.
-            # for j in xrange(n_features):
+            # for j in range(n_features):
             #    w[j] = _proj_elastic(eta, t, g_sum[j], g_norms[j], alpha1,
             #                         alpha2, delta)
 

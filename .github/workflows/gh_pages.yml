@@ -1,0 +1,33 @@
+name: Deploy Docs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 3
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install package
+        run: |
+          pip install -r requirements_build.txt
+          python setup.py install
+      - name: Build docs
+        run: |
+          cd doc
+          pip install -r requirements.txt
+          make html
+      - name: Deploy docs
+        uses: JamesIves/github-pages-deploy-action@4.1.3
+        with:
+          branch: gh-pages
+          folder: ${{ github.workspace }}/doc/_build/html

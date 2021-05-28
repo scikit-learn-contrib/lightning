@@ -26,7 +26,7 @@ class _BasePRank(BaseEstimator):
 
 
 class PRank(_BasePRank):
-    """Online algorithm for learning an ordinal regression model.
+    r"""Online algorithm for learning an ordinal regression model.
 
     Parameters
     ----------
@@ -47,8 +47,8 @@ class PRank(_BasePRank):
     thresholds_ : array, shape=[n_classes]
         Estimated thresholds.
 
-    Reference
-    ---------
+    References
+    ----------
     Pranking with Ranking
     Koby Crammer, Yoram Singer
     NIPS 2001
@@ -104,7 +104,7 @@ class PRank(_BasePRank):
 
 
 class KernelPRank(_BasePRank):
-    """Kernelized online algorithm for learning an ordinal regression model.
+    r"""Kernelized online algorithm for learning an ordinal regression model.
 
     Parameters
     ----------
@@ -144,8 +144,8 @@ class KernelPRank(_BasePRank):
     thresholds_ : array, shape=[n_classes]
         Estimated thresholds.
 
-    Reference
-    ---------
+    References
+    ----------
     Pranking with Ranking
     Koby Crammer, Yoram Singer
     NIPS 2001

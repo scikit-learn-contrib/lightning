@@ -4,8 +4,6 @@
 import numpy as np
 
 from sklearn.utils import check_random_state
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.externals.six.moves import xrange
 
 from .base import BaseClassifier, BaseRegressor
 from .dataset_fast import get_dataset
@@ -39,7 +37,7 @@ class _BaseAdagrad(object):
         loss = self._get_loss()
         n_calls = n_samples if self.n_calls is None else self.n_calls
 
-        for i in xrange(n_vectors):
+        for i in range(n_vectors):
             _adagrad_fit(self, ds, Y[:, i], self.coef_[i], self.g_sum_[i],
                          self.g_norms_[i], loss, self.eta, delta, alpha1,
                          alpha2, self.n_iter, self.shuffle, self.callback,
@@ -49,10 +47,12 @@ class _BaseAdagrad(object):
 
 
 class AdaGradClassifier(BaseClassifier, _BaseAdagrad):
-    """
+    r"""
     Estimator for learning linear classifiers by AdaGrad.
 
     Solves the following objective:
+
+    .. code-block::
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * l1_ratio * ||w||_1
@@ -93,10 +93,12 @@ class AdaGradClassifier(BaseClassifier, _BaseAdagrad):
 
 
 class AdaGradRegressor(BaseRegressor, _BaseAdagrad):
-    """
+    r"""
     Estimator for learning linear regressors by AdaGrad.
 
     Solves the following objective:
+
+    .. code-block::
 
         minimize_w  1 / n_samples * \sum_i loss(w^T x_i, y_i)
                     + alpha * l1_ratio * ||w||_1

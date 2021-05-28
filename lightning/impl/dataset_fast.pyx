@@ -2,6 +2,7 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: language_level=3
 #
 # Author: Mathieu Blondel
 # License: BSD
@@ -83,7 +84,7 @@ cdef class ContiguousDataset(RowDataset):
         cdef int i
         cdef int n_features = X.shape[1]
         self.indices = <int*> stdlib.malloc(sizeof(int) * n_features)
-        for j in xrange(n_features):
+        for j in range(n_features):
             self.indices[j] = j
 
     def __dealloc__(self):
@@ -115,7 +116,7 @@ cdef class FortranDataset(ColumnDataset):
         cdef int i
         cdef int n_samples = X.shape[0]
         self.indices = <int*> stdlib.malloc(sizeof(int) * n_samples)
-        for i in xrange(n_samples):
+        for i in range(n_samples):
             self.indices[i] = i
 
     def __dealloc__(self):

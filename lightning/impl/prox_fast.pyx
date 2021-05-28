@@ -2,9 +2,10 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: language_level=3
 #
 # Authors: Fabian Pedregosa
-#
+# License: BSD
 
 """
 These are some helper functions to compute the proximal operator of some common penalties

@@ -1,6 +1,7 @@
+from itertools import product
+
 import numpy as np
 import scipy.sparse as sp
-from sklearn.externals.six.moves import xrange
 
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils import check_random_state
@@ -25,7 +26,7 @@ def _make_nn_regression(n_samples=100, n_features=100, n_informative=10,
 
     n = 0
     ind = np.arange(n_features)
-    for i in xrange(n_samples):
+    for i in range(n_samples):
         generator.shuffle(ind)
         col[n:n+n_informative] = ind[:n_informative]
         n += n_informative
@@ -195,9 +196,6 @@ def make_classification(n_samples=100, n_features=20, n_informative=2,
     .. [1] I. Guyon, "Design of experiments for the NIPS 2003 variable
            selection benchmark", 2003.
     """
-    from itertools import product
-    from sklearn.utils import shuffle as util_shuffle
-
     generator = check_random_state(random_state)
 
     # Count features, clusters and samples
@@ -233,7 +231,7 @@ def make_classification(n_samples=100, n_features=20, n_informative=2,
 
     # Intialize X and y
     X = np.zeros((n_samples, n_features))
-    y = np.zeros(n_samples, dtype=np.int)
+    y = np.zeros(n_samples, dtype=int)
 
     # Build the polytope
     C = np.array(list(product([-class_sep, class_sep], repeat=n_informative)))
@@ -308,7 +306,7 @@ def make_classification(n_samples=100, n_features=20, n_informative=2,
 
     # Randomly permute samples and features
     if shuffle:
-        X, y = util_shuffle(X, y, random_state=generator)
+        X, y = shuffle_func(X, y, random_state=generator)
 
         indices = np.arange(n_features)
         generator.shuffle(indices)

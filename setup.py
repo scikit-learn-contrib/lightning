@@ -2,6 +2,7 @@
 #
 # Copyright (C) 2012 Mathieu Blondel
 
+import re
 import sys
 import os
 from distutils.command.sdist import sdist
@@ -10,15 +11,26 @@ from numpy.distutils.core import setup
 
 
 DISTNAME = 'sklearn-contrib-lightning'
-DESCRIPTION = "Large-scale sparse linear classification, " + \
-              "regression and ranking in Python"
-LONG_DESCRIPTION = open('README.rst').read()
+DESCRIPTION = ("Large-scale sparse linear classification, "
+               "regression and ranking in Python")
+with open('README.rst', encoding='utf-8') as f:
+    LONG_DESCRIPTION = f.read()
 MAINTAINER = 'Mathieu Blondel'
 MAINTAINER_EMAIL = 'mathieu@mblondel.org'
 URL = 'https://github.com/scikit-learn-contrib/lightning'
 LICENSE = 'new BSD'
-DOWNLOAD_URL = 'https://github.com/scikit-learn-contrib/lightning'
-VERSION = '0.6.dev0'
+DOWNLOAD_URL = URL
+with open(os.path.join('lightning', '__init__.py'), encoding='utf-8') as f:
+    match = re.search(r'__version__[ ]*=[ ]*[\"\'](?P<version>.+)[\"\']',
+                      f.read())
+    VERSION = match.group('version').strip()
+MIN_PYTHON_VERSION = '3.6'
+with open('requirements.txt', encoding='utf-8') as f:
+    REQUIREMENTS = [
+        line.strip()
+        for line in f.read().splitlines()
+        if line.strip()
+    ]
 
 
 def configuration(parent_package='', top_path=None):
@@ -43,6 +55,8 @@ if __name__ == "__main__":
     setup(configuration=configuration,
           name=DISTNAME,
           maintainer=MAINTAINER,
+          python_requires='>={}'.format(MIN_PYTHON_VERSION),
+          install_requires=REQUIREMENTS,
           include_package_data=True,
           scripts=["bin/lightning_train",
                    "bin/lightning_predict"],

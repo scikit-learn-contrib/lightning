@@ -2,6 +2,7 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: language_level=3
 #
 # Authors: Mathieu Blondel
 #          Fabian Pedregosa
@@ -32,7 +33,7 @@ cdef class Penalty:
                          double stepsize,
                          int n_nz):
         raise NotImplementedError()
-    
+
     cdef void projection_lagged(self,
                                 int t,
                                 double* w,
@@ -184,7 +185,7 @@ cdef double _pred(double* data,
     cdef int j, jj
     cdef double dot = 0
 
-    for jj in xrange(n_nz):
+    for jj in range(n_nz):
         j = indices[jj]
         dot += w[j] * data[jj]
 
@@ -197,7 +198,7 @@ cdef void _add(double* data,
                double* w):
     cdef int jj, j
 
-    for jj in xrange(n_nz):
+    for jj in range(n_nz):
         j = indices[jj]
         w[j] += scale * data[jj]
 
@@ -212,10 +213,10 @@ cdef void _lagged_update(int t,
                          int* last,
                          double stepsize):
     """
-    Apply missing updates to w, just-in-time. See [1, Section 4] 
+    Apply missing updates to w, just-in-time. See [1, Section 4]
     for a description of this technique.
 
-    [1] 1. Schmidt, M., Roux, N. Le & Bach, F. Minimizing Finite 
+    [1] 1. Schmidt, M., Roux, N. Le & Bach, F. Minimizing Finite
         Sums with the Stochastic Average Gradient. 1–45 (2013).
     """
     cdef long missed_updates
@@ -297,7 +298,7 @@ def _sag_fit(self,
     cdef double* g_sum = <double*>g_sum_.data
     cdef double* w = <double*>coef.data
     cdef double* w_scale = <double*>coef_scale.data
-    
+
     cdef double* g = <double*>grad.data
     cdef double* geom_sum = <double*> lag_scaling_.data
 
