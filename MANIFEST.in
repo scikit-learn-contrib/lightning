@@ -2,4 +2,4 @@ include MANIFEST.in
 include README.rst
 include Makefile
 include requirements*.txt
-recursive-include lightning *.c *.h *.cpp *.pyx *.pxd
+recursive-include lightning *.c *.h *.pyx *.pxd
