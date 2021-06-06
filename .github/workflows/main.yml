@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
   pull_request:
     branches:
       - master
@@ -40,16 +42,55 @@ jobs:
           - os: windows-latest
             python_version: '3.9'
             python_arch: x86
+    container: ${{ matrix.os == 'ubuntu-latest' && 'quay.io/pypa/manylinux2014_x86_64' || '' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 3
       - name: Install Python
+        if: matrix.os != 'ubuntu-latest'
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python_version }}
           architecture: ${{ matrix.python_arch }}
+      - name: Set environment variables
+        shell: bash
+        run: |
+          PY_TAG=${{ matrix.python_version }}
+          PY_TAG="${PY_TAG//.}"
+          if [[ $PY_TAG -lt 38 ]]; then
+            PY_TAG_FULL="cp${PY_TAG}-cp${PY_TAG}m"
+          else
+            PY_TAG_FULL="cp${PY_TAG}-cp${PY_TAG}"
+          fi
+          if [[ ${{ matrix.os }} == "ubuntu-latest" ]]; then
+            PLAT_NAME=manylinux2014_x86_64
+          elif [[ ${{ matrix.os }} == "windows-latest" ]]; then
+            if [[ ${{ matrix.python_arch }} == "x64" ]]; then
+              PLAT_NAME=win_amd64
+            else
+              PLAT_NAME=win32
+            fi
+          else
+            PLAT_NAME=macosx_10_9_x86_64
+          fi
+          PACKAGE_VERSION=$(python -c "import lightning;print(lightning.__version__)")
+          echo "PY_TAG=$PY_TAG" >> $GITHUB_ENV
+          echo "PY_TAG_FULL=$PY_TAG_FULL" >> $GITHUB_ENV
+          echo "PLAT_NAME=$PLAT_NAME" >> $GITHUB_ENV
+          echo "PACKAGE_NAME=sklearn_contrib_lightning" >> $GITHUB_ENV
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+      - name: Modify PATH variable
+        if: matrix.os == 'ubuntu-latest'
+        run: echo "/opt/python/${{ env.PY_TAG_FULL }}/bin" >> $GITHUB_PATH
+      - name: Check Python location
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          if [[ $(which python) != "/opt/python/${{ env.PY_TAG_FULL }}/bin/python" ]]; then
+            exit -1
+          fi
       - name: Check Python version
         shell: python
         run: |
@@ -65,3 +106,30 @@ jobs:
           python setup.py install
       - name: Run tests
         run: pytest -v --pyargs lightning
+      - name: Create archive with sources
+        if: matrix.os == 'ubuntu-latest' && matrix.python_version == '3.9' && startsWith(github.ref, 'refs/tags/')
+        run: python setup.py sdist
+      - name: Create wheels
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          pip install wheel
+          python setup.py bdist_wheel --python-tag="cp${{ env.PY_TAG }}" --plat-name=${{ env.PLAT_NAME }}
+      - name: Run auditwheel
+        if: matrix.os == 'ubuntu-latest' && startsWith(github.ref, 'refs/tags/')
+        run: |
+          pip install auditwheel
+          auditwheel repair --plat ${{ env.PLAT_NAME }} dist/${{ env.PACKAGE_NAME }}*.whl
+          mv -f wheelhouse/${{ env.PACKAGE_NAME }}*.whl dist/${{ env.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}-${{ env.PY_TAG_FULL }}-${{ env.PLAT_NAME }}.whl
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            ${{ github.workspace }}/dist/*.tar.gz
+            ${{ github.workspace }}/dist/${{ env.PACKAGE_NAME }}*.whl
+          tag_name: ${{ env.PACKAGE_VERSION }}
+          name: ${{ env.PACKAGE_VERSION }}
+          draft: true
+          prerelease: false
