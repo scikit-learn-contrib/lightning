@@ -126,10 +126,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: |
-            ${{ github.workspace }}/dist/*.tar.gz
-            ${{ github.workspace }}/dist/${{ env.PACKAGE_NAME }}*.whl
           tag_name: ${{ env.PACKAGE_VERSION }}
           name: ${{ env.PACKAGE_VERSION }}
           draft: true
           prerelease: false
+          files: |
+            dist/${{ env.PACKAGE_NAME }}*.whl
+            dist/*.tar.gz
