@@ -3,7 +3,7 @@ name: Package tests
 on:
   push:
     branches:
-      - py310
+      - master
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
   pull_request:
