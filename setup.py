@@ -26,7 +26,7 @@ with open(os.path.join('lightning', '__init__.py'), encoding='utf-8') as f:
     match = re.search(r'__version__[ ]*=[ ]*[\"\'](?P<version>.+)[\"\']',
                       f.read())
     VERSION = match.group('version').strip()
-MIN_PYTHON_VERSION = '3.6'
+MIN_PYTHON_VERSION = '3.7'
 with open('requirements.txt', encoding='utf-8') as f:
     REQUIREMENTS = [
         line.strip()
