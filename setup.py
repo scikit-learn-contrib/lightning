@@ -5,6 +5,7 @@
 import re
 import sys
 import os
+import setuptools
 
 from distutils.command.sdist import sdist
 
