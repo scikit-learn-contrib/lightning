@@ -1,2 +1,3 @@
 cython
+setuptools<0.60
 numpy
