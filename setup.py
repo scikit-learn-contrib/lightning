@@ -66,8 +66,6 @@ if __name__ == "__main__":
           python_requires=f'>={MIN_PYTHON_VERSION}',
           install_requires=REQUIREMENTS,
           include_package_data=True,
-          scripts=["bin/lightning_train",
-                   "bin/lightning_predict"],
           maintainer_email=MAINTAINER_EMAIL,
           description=DESCRIPTION,
           license=LICENSE,
