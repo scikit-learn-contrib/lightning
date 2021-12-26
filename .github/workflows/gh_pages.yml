@@ -3,7 +3,7 @@ name: Deploy Docs to GitHub Pages
 on:
   push:
     branches:
-      - fix_gh_pages
+      - master
 
 jobs:
   build-and-deploy-docs:
