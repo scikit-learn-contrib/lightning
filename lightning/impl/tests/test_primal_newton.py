@@ -1,13 +1,10 @@
 import numpy as np
 
-from lightning.impl.datasets.samples_generator import make_classification
 from lightning.impl.primal_newton import KernelSVC
 
-bin_dense, bin_target = make_classification(n_samples=200, n_features=100,
-                                            n_informative=5,
-                                            n_classes=2, random_state=0)
 
-def test_kernel_svc():
+def test_kernel_svc(bin_dense_train_data):
+    bin_dense, bin_target = bin_dense_train_data
     clf = KernelSVC(kernel="rbf", gamma=0.1, random_state=0, verbose=0)
     clf.fit(bin_dense, bin_target)
     np.testing.assert_almost_equal(clf.score(bin_dense, bin_target), 1.0)
