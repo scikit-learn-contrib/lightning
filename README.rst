@@ -63,7 +63,7 @@ penalty on the News20 dataset (c.f., `Blondel et al. 2013
 Dependencies
 ------------
 
-lightning requires Python >= 3.6, setuptools, Joblib, Numpy >= 1.12, SciPy >= 0.19 and
+lightning requires Python >= 3.7, setuptools, Joblib, Numpy >= 1.12, SciPy >= 0.19 and
 scikit-learn >= 0.19. Building from source also requires Cython and a working C/C++ compiler. To run the tests you will also need pytest.
 
 Installation

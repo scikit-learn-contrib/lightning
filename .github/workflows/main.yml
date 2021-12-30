@@ -23,7 +23,6 @@ jobs:
           - macos-latest
           - windows-latest
         python_version:
-          - '3.6'
           - '3.7'
           - '3.8'
           - '3.9'
@@ -31,9 +30,6 @@ jobs:
         python_arch:
           - x64
         include:
-          - os: windows-latest
-            python_version: '3.6'
-            python_arch: x86
           - os: windows-latest
             python_version: '3.7'
             python_arch: x86
