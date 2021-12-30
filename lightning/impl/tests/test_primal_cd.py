@@ -1,5 +1,3 @@
-from platform import system
-
 import numpy as np
 import scipy.sparse as sp
 
@@ -174,10 +172,7 @@ def test_debiasing_l1l2():
                            max_iter=20, C=0.01, random_state=0)
         clf.fit(mult_csc, mult_target)
         assert clf.score(mult_csc, mult_target) > 0.75
-        if system() == "Windows":
-            assert 0.07 <= clf.n_nonzero(percentage=True) <= 0.1
-        else:
-            assert clf.n_nonzero(percentage=True) == 0.08
+        assert 0.0 <= clf.n_nonzero(percentage=True) <= 0.1
 
 
 def test_debiasing_warm_start():
