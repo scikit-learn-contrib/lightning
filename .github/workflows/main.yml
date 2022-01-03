@@ -39,9 +39,6 @@ jobs:
           - os: windows-latest
             python_version: '3.9'
             python_arch: x86
-          - os: windows-latest
-            python_version: '3.10'
-            python_arch: x86
     container: ${{ matrix.os == 'ubuntu-latest' && 'quay.io/pypa/manylinux2014_x86_64' || '' }}
     steps:
       - name: Checkout repository
