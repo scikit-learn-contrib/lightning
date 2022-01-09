@@ -15,43 +15,43 @@ def bin_dense_train_data(bin_dense_train_data):
     return bin_dense, bin_target
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
-def test_fista_multiclass_l1l2(data):
-    X, y = data
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
+def test_fista_multiclass_l1l2(data, request):
+    X, y = request.getfixturevalue(data)
     clf = FistaClassifier(max_iter=200, penalty="l1/l2", multiclass=True)
     clf.fit(X, y)
     np.testing.assert_almost_equal(clf.score(X, y), 0.99, 2)
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
-def test_fista_multiclass_l1l2_log(data):
-    X, y = data
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
+def test_fista_multiclass_l1l2_log(data, request):
+    X, y = request.getfixturevalue(data)
     clf = FistaClassifier(max_iter=200, penalty="l1/l2", loss="log",
                           multiclass=True)
     clf.fit(X, y)
     np.testing.assert_almost_equal(clf.score(X, y), 0.90, 2)
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
-def test_fista_multiclass_l1l2_log_margin(data):
-    X, y = data
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
+def test_fista_multiclass_l1l2_log_margin(data, request):
+    X, y = request.getfixturevalue(data)
     clf = FistaClassifier(max_iter=200, penalty="l1/l2", loss="log_margin",
                           multiclass=True)
     clf.fit(X, y)
     np.testing.assert_almost_equal(clf.score(X, y), 0.93, 2)
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
-def test_fista_multiclass_l1(data):
-    X, y = data
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
+def test_fista_multiclass_l1(data, request):
+    X, y = request.getfixturevalue(data)
     clf = FistaClassifier(max_iter=200, penalty="l1", multiclass=True)
     clf.fit(X, y)
     np.testing.assert_almost_equal(clf.score(X, y), 0.98, 2)
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
-def test_fista_multiclass_tv1d(data):
-    X, y = data
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
+def test_fista_multiclass_tv1d(data, request):
+    X, y = request.getfixturevalue(data)
     clf = FistaClassifier(max_iter=200, penalty="tv1d", multiclass=True)
     clf.fit(X, y)
     np.testing.assert_almost_equal(clf.score(X, y), 0.97, 2)
@@ -64,35 +64,35 @@ def test_fista_multiclass_tv1d(data):
             clf.coef_[i], np.mean(clf.coef_[i]) * np.ones(X.shape[1]))
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
 @pytest.mark.parametrize("penalty", ["l1/l2", "l1"])
-def test_fista_multiclass_no_line_search(data, penalty):
-    X, y = data
+def test_fista_multiclass_no_line_search(data, penalty, request):
+    X, y = request.getfixturevalue(data)
     clf = FistaClassifier(max_iter=500, penalty=penalty, multiclass=True,
                           max_steps=0)
     clf.fit(X, y)
     np.testing.assert_almost_equal(clf.score(X, y), 0.94, 2)
 
 
-@pytest.mark.parametrize("data", [bin_dense_train_data, bin_sparse_train_data])
-def test_fista_bin_l1(data):
-    X, y = data
+@pytest.mark.parametrize("data", ["bin_dense_train_data", "bin_sparse_train_data"])
+def test_fista_bin_l1(data, request):
+    X, y = request.getfixturevalue(data)
     clf = FistaClassifier(max_iter=200, penalty="l1")
     clf.fit(X, y)
     np.testing.assert_almost_equal(clf.score(X, y), 1.0, 2)
 
 
-@pytest.mark.parametrize("data", [bin_dense_train_data, bin_sparse_train_data])
-def test_fista_bin_l1_no_line_search(data):
-    X, y = data
+@pytest.mark.parametrize("data", ["bin_dense_train_data", "bin_sparse_train_data"])
+def test_fista_bin_l1_no_line_search(data, request):
+    X, y = request.getfixturevalue(data)
     clf = FistaClassifier(max_iter=500, penalty="l1", max_steps=0)
     clf.fit(X, y)
     np.testing.assert_almost_equal(clf.score(X, y), 1.0, 2)
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
-def test_fista_multiclass_trace(data):
-    X, y = data
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
+def test_fista_multiclass_trace(data, request):
+    X, y = request.getfixturevalue(data)
     clf = FistaClassifier(max_iter=100, penalty="trace", multiclass=True)
     clf.fit(X, y)
     np.testing.assert_almost_equal(clf.score(X, y), 0.96, 2)
@@ -172,11 +172,11 @@ def test_fista_regression_trace():
     np.testing.assert_almost_equal(error, 77.44, 2)
 
 
-@pytest.mark.parametrize("data", [bin_dense_train_data, bin_sparse_train_data])
-def test_fista_custom_prox(data):
+@pytest.mark.parametrize("data", ["bin_dense_train_data", "bin_sparse_train_data"])
+def test_fista_custom_prox(data, request):
     # test FISTA with a custom prox
     l1_pen = L1Penalty()
-    X, y = data
+    X, y = request.getfixturevalue(data)
     clf = FistaClassifier(max_iter=500, penalty="l1", max_steps=0)
     clf.fit(X, y)
 

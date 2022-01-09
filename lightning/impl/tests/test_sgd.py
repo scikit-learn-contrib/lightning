@@ -23,7 +23,7 @@ def reg_nn_train_data():
     return X, y
 
 
-@pytest.mark.parametrize("data", [bin_dense_train_data, bin_sparse_train_data])
+@pytest.mark.parametrize("data", ["bin_dense_train_data", "bin_sparse_train_data"])
 @pytest.mark.parametrize("clf", [SGDClassifier(random_state=0, loss="hinge",
                                                fit_intercept=True, learning_rate="pegasos"),
                                  SGDClassifier(random_state=0, loss="hinge",
@@ -39,8 +39,8 @@ def reg_nn_train_data():
                                                fit_intercept=True, learning_rate="constant"),
                                  SGDClassifier(random_state=0, loss="modified_huber",
                                                fit_intercept=True, learning_rate="constant")])
-def test_binary_linear_sgd(data, clf):
-    X, y = data
+def test_binary_linear_sgd(data, clf, request):
+    X, y = request.getfixturevalue(data)
     clf.fit(X, y)
     assert clf.score(X, y) > 0.934
     assert list(clf.classes_) == [0, 1]
@@ -58,29 +58,29 @@ def test_multiclass_sgd(mult_dense_train_data):
     assert list(clf.classes_) == [0, 1, 2]
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
 @pytest.mark.parametrize("fit_intercept", [True, False])
-def test_multiclass_hinge_sgd(data, fit_intercept):
-    X, y = data
+def test_multiclass_hinge_sgd(data, fit_intercept, request):
+    X, y = request.getfixturevalue(data)
     clf = SGDClassifier(loss="hinge", multiclass=True,
                         fit_intercept=fit_intercept, random_state=0)
     clf.fit(X, y)
     assert clf.score(X, y) > 0.78
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
-def test_multiclass_hinge_sgd_l1l2(data):
-    X, y = data
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
+def test_multiclass_hinge_sgd_l1l2(data, request):
+    X, y = request.getfixturevalue(data)
     clf = SGDClassifier(loss="hinge", penalty="l1/l2",
                         multiclass=True, random_state=0)
     clf.fit(X, y)
     assert clf.score(X, y) > 0.75
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
 @pytest.mark.parametrize("fit_intercept", [True, False])
-def test_multiclass_squared_hinge_sgd(data, fit_intercept):
-    X, y = data
+def test_multiclass_squared_hinge_sgd(data, fit_intercept, request):
+    X, y = request.getfixturevalue(data)
     clf = SGDClassifier(loss="squared_hinge", multiclass=True,
                         learning_rate="constant", eta0=1e-3,
                         fit_intercept=fit_intercept, random_state=0)
@@ -88,10 +88,10 @@ def test_multiclass_squared_hinge_sgd(data, fit_intercept):
     assert clf.score(X, y) > 0.78
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
 @pytest.mark.parametrize("fit_intercept", [True, False])
-def test_multiclass_log_sgd(data, fit_intercept):
-    X, y = data
+def test_multiclass_log_sgd(data, fit_intercept, request):
+    X, y = request.getfixturevalue(data)
     clf = SGDClassifier(loss="log", multiclass=True,
                         fit_intercept=fit_intercept,
                         random_state=0)

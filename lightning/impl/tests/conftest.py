@@ -9,8 +9,7 @@ from lightning.impl.datasets.samples_generator import make_classification
 @pytest.fixture(scope="module")
 def train_data():
     iris = load_iris()
-    X, y = iris.data, iris.target
-    return X, y
+    return iris.data, iris.target
 
 
 @pytest.fixture(scope="module")
@@ -31,7 +30,7 @@ def bin_dense_train_data():
 
 @pytest.fixture(scope="module")
 def bin_sparse_train_data(bin_dense_train_data):
-    bin_dense, bin_target = bin_dense, bin_target
+    bin_dense, bin_target = bin_dense_train_data
     bin_csr = sp.csr_matrix(bin_dense)
     return bin_csr, bin_target
 

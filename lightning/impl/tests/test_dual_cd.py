@@ -17,9 +17,9 @@ def reg_train_data():
     return reg_dense, reg_target
 
 
-@pytest.mark.parametrize("data", [bin_dense_train_data, bin_sparse_train_data])
-def test_sparse_dot(data):
-    X, _ = data
+@pytest.mark.parametrize("data", ["bin_dense_train_data", "bin_sparse_train_data"])
+def test_sparse_dot(data, request):
+    X, _ = request.getfixturevalue(data)
     K = linear_kernel(X)
     K2 = np.zeros_like(K)
     ds = get_dataset(X)
@@ -32,10 +32,10 @@ def test_sparse_dot(data):
     np.testing.assert_array_almost_equal(K, K2)
 
 
-@pytest.mark.parametrize("data", [bin_dense_train_data, bin_sparse_train_data])
+@pytest.mark.parametrize("data", ["bin_dense_train_data", "bin_sparse_train_data"])
 @pytest.mark.parametrize("loss", ["l1", "l2"])
-def test_fit_linear_binary(data, loss):
-    X, y = data
+def test_fit_linear_binary(data, loss, request):
+    X, y = request.getfixturevalue(data)
     clf = LinearSVC(loss=loss, random_state=0, max_iter=10)
     clf.fit(X, y)
     assert list(clf.classes_) == [0, 1]
@@ -43,18 +43,18 @@ def test_fit_linear_binary(data, loss):
     y_pred = clf.decision_function(X).ravel()
 
 
-@pytest.mark.parametrize("data", [bin_dense_train_data, bin_sparse_train_data])
+@pytest.mark.parametrize("data", ["bin_dense_train_data", "bin_sparse_train_data"])
 @pytest.mark.parametrize("loss", ["l1", "l2"])
-def test_fit_linear_binary_auc(data, loss):
-    X, y = data
+def test_fit_linear_binary_auc(data, loss, request):
+    X, y = request.getfixturevalue(data)
     clf = LinearSVC(loss=loss, criterion="auc", random_state=0, max_iter=25)
     clf.fit(X, y)
     assert clf.score(X, y) == 1.0
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
-def test_fit_linear_multi(data):
-    X, y = data
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
+def test_fit_linear_multi(data, request):
+    X, y = request.getfixturevalue(data)
     clf = LinearSVC(random_state=0)
     clf.fit(X, y)
     assert list(clf.classes_) == [0, 1, 2]

@@ -240,9 +240,9 @@ def test_fit_squared_loss_l1(bin_dense_train_data):
     assert n_nz == 89
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
-def test_l1l2_multiclass_log_loss(data):
-    X, y = data
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
+def test_l1l2_multiclass_log_loss(data, request):
+    X, y = request.getfixturevalue(data)
     clf = CDClassifier(penalty="l1/l2", loss="log", multiclass=True,
                        max_steps=30, max_iter=5, C=1.0, random_state=0)
     clf.fit(X, y)
@@ -277,9 +277,9 @@ def test_l1l2_multiclass_log_loss_no_linesearch(mult_sparse_train_data):
     assert nz == 297
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
-def test_l1l2_multiclass_squared_hinge_loss(data):
-    X, y = data
+@pytest.mark.parametrize("data", ["mult_dense_train_data", "mult_sparse_train_data"])
+def test_l1l2_multiclass_squared_hinge_loss(data, request):
+    X, y = request.getfixturevalue(data)
     clf = CDClassifier(penalty="l1/l2", loss="squared_hinge",
                        multiclass=True,
                        max_iter=20, C=1.0, random_state=0)
