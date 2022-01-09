@@ -26,6 +26,7 @@ jobs:
           - '3.7'
           - '3.8'
           - '3.9'
+          - '3.10'
         python_arch:
           - x64
         include:
@@ -103,7 +104,7 @@ jobs:
       - name: Run tests
         run: pytest -v --pyargs lightning
       - name: Create archive with sources
-        if: matrix.os == 'ubuntu-latest' && matrix.python_version == '3.9' && startsWith(github.ref, 'refs/tags/')
+        if: matrix.os == 'ubuntu-latest' && matrix.python_version == '3.10' && startsWith(github.ref, 'refs/tags/')
         run: python setup.py sdist
       - name: Create wheels
         if: startsWith(github.ref, 'refs/tags/')
