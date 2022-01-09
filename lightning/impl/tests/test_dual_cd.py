@@ -17,48 +17,49 @@ def reg_train_data():
     return reg_dense, reg_target
 
 
-@pytest.mark.parametrize("data", [bin_dense_train_data[0], bin_sparse_train_data[0]])
+@pytest.mark.parametrize("data", [bin_dense_train_data, bin_sparse_train_data])
 def test_sparse_dot(data):
-    K = linear_kernel(data)
+    X, _ = data
+    K = linear_kernel(X)
     K2 = np.zeros_like(K)
-    ds = get_dataset(data)
+    ds = get_dataset(X)
 
-    for i in range(data.shape[0]):
-        for j in range(i, data.shape[0]):
+    for i in range(X.shape[0]):
+        for j in range(i, X.shape[0]):
             K2[i, j] = sparse_dot(ds, i, j)
             K2[j, i] = K[i, j]
 
     np.testing.assert_array_almost_equal(K, K2)
 
 
-@pytest.mark.parametrize("data", [bin_dense_train_data[0], bin_sparse_train_data[0]])
+@pytest.mark.parametrize("data", [bin_dense_train_data, bin_sparse_train_data])
 @pytest.mark.parametrize("loss", ["l1", "l2"])
-def test_fit_linear_binary(bin_dense_train_data, data, loss):
-    _, bin_target = bin_dense_train_data
+def test_fit_linear_binary(data, loss):
+    X, y = data
     clf = LinearSVC(loss=loss, random_state=0, max_iter=10)
-    clf.fit(data, bin_target)
+    clf.fit(X, y)
     assert list(clf.classes_) == [0, 1]
-    assert clf.score(data, bin_target) == 1.0
-    y_pred = clf.decision_function(data).ravel()
+    assert clf.score(X, y) == 1.0
+    y_pred = clf.decision_function(X).ravel()
 
 
-@pytest.mark.parametrize("data", [bin_dense_train_data[0], bin_sparse_train_data[0]])
+@pytest.mark.parametrize("data", [bin_dense_train_data, bin_sparse_train_data])
 @pytest.mark.parametrize("loss", ["l1", "l2"])
-def test_fit_linear_binary_auc(bin_dense_train_data, data, loss):
-    _, bin_target = bin_dense_train_data
+def test_fit_linear_binary_auc(data, loss):
+    X, y = data
     clf = LinearSVC(loss=loss, criterion="auc", random_state=0, max_iter=25)
-    clf.fit(data, bin_target)
-    assert clf.score(data, bin_target) == 1.0
+    clf.fit(X, y)
+    assert clf.score(X, y) == 1.0
 
 
-@pytest.mark.parametrize("data", [mult_dense_train_data[0], mult_sparse_train_data[0]])
-def test_fit_linear_multi(mult_dense_train_data, data):
-    _, mult_target = mult_dense_train_data
+@pytest.mark.parametrize("data", [mult_dense_train_data, mult_sparse_train_data])
+def test_fit_linear_multi(data):
+    X, y = data
     clf = LinearSVC(random_state=0)
-    clf.fit(data, mult_target)
+    clf.fit(X, y)
     assert list(clf.classes_) == [0, 1, 2]
-    y_pred = clf.predict(data)
-    acc = np.mean(y_pred == mult_target)
+    y_pred = clf.predict(X)
+    acc = np.mean(y_pred == y)
     assert acc > 0.85
 
 

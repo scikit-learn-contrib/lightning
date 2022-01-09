@@ -444,18 +444,26 @@ def test_sag_sample_weights(train_data):
     np.testing.assert_array_almost_equal(clf1.coef_.ravel(), clf2.coef_.ravel(), decimal=6)
 
 
-@pytest.mark.parametrize("clf_adaptive, clf",
-                         [(SAGClassifier(eta='line-search', random_state=0, alpha=alpha),
-                           SAGClassifier(eta='auto', random_state=0, alpha=alpha)),
-                          (SAGAClassifier(eta='line-search', loss='log', random_state=0, alpha=alpha, max_iter=20),
-                           SAGAClassifier(eta='auto', loss='log', random_state=0, alpha=alpha, max_iter=20))])
-def test_sag_adaptive(clf_adaptive, clf):
+def test_sag_adaptive():
     # Check that the adaptive step size strategy yields the same
-    # solution as the non-adaptive
+    # solution as the non-adaptive"""
     np.random.seed(0)
     X = sparse.rand(100, 10, density=.5, random_state=0).tocsr()
     y = np.random.randint(0, high=2, size=100)
     for alpha in np.logspace(-3, 1, 5):
+        clf_adaptive = SAGClassifier(
+            eta='line-search', random_state=0, alpha=alpha)
         clf_adaptive.fit(X, y)
+        clf = SAGClassifier(
+            eta='auto', random_state=0, alpha=alpha)
+        clf.fit(X, y)
+        np.testing.assert_almost_equal(clf_adaptive.score(X, y), clf.score(X, y), 1)
+
+        clf_adaptive = SAGAClassifier(
+            eta='line-search', loss='log', random_state=0, alpha=alpha, max_iter=20)
+        clf_adaptive.fit(X, y)
+        assert np.isnan(clf_adaptive.coef_.sum()) == False
+        clf = SAGAClassifier(
+            eta='auto', loss='log', random_state=0, alpha=alpha, max_iter=20)
         clf.fit(X, y)
         np.testing.assert_almost_equal(clf_adaptive.score(X, y), clf.score(X, y), 1)
