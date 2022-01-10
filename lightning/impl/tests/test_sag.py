@@ -43,6 +43,28 @@ class L2Penalty(object):
         return self.l2 * np.sum(coef**2)
 
 
+class Callback(object):
+
+    def __init__(self, X, y):
+        self.X = X
+        self.y = y
+        self.obj = []
+
+    def __call__(self, clf):
+        clf._finalize_coef()
+        y_pred = clf.decision_function(self.X).ravel()
+        loss = (np.maximum(1 - self.y * y_pred, 0) ** 2).mean()
+        coef = clf.coef_.ravel()
+        regul = 0.5 * clf.alpha * np.dot(coef, coef)
+        self.obj.append(loss + regul)
+
+
+@pytest.fixture(scope='session')
+def callback(bin_train_data):
+    cb = Callback(*bin_train_data)
+    return cb
+
+
 def _fit_sag(X, y, eta, alpha, loss, max_iter, rng):
 
     if sparse.issparse(X):
@@ -141,8 +163,8 @@ class PySAGClassifier(BaseClassifier):
 
     def fit(self, X, y):
         self._set_label_transformers(y)
-        y_trans = np.asfortranarray(self.label_binarizer_.transform(y),
-                                    dtype=np.float64)
+        y = np.asfortranarray(self.label_binarizer_.transform(y),
+                              dtype=np.float64)
 
         if self.eta is None or self.eta == 'auto':
             eta = get_auto_step_size(
@@ -163,10 +185,10 @@ class PySAGClassifier(BaseClassifier):
                              "use `saga=True` or PySAGAClassifier.")
 
         if self.is_saga:
-            self.coef_ = _fit_saga(X, y_trans, eta, self.alpha, loss,
+            self.coef_ = _fit_saga(X, y, eta, self.alpha, loss,
                                    self.penalty, self.max_iter, self.rng)
         else:
-            self.coef_ = _fit_sag(X, y_trans, eta, self.alpha, loss,
+            self.coef_ = _fit_sag(X, y, eta, self.alpha, loss,
                                   self.max_iter, self.rng)
 
 
@@ -346,26 +368,10 @@ def test_no_reg_saga(bin_train_data):
                           PySAGClassifier,
                           SAGAClassifier,
                           PySAGAClassifier])
-def test_sag_callback(SAG_, bin_train_data):
-    class Callback(object):
-
-        def __init__(self, X, y):
-            self.X = X
-            self.y = y
-            self.obj = []
-
-        def __call__(self, clf):
-            clf._finalize_coef()
-            y_pred = clf.decision_function(self.X).ravel()
-            loss = (np.maximum(1 - self.y * y_pred, 0) ** 2).mean()
-            coef = clf.coef_.ravel()
-            regul = 0.5 * clf.alpha * np.dot(coef, coef)
-            self.obj.append(loss + regul)
-
+def test_sag_callback(SAG_, bin_train_data, callback):
     X_bin, y_bin = bin_train_data
-    cb = Callback(X_bin, y_bin)
     clf = SAG_(loss="squared_hinge", eta=1e-3, max_iter=20,
-               random_state=0, callback=cb)
+               random_state=0, callback=callback)
     clf.fit(X_bin, y_bin)
     # its not a descent method, just check that most of
     # updates are decreasing the objective function
