@@ -141,8 +141,8 @@ class PySAGClassifier(BaseClassifier):
 
     def fit(self, X, y):
         self._set_label_transformers(y)
-        y = np.asfortranarray(self.label_binarizer_.transform(y),
-                              dtype=np.float64)
+        y_trans = np.asfortranarray(self.label_binarizer_.transform(y),
+                                    dtype=np.float64)
 
         if self.eta is None or self.eta == 'auto':
             eta = get_auto_step_size(
@@ -163,10 +163,10 @@ class PySAGClassifier(BaseClassifier):
                              "use `saga=True` or PySAGAClassifier.")
 
         if self.is_saga:
-            self.coef_ = _fit_saga(X, y, eta, self.alpha, loss,
+            self.coef_ = _fit_saga(X, y_trans, eta, self.alpha, loss,
                                    self.penalty, self.max_iter, self.rng)
         else:
-            self.coef_ = _fit_sag(X, y, eta, self.alpha, loss,
+            self.coef_ = _fit_sag(X, y_trans, eta, self.alpha, loss,
                                   self.max_iter, self.rng)
 
 
