@@ -23,13 +23,13 @@ def project_simplex_bisection(v, z=1, tau=0.0001, max_iter=1000):
     return w
 
 
-@pytest.mark.parametrize("rng, z", [(100, 10),
-                                    (3, 1),
-                                    (2, 1)])
-def test_proj_simplex(rng, z):
+@pytest.mark.parametrize("size, z", [(100, 10),
+                                     (3, 1),
+                                     (2, 1)])
+def test_proj_simplex(size, z):
     rng = np.random.RandomState(0)
 
-    v = rng.rand(rng)
+    v = rng.rand(size)
     w = project_simplex(v, z=z)
     w2 = project_simplex_bisection(v, z=z, max_iter=100)
     np.testing.assert_array_almost_equal(w, w2, 3)
