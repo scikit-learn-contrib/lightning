@@ -59,7 +59,7 @@ class Callback(object):
         self.obj.append(loss + regul)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def callback(bin_train_data):
     cb = Callback(*bin_train_data)
     return cb
@@ -370,8 +370,9 @@ def test_no_reg_saga(bin_train_data):
                           PySAGAClassifier])
 def test_sag_callback(SAG_, bin_train_data, callback):
     X_bin, y_bin = bin_train_data
+    cb = callback
     clf = SAG_(loss="squared_hinge", eta=1e-3, max_iter=20,
-               random_state=0, callback=callback)
+               random_state=0, callback=cb)
     clf.fit(X_bin, y_bin)
     # its not a descent method, just check that most of
     # updates are decreasing the objective function

@@ -55,7 +55,7 @@ def test_csr_get_row(test_data):
 
 
 def test_fortran_get_column(test_data):
-    X, _, _, cds, fds, _, _ = test_data
+    X, _, _, _, fds, _, _ = test_data
     ind = np.arange(X.shape[0])
     for j in range(X.shape[1]):
         indices, data, n_nz = fds.get_column(j)
