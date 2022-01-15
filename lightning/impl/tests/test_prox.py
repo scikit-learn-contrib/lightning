@@ -1,6 +1,8 @@
 import numpy as np
+import pytest
 
 from lightning.impl import prox_fast
+
 
 def test_tv1_denoise():
     # test the prox of TV1D
@@ -19,11 +21,10 @@ def test_tv1_denoise():
         np.testing.assert_allclose(x, x.mean() * np.ones(n_features))
 
 
-def test_tv1d_dtype():
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_tv1d_dtype(dtype):
     # check that prox_tv1d preserve 32bit
-
     x = np.arange(5)
-    for dtype in (np.float32, np.float64):
-        y = x.astype(dtype, copy=True)
-        prox_fast.prox_tv1d(y, 0.01)
-        assert y.dtype == dtype
+    y = x.astype(dtype, copy=True)
+    prox_fast.prox_tv1d(y, 0.01)
+    assert y.dtype == dtype
