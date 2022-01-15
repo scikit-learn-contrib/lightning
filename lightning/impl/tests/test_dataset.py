@@ -32,11 +32,20 @@ def test_data():
     csr_ds = CSRDataset(X_csr)
     csc_ds = CSCDataset(X_csc)
 
-    return X, X_csr, X_csc, cds, fds, csr_ds, csc_ds
+    return {
+        "X": X,
+        "X_csr": X_csr,
+        "X_csc": X_csc,
+        "contiguous_dataset": cds,
+        "fortran_dataset": fds,
+        "dataset_csr": csr_ds,
+        "dataset_csc": csc_ds
+    }
 
 
 def test_contiguous_get_row(test_data):
-    X, _, _, cds, _, _, _ = test_data
+    X = test_data["X"]
+    cds = test_data["contiguous_dataset"]
     ind = np.arange(X.shape[1])
     for i in range(X.shape[0]):
         indices, data, n_nz = cds.get_row(i)
@@ -46,7 +55,8 @@ def test_contiguous_get_row(test_data):
 
 
 def test_csr_get_row(test_data):
-    X, _, _, _, _, csr_ds, _ = test_data
+    X = test_data["X"]
+    csr_ds = test_data["dataset_csr"]
     for i in range(X.shape[0]):
         indices, data, n_nz = csr_ds.get_row(i)
         for jj in range(n_nz):
@@ -55,7 +65,8 @@ def test_csr_get_row(test_data):
 
 
 def test_fortran_get_column(test_data):
-    X, _, _, _, fds, _, _ = test_data
+    X = test_data["X"]
+    fds = test_data["fortran_dataset"]
     ind = np.arange(X.shape[0])
     for j in range(X.shape[1]):
         indices, data, n_nz = fds.get_column(j)
@@ -65,7 +76,8 @@ def test_fortran_get_column(test_data):
 
 
 def test_csc_get_column(test_data):
-    X, _, _, _, _, _, csc_ds = test_data
+    X = test_data["X"]
+    csc_ds = test_data["dataset_csc"]
     for j in range(X.shape[1]):
         indices, data, n_nz = csc_ds.get_column(j)
         for ii in range(n_nz):
@@ -75,8 +87,13 @@ def test_csc_get_column(test_data):
 
 def test_picklable_datasets(test_data):
     # Test that the datasets are picklable.
-    X, _, _, cds, fds, csr_ds, csc_ds = test_data
-    for dataset in [cds, csr_ds, fds, csc_ds]:
+    X = test_data["X"]
+    for dataset in [
+        test_data["contiguous_dataset"],
+        test_data["dataset_csr"],
+        test_data["fortran_dataset"],
+        test_data["dataset_csc"]
+    ]:
         pds = pickle.dumps(dataset)
         dataset = pickle.loads(pds)
         assert dataset.get_n_samples() == X.shape[0]
