@@ -137,4 +137,4 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
           pip install twine
-          twine upload dist/*
+          twine upload dist/*.whl dist/*.tar.gz
