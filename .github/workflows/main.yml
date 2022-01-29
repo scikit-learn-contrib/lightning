@@ -125,8 +125,16 @@ jobs:
         with:
           tag_name: ${{ env.PACKAGE_VERSION }}
           name: ${{ env.PACKAGE_VERSION }}
-          draft: true
+          draft: false
           prerelease: false
           files: |
             dist/${{ env.PACKAGE_NAME }}*.whl
             dist/*.tar.gz
+      - name: Create PyPI Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          pip install twine
+          twine upload dist/*
